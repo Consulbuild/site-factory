@@ -1,0 +1,57 @@
+---
+import type { PropsOf, SiteConfig } from "@/lib/schema";
+import SectionHeader from "@/components/SectionHeader.astro";
+import { renderAccent, sectionPad } from "@/lib/ui";
+
+interface Props {
+  data: PropsOf<"ValueProp">;
+  site: SiteConfig;
+  variant?: string;
+}
+const { data, variant = "A" } = Astro.props;
+
+// A = trio numerato (stile Costruzioni Generali: "Un solo team / Tutto incluso /
+// Tempi rapidi"): qui i numeri portano informazione — è la promessa in sequenza.
+// B = split: intro a sinistra, punti impilati a destra.
+const num = (i: number) => String(i + 1).padStart(2, "0");
+---
+
+<section class:list={[sectionPad, "bg-bg"]} aria-labelledby="valore-title">
+  <div class="container-site">
+    {variant === "A" && (
+      <>
+        <SectionHeader id="valore-title" eyebrow={data.eyebrow} title={data.title} sub={data.intro} />
+        <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
+          {data.points.map((point, i) => (
+            <li class="surface-card p-7">
+              <p class="t-h3 font-extrabold text-accent" aria-hidden="true">{num(i)}</p>
+              <h3 class="t-h4 mt-3 font-bold">{point.title}</h3>
+              <p class="mt-2 text-muted">{point.desc}</p>
+            </li>
+          ))}
+        </ul>
+      </>
+    )}
+
+    {variant === "B" && (
+      <div class="grid gap-x-12 gap-y-10 lg:grid-cols-12">
+        <header class="lg:col-span-5">
+          <p class="eyebrow">{data.eyebrow}</p>
+          <h2 id="valore-title" class="t-h2 mt-4 text-balance" set:html={renderAccent(data.title)} />
+          {data.intro && <p class="t-lead mt-4 text-pretty">{data.intro}</p>}
+        </header>
+        <ul class="space-y-8 lg:col-span-6 lg:col-start-7">
+          {data.points.map((point, i) => (
+            <li class="flex gap-5 border-t border-line pt-6 first:border-t-0 first:pt-0">
+              <p class="t-h4 font-extrabold text-accent" aria-hidden="true">{num(i)}</p>
+              <div>
+                <h3 class="t-h4 font-bold">{point.title}</h3>
+                <p class="mt-1.5 max-w-[52ch] text-muted">{point.desc}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>
+</section>

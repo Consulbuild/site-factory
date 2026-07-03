@@ -1,0 +1,393 @@
+{
+  "meta": {
+    "businessName": "RomaRistruttura S.r.l.",
+    "industry": "Ristrutturazioni edili residenziali chiavi in mano",
+    "city": "Roma",
+    "slug": "romaristruttura",
+    "seoTitle": "Ristrutturazioni chiavi in mano a Roma | RomaRistruttura",
+    "seoDescription": "Ristrutturazioni chiavi in mano a Roma: referente unico, tempi rispettati e garanzia 5 anni. Sopralluogo e preventivo dettagliato gratuiti, richiedeteli oggi."
+  },
+  "brand": {
+    "preset": "meridian",
+    "palette": {
+      "primary": "#1f4e6b",
+      "accent": "#b0561a"
+    },
+    "logo": null,
+    "tone": "professionale, rassicurante, concreto"
+  },
+  "contact": {
+    "phone": "+39 06 1234567",
+    "whatsapp": "",
+    "email": "info@romaristruttura.it",
+    "address": "Via Prenestina 210, 00171 Roma RM",
+    "social": {}
+  },
+  "sections": [
+    {
+      "type": "Header",
+      "variant": "solid",
+      "props": {
+        "nav": [
+          { "label": "Servizi", "href": "#servizi" },
+          { "label": "Lavori", "href": "#lavori" },
+          { "label": "Processo", "href": "#processo" },
+          { "label": "Domande", "href": "#faq" },
+          { "label": "Contatti", "href": "#contatti" }
+        ],
+        "cta": { "label": "Preventivo gratuito", "href": "#contatti", "style": "primary" },
+        "showPhone": true
+      }
+    },
+    {
+      "type": "Hero",
+      "variant": "A",
+      "props": {
+        "eyebrow": "Ristrutturazioni chiavi in mano · Roma",
+        "title": "La vostra casa ristrutturata, **chiavi in mano**",
+        "subtitle": "Un unico referente segue tutto il cantiere, dal preventivo dettagliato alla consegna. 214 cantieri completati a Roma in 18 anni, 4,8/5 su Google e garanzia 5 anni sulle opere.",
+        "ctas": [
+          { "label": "Richiedi il preventivo gratuito", "href": "#contatti", "style": "primary" },
+          { "label": "+39 06 1234567", "href": "tel:+39061234567", "style": "secondary" }
+        ],
+        "badges": ["Sopralluogo gratuito", "Referente unico di cantiere", "Garanzia 5 anni"],
+        "image": {
+          "src": "https://picsum.photos/seed/ristrutturazione-appartamento-roma/1600/1200",
+          "alt": "Soggiorno di un appartamento a Roma appena ristrutturato chiavi in mano"
+        }
+      }
+    },
+    {
+      "type": "TrustBar",
+      "props": {
+        "items": [
+          { "value": "18 anni", "label": "di attività a Roma" },
+          { "value": "214", "label": "cantieri completati" },
+          { "value": "4,8/5", "label": "su 47 recensioni Google" },
+          { "value": "Garanzia 5 anni", "label": "su tutte le opere" }
+        ]
+      }
+    },
+    {
+      "type": "ProblemAgitation",
+      "variant": "list",
+      "props": {
+        "eyebrow": "Perché serve un solo referente",
+        "title": "Ristrutturare non deve diventare **un cantiere infinito**",
+        "intro": "Una ristrutturazione diventa un problema quando mancano metodo e un unico responsabile. Ecco cosa vi risparmiamo.",
+        "points": [
+          {
+            "title": "Tempi che slittano",
+            "desc": "Lavori che si trascinano per mesi oltre le promesse, con la casa inagibile e nessuna data certa.",
+            "icon": "clock"
+          },
+          {
+            "title": "Preventivi che lievitano",
+            "desc": "Costi che cambiano in corsa e voci aggiunte a lavori iniziati, senza un conto chiaro dall'inizio.",
+            "icon": "wallet"
+          },
+          {
+            "title": "Troppi interlocutori",
+            "desc": "Idraulico, elettricista e muratore che non si parlano, e voi costretti a coordinare tutto.",
+            "icon": "users"
+          },
+          {
+            "title": "Cantiere nel caos",
+            "desc": "Polvere ovunque e disordine in casa giorno dopo giorno, senza nessuno che rimetta in ordine.",
+            "icon": "hard-hat"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Services",
+      "variant": "grid",
+      "props": {
+        "eyebrow": "I nostri servizi",
+        "title": "Soluzioni complete per **ogni ambiente**",
+        "subtitle": "Dalla ristrutturazione totale al singolo impianto: un solo team, un solo referente, un preventivo dettagliato.",
+        "items": [
+          {
+            "title": "Ristrutturazione completa chiavi in mano",
+            "desc": "Rinnoviamo l'intero appartamento con un unico referente: demolizioni, impianti, finiture e pratiche, fino alla consegna pronto da vivere.",
+            "bullets": [
+              "Un solo referente di cantiere",
+              "Pratiche edilizie incluse",
+              "Consegna nei tempi concordati"
+            ],
+            "image": {
+              "src": "https://picsum.photos/seed/appartamento-chiavi-in-mano/1600/1200",
+              "alt": "Zona giorno di un appartamento ristrutturato chiavi in mano a Roma"
+            }
+          },
+          {
+            "title": "Rifacimento bagni e cucine",
+            "desc": "Gli ambienti più delicati rifatti da zero, con impianti a norma e finiture curate, senza sorprese sul preventivo.",
+            "bullets": [
+              "Demolizione e rifacimento completo",
+              "Idraulica ed elettrica nuove",
+              "Sanitari e rivestimenti a scelta"
+            ],
+            "image": {
+              "src": "https://picsum.photos/seed/rifacimento-bagno/1600/1200",
+              "alt": "Bagno rifatto con box doccia e nuovi rivestimenti dopo il cantiere"
+            }
+          },
+          {
+            "title": "Cappotto termico — casa più calda, bolletta più bassa",
+            "desc": "Isoliamo l'involucro e riduciamo le dispersioni: più comfort d'inverno e d'estate e consumi in calo, con accesso al Bonus Ristrutturazione.",
+            "bullets": [
+              "Isolamento a cappotto",
+              "Meno dispersioni e muffa",
+              "Comfort in ogni stagione"
+            ],
+            "image": {
+              "src": "https://picsum.photos/seed/cappotto-termico/1600/1200",
+              "alt": "Posa del cappotto termico sulla facciata di un edificio residenziale"
+            }
+          },
+          {
+            "title": "Impianti elettrici e idraulici a norma",
+            "desc": "Rifacimento completo di impianto elettrico e idraulico, con dichiarazione di conformità e tracce rifinite a regola d'arte.",
+            "bullets": [
+              "Impianti certificati a norma",
+              "Dichiarazione di conformità",
+              "Predisposizione domotica"
+            ],
+            "image": {
+              "src": "https://picsum.photos/seed/impianti-a-norma/1600/1200",
+              "alt": "Rifacimento dell'impianto elettrico a norma durante la ristrutturazione"
+            }
+          },
+          {
+            "title": "Cartongesso, controsoffitti e finiture",
+            "desc": "Pareti, controsoffitti e finiture d'interni che definiscono lo spazio: dai punti luce alle verniciature, curati nel dettaglio.",
+            "bullets": [
+              "Pareti e controsoffitti su misura",
+              "Punti luce e nicchie integrate",
+              "Verniciature e finiture"
+            ],
+            "image": {
+              "src": "https://picsum.photos/seed/cartongesso-controsoffitti/1600/1200",
+              "alt": "Controsoffitti in cartongesso con punti luce integrati in un appartamento"
+            }
+          }
+        ],
+        "cta": { "label": "Richiedi il preventivo gratuito", "href": "#contatti", "style": "primary" }
+      }
+    },
+    {
+      "type": "ProcessSteps",
+      "variant": "cards",
+      "props": {
+        "eyebrow": "Come funziona",
+        "title": "Come nasce la **vostra ristrutturazione**",
+        "subtitle": "Cinque passi chiari, dal primo sopralluogo alla garanzia: sapete sempre a che punto siete.",
+        "steps": [
+          {
+            "title": "Sopralluogo gratuito",
+            "desc": "Veniamo da voi, misuriamo gli spazi e ascoltiamo le esigenze. Gratuito e senza impegno.",
+            "image": {
+              "src": "https://picsum.photos/seed/sopralluogo-gratuito/1600/1200",
+              "alt": "Tecnico che effettua il sopralluogo e prende le misure in un appartamento"
+            }
+          },
+          {
+            "title": "Preventivo dettagliato",
+            "desc": "Ricevete un preventivo voce per voce, chiaro e completo: sapete da subito cosa comprende e quanto costa.",
+            "image": {
+              "src": "https://picsum.photos/seed/preventivo-dettagliato/1600/1200",
+              "alt": "Preventivo di ristrutturazione dettagliato sul tavolo con planimetria"
+            }
+          },
+          {
+            "title": "Progetto e cronoprogramma",
+            "desc": "Definiamo materiali, finiture e le date di ogni fase, con una data di consegna precisa.",
+            "image": {
+              "src": "https://picsum.photos/seed/progetto-cronoprogramma/1600/1200",
+              "alt": "Progetto e cronoprogramma dei lavori con campioni di materiali e finiture"
+            }
+          },
+          {
+            "title": "Cantiere con referente unico",
+            "desc": "Un solo referente coordina le squadre e vi tiene aggiornati. Cantiere pulito e ordinato, ogni giorno.",
+            "image": {
+              "src": "https://picsum.photos/seed/cantiere-referente-unico/1600/1200",
+              "alt": "Referente di cantiere che coordina la squadra durante i lavori di ristrutturazione"
+            }
+          },
+          {
+            "title": "Consegna e garanzia",
+            "desc": "Controlli finali insieme, consegna dello spazio finito e garanzia 5 anni sulle opere.",
+            "image": {
+              "src": "https://picsum.photos/seed/consegna-e-garanzia/1600/1200",
+              "alt": "Consegna delle chiavi di un appartamento ristrutturato e finito a Roma"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Gallery",
+      "variant": "grid",
+      "props": {
+        "eyebrow": "I nostri lavori",
+        "title": "Alcuni dei nostri **lavori a Roma**",
+        "subtitle": "Una selezione di ristrutturazioni residenziali completate a Roma città e in provincia.",
+        "images": [
+          {
+            "src": "https://picsum.photos/seed/lavoro-ristrutturazione-completa/1600/1200",
+            "alt": "Zona giorno open space di un appartamento dopo la ristrutturazione completa",
+            "caption": "Ristrutturazione completa"
+          },
+          {
+            "src": "https://picsum.photos/seed/lavoro-bagno/1600/1200",
+            "alt": "Bagno rifatto con doccia e nuovi rivestimenti",
+            "caption": "Rifacimento bagno"
+          },
+          {
+            "src": "https://picsum.photos/seed/lavoro-cucina/1600/1200",
+            "alt": "Cucina nuova con impianti e finiture rinnovate",
+            "caption": "Nuova cucina"
+          },
+          {
+            "src": "https://picsum.photos/seed/lavoro-cappotto-infissi/1600/1200",
+            "alt": "Facciata di un edificio con cappotto termico e nuovi infissi",
+            "caption": "Cappotto termico e infissi"
+          },
+          {
+            "src": "https://picsum.photos/seed/lavoro-controsoffitti/1600/1200",
+            "alt": "Controsoffitti in cartongesso con illuminazione integrata",
+            "caption": "Cartongesso e controsoffitti"
+          },
+          {
+            "src": "https://picsum.photos/seed/lavoro-impianti/1600/1200",
+            "alt": "Impianto elettrico rifatto a norma durante il cantiere",
+            "caption": "Impianti a norma"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Testimonials",
+      "props": {
+        "eyebrow": "Dicono di noi",
+        "title": "Le parole di chi **ha già ristrutturato**",
+        "items": [
+          {
+            "quote": "Ristrutturato il nostro trilocale in 9 settimane, tempi rispettati e un solo referente per tutto.",
+            "name": "Marco T.",
+            "city": "Prati",
+            "role": ""
+          },
+          {
+            "quote": "Bagno rifatto senza sorprese sul preventivo, cantiere sempre pulito.",
+            "name": "Giulia R.",
+            "city": "EUR",
+            "role": ""
+          },
+          {
+            "quote": "Cappotto termico e nuovi infissi: bolletta scesa e casa più calda.",
+            "name": "Fam. De Santis",
+            "city": "Monteverde",
+            "role": ""
+          }
+        ]
+      }
+    },
+    {
+      "type": "FAQ",
+      "props": {
+        "eyebrow": "Le vostre domande",
+        "title": "Domande **frequenti**",
+        "subtitle": "Le risposte alle domande che ci fanno più spesso, prima di affidarci un cantiere.",
+        "items": [
+          {
+            "q": "Il sopralluogo e il preventivo sono gratuiti?",
+            "a": "Sì. Il sopralluogo e il preventivo dettagliato sono gratuiti e senza impegno: servono a capire l'intervento e a darvi un conto chiaro prima di decidere."
+          },
+          {
+            "q": "Quanto dura una ristrutturazione completa?",
+            "a": "Dipende dalla superficie e dagli interventi. Nel preventivo trovate il cronoprogramma con la data di consegna: i tempi concordati vengono rispettati."
+          },
+          {
+            "q": "Il prezzo del preventivo può cambiare in corso d'opera?",
+            "a": "Il preventivo è dettagliato voce per voce. Eventuali varianti si concordano e si mettono per iscritto prima di procedere: nessuna sorpresa a lavori iniziati."
+          },
+          {
+            "q": "Chi segue il cantiere?",
+            "a": "Un referente unico coordina tutte le squadre e vi tiene aggiornati. Avete una sola persona a cui rivolgervi per tutta la durata dei lavori."
+          },
+          {
+            "q": "In quali zone di Roma lavorate?",
+            "a": "Operiamo a Roma città e in zone come Prati, Aurelio, Monteverde ed EUR, oltre che in tutta la provincia di Roma."
+          },
+          {
+            "q": "Che garanzie offrite sui lavori?",
+            "a": "Offriamo una garanzia di 5 anni sulle opere. Siamo in possesso di attestazione SOA cat. OG1 e di assicurazione RC opere."
+          },
+          {
+            "q": "Posso usufruire del Bonus Ristrutturazione?",
+            "a": "Sì: gli interventi possono rientrare nel Bonus Ristrutturazione, con detrazione del 50% per la prima casa e del 36% per gli altri immobili. Vi aiutiamo con la documentazione."
+          }
+        ]
+      }
+    },
+    {
+      "type": "CtaBanner",
+      "props": {
+        "eyebrow": "",
+        "title": "Iniziamo dal **sopralluogo gratuito**",
+        "subtitle": "Un unico referente, un preventivo dettagliato e tempi concordati. Raccontateci il vostro progetto e ricevete un conto chiaro prima di iniziare.",
+        "cta": { "label": "Richiedi il preventivo gratuito", "href": "#contatti", "style": "primary" },
+        "showPhone": true,
+        "note": "Sopralluogo gratuito · Nessun impegno · Referente unico di cantiere"
+      }
+    },
+    {
+      "type": "ContactCTA",
+      "props": {
+        "eyebrow": "Contatti",
+        "headline": "Chiedete il vostro **preventivo gratuito**",
+        "subtitle": "Compilate il modulo o chiamateci: fissiamo il sopralluogo gratuito e vi prepariamo un preventivo dettagliato. Rispondiamo entro 24 ore lavorative.",
+        "showForm": true,
+        "formTitle": "Richiedete il preventivo gratuito",
+        "formNote": "I vostri dati restano riservati e non vengono ceduti a terzi. Orari: Lun–Ven 8:30–18:30."
+      }
+    },
+    {
+      "type": "Footer",
+      "props": {
+        "tagline": "Ristrutturazioni chiavi in mano a Roma da 18 anni. Un referente unico, preventivi dettagliati e garanzia 5 anni sulle opere.",
+        "columns": [
+          {
+            "title": "Servizi",
+            "links": [
+              { "label": "Ristrutturazione completa", "href": "#servizi" },
+              { "label": "Bagni e cucine", "href": "#servizi" },
+              { "label": "Cappotto termico", "href": "#servizi" },
+              { "label": "Impianti a norma", "href": "#servizi" }
+            ]
+          },
+          {
+            "title": "Azienda",
+            "links": [
+              { "label": "Lavori", "href": "#lavori" },
+              { "label": "Come funziona", "href": "#processo" },
+              { "label": "Domande frequenti", "href": "#faq" },
+              { "label": "Contatti", "href": "#contatti" }
+            ]
+          },
+          {
+            "title": "Legale",
+            "links": [
+              { "label": "Privacy Policy", "href": "#" },
+              { "label": "Cookie Policy", "href": "#" }
+            ]
+          }
+        ],
+        "legalNote": "RomaRistruttura S.r.l. · P.IVA 01234567890 · Via Prenestina 210, 00171 Roma RM · Attestazione SOA cat. OG1 · Assicurazione RC opere"
+      }
+    }
+  ]
+}

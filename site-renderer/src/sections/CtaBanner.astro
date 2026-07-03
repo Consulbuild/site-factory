@@ -1,0 +1,48 @@
+---
+import type { Cta, PropsOf, SiteConfig } from "@/lib/schema";
+import Button from "@/components/Button.astro";
+import { renderAccent, renderDotted, telHref } from "@/lib/ui";
+
+interface Props {
+  data: PropsOf<"CtaBanner">;
+  site: SiteConfig;
+  variant?: string;
+}
+const { data, site } = Astro.props;
+
+// Il banner di rilancio dei siti di riferimento ("INIZIA LA TUA
+// RISTRUTTURAZIONE"): fondo scuro, titolo con frase accent, CTA piena +
+// telefono outline, microcopy di rassicurazione in maiuscoletto sotto.
+// Compattato in live review 2026-07-03: padding fisso 64px (non section-pad)
+// e margini interni ridotti — il banner è un rilancio, non una sezione piena.
+const phoneCta: Cta | null =
+  data.showPhone && site.contact.phone
+    ? { label: site.contact.phone, href: telHref(site.contact.phone), style: "secondary" }
+    : null;
+---
+
+<section class="section-dark py-16" aria-labelledby="banner-title">
+  <div class="container-site mx-auto max-w-3xl text-center">
+    {data.eyebrow && <p class="eyebrow eyebrow--center">{data.eyebrow}</p>}
+
+    <h2 id="banner-title" class="t-h2 text-balance" set:html={renderAccent(data.title)} />
+
+    {data.subtitle && (
+      <p class="t-lead mx-auto mt-4 max-w-[52ch] text-pretty">
+        {data.subtitle}
+      </p>
+    )}
+
+    <div class="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+      <Button cta={data.cta} />
+      {phoneCta && <Button cta={phoneCta} />}
+    </div>
+
+    {data.note && (
+      <p
+        class="t-caption mt-5 font-semibold uppercase tracking-[0.1em] text-white/55"
+        set:html={renderDotted(data.note)}
+      />
+    )}
+  </div>
+</section>

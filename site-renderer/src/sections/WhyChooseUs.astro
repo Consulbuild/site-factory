@@ -1,0 +1,38 @@
+---
+import type { PropsOf, SiteConfig } from "@/lib/schema";
+import Icon from "@/components/Icon.astro";
+import SectionHeader from "@/components/SectionHeader.astro";
+import { sectionPad } from "@/lib/ui";
+
+interface Props {
+  data: PropsOf<"WhyChooseUs">;
+  site: SiteConfig;
+  variant?: string;
+}
+const { data } = Astro.props;
+
+// Le "pill di garanzia" dei siti di riferimento: icona in cerchio outline
+// accent + titolo maiuscolo breve + micro-caption. Compatte, in fila.
+---
+
+<section class:list={[sectionPad, "bg-surface"]} aria-labelledby="perche-title">
+  <div class="container-site">
+    <SectionHeader id="perche-title" eyebrow={data.eyebrow} title={data.title} sub={data.subtitle} />
+
+    <ul class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(230px,1fr))]">
+      {data.benefits.map((benefit, i) => (
+        <li
+          class="surface-card flex items-start gap-4 p-5"
+        >
+          <span class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-accent/40 text-accent-strong">
+            <Icon name={benefit.icon || "check"} class="h-5 w-5" />
+          </span>
+          <div>
+            <h3 class="t-caption font-bold uppercase tracking-[0.08em]">{benefit.title}</h3>
+            <p class="t-caption mt-1 text-muted">{benefit.desc}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

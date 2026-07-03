@@ -1,0 +1,84 @@
+---
+import SubPage from "@/layouts/SubPage.astro";
+import Icon from "@/components/Icon.astro";
+import { parseSiteConfig } from "@/lib/schema";
+import siteData from "../../blueprints/conversione-locale-v1/blueprint.json";
+
+// DOCUMENTO DI ESEMPIO — termini d'uso essenziali per un sito vetrina.
+// La pipeline (Fase 3) sostituirà i contenuti con la versione definitiva.
+const site = parseSiteConfig(siteData);
+const { meta, contact } = site;
+const footer = site.sections.find((s) => s.type === "Footer");
+const legalNote = footer?.props.legalNote ?? meta.businessName;
+---
+
+<SubPage pageTitle="Termini e condizioni" noindex={true}>
+  <section class="bg-bg py-16 md:py-20">
+    <div class="container-site">
+      <header class="max-w-3xl">
+        <p class="eyebrow">Documento legale</p>
+        <h1 class="t-h1 mt-4 text-balance">Termini e <span class="accent-word">condizioni</span></h1>
+        <p class="t-lead mt-4">Condizioni d'uso di questo sito web.</p>
+      </header>
+
+      <p class="mt-8 max-w-[70ch] rounded-input border border-accent-strong/40 bg-accent-soft px-5 py-4 t-caption font-medium">
+        <strong>Anteprima</strong> — prima della messa online sostituiremo questo
+        documento con la versione verificata e personalizzata per la tua attività.
+      </p>
+
+      <article class="legal-prose mt-4">
+        <h2>1. Oggetto</h2>
+        <p>
+          Questo sito, gestito da <strong>{legalNote}</strong> con sede in
+          {contact.address}, ha finalità informative e di presentazione dei servizi
+          dell'impresa. L'accesso e la navigazione comportano l'accettazione dei
+          presenti termini.
+        </p>
+
+        <h2>2. Contenuti e preventivi</h2>
+        <p>
+          Le informazioni pubblicate (descrizioni dei servizi, tempi indicativi,
+          fotografie dei lavori) hanno valore illustrativo e non costituiscono
+          offerta contrattuale. Ogni incarico è regolato esclusivamente dal
+          preventivo scritto e dal contratto sottoscritti tra le parti.
+        </p>
+
+        <h2>3. Proprietà intellettuale</h2>
+        <p>
+          Testi, immagini, loghi e ogni altro contenuto del sito sono di proprietà
+          del titolare o dei rispettivi aventi diritto. Non è consentita la
+          riproduzione, anche parziale, senza autorizzazione scritta.
+        </p>
+
+        <h2>4. Limitazione di responsabilità</h2>
+        <p>
+          Il titolare si impegna a mantenere aggiornate le informazioni ma non
+          garantisce l'assenza di imprecisioni od omissioni, né l'ininterrotta
+          disponibilità del sito, e non risponde dei contenuti di eventuali siti
+          terzi raggiungibili tramite link.
+        </p>
+
+        <h2>5. Modifiche</h2>
+        <p>
+          I presenti termini possono essere modificati in qualsiasi momento; fa fede
+          la versione pubblicata su questa pagina.
+        </p>
+
+        <h2>6. Legge applicabile e foro</h2>
+        <p>
+          I presenti termini sono regolati dalla legge italiana. Per ogni
+          controversia è competente il foro del luogo in cui ha sede il titolare,
+          fatto salvo il foro inderogabile del consumatore ove applicabile.
+        </p>
+      </article>
+
+      {/* dopo la lettura sei in fondo: il ritorno serve anche qui */}
+      <div class="mt-14 max-w-[70ch] border-t border-line pt-8">
+        <a href="/" class="btn btn-secondary">
+          <Icon name="arrowLeft" class="h-4 w-4" />
+          Torna alla pagina principale
+        </a>
+      </div>
+    </div>
+  </section>
+</SubPage>

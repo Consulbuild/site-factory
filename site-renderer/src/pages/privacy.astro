@@ -1,0 +1,104 @@
+---
+import SubPage from "@/layouts/SubPage.astro";
+import Icon from "@/components/Icon.astro";
+import { parseSiteConfig } from "@/lib/schema";
+import siteData from "../../blueprints/conversione-locale-v1/blueprint.json";
+
+// DOCUMENTO DI ESEMPIO — struttura ex art. 13 GDPR con i dati del sito già
+// iniettati. La pipeline (Fase 3) sostituirà i contenuti con l'informativa
+// definitiva del cliente; il banner giallo sparisce in quel momento.
+const site = parseSiteConfig(siteData);
+const { meta, contact } = site;
+const footer = site.sections.find((s) => s.type === "Footer");
+const legalNote = footer?.props.legalNote ?? meta.businessName;
+---
+
+<SubPage pageTitle="Informativa privacy" noindex={true}>
+  <section class="bg-bg py-16 md:py-20">
+    <div class="container-site">
+      <header class="max-w-3xl">
+        <p class="eyebrow">Documento legale</p>
+        <h1 class="t-h1 mt-4 text-balance">Informativa <span class="accent-word">privacy</span></h1>
+        <p class="t-lead mt-4">Ai sensi dell'art. 13 del Regolamento (UE) 2016/679 ("GDPR").</p>
+      </header>
+
+      <p class="mt-8 max-w-[70ch] rounded-input border border-accent-strong/40 bg-accent-soft px-5 py-4 t-caption font-medium">
+        <strong>Anteprima</strong> — prima della messa online sostituiremo questo
+        documento con l'informativa verificata e personalizzata per la tua attività.
+      </p>
+
+      <article class="legal-prose mt-4">
+        <h2>1. Titolare del trattamento</h2>
+        <p>
+          Il titolare del trattamento è <strong>{legalNote}</strong>, con sede in
+          {contact.address}. Contatti: <a href={`mailto:${contact.email}`}>{contact.email}</a>
+          {contact.phone && <> · tel. {contact.phone}</>}.
+        </p>
+
+        <h2>2. Dati trattati e finalità</h2>
+        <p>
+          Attraverso il modulo di contatto raccogliamo: nome e cognome, numero di
+          telefono, indirizzo e-mail (facoltativo), città (facoltativa) e la
+          descrizione dei lavori richiesti. I dati sono trattati esclusivamente per:
+        </p>
+        <ul>
+          <li>rispondere alla richiesta di preventivo o di contatto;</li>
+          <li>ricontattare l'interessato in merito alla richiesta stessa.</li>
+        </ul>
+
+        <h2>3. Base giuridica</h2>
+        <p>
+          Il trattamento si fonda sull'art. 6, par. 1, lett. b) GDPR: esecuzione di
+          misure precontrattuali adottate su richiesta dell'interessato. Il
+          conferimento dei dati contrassegnati come obbligatori è necessario per
+          dare seguito alla richiesta; in loro assenza non potremo risponderti.
+        </p>
+
+        <h2>4. Conservazione</h2>
+        <p>
+          I dati sono conservati per il tempo necessario a gestire la richiesta e,
+          in caso di successivo incarico, per la durata del rapporto e i termini di
+          legge; in assenza di seguito, sono cancellati entro 12 mesi.
+        </p>
+
+        <h2>5. Destinatari</h2>
+        <p>
+          I dati non sono diffusi né ceduti a terzi. Possono venirne a conoscenza i
+          soli soggetti autorizzati dal titolare e i fornitori tecnici che ospitano
+          il sito, nominati responsabili del trattamento ex art. 28 GDPR.
+        </p>
+
+        <h2>6. Statistiche di navigazione (senza cookie)</h2>
+        <p>
+          Questo sito utilizza <strong>Umami</strong>, uno strumento di statistica
+          che non usa cookie né identificatori persistenti e raccoglie dati in forma
+          aggregata e anonimizzata. Per questo motivo, in conformità alle Linee guida
+          del Garante del 10 giugno 2021, non è richiesto alcun banner di consenso.
+        </p>
+
+        <h2>7. Diritti dell'interessato</h2>
+        <p>
+          Puoi esercitare in ogni momento i diritti di cui agli artt. 15–22 GDPR
+          (accesso, rettifica, cancellazione, limitazione, opposizione, portabilità)
+          scrivendo a <a href={`mailto:${contact.email}`}>{contact.email}</a>. Hai
+          inoltre il diritto di proporre reclamo al Garante per la protezione dei
+          dati personali (<a href="https://www.garanteprivacy.it" rel="noopener">garanteprivacy.it</a>).
+        </p>
+
+        <h2>8. Aggiornamenti</h2>
+        <p>
+          La presente informativa può essere aggiornata; la versione pubblicata su
+          questa pagina è quella vigente.
+        </p>
+      </article>
+
+      {/* dopo la lettura sei in fondo: il ritorno serve anche qui */}
+      <div class="mt-14 max-w-[70ch] border-t border-line pt-8">
+        <a href="/" class="btn btn-secondary">
+          <Icon name="arrowLeft" class="h-4 w-4" />
+          Torna alla pagina principale
+        </a>
+      </div>
+    </div>
+  </section>
+</SubPage>

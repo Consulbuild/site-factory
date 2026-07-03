@@ -1,0 +1,61 @@
+---
+import "../styles/global.css";
+import type { SiteConfig } from "@/lib/schema";
+import { PRESET_FONTS, customFontsHref, type Preset } from "@/lib/presets";
+
+interface Props {
+  site: SiteConfig;
+  pageTitle?: string; // sottopagine (legali, grazie): "Titolo · NomeAzienda"
+  noindex?: boolean; // sottopagine di servizio fuori dai motori
+}
+const { site, pageTitle, noindex = false } = Astro.props;
+const { brand, meta } = site;
+const preset = brand.preset as Preset;
+
+// Inietta INLINE solo i token brand realmente forniti dal cliente: vincono sul
+// preset, ma ciò che il cliente non dà resta governato dal preset (neutri inclusi).
+const p = brand.palette;
+const vars: string[] = [`--brand-primary:${p.primary}`, `--brand-accent:${p.accent}`];
+if (p.secondary) vars.push(`--brand-secondary:${p.secondary}`);
+if (p.bg) vars.push(`--brand-bg:${p.bg}`);
+if (p.surface) vars.push(`--brand-surface:${p.surface}`);
+if (p.ink) vars.push(`--brand-ink:${p.ink}`);
+if (p.muted) vars.push(`--brand-muted:${p.muted}`);
+if (brand.fonts.heading) vars.push(`--brand-font-heading:'${brand.fonts.heading}'`);
+if (brand.fonts.body) vars.push(`--brand-font-body:'${brand.fonts.body}'`);
+if (brand.fonts.mono) vars.push(`--brand-font-mono:'${brand.fonts.mono}'`);
+const brandStyle = vars.join(";");
+
+// Font: override del cliente se presente, altrimenti i font del preset.
+const overrideFonts = [brand.fonts.heading, brand.fonts.body, brand.fonts.mono].filter(
+  (x): x is string => !!x,
+);
+const fontsHref = overrideFonts.length ? customFontsHref(overrideFonts) : PRESET_FONTS[preset];
+
+const title = pageTitle
+  ? `${pageTitle} · ${meta.businessName}`
+  : meta.seoTitle || `${meta.businessName}${meta.city ? " · " + meta.city : ""}`;
+const description =
+  meta.seoDescription ||
+  `${meta.businessName}${meta.industry ? " — " + meta.industry : ""}${meta.city ? " a " + meta.city : ""}.`;
+---
+
+<!doctype html>
+<html lang="it" data-preset={preset} style={brandStyle}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href={fontsHref} />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

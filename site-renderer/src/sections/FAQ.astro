@@ -1,0 +1,39 @@
+---
+import type { PropsOf, SiteConfig } from "@/lib/schema";
+import Icon from "@/components/Icon.astro";
+import SectionHeader from "@/components/SectionHeader.astro";
+
+interface Props {
+  data: PropsOf<"FAQ">;
+  site: SiteConfig;
+  variant?: string;
+}
+const { data } = Astro.props;
+
+// Accordion centrato a misura di prosa, come nei siti di riferimento.
+// details/summary nativi: tastiera e screen reader gratis, zero JS.
+// Compattata in live review 2026-07-03: padding fisso 64px e margini ridotti.
+---
+
+<section class="bg-bg py-16" id="faq" aria-labelledby="faq-title">
+  <div class="container-site">
+    <SectionHeader id="faq-title" eyebrow={data.eyebrow} title={data.title} sub={data.subtitle} />
+
+    <div class="mx-auto mt-8 max-w-3xl space-y-3">
+      {data.items.map((item, i) => (
+        <details
+          class="group rounded-input border border-line bg-surface px-5 open:border-ink/25 sm:px-6"
+        >
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-4.5 font-semibold [&::-webkit-details-marker]:hidden">
+            {item.q}
+            <Icon
+              name="chevronDown"
+              class="h-5 w-5 shrink-0 text-muted group-open:rotate-180"
+            />
+          </summary>
+          <p class="max-w-[62ch] pb-5 text-muted">{item.a}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>

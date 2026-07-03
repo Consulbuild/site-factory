@@ -1,0 +1,56 @@
+---
+import type { PropsOf, SiteConfig } from "@/lib/schema";
+import Button from "@/components/Button.astro";
+import Icon from "@/components/Icon.astro";
+import { renderAccent, sectionPad } from "@/lib/ui";
+
+interface Props {
+  data: PropsOf<"FeatureHighlight">;
+  site: SiteConfig;
+  variant?: string;
+}
+const { data, variant = "right" } = Astro.props;
+
+// Split foto + argomento singolo: l'approfondimento di UN punto di forza.
+// variant = lato della FOTO. Il testo segue la grammatica standard
+// (eyebrow, titolo con accent, checklist con spunte).
+const imageRight = variant !== "left";
+---
+
+<section class:list={[sectionPad, "bg-bg"]} aria-labelledby="feature-title">
+  <div class="container-site grid items-center gap-x-12 gap-y-10 lg:grid-cols-12">
+    <div class:list={["lg:col-span-5", imageRight ? "lg:order-1" : "lg:order-2"]}>
+      {data.eyebrow && <p class="eyebrow">{data.eyebrow}</p>}
+      <h2 id="feature-title" class="t-h2 mt-4 text-balance" set:html={renderAccent(data.title)} />
+      <p class="mt-5 max-w-[58ch] text-pretty text-muted">{data.body}</p>
+
+      {data.bullets.length > 0 && (
+        <ul class="mt-6 space-y-2.5">
+          {data.bullets.map((b) => (
+            <li class="flex items-start gap-2.5 font-medium">
+              <Icon name="check" class="mt-1 h-4 w-4 shrink-0 text-accent" />
+              {b}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {data.cta && (
+        <div class="mt-8">
+          <Button cta={data.cta} />
+        </div>
+      )}
+    </div>
+
+    <div
+      class:list={["lg:col-span-7", imageRight ? "lg:order-2" : "lg:order-1"]}
+    >
+      <img
+        src={data.image.src}
+        alt={data.image.alt}
+        class="media-frame aspect-[4/3] w-full object-cover shadow-card"
+        loading="lazy"
+      />
+    </div>
+  </div>
+</section>

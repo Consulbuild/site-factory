@@ -1,0 +1,385 @@
+{
+  "blueprint": "conversione-locale-v1",
+  "version": 1,
+  "description": "Landing di conversione per PMI locali (golden path SSC). Gli agenti riempiono SOLO gli slot elencati; tutto il resto è FISSO (struttura, ordine sezioni, varianti, label delle CTA, campi del form, nav). I valori nel blueprint.json sono gli esempi d'oro: qualità e taglio da replicare, mai da copiare letteralmente.",
+  "rules": {
+    "globali": [
+      "Lingua: italiano. Tono: solido, diretto, operativo (vedi PRODUCT.md). Mai copy vago tipo 'qualità e professionalità al tuo servizio'.",
+      "I limiti maxChars sono ENFORCED dallo schema Zod: superarli = site.json rifiutato prima della build.",
+      "Nei campi con accentMarker=true: evidenziare UNA sola frase con **...** (la frase più concreta/di valore, non parole a caso).",
+      "Nessuna parola singola oltre 18 caratteri nei titoli (i maiuscoli sfondano il mobile a 390px).",
+      "Promesse concrete e verificabili (tempi, garanzie, processo), mai iperboli."
+    ],
+    "fissi": [
+      "sections[*].type, ordine e variant — il ritmo scuro/chiaro dipende dall'ordine",
+      "Header.nav e tutte le label/href delle CTA (microcopy di conversione già testato)",
+      "ContactCTA: formTitle, campi del form",
+      "Footer.columns (link utili + legali)",
+      "Riga informativa del form (art. 13 GDPR, link /privacy) e link 'Informativa privacy' nel footer: obbligatori, non rimovibili dagli agenti"
+    ]
+  },
+  "pipeline": [
+    "intake",
+    "palette",
+    "copy",
+    "images"
+  ],
+  "slots": [
+    {
+      "path": "meta.businessName",
+      "agent": "intake",
+      "note": "dal form Tally, verbatim"
+    },
+    {
+      "path": "meta.industry",
+      "agent": "intake"
+    },
+    {
+      "path": "meta.city",
+      "agent": "intake"
+    },
+    {
+      "path": "meta.slug",
+      "agent": "intake",
+      "note": "kebab-case dal nome azienda"
+    },
+    {
+      "path": "contact.phone",
+      "agent": "intake"
+    },
+    {
+      "path": "contact.whatsapp",
+      "agent": "intake"
+    },
+    {
+      "path": "contact.email",
+      "agent": "intake"
+    },
+    {
+      "path": "contact.address",
+      "agent": "intake"
+    },
+    {
+      "path": "contact.social",
+      "agent": "intake",
+      "note": "solo i social realmente forniti"
+    },
+    {
+      "path": "brand.logo",
+      "agent": "intake",
+      "note": "null se il cliente non ha un logo"
+    },
+    {
+      "path": "brand.tone",
+      "agent": "intake",
+      "note": "aggettivi dal form (es. 'pulito e minimal')"
+    },
+    {
+      "path": "brand.preset",
+      "agent": "palette",
+      "note": "meridian di default; altro preset SOLO se il form chiede esplicitamente un'estetica diversa (minimal→atelier, futuristico→nova, ...)"
+    },
+    {
+      "path": "brand.palette.primary",
+      "agent": "palette",
+      "constraints": {
+        "type": "hex"
+      },
+      "note": "IL colore di marca: guida CTA e accenti. Contrasto ≥4.5:1 su bianco (il testo dei bottoni è bianco). Se il cliente ha colori aziendali, partire da quelli."
+    },
+    {
+      "path": "brand.palette.accent",
+      "agent": "palette",
+      "constraints": {
+        "type": "hex"
+      },
+      "note": "di norma = primary (un solo colore di marca, come nei siti di riferimento)"
+    },
+    {
+      "path": "meta.seoTitle",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 70
+      },
+      "note": "Nome · servizio principale + città"
+    },
+    {
+      "path": "meta.seoDescription",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 160
+      }
+    },
+    {
+      "path": "sections[1].props.eyebrow",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 48
+      },
+      "note": "hero: la promessa d'ingaggio immediata (gratuità/velocità)"
+    },
+    {
+      "path": "sections[1].props.title",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 52,
+        "accentMarker": true
+      },
+      "note": "hero: il beneficio principale, non il nome del servizio"
+    },
+    {
+      "path": "sections[1].props.subtitle",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 180
+      },
+      "note": "come lo mantieni: processo, unicità, rassicurazione"
+    },
+    {
+      "path": "sections[2].props.items[*].value",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 26
+      },
+      "note": "trust bar: 3 punti di forza secchi in maiuscolo"
+    },
+    {
+      "path": "sections[2].props.items[*].label",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 60
+      },
+      "note": "una riga che concretizza il punto sopra"
+    },
+    {
+      "path": "sections[3].props.title",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 60,
+        "accentMarker": true
+      }
+    },
+    {
+      "path": "sections[3].props.subtitle",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 160
+      }
+    },
+    {
+      "path": "sections[3].props.items[*].title",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 40
+      },
+      "note": "servizi REALI del cliente (dal form), 3-4 card"
+    },
+    {
+      "path": "sections[3].props.items[*].desc",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 110
+      }
+    },
+    {
+      "path": "sections[3].props.items[*].bullets[*]",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 36
+      },
+      "note": "3 voci concrete incluse nel servizio"
+    },
+    {
+      "path": "sections[4].props.title",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 60,
+        "accentMarker": true
+      }
+    },
+    {
+      "path": "sections[4].props.subtitle",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 160
+      }
+    },
+    {
+      "path": "sections[4].props.images[*].caption",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 28
+      },
+      "note": "tipo di lavoro mostrato; l'image agent genera la foto DA questa caption (dipendenza)"
+    },
+    {
+      "path": "sections[5].props.title",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 60,
+        "accentMarker": true
+      }
+    },
+    {
+      "path": "sections[5].props.subtitle",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 160
+      }
+    },
+    {
+      "path": "sections[5].props.steps[*].title",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 36
+      },
+      "note": "4 passi del processo del cliente, in sequenza reale"
+    },
+    {
+      "path": "sections[5].props.steps[*].desc",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 140
+      }
+    },
+    {
+      "path": "sections[6].props.eyebrow",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 40
+      }
+    },
+    {
+      "path": "sections[6].props.headline",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 60,
+        "accentMarker": true
+      },
+      "note": "abbatte l'ultima obiezione ('non deve essere complicato')"
+    },
+    {
+      "path": "sections[6].props.subtitle",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 180
+      }
+    },
+    {
+      "path": "sections[6].props.formNote",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 120
+      },
+      "note": "rassicurazione su tempi di risposta e privacy"
+    },
+    {
+      "path": "sections[7].props.subtitle",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 160
+      }
+    },
+    {
+      "path": "sections[7].props.items[*].q",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 90
+      },
+      "note": "le 5 VERE obiezioni del settore del cliente"
+    },
+    {
+      "path": "sections[7].props.items[*].a",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 420
+      },
+      "note": "risposta diretta che chiude l'obiezione, mai evasiva"
+    },
+    {
+      "path": "sections[8].props.title",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 60,
+        "accentMarker": true
+      }
+    },
+    {
+      "path": "sections[8].props.subtitle",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 180
+      }
+    },
+    {
+      "path": "sections[8].props.note",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 90
+      },
+      "note": "tripletta di rassicurazione separata da ·"
+    },
+    {
+      "path": "sections[9].props.subtitle",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 180
+      }
+    },
+    {
+      "path": "sections[10].props.tagline",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 180
+      },
+      "note": "chi è l'azienda in una frase, con anzianità se disponibile"
+    },
+    {
+      "path": "sections[10].props.legalNote",
+      "agent": "copy",
+      "constraints": {
+        "maxChars": 90
+      },
+      "note": "ragione sociale · P.IVA (obbligo art. 35 DPR 633/72) · REA e capitale sociale se società di capitali (art. 2250 c.c.) — dal form"
+    },
+    {
+      "path": "sections[1].props.image",
+      "agent": "images",
+      "spec": {
+        "aspect": "16/9 full-bleed",
+        "width": 2000,
+        "role": "hero"
+      },
+      "note": "L'ambiente finito più aspirazionale del settore del cliente, luce naturale, NO persone in primo piano, NO testo. Deve reggere un overlay scuro: evitare immagini già scure a sinistra."
+    },
+    {
+      "path": "sections[3].props.items[*].image",
+      "agent": "images",
+      "spec": {
+        "aspect": "4/3",
+        "width": 1200,
+        "role": "card servizio"
+      },
+      "note": "Una per card, soggetto = il servizio della card (items[i].title). Stile coerente tra le 4: stessa luce, stesso registro fotografico."
+    },
+    {
+      "path": "sections[4].props.images[*].src",
+      "agent": "images",
+      "spec": {
+        "aspect": "4/3",
+        "width": 1200,
+        "role": "gallery lavori"
+      },
+      "dependsOn": "sections[4].props.images[*].caption",
+      "note": "7 foto 'lavori finiti' realistiche (non da catalogo patinato). Il soggetto DEVE corrispondere alla caption scritta dal copywriter; aggiornare anche alt di conseguenza."
+    },
+    {
+      "path": "sections[4].props.images[*].alt",
+      "agent": "images",
+      "constraints": {
+        "maxChars": 140
+      },
+      "note": "descrive la foto generata, parlante e specifico"
+    }
+  ]
+}

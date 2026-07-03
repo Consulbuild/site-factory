@@ -1,0 +1,44 @@
+---
+import SubPage from "@/layouts/SubPage.astro";
+import Icon from "@/components/Icon.astro";
+import { parseSiteConfig } from "@/lib/schema";
+import { telHref } from "@/lib/ui";
+import siteData from "../../blueprints/conversione-locale-v1/blueprint.json";
+
+// Thank-you page: destinazione del form dopo l'invio. Conferma netta,
+// aspettative chiare (24h) e la chiamata come scorciatoia per chi ha fretta.
+const site = parseSiteConfig(siteData);
+const { contact } = site;
+---
+
+<SubPage pageTitle="Richiesta inviata" noindex={true}>
+  <section class="bg-bg py-16 md:py-24">
+    <div class="container-site max-w-2xl text-center">
+      <span class="mx-auto grid h-20 w-20 place-items-center rounded-full bg-accent-soft text-accent-strong">
+        <Icon name="check" class="h-10 w-10" />
+      </span>
+
+      <p class="eyebrow eyebrow--center mt-8">Fatto</p>
+      <h1 class="t-h1 mt-4 text-balance">Richiesta <span class="accent-word">inviata</span>!</h1>
+      <p class="t-lead mx-auto mt-5 max-w-[46ch] text-pretty">
+        Grazie per averci scritto: ti ricontattiamo entro 24 ore lavorative al
+        numero che hai indicato per fissare il sopralluogo gratuito.
+      </p>
+
+      <div class="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+        {contact.phone && (
+          <a href={telHref(contact.phone)} class="btn btn-primary">
+            <Icon name="phone" class="h-4 w-4" />
+            Hai fretta? Chiamaci ora
+          </a>
+        )}
+        <a href="/" class="btn btn-secondary">Torna al sito</a>
+      </div>
+
+      <p class="t-caption mt-8 font-semibold uppercase tracking-[0.1em] text-muted">
+        Sopralluogo gratuito · Nessun impegno
+      </p>
+    </div>
+  </section>
+
+</SubPage>

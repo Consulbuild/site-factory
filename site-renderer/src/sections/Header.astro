@@ -1,0 +1,116 @@
+---
+import type { PropsOf, SiteConfig } from "@/lib/schema";
+import Icon from "@/components/Icon.astro";
+import { ctaClass, telHref } from "@/lib/ui";
+
+interface Props {
+  data: PropsOf<"Header">;
+  site: SiteConfig;
+  variant?: string;
+}
+const { data, site } = Astro.props;
+const { brand, meta, contact } = site;
+
+// Header chiaro con nav centrata e riga accent sotto (scelto in live review
+// 2026-07-03 al posto della barra scura): logo a sinistra — finché il cliente
+// non fornisce brand.logo (slot intake) si mostra un monogramma sulla lettera
+// iniziale — menu al centro, telefono + CTA accent a destra. Sticky.
+// Sotto md la nav diventa un disclosure nativo details/summary (pannello
+// ancorato all'header sticky); sotto lg il telefono resta come icona 44px:
+// il visitatore da ads mobile è call-first, il tap-to-call non si nasconde.
+// La variante "transparent" dello schema viene resa comunque solida: la CTA
+// deve restare sempre leggibile.
+---
+
+<header class="sticky top-0 z-50 border-b-2 border-accent bg-bg">
+  <div class="container-site grid h-16 grid-cols-[1fr_auto] items-center gap-3 md:h-[4.5rem] md:grid-cols-[1fr_auto_1fr] md:gap-6">
+    <a href="/#top" class="flex min-w-0 items-center gap-2.5" aria-label={meta.businessName}>
+      {brand.logo ? (
+        <img src={brand.logo.src} alt={brand.logo.alt} class="h-9 w-auto md:h-10" />
+      ) : (
+        <>
+          <span class="grid h-9 w-9 shrink-0 place-items-center rounded-[8px] bg-primary font-heading text-[1.1rem] font-extrabold text-white" aria-hidden="true">{meta.businessName.charAt(0)}</span>
+          <span class="hidden truncate font-heading text-[0.95rem] font-extrabold uppercase tracking-tight text-ink lg:block">{meta.businessName}</span>
+        </>
+      )}
+    </a>
+
+    {data.nav.length > 0 && (
+      <nav aria-label="Principale" class="hidden md:block">
+        <ul class="flex items-center gap-8">
+          {data.nav.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="t-caption font-semibold text-ink/70 hover:text-ink"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )}
+
+    <div class="flex shrink-0 items-center justify-end gap-1.5 md:gap-3">
+      {data.showPhone && contact.phone && (
+        <>
+          <a
+            href={telHref(contact.phone)}
+            class="grid h-11 w-11 place-items-center rounded-[8px] text-ink hover:bg-surface lg:hidden"
+            aria-label={`Chiama ${contact.phone}`}
+          >
+            <Icon name="phone" class="h-5 w-5" />
+          </a>
+          <a
+            href={telHref(contact.phone)}
+            class="hidden items-center gap-2 t-caption font-semibold text-muted hover:text-ink lg:inline-flex"
+          >
+            <Icon name="phone" class="h-4 w-4" />
+            {contact.phone}
+          </a>
+        </>
+      )}
+      {data.cta && (
+        <a href={data.cta.href} class:list={[ctaClass(data.cta.style), "btn-sm"]}>
+          {data.cta.label}
+        </a>
+      )}
+      {data.nav.length > 0 && (
+        <details class="group md:hidden" data-mobile-nav>
+          <summary
+            class="grid h-11 w-11 cursor-pointer list-none place-items-center rounded-[8px] text-ink hover:bg-surface [&::-webkit-details-marker]:hidden"
+            aria-label="Menu"
+          >
+            <Icon name="menu" class="h-5 w-5 group-open:hidden" />
+            <Icon name="close" class="hidden h-5 w-5 group-open:block" />
+          </summary>
+          {/* Il pannello si aggancia all'header (sticky = positioned), non al details */}
+          <nav aria-label="Principale" class="absolute inset-x-0 top-full border-b border-line bg-bg shadow-float">
+            <ul class="container-site divide-y divide-line py-2">
+              {data.nav.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    class="block py-3.5 text-[0.95rem] font-semibold text-ink/80 hover:text-ink"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </details>
+      )}
+    </div>
+  </div>
+</header>
+
+<script is:inline>
+  // Chiude il menu mobile al tap su un'ancora (details non lo fa da solo).
+  document.querySelectorAll("[data-mobile-nav]").forEach((d) => {
+    d.addEventListener("click", (e) => {
+      if (e.target instanceof Element && e.target.closest("a")) d.removeAttribute("open");
+    });
+  });
+</script>

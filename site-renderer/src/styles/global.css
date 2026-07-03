@@ -1,0 +1,741 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   SITE FACTORY — TOKEN CONTRACT + STYLE PRESETS
+   ----------------------------------------------------------------------------
+   Cascata (dal più debole al più forte):
+     :root (STANDARD ConsulBuild = preset "meridian")  <  [data-preset="x"]  <
+     style inline su <html> (palette cliente)
+   Le utility Tailwind (bg-surface, text-ink, rounded-card, shadow-card, font-*)
+   puntano a --brand-*. I preset ridefiniscono i token "di forma" (raggi, ombre,
+   motion, bordi, spacing, scala e CASSA tipografica), non solo i colori, così lo
+   STESSO componente cambia estetica cambiando solo data-preset.
+   I colori brand del cliente vengono iniettati inline da Base.astro (vincono).
+   Lo standard è documentato in DESIGN.md.
+============================================================================ */
+
+@theme {
+  --color-primary: var(--brand-primary);
+  --color-primary-hover: var(--brand-primary-hover);
+  --color-secondary: var(--brand-secondary);
+  --color-accent: var(--brand-accent);
+  --color-accent-hover: var(--brand-accent-hover);
+  --color-accent-soft: var(--brand-accent-soft);
+  --color-accent-strong: var(--brand-accent-strong);
+  --color-bg: var(--brand-bg);
+  --color-surface: var(--brand-surface);
+  --color-surface-2: var(--brand-surface-2);
+  --color-ink: var(--brand-ink);
+  --color-muted: var(--brand-muted);
+  --color-line: var(--brand-border);
+  --color-inverse-bg: var(--brand-inverse-bg);
+  --color-inverse-bg-2: var(--brand-inverse-bg-2);
+  --color-inverse-ink: var(--brand-inverse-ink);
+
+  --font-heading: var(--brand-font-heading), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--brand-font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--brand-font-mono), ui-monospace, monospace;
+
+  --radius-card: var(--brand-radius-card);
+  --radius-input: var(--brand-radius-input);
+  --radius-pill: var(--brand-radius-pill);
+
+  --shadow-card: var(--brand-shadow-card);
+  --shadow-cta: var(--brand-shadow-cta);
+  --shadow-float: var(--brand-shadow-float);
+
+  --ease-brand: var(--brand-ease);
+}
+
+/* ---------------------------------------------------------------------------
+   DEFAULT TOKENS — LO STANDARD ConsulBuild (= preset "meridian")
+   Distillato dai siti consegnati: charcoal + un colore di marca, maiuscolo
+   estruso, bottoni rettangolari, card bianche con foto, checkmark accent.
+--------------------------------------------------------------------------- */
+:root {
+  /* colori — primary/accent li inietta il cliente; questi sono i default demo.
+     AA garantito by-design: --brand-accent-strong scurisce l'accent per il testo
+     piccolo su fondo chiaro; .section-dark lo schiarisce su fondo scuro. */
+  --brand-primary: #b0561a;
+  --brand-primary-hover: color-mix(in oklab, var(--brand-primary), #000 14%);
+  --brand-secondary: #8a4315;
+  --brand-accent: #b0561a;
+  --brand-accent-hover: color-mix(in oklab, var(--brand-accent), #000 12%);
+  --brand-accent-soft: color-mix(in oklab, var(--brand-accent), #fff 88%);
+  --brand-accent-strong: color-mix(in oklab, var(--brand-accent), var(--brand-ink) 15%);
+  --brand-bg: #ffffff;
+  --brand-surface: #f5f4f0;
+  --brand-surface-2: #ebe9e3;
+  --brand-ink: #1b1a17;
+  --brand-muted: #57534e;
+  --brand-border: color-mix(in srgb, var(--brand-ink) 10%, transparent);
+  --brand-inverse-bg: #191919;
+  --brand-inverse-bg-2: #111111; /* strip più scura (TrustBar) per staccare dall'hero */
+  --brand-inverse-ink: #f5f4f0;
+
+  /* font — UNA famiglia (Archivo): il contrasto lo fanno peso + maiuscolo + scala */
+  --brand-font-heading: "Archivo";
+  --brand-font-body: "Archivo";
+  --brand-font-mono: "JetBrains Mono";
+  --brand-font-eyebrow: var(--brand-font-body);
+
+  /* forma — bottoni rettangolari, card morbide, input netti */
+  --brand-radius-card: 12px;
+  --brand-radius-input: 8px;
+  --brand-radius-pill: 6px; /* raggio dei bottoni: rettangolari nello standard */
+  --brand-border-w: 1px;
+
+  /* ombre (due strati, tintate verso ink) */
+  --brand-shadow-card: 0 1px 2px rgb(27 26 23 / 0.05), 0 10px 28px rgb(27 26 23 / 0.08);
+  --brand-shadow-cta: 0 2px 6px rgb(27 26 23 / 0.18);
+  --brand-shadow-float: 0 24px 56px rgb(0 0 0 / 0.22);
+  --brand-shadow-hover: 0 1px 2px rgb(27 26 23 / 0.05), 0 18px 44px rgb(27 26 23 / 0.14);
+
+  /* motion — sobrio, ease-out, mai bounce */
+  --brand-dur-fast: 150ms;
+  --brand-dur-base: 220ms;
+  --brand-dur-slow: 450ms;
+  --brand-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --brand-reveal-y: 16px;
+  --brand-reveal-scale: 1;
+
+  /* tipografia — display/H1/H2 MAIUSCOLI (firma dello standard) */
+  --heading-case: uppercase;
+  --heading-tracking: -0.01em; /* il maiuscolo non vuole tracking negativo forte */
+  --w-display: 800;
+  --w-heading: 800;
+  --w-heading-soft: 700;
+
+  /* spaziatura */
+  --brand-space: 1;
+  --eyebrow-tracking: 0.14em;
+
+  /* scala tipografica fluida (rem + vw per a11y zoom) */
+  --step--1: 0.8125rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.1875rem;
+  --step-2: 1.3125rem;
+  --step-3: 1.5rem;
+  /* Minimi tarati sul mobile 390px con parole italiane lunghe in MAIUSCOLO
+     ("RISTRUTTURAZIONE" = 16 glifi): min più alti traboccano dal container. */
+  --step-4: clamp(1.75rem, 1.3rem + 1.9vw, 2.9rem);
+  --step-5: clamp(2rem, 1.4rem + 2.5vw, 3.4rem);
+  --step-display: clamp(1.75rem, 0.9rem + 4vw, 4.5rem);
+}
+
+/* ===========================================================================
+   PRESET: ATELIER — Minimal (mono, whitespace, hairline, zero ombre)
+=========================================================================== */
+[data-preset="atelier"] {
+  --brand-primary: #111111;
+  --brand-secondary: #374151;
+  --brand-accent: #3f5bd9;
+  --brand-bg: #ffffff;
+  --brand-surface: #f7f7f8;
+  --brand-surface-2: #efeff1;
+  --brand-ink: #18181b;
+  --brand-muted: #6b7280;
+  --brand-border: color-mix(in srgb, var(--brand-ink) 11%, transparent);
+  --brand-inverse-bg: #18181b;
+  --brand-inverse-bg-2: #101013;
+  --brand-inverse-ink: #f7f7f8;
+
+  --brand-font-heading: "Inter Tight";
+  --brand-font-body: "Inter";
+
+  --brand-radius-card: 8px;
+  --brand-radius-input: 6px;
+  --brand-radius-pill: 8px;
+
+  --brand-shadow-card: none;
+  --brand-shadow-cta: 0 1px 2px rgb(0 0 0 / 0.07);
+  --brand-shadow-float: 0 4px 14px rgb(0 0 0 / 0.06);
+  --brand-shadow-hover: 0 2px 10px rgb(0 0 0 / 0.07);
+
+  --brand-dur-fast: 120ms;
+  --brand-dur-base: 160ms;
+  --brand-dur-slow: 280ms;
+  --brand-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --brand-reveal-y: 8px;
+
+  --heading-case: none;
+  --heading-tracking: -0.02em;
+  --w-display: 600;
+  --w-heading: 600;
+  --w-heading-soft: 500;
+  --brand-space: 1.15;
+
+  --step-0: 1.0625rem;
+  --step-4: clamp(1.875rem, 1.4rem + 1.8vw, 2.5rem);
+  --step-5: clamp(2.25rem, 1.6rem + 2.6vw, 3.25rem);
+  --step-display: clamp(2.75rem, 1.9rem + 4.2vw, 4.25rem);
+}
+
+/* ===========================================================================
+   PRESET: NOVA — Futuristico (dark, glass, glow, label mono)
+=========================================================================== */
+[data-preset="nova"] {
+  --brand-primary: #6d3bf5;
+  --brand-secondary: #4f46e5;
+  --brand-accent: #22d3ee;
+  --brand-bg: #0a0a0f;
+  --brand-surface: #14141c;
+  --brand-surface-2: #1d1d28;
+  --brand-ink: #f5f5ff;
+  --brand-muted: #8a8aa0;
+  --brand-border: color-mix(in srgb, #ffffff 12%, transparent);
+  --brand-inverse-bg: #f5f5ff;
+  --brand-inverse-bg-2: #e8e8f6;
+  --brand-inverse-ink: #0a0a0f;
+
+  --brand-font-heading: "Space Grotesk";
+  --brand-font-body: "Inter";
+  --brand-font-mono: "JetBrains Mono";
+  --brand-font-eyebrow: var(--brand-font-mono);
+
+  --brand-radius-card: 16px;
+  --brand-radius-input: 12px;
+  --brand-radius-pill: 9999px;
+
+  --brand-shadow-card: 0 0 0 1px rgb(255 255 255 / 0.08), 0 8px 40px rgb(109 59 245 / 0.3);
+  --brand-shadow-cta: 0 0 0 1px rgb(109 59 245 / 0.5), 0 8px 32px rgb(109 59 245 / 0.45);
+  --brand-shadow-float: 0 0 60px rgb(34 211 238 / 0.3);
+  --brand-shadow-hover: 0 0 0 1px rgb(34 211 238 / 0.4), 0 12px 48px rgb(109 59 245 / 0.45);
+
+  --brand-dur-fast: 150ms;
+  --brand-dur-base: 250ms;
+  --brand-dur-slow: 600ms;
+  --brand-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --brand-reveal-y: 24px;
+  --brand-reveal-scale: 0.98;
+
+  --heading-case: none;
+  --heading-tracking: -0.02em;
+  --w-display: 700;
+  --w-heading: 700;
+  --w-heading-soft: 500;
+  --eyebrow-tracking: 0.08em;
+
+  --step-4: clamp(2rem, 1.4rem + 2.6vw, 3rem);
+  --step-5: clamp(2.75rem, 1.8rem + 4.7vw, 5rem);
+  --step-display: clamp(3.5rem, 2rem + 7vw, 7rem);
+}
+
+/* ===========================================================================
+   PRESET: CANON — Editoriale (serif, carta calda, righe tipografiche)
+=========================================================================== */
+[data-preset="canon"] {
+  --brand-primary: #1a1714;
+  --brand-secondary: #3a322b;
+  --brand-accent: #7c2d2d;
+  --brand-bg: #fbfaf7;
+  --brand-surface: #f3efe7;
+  --brand-surface-2: #e9e3d8;
+  --brand-ink: #1a1714;
+  --brand-muted: #6e655c;
+  --brand-border: color-mix(in srgb, var(--brand-ink) 16%, transparent);
+  --brand-inverse-bg: #1a1714;
+  --brand-inverse-bg-2: #121009;
+  --brand-inverse-ink: #fbfaf7;
+
+  --brand-font-heading: "Playfair Display";
+  --brand-font-body: "Source Serif 4";
+
+  --brand-radius-card: 2px;
+  --brand-radius-input: 2px;
+  --brand-radius-pill: 2px;
+
+  --brand-shadow-card: none;
+  --brand-shadow-cta: none;
+  --brand-shadow-float: none;
+  --brand-shadow-hover: none;
+
+  --brand-dur-fast: 200ms;
+  --brand-dur-base: 400ms;
+  --brand-dur-slow: 700ms;
+  --brand-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --brand-reveal-y: 12px;
+
+  --heading-case: none;
+  --heading-tracking: -0.02em;
+  --w-display: 900;
+  --w-heading: 700;
+  --w-heading-soft: 600;
+  --brand-space: 1.2;
+  --eyebrow-tracking: 0.18em;
+
+  --step-0: 1.0625rem;
+  --step-4: clamp(2rem, 1.4rem + 2.6vw, 3rem);
+  --step-5: clamp(2.75rem, 1.7rem + 5vw, 5.5rem);
+  --step-display: clamp(3.5rem, 2rem + 8vw, 7.5rem);
+}
+
+/* ===========================================================================
+   PRESET: TERRA — Artigianale (terracotta/argilla/salvia, caldo, organico)
+=========================================================================== */
+[data-preset="terra"] {
+  --brand-primary: #c2603f;
+  --brand-secondary: #9c5a3c;
+  --brand-accent: #6b7a52;
+  --brand-bg: #faf4ec;
+  --brand-surface: #f0e6d8;
+  --brand-surface-2: #e6d8c5;
+  --brand-ink: #3b2f26;
+  --brand-muted: #8a7a68;
+  --brand-border: color-mix(in srgb, var(--brand-ink) 15%, transparent);
+  --brand-inverse-bg: #3b2f26;
+  --brand-inverse-bg-2: #2c221b;
+  --brand-inverse-ink: #faf4ec;
+
+  --brand-font-heading: "Fraunces";
+  --brand-font-body: "Karla";
+
+  --brand-radius-card: 18px;
+  --brand-radius-input: 14px;
+  --brand-radius-pill: 9999px;
+  --brand-border-w: 1.5px;
+
+  --brand-shadow-card: 0 6px 20px rgb(59 47 38 / 0.1);
+  --brand-shadow-cta: 0 6px 18px rgb(194 96 63 / 0.28);
+  --brand-shadow-float: 0 16px 40px rgb(59 47 38 / 0.14);
+  --brand-shadow-hover: 0 10px 28px rgb(59 47 38 / 0.16);
+
+  --brand-dur-fast: 160ms;
+  --brand-dur-base: 250ms;
+  --brand-dur-slow: 500ms;
+  --brand-ease: cubic-bezier(0.34, 1.2, 0.64, 1);
+  --brand-reveal-y: 16px;
+
+  --heading-case: none;
+  --heading-tracking: -0.015em;
+  --w-display: 600;
+  --w-heading: 600;
+  --w-heading-soft: 500;
+  --brand-space: 1.05;
+
+  --step-5: clamp(2.5rem, 1.7rem + 3.6vw, 4.25rem);
+  --step-display: clamp(3rem, 1.9rem + 5.5vw, 5.5rem);
+}
+
+/* ===========================================================================
+   PRESET: VITA — Friendly (rounded, indigo+coral, micro-bounce)
+=========================================================================== */
+[data-preset="vita"] {
+  --brand-primary: #6366f1;
+  --brand-secondary: #8b5cf6;
+  --brand-accent: #fb7185;
+  --brand-bg: #ffffff;
+  --brand-surface: #f5f5ff;
+  --brand-surface-2: #ececff;
+  --brand-ink: #1e1b2e;
+  --brand-muted: #6b7280;
+  --brand-border: color-mix(in srgb, var(--brand-ink) 7%, transparent);
+  --brand-inverse-bg: #1e1b2e;
+  --brand-inverse-bg-2: #161327;
+  --brand-inverse-ink: #f5f5ff;
+
+  --brand-font-heading: "Plus Jakarta Sans";
+  --brand-font-body: "Inter";
+
+  --brand-radius-card: 24px;
+  --brand-radius-input: 16px;
+  --brand-radius-pill: 9999px;
+
+  --brand-shadow-card: 0 12px 32px rgb(99 102 241 / 0.15);
+  --brand-shadow-cta: 0 8px 24px rgb(99 102 241 / 0.35);
+  --brand-shadow-float: 0 24px 60px rgb(99 102 241 / 0.2);
+  --brand-shadow-hover: 0 16px 44px rgb(99 102 241 / 0.25);
+
+  --brand-dur-fast: 150ms;
+  --brand-dur-base: 250ms;
+  --brand-dur-slow: 450ms;
+  --brand-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --brand-reveal-y: 16px;
+  --brand-reveal-scale: 0.96;
+
+  --heading-case: none;
+  --heading-tracking: -0.02em;
+  --w-display: 800;
+  --w-heading: 700;
+  --w-heading-soft: 600;
+}
+
+/* ===========================================================================
+   BASE
+=========================================================================== */
+@layer base {
+  html {
+    scroll-behavior: smooth; /* navbar → sezione: scorrimento animato, non salto */
+    scroll-padding-top: 5rem;
+  }
+  body {
+    /* rete di sicurezza: il copy di pipeline non deve mai aprire scroll orizzontale */
+    overflow-x: clip;
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: var(--step-0);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--color-accent-soft);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  a {
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+}
+
+/* UNICHE animazioni del sito (scelta 2026-07-03): la transizione tra pagine
+   e lo scorrimento delle ancore. View Transitions cross-document native, zero
+   JS; i browser che non le supportano navigano normalmente.
+   Regia (impeccable animate): l'uscita è più rapida dell'entrata (~75%),
+   l'entrata risale di 12px con ease-out-expo — decisa, mai elastica. */
+@view-transition {
+  navigation: auto;
+}
+
+@keyframes vt-page-out {
+  to { opacity: 0; }
+}
+@keyframes vt-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+::view-transition-old(root) {
+  animation: vt-page-out 200ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+::view-transition-new(root) {
+  animation: vt-page-in 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* ===========================================================================
+   CLASSI SEMANTICHE (consumate dalle sezioni)
+=========================================================================== */
+@layer components {
+  .container-site {
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+  @media (min-width: 768px) {
+    .container-site { padding-inline: 2rem; }
+  }
+
+  .section-pad {
+    padding-block: calc(clamp(3.5rem, 7vw, 8rem) * var(--brand-space));
+  }
+
+  /* Sezione a fondo scuro (ritmo scuro/chiaro dello standard). Ricolora da sola
+     eyebrow/lead/bottoni secondari, così i componenti non ripetono utility. */
+  .section-dark {
+    background: var(--color-inverse-bg);
+    color: var(--color-inverse-ink);
+  }
+  .section-dark--deep { background: var(--color-inverse-bg-2); }
+  .section-dark .t-lead {
+    color: color-mix(in srgb, var(--color-inverse-ink) 78%, transparent);
+  }
+  .section-dark .eyebrow {
+    /* guardrail AA: accent schiarito per il testo piccolo su fondo scuro */
+    color: color-mix(in oklab, var(--color-accent), #fff 32%);
+  }
+
+  /* --- tipografia --- */
+  /* overflow-wrap: ultima rete di sicurezza per copy di pipeline con parole
+     oltre ~16 glifi — meglio uno spezzone raro che il layout che esplode. */
+  .t-display {
+    font-family: var(--font-heading);
+    font-weight: var(--w-display);
+    font-size: var(--step-display);
+    line-height: 1.04;
+    letter-spacing: var(--heading-tracking, -0.01em);
+    text-transform: var(--heading-case, none);
+    overflow-wrap: anywhere;
+  }
+  .t-h1 {
+    font-family: var(--font-heading);
+    font-weight: var(--w-heading);
+    font-size: var(--step-5);
+    line-height: 1.08;
+    letter-spacing: var(--heading-tracking, -0.01em);
+    text-transform: var(--heading-case, none);
+    overflow-wrap: anywhere;
+  }
+  .t-h2 {
+    font-family: var(--font-heading);
+    font-weight: var(--w-heading);
+    font-size: var(--step-4);
+    line-height: 1.1;
+    letter-spacing: var(--heading-tracking, -0.01em);
+    text-transform: var(--heading-case, none);
+    overflow-wrap: anywhere;
+  }
+  .t-h3 {
+    font-family: var(--font-heading);
+    font-weight: var(--w-heading-soft);
+    font-size: var(--step-3);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  .t-h4 {
+    font-family: var(--font-heading);
+    font-weight: var(--w-heading-soft);
+    font-size: var(--step-2);
+    line-height: 1.25;
+  }
+  .t-lead {
+    font-size: var(--step-1);
+    line-height: 1.55;
+    color: var(--color-muted);
+  }
+  .t-caption {
+    font-size: var(--step--1);
+    line-height: 1.4;
+  }
+
+  /* La frase evidenziata dentro un titolo (da renderAccent, marcatore **...**).
+     Sempre testo grande → basta 3:1, l'accent grezzo regge su chiaro e scuro. */
+  .accent-word { color: var(--color-accent); }
+
+  /* Eyebrow con lineetta: "— LABEL" (e "— LABEL —" se centrata).
+     Firma di brand dei siti consegnati, coerente su tutta la pagina. */
+  .eyebrow {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-family: var(--font-eyebrow, var(--font-body));
+    font-size: var(--step--1);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--eyebrow-tracking, 0.14em);
+    color: var(--color-accent-strong);
+  }
+  .eyebrow::before { content: "—"; opacity: 0.75; }
+  .eyebrow--center { justify-content: center; }
+  .eyebrow--center::after { content: "—"; opacity: 0.75; }
+
+  /* --- bottoni: rettangolari, maiuscoli, decisi --- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.85rem;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.95rem 1.6rem;
+    border-radius: var(--radius-pill);
+    border: var(--brand-border-w) solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--color-primary);
+    color: #fff;
+    box-shadow: var(--brand-shadow-cta);
+  }
+  .btn-primary:hover {
+    background: var(--color-primary-hover);
+    box-shadow: var(--brand-shadow-hover);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--color-ink);
+    border-color: color-mix(in srgb, var(--color-ink) 25%, transparent);
+  }
+  .btn-secondary:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  }
+  /* su fondo scuro il secondario diventa outline chiaro, automaticamente */
+  .section-dark .btn-secondary {
+    color: var(--color-inverse-ink);
+    border-color: color-mix(in srgb, var(--color-inverse-ink) 35%, transparent);
+  }
+  .section-dark .btn-secondary:hover {
+    border-color: color-mix(in srgb, var(--color-inverse-ink) 75%, transparent);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-ink);
+  }
+  .btn-ghost:hover { color: var(--color-accent-strong); }
+  .section-dark .btn-ghost { color: var(--color-inverse-ink); }
+
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+  /* Taglia compatta per barre dense (header). Eredita forma/stati da .btn. */
+  .btn-sm {
+    gap: 0.45rem;
+    padding: 0.7rem 1.15rem;
+    font-size: 0.78rem;
+  }
+
+  /* Prosa delle pagine legali: misura da lettura, gerarchia dalla scala. */
+  .legal-prose {
+    max-width: 70ch;
+  }
+  .legal-prose h2 {
+    font-family: var(--font-heading);
+    font-weight: var(--w-heading-soft);
+    font-size: var(--step-2);
+    margin-top: 2.5rem;
+    line-height: 1.25;
+  }
+  .legal-prose p,
+  .legal-prose ul {
+    margin-top: 0.75rem;
+    color: var(--color-muted);
+  }
+  .legal-prose ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+  }
+  .legal-prose li {
+    margin-top: 0.35rem;
+  }
+  .legal-prose strong {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+  .legal-prose a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* --- card --- */
+  .surface-card {
+    background: var(--color-bg);
+    border: var(--brand-border-w) solid var(--color-line);
+    border-radius: var(--radius-card);
+    box-shadow: var(--brand-shadow-card);
+  }
+  .surface-card--hover:hover {
+    box-shadow: var(--brand-shadow-hover);
+  }
+
+  /* --- divisori / overlay / media --- */
+  .section-divider {
+    height: 1px;
+    border: 0;
+    background: linear-gradient(to right, transparent, var(--color-line), transparent);
+  }
+  .hero-overlay {
+    background: linear-gradient(
+      100deg,
+      rgb(12 12 12 / 0.92) 0%,
+      rgb(12 12 12 / 0.72) 48%,
+      rgb(12 12 12 / 0.38) 100%
+    );
+  }
+  .media-frame {
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    /* tono di attesa mentre la foto lazy carica: mai un buco invisibile */
+    background-color: color-mix(in srgb, var(--color-ink) 6%, transparent);
+  }
+  /* Didascalia foto (gallery lavori): barra accent + etichetta, firma dei siti
+     di riferimento. Testo bianco su chip scuro traslucido: sempre AA. */
+  .media-caption {
+    position: absolute;
+    left: 0.75rem;
+    bottom: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.45rem 0.75rem;
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: #fff;
+    background: rgb(8 8 8 / 0.66);
+    border-radius: 4px;
+  }
+  .media-caption::before {
+    content: "";
+    width: 3px;
+    height: 1.05em;
+    background: var(--color-accent);
+    border-radius: 1px;
+  }
+  /* Su mobile la gallery scende a 2 colonne (~165px a cella): chip compatto
+     per stare dentro la foto senza wrappare. */
+  @media (max-width: 40rem) {
+    .media-caption {
+      left: 0.5rem;
+      bottom: 0.5rem;
+      gap: 0.45rem;
+      padding: 0.3rem 0.55rem;
+      font-size: 0.72rem;
+    }
+  }
+}
+
+
+/* ===========================================================================
+   RE-SKIN PER-PRESET delle classi semantiche
+=========================================================================== */
+/* Atelier: card piatte, hover sul bordo, eyebrow senza voce colorata forte */
+[data-preset="atelier"] .surface-card { box-shadow: none; }
+[data-preset="atelier"] .surface-card--hover:hover {
+  box-shadow: none;
+  border-color: color-mix(in srgb, var(--color-ink) 24%, transparent);
+}
+[data-preset="atelier"] .eyebrow { color: var(--color-muted); }
+[data-preset="atelier"] .btn { text-transform: none; letter-spacing: 0; font-size: 0.95rem; }
+
+/* Nova: card in vetro + glow */
+[data-preset="nova"] .surface-card {
+  background: color-mix(in srgb, #ffffff 5%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+
+/* Canon: card = colonna editoriale con riga sopra, niente sfondo/ombra */
+[data-preset="canon"] .surface-card {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--color-ink);
+  border-radius: 0;
+  box-shadow: none;
+}
+[data-preset="canon"] .surface-card--hover:hover { box-shadow: none; }
+[data-preset="canon"] .eyebrow { font-variant: small-caps; text-transform: none; }
+[data-preset="canon"] .btn { text-transform: none; letter-spacing: 0; font-size: 0.95rem; }
+[data-preset="canon"] .btn-primary { border-radius: 0; }
+
+/* Vita: card morbide senza bordo, hover in scala, bottoni non urlati */
+[data-preset="vita"] .surface-card { border: 0; }
+
+[data-preset="vita"] .btn { text-transform: none; letter-spacing: 0; font-size: 0.95rem; }
+
+/* Terra: hover lift morbido, bottoni non urlati */
+
+[data-preset="terra"] .btn { text-transform: none; letter-spacing: 0; font-size: 0.95rem; }

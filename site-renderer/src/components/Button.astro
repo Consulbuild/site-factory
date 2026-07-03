@@ -1,0 +1,14 @@
+---
+import type { Cta } from "@/lib/schema";
+import { ctaClass } from "@/lib/ui";
+
+interface Props {
+  cta: Cta;
+  class?: string;
+}
+const { cta, class: extra = "" } = Astro.props;
+---
+
+<a href={cta.href} class={`${ctaClass(cta.style)} ${extra}`}>
+  {cta.label}
+</a>

@@ -1,0 +1,25 @@
+---
+import { renderAccent } from "@/lib/ui";
+
+/**
+ * L'intestazione di sezione dello standard ConsulBuild (vedi DESIGN.md):
+ * eyebrow con lineetta, H2 maiuscolo con UNA frase in accent (**...** nel JSON),
+ * sottotitolo di una riga. Usarla SEMPRE: è la grammatica che rende i siti
+ * riconoscibili e coerenti tra loro.
+ */
+interface Props {
+  eyebrow?: string;
+  title: string;
+  sub?: string;
+  align?: "center" | "left";
+  id?: string; // per aria-labelledby della sezione
+}
+const { eyebrow = "", title, sub = "", align = "center", id } = Astro.props;
+const center = align === "center";
+---
+
+<header class:list={["max-w-3xl", center && "mx-auto text-center"]}>
+  {eyebrow && <p class:list={["eyebrow", center && "eyebrow--center"]}>{eyebrow}</p>}
+  <h2 {id} class="t-h2 mt-4 text-balance" set:html={renderAccent(title)} />
+  {sub && <p class="t-lead mt-4 text-pretty">{sub}</p>}
+</header>

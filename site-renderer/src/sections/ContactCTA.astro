@@ -1,0 +1,261 @@
+---
+import type { Cta, PropsOf, SiteConfig } from "@/lib/schema";
+import Button from "@/components/Button.astro";
+import Icon from "@/components/Icon.astro";
+import SectionHeader from "@/components/SectionHeader.astro";
+import { renderAccent, sectionPad, telHref, waHref } from "@/lib/ui";
+
+interface Props {
+  data: PropsOf<"ContactCTA">;
+  site: SiteConfig;
+  variant?: string;
+}
+const { data, site } = Astro.props;
+const c = site.contact;
+
+// Due modalità, come nei siti di riferimento:
+// - showForm=true  → sezione scura split: messaggio + contatti diretti a sinistra,
+//   form card BIANCA come focal point a destra (label visibili, submit accent).
+// - showForm=false → sezione chiara "Mettiti in contatto": strip aperta di
+//   canali (icona in riquadro accent tenue + etichetta + valore), senza card.
+//
+// GDPR (verificato 2026-07-03 su Linee guida Garante + art. 6/13 GDPR):
+// base giuridica = art. 6.1.b (rispondere alla richiesta di preventivo), quindi
+// NIENTE checkbox di consenso — serve solo il link all'informativa (art. 13),
+// sotto il submit. Consenso separato SOLO se in futuro si aggiunge marketing.
+//
+// Stati del form: loading / errore inline; il successo porta alla thank-you
+// page (/grazie, prop successHref).
+// In demo (data-demo="true") il submit simula l'invio; in Fase 3 basta
+// impostare action="<endpoint>" e data-demo="false" — la logica c'è già.
+const hasForm = data.showForm;
+const isDemo = true; // Fase 3: false + action reale
+
+const phoneCta: Cta = {
+  label: c.phone,
+  href: telHref(c.phone),
+  style: hasForm ? "secondary" : "primary",
+};
+const whatsappCta: Cta = { label: "WhatsApp", href: waHref(c.whatsapp), style: "secondary" };
+
+// Input: hairline, raggio dedicato, focus sul colore primario.
+const inputClass =
+  "w-full rounded-input border border-line bg-bg px-3.5 py-2.5 text-ink placeholder:text-muted/70 focus:border-primary";
+const labelClass = "t-caption font-semibold";
+
+// Canali (variante senza form), costruiti dai contatti reali del cliente.
+// Niente WhatsApp qui (scelta live review 2026-07-03): resta nel form scuro.
+type Channel = { icon: string; label: string; value: string; href: string };
+const channels: Channel[] = [];
+if (!hasForm) {
+  if (c.phone) channels.push({ icon: "phone", label: "Telefono", value: c.phone, href: telHref(c.phone) });
+  if (c.email) channels.push({ icon: "mail", label: "E-mail", value: c.email, href: `mailto:${c.email}` });
+  if (c.social.instagram)
+    channels.push({ icon: "instagram", label: "Instagram", value: site.meta.businessName, href: c.social.instagram });
+  if (c.social.facebook)
+    channels.push({ icon: "facebook", label: "Facebook", value: site.meta.businessName, href: c.social.facebook });
+  if (c.address) channels.push({ icon: "mapPin", label: "Sede", value: c.address, href: "" });
+}
+---
+
+{hasForm && (
+  <section class:list={[sectionPad, "section-dark"]} id="contatti" aria-labelledby="contatti-title">
+    <div class="container-site grid gap-x-12 gap-y-14 lg:grid-cols-12 lg:items-center">
+      <div class="lg:col-span-5">
+        <p class="eyebrow">{data.eyebrow}</p>
+        <h2 id="contatti-title" class="t-h2 mt-4 text-balance" set:html={renderAccent(data.headline)} />
+        {data.subtitle && <p class="t-lead mt-5 max-w-[46ch] text-pretty">{data.subtitle}</p>}
+
+        {(c.phone || c.whatsapp) && (
+          <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            {c.phone && <Button cta={phoneCta} />}
+            {c.whatsapp && <Button cta={whatsappCta} />}
+          </div>
+        )}
+
+        {(c.email || c.address) && (
+          <dl class="mt-9 grid gap-x-10 gap-y-5 border-t border-white/15 pt-7 sm:grid-cols-2">
+            {c.email && (
+              <div>
+                <dt class="t-caption font-bold uppercase tracking-[0.1em] text-white/60">E-mail</dt>
+                <dd class="mt-1">
+                  <a href={`mailto:${c.email}`} class="text-white/85 hover:text-white hover:underline">
+                    {c.email}
+                  </a>
+                </dd>
+              </div>
+            )}
+            {c.address && (
+              <div>
+                <dt class="t-caption font-bold uppercase tracking-[0.1em] text-white/60">Sede</dt>
+                <dd class="mt-1 text-white/85">{c.address}</dd>
+              </div>
+            )}
+          </dl>
+        )}
+      </div>
+
+      <div class="lg:col-span-6 lg:col-start-7">
+        <form
+          class="rounded-card bg-bg p-6 text-ink shadow-float sm:p-8"
+          name="contatti"
+          method="post"
+          action=""
+          data-contact-form
+          data-demo={isDemo ? "true" : "false"}
+          data-success={data.successHref}
+        >
+          <div>
+            <h3 class="t-h4 font-bold uppercase">{data.formTitle}</h3>
+
+            <div class="mt-6 grid gap-4">
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label for="cta-nome" class={labelClass}>Nome e cognome *</label>
+                  <input id="cta-nome" name="nome" type="text" required autocomplete="name" placeholder="Il tuo nome" class:list={[inputClass, "mt-1.5"]} />
+                </div>
+                <div>
+                  <label for="cta-telefono" class={labelClass}>Telefono *</label>
+                  <input id="cta-telefono" name="telefono" type="tel" required autocomplete="tel" placeholder="+39 000 000 0000" class:list={[inputClass, "mt-1.5"]} />
+                </div>
+              </div>
+
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label for="cta-email" class={labelClass}>E-mail</label>
+                  <input id="cta-email" name="email" type="email" autocomplete="email" placeholder="tua@email.com" class:list={[inputClass, "mt-1.5"]} />
+                </div>
+                <div>
+                  <label for="cta-citta" class={labelClass}>Città</label>
+                  <input id="cta-citta" name="citta" type="text" autocomplete="address-level2" placeholder="Dove si trova l'immobile" class:list={[inputClass, "mt-1.5"]} />
+                </div>
+              </div>
+
+              <div>
+                <label for="cta-messaggio" class={labelClass}>Descrizione dei lavori</label>
+                <textarea id="cta-messaggio" name="messaggio" rows="4" placeholder="Raccontaci il tuo progetto" class:list={[inputClass, "mt-1.5"]}></textarea>
+              </div>
+
+              {/* honeypot anti-spam: invisibile agli umani, i bot lo compilano */}
+              <p class="hidden" aria-hidden="true">
+                <label>Non compilare questo campo <input name="sito-web" type="text" tabindex="-1" autocomplete="off" /></label>
+              </p>
+
+              {/* errore recuperabile: i campi restano compilati */}
+              <p
+                data-form-error
+                role="alert"
+                hidden
+                class="t-caption rounded-input border border-accent-strong/40 bg-accent-soft px-4 py-3 font-medium text-ink"
+              >
+                Non siamo riusciti a inviare la richiesta. Riprova tra qualche istante
+                oppure chiamaci: <a href={telHref(c.phone)} class="font-bold underline">{c.phone}</a>
+              </p>
+
+              <button type="submit" class="btn btn-primary mt-1 w-full" data-form-submit>
+                Richiedi un preventivo gratuito
+              </button>
+
+              <p class="flex items-center justify-center gap-2 t-caption text-muted">
+                <Icon name="check" class="h-4 w-4 shrink-0 text-accent" />
+                Ti risponde direttamente il nostro team.
+              </p>
+
+              {data.formNote && <p class="t-caption text-center leading-relaxed text-muted">{data.formNote}</p>}
+
+              {/* Informativa art. 13: link obbligatorio; niente checkbox (art. 6.1.b) */}
+              <p class="t-caption text-center leading-relaxed text-muted">
+                Usiamo i tuoi dati solo per rispondere alla richiesta.{" "}
+                <a href={data.privacyHref} class="underline underline-offset-2 hover:text-ink">Informativa privacy</a>
+              </p>
+            </div>
+          </div>
+
+
+          {/* annunci per screen reader (loading/successo/errore) */}
+          <p data-form-status aria-live="polite" class="sr-only"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+)}
+
+{hasForm && (
+  <script is:inline>
+    // Stati del form: loading → thank-you page | errore (recuperabile).
+    // In demo simula l'invio; in produzione fa POST a form.action (Fase 3).
+    document.querySelectorAll("[data-contact-form]").forEach((form) => {
+      const submitBtn = form.querySelector("[data-form-submit]");
+      const errorBox = form.querySelector("[data-form-error]");
+      const status = form.querySelector("[data-form-status]");
+      const labelIdle = submitBtn.textContent;
+
+      const setLoading = (on) => {
+        submitBtn.disabled = on;
+        submitBtn.textContent = on ? "Invio in corso…" : labelIdle;
+        if (on) status.textContent = "Invio della richiesta in corso";
+      };
+      const showSuccess = () => {
+        status.textContent = "Richiesta inviata con successo";
+        window.location.assign(form.dataset.success || "/grazie");
+      };
+      const showError = () => {
+        setLoading(false);
+        errorBox.hidden = false;
+        status.textContent = "Invio non riuscito, riprova";
+      };
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!form.reportValidity()) return;
+        errorBox.hidden = true;
+        // honeypot compilato = bot: fingi successo senza inviare nulla
+        if (form.elements["sito-web"] && form.elements["sito-web"].value) {
+          showSuccess();
+          return;
+        }
+        setLoading(true);
+        if (form.dataset.demo === "true") {
+          setTimeout(showSuccess, 900);
+          return;
+        }
+        try {
+          const res = await fetch(form.action, {
+            method: "POST",
+            body: new FormData(form),
+            headers: { Accept: "application/json" },
+          });
+          res.ok ? showSuccess() : showError();
+        } catch {
+          showError();
+        }
+      });
+    });
+  </script>
+)}
+
+{!hasForm && (
+  <section class:list={[sectionPad, "bg-surface"]} id="canali" aria-labelledby="canali-title">
+    <div class="container-site">
+      <SectionHeader id="canali-title" eyebrow={data.eyebrow} title={data.headline} sub={data.subtitle} />
+
+      <ul class="mt-12 flex flex-wrap justify-center gap-x-14 gap-y-8">
+        {channels.map((ch, i) => (
+          <li class="flex items-center gap-3.5">
+            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-[10px] bg-accent-soft text-accent-strong">
+              <Icon name={ch.icon} class="h-5 w-5" />
+            </span>
+            <div class="text-left">
+              <h3 class="t-caption font-bold uppercase tracking-[0.1em] text-muted">{ch.label}</h3>
+              {ch.href ? (
+                <a href={ch.href} class="block font-semibold hover:text-accent-strong hover:underline">{ch.value}</a>
+              ) : (
+                <p class="font-semibold">{ch.value}</p>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}

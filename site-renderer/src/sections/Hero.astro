@@ -1,0 +1,133 @@
+---
+import type { PropsOf, SiteConfig } from "@/lib/schema";
+import Button from "@/components/Button.astro";
+import Icon from "@/components/Icon.astro";
+import { renderAccent, renderDotted } from "@/lib/ui";
+
+interface Props {
+  data: PropsOf<"Hero">;
+  site: SiteConfig;
+  variant?: string;
+}
+const { data, variant = "A" } = Astro.props;
+
+// Lo standard (variante A): foto full-bleed + overlay scuro pesante, contenuto
+// a sinistra — eyebrow bianca, display maiuscolo con frase accent (**...**),
+// sottotitolo breve, CTA piena + telefono outline. B = split su fondo scuro
+// (foto incorniciata a destra); C = centrato sull'overlay.
+const isSplit = variant === "B";
+const isCentered = variant === "C";
+
+---
+
+{!isSplit && (
+  <section class="section-dark relative isolate overflow-hidden">
+    <img
+      src={data.image.src}
+      alt={data.image.alt}
+      class="absolute inset-0 -z-20 h-full w-full object-cover"
+      loading="eager"
+      fetchpriority="high"
+    />
+    <div class:list={["absolute inset-0 -z-10", isCentered ? "bg-black/70" : "hero-overlay"]} aria-hidden="true"></div>
+
+    <div
+      class:list={[
+        "container-site flex min-h-[34rem] flex-col justify-center py-24 md:min-h-[38rem] md:py-28",
+        isCentered && "items-center text-center",
+      ]}
+    >
+      {data.eyebrow && (
+        <p
+          class="t-caption font-bold uppercase tracking-[var(--eyebrow-tracking)] text-white/80"
+          set:html={renderDotted(data.eyebrow)}
+        />
+      )}
+
+      {/* 22ch: misura stretta ma capiente per parole italiane lunghe
+          ("RISTRUTTURAZIONE," = 16+ glifi) senza spezzarle a metà */}
+      <h1
+        class="t-display mt-5 max-w-[22ch] text-balance"
+        set:html={renderAccent(data.title)}
+      />
+
+      {data.subtitle && (
+        <p class="t-lead mt-6 max-w-[52ch] text-pretty">
+          {data.subtitle}
+        </p>
+      )}
+
+      {data.ctas.length > 0 && (
+        <div
+          class:list={["mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap", isCentered && "sm:justify-center"]}
+        >
+          {data.ctas.map((cta) => (
+            <Button cta={cta} />
+          ))}
+        </div>
+      )}
+
+      {data.badges.length > 0 && (
+        <ul
+          class:list={["mt-8 flex flex-wrap gap-x-7 gap-y-2", isCentered && "justify-center"]}
+        >
+          {data.badges.map((badge) => (
+            <li class="flex items-center gap-2 t-caption font-semibold text-white/75">
+              <Icon name="check" class="h-4 w-4 shrink-0 text-accent" />
+              {badge}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </section>
+)}
+
+{isSplit && (
+  <section class="section-dark overflow-hidden">
+    <div class="container-site grid items-center gap-x-12 gap-y-12 py-20 md:py-24 lg:grid-cols-12">
+      <div class="lg:col-span-6">
+        {data.eyebrow && (
+          <p
+            class="t-caption font-bold uppercase tracking-[var(--eyebrow-tracking)] text-white/80"
+            set:html={renderDotted(data.eyebrow)}
+          />
+        )}
+        <h1 class="t-display mt-5 text-balance" set:html={renderAccent(data.title)} />
+        {data.subtitle && (
+          <p class="t-lead mt-6 max-w-[52ch] text-pretty">
+            {data.subtitle}
+          </p>
+        )}
+        {data.ctas.length > 0 && (
+          <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            {data.ctas.map((cta) => (
+              <Button cta={cta} />
+            ))}
+          </div>
+        )}
+        {data.badges.length > 0 && (
+          <ul class="mt-8 flex flex-wrap gap-x-7 gap-y-2">
+            {data.badges.map((badge) => (
+              <li class="flex items-center gap-2 t-caption font-semibold text-white/75">
+                <Icon name="check" class="h-4 w-4 shrink-0 text-accent" />
+                {badge}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div class="lg:col-span-6">
+        <div class="media-frame aspect-[4/3] shadow-float">
+          <img
+            src={data.image.src}
+            alt={data.image.alt}
+            class="h-full w-full object-cover"
+            loading="eager"
+            fetchpriority="high"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+)}

@@ -1,0 +1,43 @@
+---
+import type { PropsOf, SiteConfig } from "@/lib/schema";
+import SectionHeader from "@/components/SectionHeader.astro";
+import { sectionPad } from "@/lib/ui";
+
+interface Props {
+  data: PropsOf<"Gallery">;
+  site: SiteConfig;
+  variant?: string;
+}
+const { data, variant = "grid" } = Astro.props;
+
+// Gallery lavori su fondo scuro (le foto di cantiere rendono di più) con
+// didascalie .media-caption. "masonry" replica il ritmo 3+4 dei siti di
+// riferimento: prima fila più larga, dalla seconda foto più fitte.
+// Sotto lg: 2 colonne con la prima foto full-width — stesso ritmo "una forte
+// + le altre fitte" e metà scroll rispetto alla colonna singola (mobile-first).
+const spanFor = (i: number) =>
+  variant === "masonry" && data.images.length > 4
+    ? i === 0
+      ? "col-span-2 lg:col-span-4"
+      : i < 3
+        ? "lg:col-span-4"
+        : "lg:col-span-3"
+    : "lg:col-span-4";
+---
+
+<section class:list={[sectionPad, "section-dark"]} id="lavori" aria-labelledby="lavori-title">
+  <div class="container-site">
+    <SectionHeader id="lavori-title" eyebrow={data.eyebrow} title={data.title} sub={data.subtitle} />
+
+    <ul class="mt-12 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-12">
+      {data.images.map((img, i) => (
+        <li class:list={[spanFor(i)]}>
+          <figure class="media-frame relative aspect-[4/3]">
+            <img src={img.src} alt={img.alt} class="h-full w-full object-cover" loading="lazy" />
+            {img.caption && <figcaption class="media-caption">{img.caption}</figcaption>}
+          </figure>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:designprojectroma.it)",
+      "WebFetch(domain:newfutureservice.it)",
+      "WebFetch(domain:ssccostruzionisrls.it)",
+      "WebSearch",
+      "Bash(npm --version)",
+      "Bash(echo \"npm: $\\(npm --version 2>&1\\)\")",
+      "Bash(npx --version)",
+      "Bash(echo \"npx: $\\(npx --version 2>&1\\)\")",
+      "Bash(pnpm --version)"
+    ]
+  }
+}

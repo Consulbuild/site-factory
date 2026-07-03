@@ -1,0 +1,30 @@
+---
+import Base from "@/layouts/Base.astro";
+import { registry } from "@/lib/registry";
+import { parseSiteConfig } from "@/lib/schema";
+import siteData from "../../../blueprints/conversione-locale-v1/blueprint.json";
+import { PRESETS } from "@/lib/presets";
+
+// Genera una pagina per ogni style-preset usando lo STESSO site.json: dimostra
+// che la libreria cambia estetica cambiando solo `brand.preset` (zero markup).
+export function getStaticPaths() {
+  return PRESETS.map((preset) => ({ params: { preset } }));
+}
+
+const { preset } = Astro.params;
+const site = parseSiteConfig({
+  ...siteData,
+  brand: { ...(siteData as any).brand, preset },
+});
+---
+
+<Base site={site}>
+  <span id="top"></span>
+  {
+    site.sections.map((section) => {
+      const Comp = registry[section.type];
+      const variant = "variant" in section ? section.variant : undefined;
+      return <Comp data={section.props} site={site} variant={variant} />;
+    })
+  }
+</Base>

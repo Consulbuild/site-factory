@@ -1,0 +1,99 @@
+---
+import type { PropsOf, SiteConfig } from "@/lib/schema";
+import SectionHeader from "@/components/SectionHeader.astro";
+import { sectionPad } from "@/lib/ui";
+
+interface Props {
+  data: PropsOf<"ProcessSteps">;
+  site: SiteConfig;
+  variant?: string;
+}
+const { data, variant = "cards" } = Astro.props;
+
+// Il processo È una sequenza reale: i numeri 01–04 qui portano informazione,
+// non sono scaffolding. Layout di default = "track con nodi" (scelto in live
+// review 2026-07-03): linea continua che attraversa gli step con nodi circolari
+// accent numerati. "timeline" = rail verticale (stile Costruzioni Generali).
+const num = (i: number) => String(i + 1).padStart(2, "0");
+const isTimeline = variant === "timeline";
+---
+
+<section class:list={[sectionPad, "bg-bg"]} id="processo" aria-labelledby="processo-title">
+  <div class="container-site">
+    <SectionHeader id="processo-title" eyebrow={data.eyebrow} title={data.title} sub={data.subtitle} />
+
+    {!isTimeline && (
+      <ol class="step-track relative mt-16 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+        {data.steps.map((step, i) => (
+          <li class="step-col relative">
+            <span class="step-node relative z-10 grid h-12 w-12 place-items-center rounded-full bg-accent font-heading font-extrabold text-white outline outline-8 outline-bg" aria-hidden="true">{num(i)}</span>
+            <h3 class="t-h4 mt-5 font-bold">{step.title}</h3>
+            <p class="mt-2 text-muted">{step.desc}</p>
+          </li>
+        ))}
+      </ol>
+    )}
+
+    {isTimeline && (
+      <ol class="mx-auto mt-12 max-w-3xl">
+        {data.steps.map((step, i) => (
+          <li class="grid grid-cols-[3.5rem_1fr] gap-x-6 sm:grid-cols-[5rem_1fr] sm:gap-x-8">
+            <div class="flex flex-col items-center">
+              <p class="t-h2 font-extrabold text-accent" aria-hidden="true">{num(i)}</p>
+              {i < data.steps.length - 1 && <div class="my-2 w-px grow bg-line" aria-hidden="true"></div>}
+            </div>
+            <div class="pb-12 pt-1 sm:pt-2">
+              <h3 class="t-h4 font-bold">{step.title}</h3>
+              <p class="mt-2 max-w-[55ch] text-muted">{step.desc}</p>
+              {step.image && (
+                <img
+                  src={step.image.src}
+                  alt={step.image.alt}
+                  class="media-frame mt-5 aspect-[16/9] w-full max-w-md object-cover"
+                  loading="lazy"
+                />
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    )}
+  </div>
+</section>
+
+<style>
+  /* Track del processo: linea continua dietro i nodi (solo quando gli step
+     stanno su una riga sola, da lg in su — su griglie impacchettate stona). */
+  @media (min-width: 1024px) {
+    .step-track::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 1.5rem;
+      height: 2px;
+      background: var(--color-line);
+    }
+  }
+  /* Su mobile (colonna singola) la stessa firma ruota in verticale: nodo a
+     sinistra, testo a fianco, connettore continuo tra i nodi. Solo CSS. */
+  @media (max-width: 639px) {
+    .step-track { row-gap: 2.25rem; }
+    .step-col {
+      display: grid;
+      grid-template-columns: 3rem minmax(0, 1fr);
+      column-gap: 1.1rem;
+    }
+    .step-col > h3 { margin-top: 0.55rem; }
+    .step-col > p { grid-column: 2; }
+    .step-col:not(:last-child)::before {
+      content: "";
+      position: absolute;
+      left: calc(1.5rem - 1px);
+      top: 3rem;
+      bottom: -2.25rem; /* attraversa il row-gap fino al nodo successivo */
+      width: 2px;
+      background: var(--color-line);
+    }
+  }
+</style>

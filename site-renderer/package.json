@@ -1,0 +1,24 @@
+{
+  "name": "site-renderer",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Motore Astro data-driven: trasforma un site.json in un sito vetrina statico.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.0",
+    "astro": "^5.6.0",
+    "tailwindcss": "^4.1.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@types/node": "^26.1.0",
+    "typescript": "^5.9.3"
+  }
+}

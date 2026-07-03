@@ -1,0 +1,47 @@
+---
+import type { PropsOf, SiteConfig } from "@/lib/schema";
+import Icon from "@/components/Icon.astro";
+import SectionHeader from "@/components/SectionHeader.astro";
+import { sectionPad } from "@/lib/ui";
+
+interface Props {
+  data: PropsOf<"Testimonials">;
+  site: SiteConfig;
+  variant?: string;
+}
+const { data } = Astro.props;
+
+// Recensioni asciutte in voce standard: stelle accent, citazione in tondo
+// (niente corsivo da template), nome + città come firma concreta.
+---
+
+<section class:list={[sectionPad, "bg-surface"]} aria-labelledby="recensioni-title">
+  <div class="container-site">
+    <SectionHeader
+      id="recensioni-title"
+      eyebrow={data.eyebrow}
+      title={data.title || "Cosa dicono i clienti"}
+    />
+
+    <ul class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {data.items.map((item, i) => (
+        <li class="surface-card flex flex-col p-7">
+          <p class="flex gap-1 text-accent" aria-label="Valutazione: 5 su 5">
+            {Array.from({ length: 5 }).map(() => (
+              <Icon name="star" class="h-4 w-4 fill-current" />
+            ))}
+          </p>
+          <blockquote class="mt-4 grow">
+            <p class="leading-relaxed">“{item.quote}”</p>
+          </blockquote>
+          <footer class="mt-5 border-t border-line pt-4">
+            <p class="t-caption font-bold uppercase tracking-[0.08em]">{item.name}</p>
+            {(item.city || item.role) && (
+              <p class="t-caption mt-0.5 text-muted">{[item.role, item.city].filter(Boolean).join(" · ")}</p>
+            )}
+          </footer>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

@@ -1,0 +1,80 @@
+---
+import Base from "@/layouts/Base.astro";
+import Footer from "@/sections/Footer.astro";
+import StickyCta from "@/sections/StickyCta.astro";
+import Icon from "@/components/Icon.astro";
+import { parseSiteConfig, type PropsOf } from "@/lib/schema";
+import siteData from "../../blueprints/conversione-locale-v1/blueprint.json";
+
+/**
+ * Layout delle sottopagine (legali, grazie). Niente navbar (scelta 2026-07-03):
+ * al suo posto una striscia di servizio — "← Torna al sito" a sinistra
+ * (history.back se c'è una pagina precedente, altrimenti home) e marchio
+ * cliccabile → inizio della pagina principale a destra. Footer e FAB restano;
+ * le ancore del footer sono assolutizzate ("#x" → "/#x").
+ */
+interface Props {
+  pageTitle: string;
+  noindex?: boolean;
+}
+const { pageTitle, noindex = true } = Astro.props;
+
+const site = parseSiteConfig(siteData);
+const { brand, meta } = site;
+const abs = (href: string) => (href.startsWith("#") ? `/${href}` : href);
+
+const footerSec = site.sections.find((s) => s.type === "Footer");
+const footerData: PropsOf<"Footer"> = {
+  ...footerSec!.props,
+  columns: footerSec!.props.columns.map((col) => ({
+    ...col,
+    links: col.links.map((l) => ({ ...l, href: abs(l.href) })),
+  })),
+} as PropsOf<"Footer">;
+
+const stickySec = site.sections.find((s) => s.type === "StickyCta");
+---
+
+<Base site={site} pageTitle={pageTitle} noindex={noindex}>
+  <div class="border-b border-line bg-bg">
+    <div class="container-site flex h-14 items-center justify-between gap-4">
+      <a
+        href="/"
+        data-back
+        class="inline-flex min-h-11 items-center gap-2 t-caption font-bold uppercase tracking-[0.1em] text-muted hover:text-ink"
+      >
+        <Icon name="arrowLeft" class="h-4 w-4" />
+        Torna al sito
+      </a>
+      <a href="/#top" class="flex min-w-0 items-center gap-2.5" aria-label={`${meta.businessName} — pagina principale`}>
+        {brand.logo ? (
+          <img src={brand.logo.src} alt={brand.logo.alt} class="h-8 w-auto" />
+        ) : (
+          <>
+            <span class="hidden truncate font-heading text-[0.85rem] font-extrabold uppercase tracking-tight text-ink sm:block">{meta.businessName}</span>
+            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-[7px] bg-primary font-heading text-[1rem] font-extrabold text-white" aria-hidden="true">{meta.businessName.charAt(0)}</span>
+          </>
+        )}
+      </a>
+    </div>
+  </div>
+
+  <main>
+    <slot />
+  </main>
+
+  {stickySec && <StickyCta data={stickySec.props} site={site} />}
+  <Footer data={footerData} site={site} />
+
+  <script is:inline>
+    // Se c'è una pagina precedente torna lì, altrimenti il link porta alla home.
+    document.querySelectorAll("[data-back]").forEach((a) => {
+      a.addEventListener("click", (e) => {
+        if (history.length > 1) {
+          e.preventDefault();
+          history.back();
+        }
+      });
+    });
+  </script>
+</Base>
