@@ -140,7 +140,8 @@ tassonomia sezioni). Regole operative nei componenti:
 - **Fase B**: pipeline multi-agente Claude API che produce il `site.json`
   (piano in `docs/agents-skills-plan.md`; immagini: FLUX.2 via BFL).
 - **Fase C**: editor Next.js locale (`site-factory-editor/`, non ancora creato) —
-  pull dati da Tally, checkpoint di approvazione, deploy Cloudflare Pages.
+  pull dati da Tally, checkpoint di approvazione, deploy su Cloudflare Workers
+  static assets (decisione 2026-07, vedi `docs/decisions/2026-07-verifiche-fase-b.md`).
 
 Il form di `ContactCTA` è completo lato client (stati loading/errore, honeypot,
 riga informativa GDPR fissa, redirect a `/grazie` al successo) ma **simulato**:

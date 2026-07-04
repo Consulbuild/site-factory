@@ -53,19 +53,28 @@ Hero 16:9 (o 3:2) · Services item 4:3 · Gallery 4:3 o 1:1 · ProcessSteps 1:1/
 Ogni immagine ha un alt in italiano, descrittivo e utile alla SEO locale quando ha senso (es. «Ristrutturazione bagno a Roma, posa piastrelle»). Niente keyword stuffing.
 
 ## API Black Forest Labs (async: submit → poll)
-Pattern (verificare i nomi esatti degli endpoint sui docs BFL correnti):
+Pattern (endpoint verificati sui docs BFL il 2026-07-04 — vedi
+`docs/decisions/2026-07-verifiche-fase-b.md`; conferma live con `probe-bfl.mjs` alla
+consegna della chiave):
 ```bash
 # 1) submit
 curl -s -X POST https://api.bfl.ai/v1/flux-2-pro \
   -H "x-key: $BFL_API_KEY" -H "Content-Type: application/json" \
-  -d '{"prompt":"...","aspect_ratio":"16:9"}'      # -> { id, polling_url }
-# 2) poll finché status = Ready
+  -d '{"prompt":"...","width":1920,"height":1080,"output_format":"jpeg"}'  # -> { id, polling_url }
+# 2) poll SULLA polling_url restituita (mai URL hardcoded) finché status = Ready
 curl -s "$POLLING_URL" -H "x-key: $BFL_API_KEY"      # -> { status, result: { sample: <url> } }
 ```
-- Nome→endpoint: `flux-2 [pro]` → `/v1/flux-2-pro`, `flux-2 [max]` → `/v1/flux-2-max` (verificare gli slug esatti sui docs BFL correnti).
-- Env: `BFL_API_KEY` (o `FAL_KEY` se si usa fal.ai).
-- Poll con backoff (es. ogni 1.5s, timeout ~60s); gestisci `status` = Pending/Ready/Error.
-- Tier consapevole del costo: [pro] default, [max] solo hero/immagini chiave.
+- Nome→endpoint: `flux-2 [pro]` → `/v1/flux-2-pro`, `flux-2 [max]` → `/v1/flux-2-max`.
+  Host: `api.bfl.ai` (globale); esiste `api.eu.bfl.ai` se serve elaborazione solo-EU (GDPR).
+- Env: `BFL_API_KEY` (o `FAL_KEY` se si usa il fallback fal.ai — stesso prezzo, code e retry gestiti).
+- Dimensioni: `width`/`height` multipli di 16, max 4MP. Reference: `input_image` … `input_image_8`.
+- **Niente raw mode su FLUX.2** (era di FLUX 1.1 ultra). `output_format`: solo `jpeg`/`png`.
+- **Gli URL firmati di consegna scadono in ~10 minuti**: scaricare l'immagine SUBITO e
+  servirla da storage proprio, mai riusare l'URL BFL.
+- Poll con backoff (es. ogni 1.5s, timeout ~60s); `status` = Pending/Ready/Error; rate limit
+  24 task concorrenti (429 oltre).
+- Tier consapevole del costo: [pro] default ($0.03 primo MP + $0.015/MP extra), [max] solo
+  hero/immagini chiave ($0.07 primo MP + $0.03/MP extra).
 
 ## Checklist finale (auto-valutazione)
 - [ ] **Gallery/BeforeAfter = solo foto reali del cliente** (o placeholder «DA CONFERMARE»), didascalie specifiche non ripetute
