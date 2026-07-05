@@ -12,6 +12,9 @@
 //                    (es. intake.json, palette.json, copy.json, images.json)
 //   --partial        consente artifact mancanti (run per-checkpoint); gli slot non riempiti
 //                    restano ai valori d'oro del blueprint e vengono elencati come warning.
+//   --foto-reali <n|dir>  quante foto reali ha fornito il cliente (numero, o cartella da
+//                    contare). Sotto 4 → drop POST-merge della Gallery (regola 6 del README:
+//                    la gallery non si genera MAI) + rimozione della voce nav collegata.
 //
 // Formato artifact: { "<path-slot>": valore, ... } con i path ESATTI di slots.json.
 // Per i path con wildcard `[*]` il valore è un array (annidato per wildcard multiple:
@@ -19,7 +22,7 @@
 // blueprint: l'array target viene ridimensionato (taglio, o clone dell'ultimo elemento),
 // ma tutti gli slot che toccano lo stesso array devono concordare sulla lunghezza.
 // Exit 0 se valido; 1 su violazione slot/constraint o Zod; 2 su errore d'uso.
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { parseSiteConfig } from "../src/lib/schema.ts";
 
@@ -37,7 +40,16 @@ const args = process.argv.slice(2);
 const partial = args.includes("--partial");
 const outFlag = args.indexOf("-o");
 const outPath = outFlag >= 0 ? args[outFlag + 1] : null;
-const positional = args.filter((a, i) => !a.startsWith("-") && i !== outFlag + 1);
+const fotoFlag = args.indexOf("--foto-reali");
+// numero esplicito, oppure cartella di cui contare le immagini; null = flag assente (nessun drop)
+const fotoReali: number | null =
+  fotoFlag >= 0
+    ? /^\d+$/.test(args[fotoFlag + 1] ?? "")
+      ? Number(args[fotoFlag + 1])
+      : readdirSync(args[fotoFlag + 1]).filter((f) => /\.(jpe?g|png|webp|avif)$/i.test(f)).length
+    : null;
+const consumed = new Set([outFlag + 1, fotoFlag >= 0 ? fotoFlag + 1 : -1]);
+const positional = args.filter((a, i) => !a.startsWith("-") && !consumed.has(i));
 const [blueprintDir, artifactsDir] = positional;
 if (!blueprintDir || !artifactsDir) {
   console.error("uso: node --experimental-strip-types scripts/assemble-site.ts <dir-blueprint> <dir-artifact> [-o out.json] [--partial]");
@@ -189,6 +201,35 @@ for (const agent of pipeline) {
 }
 
 for (const s of slots) if (!filled.has(s.path)) warnings.push(`slot non riempito: "${s.path}" (agente ${s.agent}) — resta il valore d'oro del blueprint`);
+
+/* ---------------- sezioni condizionali: drop POST-merge (regola 6 README) ---------------- */
+
+// La Gallery mostra SOLO foto reali del cliente (policy Round 4: mai generate).
+// Con meno di 4 foto la sezione esce dalla pagina, insieme alla sua voce nav
+// (un'ancora morta in navbar è il primo segnale di "sito rotto" per il visitatore).
+const GALLERY_DROP = { index: 4, type: "Gallery", navHref: "#lavori", minFoto: 4 };
+
+if (fotoReali !== null && fotoReali < GALLERY_DROP.minFoto) {
+  const section = merged.sections?.[GALLERY_DROP.index];
+  if (section?.type !== GALLERY_DROP.type) {
+    console.error(`drop Gallery: sections[${GALLERY_DROP.index}] è "${section?.type}", atteso "${GALLERY_DROP.type}" — il blueprint è cambiato, aggiornare GALLERY_DROP`);
+    process.exit(1);
+  }
+  merged.sections.splice(GALLERY_DROP.index, 1);
+  // toglie OGNI link all'ancora rimossa, ovunque sia (nav dell'Header, colonne del Footer, …)
+  const pruneHref = (node: any): void => {
+    if (Array.isArray(node)) {
+      node.forEach(pruneHref);
+    } else if (node && typeof node === "object") {
+      for (const [k, v] of Object.entries(node)) {
+        if (Array.isArray(v)) node[k] = v.filter((it: any) => it?.href !== GALLERY_DROP.navHref);
+        pruneHref(node[k]);
+      }
+    }
+  };
+  pruneHref(merged.sections);
+  warnings.push(`Gallery rimossa (${fotoReali} foto reali < ${GALLERY_DROP.minFoto}) + link "${GALLERY_DROP.navHref}" tolti da nav e footer`);
+}
 
 /* ---------------- esito ---------------- */
 

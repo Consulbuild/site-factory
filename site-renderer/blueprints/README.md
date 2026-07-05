@@ -49,7 +49,8 @@ Lo script deterministico che fonde blueprint e output degli agenti:
 
 ```
 node --experimental-strip-types scripts/assemble-site.ts \
-  blueprints/conversione-locale-v1 <dir-artifact> -o out/site.json [--partial]
+  blueprints/conversione-locale-v1 <dir-artifact> -o out/site.json [--partial] \
+  [--foto-reali <n|cartella>]   # <4 → drop POST-merge della Gallery + link #lavori
 ```
 
 - **Formato artifact**: un file `<agente>.json` per ogni voce di `pipeline`
