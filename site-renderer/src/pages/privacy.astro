@@ -1,13 +1,11 @@
 ---
 import SubPage from "@/layouts/SubPage.astro";
 import Icon from "@/components/Icon.astro";
-import { parseSiteConfig } from "@/lib/schema";
-import siteData from "../../blueprints/conversione-locale-v1/blueprint.json";
+import { site } from "@/lib/loadSite";
 
 // DOCUMENTO DI ESEMPIO — struttura ex art. 13 GDPR con i dati del sito già
 // iniettati. La pipeline (Fase 3) sostituirà i contenuti con l'informativa
 // definitiva del cliente; il banner giallo sparisce in quel momento.
-const site = parseSiteConfig(siteData);
 const { meta, contact } = site;
 const footer = site.sections.find((s) => s.type === "Footer");
 const legalNote = footer?.props.legalNote ?? meta.businessName;

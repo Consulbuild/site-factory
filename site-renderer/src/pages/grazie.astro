@@ -1,13 +1,11 @@
 ---
 import SubPage from "@/layouts/SubPage.astro";
 import Icon from "@/components/Icon.astro";
-import { parseSiteConfig } from "@/lib/schema";
+import { site } from "@/lib/loadSite";
 import { telHref } from "@/lib/ui";
-import siteData from "../../blueprints/conversione-locale-v1/blueprint.json";
 
 // Thank-you page: destinazione del form dopo l'invio. Conferma netta,
 // aspettative chiare (24h) e la chiamata come scorciatoia per chi ha fretta.
-const site = parseSiteConfig(siteData);
 const { contact } = site;
 ---
 

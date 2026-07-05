@@ -1,12 +1,10 @@
 ---
 import SubPage from "@/layouts/SubPage.astro";
 import Icon from "@/components/Icon.astro";
-import { parseSiteConfig } from "@/lib/schema";
-import siteData from "../../blueprints/conversione-locale-v1/blueprint.json";
+import { site } from "@/lib/loadSite";
 
 // DOCUMENTO DI ESEMPIO — termini d'uso essenziali per un sito vetrina.
 // La pipeline (Fase 3) sostituirà i contenuti con la versione definitiva.
-const site = parseSiteConfig(siteData);
 const { meta, contact } = site;
 const footer = site.sections.find((s) => s.type === "Footer");
 const legalNote = footer?.props.legalNote ?? meta.businessName;

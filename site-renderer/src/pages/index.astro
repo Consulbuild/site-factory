@@ -1,14 +1,10 @@
 ---
 import Base from "@/layouts/Base.astro";
 import { registry } from "@/lib/registry";
-import { parseSiteConfig } from "@/lib/schema";
-import siteData from "../../blueprints/conversione-locale-v1/blueprint.json";
+import { site } from "@/lib/loadSite";
 
-// Valida il BLUEPRINT contro lo schema Zod (applica i default): il blueprint è
-// sia lo scheletro che la pipeline riempie (vedi blueprints/README.md) sia il
-// golden example che il renderer mostra in dev. Una sola fonte di verità.
-// In produzione l'editor scriverà qui il site.json del cliente.
-const site = parseSiteConfig(siteData);
+// Il site.json arriva da loadSite (validato Zod): di default è il blueprint
+// golden; con SITE_JSON è il sito di un cliente prodotto dalla pipeline.
 ---
 
 <Base site={site}>

@@ -3,8 +3,8 @@ import Base from "@/layouts/Base.astro";
 import Footer from "@/sections/Footer.astro";
 import StickyCta from "@/sections/StickyCta.astro";
 import Icon from "@/components/Icon.astro";
-import { parseSiteConfig, type PropsOf } from "@/lib/schema";
-import siteData from "../../blueprints/conversione-locale-v1/blueprint.json";
+import { type PropsOf } from "@/lib/schema";
+import { site } from "@/lib/loadSite";
 
 /**
  * Layout delle sottopagine (legali, grazie). Niente navbar (scelta 2026-07-03):
@@ -19,7 +19,6 @@ interface Props {
 }
 const { pageTitle, noindex = true } = Astro.props;
 
-const site = parseSiteConfig(siteData);
 const { brand, meta } = site;
 const abs = (href: string) => (href.startsWith("#") ? `/${href}` : href);
 

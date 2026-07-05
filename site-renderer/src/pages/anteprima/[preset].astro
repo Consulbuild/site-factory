@@ -2,7 +2,7 @@
 import Base from "@/layouts/Base.astro";
 import { registry } from "@/lib/registry";
 import { parseSiteConfig } from "@/lib/schema";
-import siteData from "../../../blueprints/conversione-locale-v1/blueprint.json";
+import { siteData } from "@/lib/loadSite";
 import { PRESETS } from "@/lib/presets";
 
 // Genera una pagina per ogni style-preset usando lo STESSO site.json: dimostra
@@ -13,7 +13,7 @@ export function getStaticPaths() {
 
 const { preset } = Astro.params;
 const site = parseSiteConfig({
-  ...siteData,
+  ...(siteData as Record<string, unknown>),
   brand: { ...(siteData as any).brand, preset },
 });
 ---
