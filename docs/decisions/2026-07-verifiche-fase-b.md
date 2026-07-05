@@ -46,8 +46,10 @@ codice reale dell'integrazione npm `n8n-nodes-tallyforms`:
   del body nei help doc; `t=<ts>,v1=<hex>` nei developer doc) → supportarli entrambi
   e calcolare sempre sul raw body. Webhook + firma + API REST disponibili **anche sul
   piano free**.
-- API REST fallback: `GET api.tally.so/forms/{id}/submissions` (Bearer API key,
-  free); retry webhook: 5 tentativi con backoff fino a 24h + retry manuale via API.
+- API REST: `GET api.tally.so/forms/{id}/submissions` (Bearer API key, free).
+  **Aggiornamento 2026-07-05: il pull API è la fonte PRIMARIA della Fase 1** (l'utente ha
+  la key e nessun endpoint pubblico); il webhook con firma HMAC diventa rilevante solo
+  con n8n sul VPS (retry webhook: 5 tentativi con backoff fino a 24h + retry via API).
 - Logo: l'URL nel webhook include un access token; **scadenza non documentata** →
   scaricare e ri-ospitare subito, mai hot-linkare nel site.json.
 - Normalizzazioni deterministiche necessarie: telefono/WhatsApp in formato libero
@@ -123,6 +125,13 @@ TypeScript (`@anthropic-ai/claude-agent-sdk`):
 - gira in un processo server Node locale (API route Next.js), richiede
   `ANTHROPIC_API_KEY`; subagent invocabili programmaticamente, output strutturato
   richiedendo JSON nel prompt — fonti: …/agent-sdk/typescript, …/agent-sdk/subagents.
+
+⚠ **Correzione 2026-07-05 (vincolo di costo)**: l'utente lavora col piano Claude Max e
+NON vuole pagare API finché il cliente non paga — l'Agent SDK con `ANTHROPIC_API_KEY`
+configge con questo vincolo. Per la Fase C l'alternativa a costo zero è lo **spawn
+headless di `claude -p`** dal backend Next.js (usa il login Max; artifact su disco =
+stesso contratto) oppure il token da `claude setup-token`. Da rivalutare quando la
+Fase C parte; il contratto runner-agnostico del punto 1 resta invariato.
 
 Managed Agents (server-hosted Anthropic) scartati: non caricano skill filesystem.
 Messages API raw scartata: reimplementerebbe skill loading + tool + loop agentico

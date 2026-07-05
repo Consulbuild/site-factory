@@ -21,15 +21,18 @@
 
 In ordine (ogni step ha un criterio di done verificabile):
 
-1. **`site-renderer/scripts/intake-tally.ts`** — parser deterministico webhook Tally → `intake.json`.
-   Regole verificate (dettagli in decisions §2): ancorarsi alle `key` dei campi (mai alle
-   `label`); multiple choice/dropdown → `value` è l'UUID dell'opzione, risolvere con lookup in
-   `options[].text`; telefono normalizzato con country default IT; logo `FILE_UPLOAD` →
-   scaricare il file subito e ri-ospitarlo (URL con token, scadenza non documentata); firma
-   `Tally-Signature` HMAC-SHA256 sul **raw body**, supportando entrambi i formati documentati
-   (base64 del body E `t=<ts>,v1=<hex>`). Mapping key→slot dichiarativo in testa al file, con
-   placeholder finché non c'è l'export dei campi reali del form.
-   **Done**: payload di esempio → `intake.json` con gli 11 slot; test con payload malformato/firma errata rifiutati.
+1. **`site-renderer/scripts/intake-tally.ts`** — parser deterministico **API pull** Tally → `intake.json`.
+   Fonte: `GET https://api.tally.so/forms/{formId}/submissions` (Bearer `TALLY_API_KEY` da
+   `.env`, mai committata né passata in argv) — decisione 2026-07-05: l'utente ha la API key e
+   nessun endpoint pubblico, quindi pull e non webhook; la firma `Tally-Signature` HMAC-SHA256
+   (doppio formato) resta annotata in decisions §2 per quando arriverà n8n sul VPS.
+   Regole verificate (dettagli in decisions §2): ancorarsi alle `key`/`id` dei campi (mai alle
+   `label`); multiple choice/dropdown → il valore è l'UUID dell'opzione, risolvere con lookup
+   nelle `options[].text` esposte dall'API; telefono normalizzato con country default IT; logo
+   `FILE_UPLOAD` → scaricare il file subito e ri-ospitarlo (URL con token, scadenza non
+   documentata). Mapping key→slot dichiarativo in testa al file, congelato sulla struttura
+   reale della prima response API (non su docs).
+   **Done**: submission reale → `intake.json` con gli 11 slot; response malformata/campo mancante rifiutati con errore chiaro.
 2. **Drop condizionale Gallery nell'assembler** — in `assemble-site.ts`, POST-merge e prima del
    gate Zod: se il cliente non fornisce ≥4 foto reali, rimuovere `sections[4]` (Gallery). Vedi
    README blueprint regola 6 (mai pre-merge: i path sono per indice).
@@ -70,8 +73,8 @@ conflitto) devono uscire 1 con errore chiaro.
 ## Dipendenze esterne aperte (bloccano solo lo step relativo)
 
 1. `BFL_API_KEY` → step 4 (nota: da eseguire su una macchina senza proxy che blocchi api.bfl.ai).
-2. Export campi reali del form Tally + una submission di prova col payload raw → congela il
-   mapping dello step 1.
+2. `TALLY_API_KEY` in `.env` + una chiamata reale a `GET /forms/{id}/submissions` con log
+   della response raw → congela il mapping dello step 1 (il form ha già submission reali).
 3. Permission da aggiungere a mano in `.claude/settings.local.json`: vedi
    `docs/agents-skills-plan.md` §8.3.
 
