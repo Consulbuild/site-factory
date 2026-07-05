@@ -179,6 +179,40 @@ adapter né codice Worker:
   /framework-guides/web-apps/astro/, /platform/limits/), blog.cloudflare.com (convergenza),
   changelog 2025-09-02 (limiti asset).
 
+## 6-bis. Loghi: mai raster AI, simbolo vettoriale Recraft + tipografia del preset (2026-07-05)
+
+**Problema**: i loghi generati con modelli raster (FLUX/Imagen/Claude che "disegna") sono
+AI-slop riconoscibile — lettere storpiate, gradienti/3D, cliché, colori fuori palette,
+output non vettoriale. Inadatti a rappresentare una PMI reale.
+
+**Verifica (2026-07-05, ricerca web + docs.recraft.ai)**:
+- **Recraft** è l'unico servizio maturo con **SVG nativo via API**: V4.1 Standard Vector
+  $0.08/img, V4.1 Pro Vector $0.30/img; API a crediti prepagati ($1 = 1.000 unit).
+  Gli **style curati** (icon/pictogram/emblem) sono su `recraftv3_vector` — i modelli V4
+  non supportano ancora gli styles. Vectorize di un raster esistente: $0.01.
+- **Diritti**: piano PAID = piena proprietà e uso commerciale (anche per clienti di
+  un'agenzia); piano FREE = nessun diritto commerciale, output pubblici → vietato per
+  lavoro clienti.
+- Alternative valutate: Ideogram (ottima tipografia ma raster), Logo Diffusion/Kittl/
+  Looka (consumer, no API solida), Firefly (raster, indennizzo enterprise).
+
+**Decisione (architettura anti-slop, 3 regole)**:
+1. **L'AI genera SOLO il simbolo** (pittogramma SVG, prompt con divieto assoluto di
+   testo/lettere): la tipografia del lockup è SEMPRE quella del preset, resa dall'Header.
+2. **Il colore lo impone il sistema**: mark generato monocromo e ricolorato
+   deterministicamente sull'hex primary (`generate-logo.mjs`; bianchi → trasparente,
+   così sfondo e knockout funzionano su chiaro e scuro).
+3. **6 varianti + checkpoint umano** (~50¢/cliente); lista nera dei cliché nella skill.
+
+Strumenti: `.claude/skills/logo-designer/` + `.claude/agents/logo-designer.md` +
+`site-renderer/scripts/generate-logo.mjs` (generazione+ricoloro, `--recolor` testato;
+probe integrato: senza `RECRAFT_API_KEY` esce 2 con istruzioni). Cliente CON logo dal
+form → la skill non si usa (al più vectorize $0.01).
+
+**Aperto**: `RECRAFT_API_KEY` (piano paid) per la validazione live di endpoint/parametri
+(`external.api.recraft.ai/v1/images/generations` — da confermare col primo run, i docs
+indicizzati non fanno fede).
+
 ## 7. Gate E2E Fase B — ✅ VERDE (2026-07-04, zero costi API)
 
 Catena completa: artifact golden → `assemble-site.ts` (50/50 slot) →

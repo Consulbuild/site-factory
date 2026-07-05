@@ -73,6 +73,8 @@ conflitto) devono uscire 1 con errore chiaro.
 ## Dipendenze esterne aperte (bloccano solo lo step relativo)
 
 1. `BFL_API_KEY` → step 4 (nota: da eseguire su una macchina senza proxy che blocchi api.bfl.ai).
+1-bis. `RECRAFT_API_KEY` (piano PAID: il free non dà diritti commerciali) → loghi per i
+   clienti senza logo dal form (skill `logo-designer`, decisions §6-bis).
 2. `TALLY_API_KEY` in `.env` + una chiamata reale a `GET /forms/{id}/submissions` con log
    della response raw → congela il mapping dello step 1 (il form ha già submission reali).
 3. Permission da aggiungere a mano in `.claude/settings.local.json`: vedi
