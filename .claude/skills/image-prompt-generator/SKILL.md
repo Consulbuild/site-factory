@@ -9,11 +9,56 @@ description: Per ogni sezione che richiede immagini, sceglie il modello FLUX.2 (
 Per ogni immagine richiesta da una sezione: scegli il modello FLUX.2, scrivi il prompt, chiama l'API BFL, e restituisci l'oggetto immagine **nel formato dello schema** — `image: { src, alt }` (Gallery/BeforeAfter aggiungono `caption`), dove `src` = URL generato e `alt` = alt in **italiano**. Tieni traccia anche di `{ model, aspect_ratio, prompt }` per il checkpoint. **Tutte le immagini di un sito devono sembrare lo stesso servizio fotografico.**
 
 ## Fonte delle immagini (policy — PRIMA di scegliere il modello)
-Gerarchia per sezione, distillata dai siti consegnati (hero AI + card stock/AI + **gallery SOLO foto reali di cantiere**):
-1. **Gallery / BeforeAfter («I nostri lavori»)** = SOLO foto reali del cliente (dal brief/asset caricati). Sono la prova sociale del sito: **MAI generarle** — un portfolio AI è un portfolio falso. Se il cliente non le ha fornite: placeholder + `«DA CONFERMARE: caricare foto reali dei cantieri»` e segnala al checkpoint.
+Gerarchia per sezione (aggiornata 2026-07-05 su decisione utente):
+1. **Gallery / BeforeAfter («I nostri lavori»)** = foto reali del cliente quando esistono (≥4): sono la prova sociale migliore e passano invariate. **Se il cliente non le fornisce**: si GENERANO col profilo `lavori` (iper-realistico, vedi Profili) e — vincolo di onestà non negoziabile — la sezione va incorniciata dal copy come **«gli interventi che realizziamo»** (tipologie di lavorazione), MAI come portfolio di lavori consegnati o con riferimenti a progetti/luoghi specifici. Il BeforeAfter fa eccezione: un prima/dopo generato è una prova falsa, quello resta solo-reale.
 2. **Hero** = generata (flux-2 [max]) se il cliente non ha uno scatto forte.
 3. **Card servizi / step processo / About** = foto reali del cliente se disponibili, altrimenti generate (flux-2 [pro]).
 Le foto reali passano invariate (`src` dell'asset + `alt` tuo); le didascalie della gallery descrivono il lavoro specifico («Posa piastrelle», «Isolamento pareti») — mai 6 didascalie identiche.
+
+## ⚠ Il soggetto viene dal COPY del sito, mai dal repertorio del settore
+Errore da non commettere MAI: immagini generiche "da edilizia" per una PMI che fa
+altro (l'operaio che monta finestre sul sito di una ditta di imbianchini). Il soggetto
+di OGNI immagine deriva dai contenuti già scritti: per le card servizi da
+`items[i].title + desc` (i servizi REALI del form), per la gallery dalle `caption`
+del copywriter, per l'hero dall'attività principale dichiarata nel brief. Prima di
+scrivere un prompt, rileggi lo slot di copy corrispondente e chiediti: «questa scena
+mostra ESATTAMENTE questo servizio?»
+
+## Profili per sezione (ogni sezione ha il suo "system prompt" — non generalizzare)
+
+**HERO (sfondo full-bleed 16:9, regge headline + overlay scuro)**
+- Scena AMBIENTALE larga, non un primo piano: il soggetto sta nel terzo destro,
+  il terzo sinistro resta "quieto" (lì cadono titolo e CTA sotto overlay scuro).
+- Evita scene già scure a sinistra, cieli bruciati, dettagli fitti uniformi.
+- Niente persone in primo piano, niente sguardi in camera. Rumore visivo basso:
+  3–4 masse tonali, non cantiere caotico. flux-2 [max].
+
+**CARD SERVIZI (4:3, una per card)**
+- Soggetto = IL servizio di quella card (da title+desc), fotografato come dettaglio
+  di lavorazione o risultato ravvicinato: mani al lavoro (senza volto), materiale,
+  gesto tecnico riconoscibile del mestiere.
+- Stessa luce, stessa lente, stesso registro su TUTTE le card (style bible + stesso
+  seed base variato di poco): devono sembrare lo stesso servizio fotografico. [pro].
+
+**LAVORI / GALLERY generata (4:3 o 1:1 — solo se mancano foto reali)**
+- Obiettivo: **indistinguibile da una foto vera di cantiere/risultato italiano**.
+  Il tell da eliminare è la perfezione: interni QUALUNQUE ma curati, luce naturale
+  vera (finestra laterale, ombre morbide), micro-imperfezioni plausibili (attrezzi
+  appoggiati, telo, metro, secchio), inquadratura da smartphone di un capocantiere
+  (35mm, altezza occhi, leggero disordine ai bordi) — NON still-life da rivista.
+- Un soggetto DIVERSO per caption (la caption del copywriter comanda), coerente col
+  mestiere reale della PMI. flux-2 [max] qui: è la sezione a più alto rischio slop.
+
+**PROCESS STEPS (1:1/4:3, se richieste)**
+- Una scena per step = l'AZIONE dello step (sopralluogo con metro, firma preventivo,
+  posa, consegna chiavi), sempre di spalle/senza volti riconoscibili. [pro].
+
+**FAVICON / icona tab browser**
+- NON è un task di generazione immagini: il favicon È il mark del logo
+  (`out/<slug>/logo/favicon.svg`, dal logo-designer), quadrato, leggibile a 16–32px,
+  un colore. La pipeline lo copia in `/media/<slug>/favicon.svg` e lo collega via
+  `brand.favicon` nel site.json (il renderer lo mette nel `<head>`). Se il mark ha
+  dettagli che spariscono a 32px, chiedi al logo-designer una variante semplificata.
 
 ## Modelli (solo FLUX.2)
 - **flux-2 [pro]** — default per la maggior parte delle sezioni (~$0.03/MP).
@@ -53,17 +98,15 @@ Hero 16:9 (o 3:2) · Services item 4:3 · Gallery 4:3 o 1:1 · ProcessSteps 1:1/
 Ogni immagine ha un alt in italiano, descrittivo e utile alla SEO locale quando ha senso (es. «Ristrutturazione bagno a Roma, posa piastrelle»). Niente keyword stuffing.
 
 ## API Black Forest Labs (async: submit → poll)
-Pattern (endpoint verificati sui docs BFL il 2026-07-04 — vedi
+**Genera SEMPRE tramite lo script provider** (submit + poll + download immediato +
+arrotondamento dimensioni a multipli di 16 già gestiti — non riimplementare curl a mano):
+```bash
+node site-renderer/scripts/generate-image.mjs \
+  --prompt "…" --width 1920 --height 1088 --model pro|max --out out/<slug>/img/<nome>.jpg [--seed n]
+```
+Dettagli endpoint per riferimento (verificati sui docs BFL il 2026-07-04 — vedi
 `docs/decisions/2026-07-verifiche-fase-b.md`; conferma live con `probe-bfl.mjs` alla
 consegna della chiave):
-```bash
-# 1) submit
-curl -s -X POST https://api.bfl.ai/v1/flux-2-pro \
-  -H "x-key: $BFL_API_KEY" -H "Content-Type: application/json" \
-  -d '{"prompt":"...","width":1920,"height":1080,"output_format":"jpeg"}'  # -> { id, polling_url }
-# 2) poll SULLA polling_url restituita (mai URL hardcoded) finché status = Ready
-curl -s "$POLLING_URL" -H "x-key: $BFL_API_KEY"      # -> { status, result: { sample: <url> } }
-```
 - Nome→endpoint: `flux-2 [pro]` → `/v1/flux-2-pro`, `flux-2 [max]` → `/v1/flux-2-max`.
   Host: `api.bfl.ai` (globale); esiste `api.eu.bfl.ai` se serve elaborazione solo-EU (GDPR).
 - Env: `BFL_API_KEY` (o `FAL_KEY` se si usa il fallback fal.ai — stesso prezzo, code e retry gestiti).

@@ -69,7 +69,13 @@ tutti i path successivi. Confermato sul contratto reale.
 **Decisione**: blueprint fisso per archetipo (oggi: `conversione-locale-v1`, 12
 sezioni a ordine testato). Le sezioni condizionali si gestiscono con **drop
 POST-merge nell'assembler** — unico caso già emerso: Gallery rimossa se il cliente
-non fornisce ≥4 foto reali (policy Round 4: la gallery non si genera mai). Nessun
+non fornisce ≥4 foto reali (policy Round 4: la gallery non si genera mai).
+**Aggiornamento 2026-07-05 (decisione utente)**: la gallery senza foto reali ora SI
+GENERA col profilo iper-realistico `lavori` (skill image-prompt-generator), con
+framing onesto obbligatorio nel copy («gli interventi che realizziamo», mai
+portfolio di consegnati); il drop `--foto-reali` resta disponibile come scelta
+dell'orchestratore. BeforeAfter resta solo-reale (un prima/dopo generato è una
+prova falsa). Nessun
 mini-step LLM: con un solo archetipo aggiungerebbe varianza senza valore. Evoluzione
 v2 (regole `when` dichiarate nel blueprint) richiede prima il passaggio a path per
 `id` di sezione — annotato nel README blueprint, non ora.

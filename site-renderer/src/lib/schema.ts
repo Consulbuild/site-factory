@@ -109,6 +109,8 @@ export const BrandSchema = z.object({
     })
     .default({}),
   logo: ImageSchema.nullable().default(null),
+  // path del favicon (di norma il mark del logo ottimizzato per la tab: /media/<slug>/favicon.svg)
+  favicon: z.string().min(1).nullable().default(null),
   tone: z.string().default(""), // es. "professionale, rassicurante"
 });
 
@@ -207,13 +209,15 @@ export const ServicesSection = z.object({
       .array(
         z.object({
           title: shortText(40).min(1),
-          desc: shortText(110).min(1),
-          bullets: z.array(shortText(36)).max(4).default([]), // checklist con spunta accent
+          desc: shortText(150).min(1), // elenca i servizi REALI del form coperti dalla card
+          bullets: z.array(shortText(36)).max(5).default([]), // checklist con spunta accent
           image: ImageSchema.nullable().default(null),
         }),
       )
-      .min(2)
-      .max(6),
+      // 3–5 macro-categorie che coprono TUTTI i servizi dichiarati nel form
+      // (regola 2026-07-05: il numero di card segue l'offerta reale della PMI)
+      .min(3)
+      .max(5),
     cta: CtaSchema.nullable().default(null),
   }),
 });

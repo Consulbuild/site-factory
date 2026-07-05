@@ -163,10 +163,17 @@ Tally webhook
 intake-tally.ts (script) ──▶ artifacts/<slug>/intake.json
    │
    ├─▶ [Palette Designer] ──▶ palette.json ──▶ ✔ checkpoint
-   └─▶ [Copywriter] ───────▶ copy.json ─────▶ ✔ checkpoint   (palette ∥ copy)
+   ├─▶ [Logo Designer]* ───▶ logo/mark.svg ─▶ ✔ checkpoint   (*solo se brand.logo=null)
+   └─▶ [Copywriter] ───────▶ copy.json
+            │        ▲
+            ▼        │ fix (max 3 round)
+       [Copy Critic] ┘ ──▶ copy-review.json PASS ──▶ ✔ checkpoint   (palette ∥ copy)
                                 │ (caption gallery)
                                 ▼
-       [Image Prompt Gen] ──▶ images.json ──▶ ✔ checkpoint
+       [Image Prompt Gen] ──▶ img/*.jpg + images.json
+            │        ▲
+            ▼        │ fix_prompt sui soli scarti (max 3 round)
+       [Image Critic] ┘ ──▶ image-review.json PASS ──▶ ✔ checkpoint
                                 │
                                 ▼
        assemble-site.ts ──▶ site.json ──▶ parseSiteConfig (Zod)
@@ -174,6 +181,13 @@ intake-tally.ts (script) ──▶ artifacts/<slug>/intake.json
                                 ▼
        npm run build (Astro) ──▶ check-contrast ──▶ deploy Cloudflare
 ```
+
+**Direttiva qualità (2026-07-05, decisione utente)**: tutti gli agenti girano sul
+**modello di punta disponibile con effort massimo (xhigh)** — oggi Fable 5 / Opus 4.8.
+La velocità NON è un criterio: l'asticella è il lavoro di uno sviluppatore senior e di
+un web designer senior umani. Gli step delicati non si generalizzano: si spezzano in
+sotto-agenti specifici con un critico avversariale dedicato dove l'errore costa
+(copy→copy-critic è il primo; stesso pattern previsto per immagini e logo).
 
 **Il contratto che rende tutto intercambiabile**: ogni step produce un **artifact JSON su disco**
 (`artifacts/<slug>/{intake,palette,copy,images}.json`, mappa piatta `path → valore`).

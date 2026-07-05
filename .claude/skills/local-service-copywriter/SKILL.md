@@ -47,7 +47,7 @@ Produci SOLO copy strutturato per sezione, in italiano, per convertire visitator
 ## Concisione (tetti misurati sui siti consegnati — vincolanti)
 - **Hero `subtitle`:** UNA frase, ≤ 15 parole («Dallo smantellamento alla posa, tutto gestito da esperti»). I numeri di prova NON vanno qui: vanno in TrustBar/badges.
 - **Lead di sezione (`subtitle`/`intro`):** una frase, ≤ 15 parole.
-- **Desc delle card (servizi/processo/punti):** UNA frase, ≤ 14 parole.
+- **Desc delle card (processo/punti):** UNA frase, ≤ 14 parole. **Eccezione — card Servizi:** la desc ELENCA i servizi reali del form coperti dalla card (≤150 caratteri, vedi protocollo dedicato).
 - **Bullets:** 2–4 parole («Docce walk-in», «Rinnovo appartamenti»).
 - **Micro-benefit:** titolo 2–3 parole + frase 4–7 parole («In Tempo — Rispettiamo il tuo tempo e programma.»).
 - **FAQ:** risposta diretta subito («Sì.» / «No.» quando possibile), poi 1–2 frasi con un fatto.
@@ -60,13 +60,35 @@ Produci SOLO copy strutturato per sezione, in italiano, per convertire visitator
 ## Regole per sezione
 - **Hero:** `title` 4–9 parole, verbo in prima persona plurale + la promessa martello (es. «Realizziamo la **tua visione**», «Ristrutturiamo il tuo bagno in **soli 5 giorni**»), con **una** frase in `**accent**`. `subtitle` = una frase sul come (≤15 parole), SENZA numeri. `ctas` = **UNA** primaria (+ telefono secondaria). `badges` = 1–3 rassicurazioni brevi («Sopralluogo gratuito», «Risposta in 24h»).
 - **Value/Pain:** PAS. Scegli **una** forma — o il racconto (problema→agitazione→soluzione) **oppure** la lista dolore→beneficio — non entrambe con gli stessi contenuti (niente ripetizioni). Il titolo nega il dolore («Ristrutturare il bagno non deve richiedere **settimane**»).
-- **Servizi (card):** titolo = **nome breve del servizio, 2–4 parole** («Finiture Interne», «Ristrutturazione Completa Bagno») — MAI titoli-slogan con lineetta o beneficio in coda. Il beneficio sta nella desc (una frase) e nei bullets.
+- **Servizi (card):** segui il **Protocollo Servizi** qui sotto — è la sezione più delicata della pagina e ha regole proprie. Titolo card = nome breve, 2–4 parole, MAI titoli-slogan.
 - **Processo:** 3–5 step in linguaggio piano, ognuno toglie un'ansia; primo step gratuito/basso impegno; l'ultimo è il godimento del risultato («Goditi il nuovo bagno»).
 - **TrustBar:** se il brief ha numeri veri usali («214 cantieri»); **se non ci sono numeri NON inventarli**: usa promesse-chip qualitative `{value: "Consegna in 5 giorni", label: "Rapida e affidabile"}`, come i siti consegnati.
 - **Stats/KPI:** solo numeri verificabili dal brief («214 cantieri», «47 recensioni · 4,8/5»).
 - **Testimonianze:** SOLO quelle del brief; formato problema→cambiamento + nome + zona.
 - **FAQ:** anticipa obiezioni (costo, tempi, disagi, permessi, garanzie, «coprite la mia zona?»).
 - **Contatti/CTA finale:** ripeti la stessa azione; ribadisci l'offerta a basso impegno.
+
+## Protocollo Servizi (2026-07-05 — fine-tuning dopo errore reale di copertura)
+
+La sezione Servizi È l'offerta dell'azienda: un servizio dimenticato = un cliente perso;
+un servizio inventato = una promessa falsa. Procedura obbligatoria, nell'ordine:
+
+1. **Atomizza**: estrai dal form OGNI servizio dichiarato come voce atomica, spezzando
+   le stringhe composte («Ristrutturazione bagni e cucine» → bagni; cucine). Scrivi la
+   lista numerata PRIMA di scrivere qualunque copy.
+2. **Capisci l'identità**: dal settore + descrizione + cliente tipo, stabilisci cosa FA
+   l'azienda (non cosa fa "di solito" il settore). Errore reale da non ripetere: impresa
+   di «Costruzioni edili civili e industriali + ristrutturazioni + manutenzioni»
+   presentata come pura ditta di ristrutturazioni — le costruzioni erano sparite.
+3. **Raggruppa in 3–5 macro-categorie** = le card. 3 se l'offerta è essenziale (≈ ≤6 voci
+   atomiche), 4–5 se è ampia. Ogni voce atomica finisce in ESATTAMENTE una card. I nomi
+   delle card usano il linguaggio del settore e del cliente, non etichette da agenzia.
+4. **Riempi le card**: `desc` = elenca i servizi ESATTI del form coperti dalla card, con
+   le parole del cliente (≤150 caratteri, niente parafrasi creative); `bullets` (3–5,
+   2–4 parole) = le voci più vendibili della card, verbatim-ish dal form.
+5. **Tabella di copertura (obbligatoria)**: consegna insieme all'artifact la mappa
+   `voce atomica del form → card che la copre`. Se una voce resta scoperta o una card
+   contiene un servizio NON nel form → la sezione è FALLITA, rifalla prima di consegnare.
 
 ## CTA
 - Un solo obiettivo, **stessa** CTA ripetuta 3–5× (hero, dopo la prima prova, finale) + CTA sticky su mobile.
@@ -89,7 +111,8 @@ Non fabbricare recensioni, numeri, nomi, certificazioni. Solo dati del brief o p
 ## Checklist finale (auto-valutazione, DOPO il passo di revisione)
 - [ ] registro noi+tu coerente (zero «voi/Lei/vostro»)
 - [ ] promessa martello ripetuta su hero, trust bar, mini-CTA/servizi e CTA finale
-- [ ] tetti di lunghezza rispettati (subtitle ≤15, desc card ≤14, bullets 2–4 parole)
+- [ ] tetti di lunghezza rispettati (subtitle ≤15, desc card ≤14 — servizi ≤150 char, bullets 2–4 parole)
+- [ ] **Protocollo Servizi**: tabella di copertura completa — ogni voce atomica del form in una card, zero servizi inventati, 3–5 card coerenti con l'ampiezza dell'offerta
 - [ ] titoli card = nome servizio 2–4 parole (niente titoli-slogan)
 - [ ] zero parole in lista nera
 - [ ] ogni claim ha un fatto (test concorrente)

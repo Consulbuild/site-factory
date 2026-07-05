@@ -172,14 +172,15 @@
       "constraints": {
         "maxChars": 40
       },
-      "note": "servizi REALI del cliente (dal form), 3-4 card"
+      "note": "MACRO-CATEGORIE dei servizi REALI del form: leggere TUTTI i servizi dichiarati, raggrupparli in 3-5 card (3 se l'offerta è essenziale, 5 se è ampia). Ogni servizio del form deve finire in ESATTAMENTE una card; vietato inventare servizi."
     },
     {
       "path": "sections[3].props.items[*].desc",
       "agent": "copy",
       "constraints": {
-        "maxChars": 110
-      }
+        "maxChars": 150
+      },
+      "note": "dettaglia la card riportando i servizi ESATTI del form che copre (parole del cliente, non parafrasi creative)"
     },
     {
       "path": "sections[3].props.items[*].bullets[*]",
@@ -187,7 +188,7 @@
       "constraints": {
         "maxChars": 36
       },
-      "note": "3 voci concrete incluse nel servizio"
+      "note": "3-5 voci = i servizi del form coperti dalla card, concreti e verbatim-ish"
     },
     {
       "path": "sections[4].props.title",
@@ -360,7 +361,7 @@
         "width": 1200,
         "role": "card servizio"
       },
-      "note": "Una per card, soggetto = il servizio della card (items[i].title). Stile coerente tra le 4: stessa luce, stesso registro fotografico."
+      "note": "Una per card, soggetto = il servizio della card (items[i].title). Stile coerente tra tutte le card: stessa luce, stesso registro fotografico."
     },
     {
       "path": "sections[4].props.images[*].src",
