@@ -25,9 +25,19 @@ trattamento foto), mai da generazione libera.
 
 ## Progress [viva]
 
-- [ ] M0a — spike Terrazzo round-trip
-- [ ] M0b — spike Dembrandt su PMI italiane
-- [ ] M0c — spike runtime Python (UIClip/CSD/Vendi) via uv
+- [x] 2026-07-10 M0a — Terrazzo PROMOSSO: round-trip fedele al 100% (0 divergenze su
+      49 custom property × 2 preset + 6 stili risolti di controllo), hackLines=10 ≤ 30,
+      repo ripristinato pulito. Cascata cliente>preset verificata intatta (le var()
+      restano verbatim nel CSS generato). Evidenza: scratchpad spikes/m0a/report.md.
+- [x] 2026-07-10 M0b — Dembrandt (v0.23.1) ADOTTATO: 4/4 estrazioni riuscite al primo
+      colpo, accuratezza 3/3 sui siti del criterio (4/4 col bonus) contro ground truth
+      da computed styles, DTCG valido; catena check opt-out provata (curl, pronta per
+      M5). Evidenza: scratchpad spikes/m0b/report.md.
+- [x] 2026-07-10 M0c — Runtime Python PROMOSSO: uv+Python 3.12.13, torch MPS ok, UIClip
+      0.25s/img a caldo offline e discrimina (0.679 sano vs 0.147 degradato —
+      riverificato di persona fuori dallo spike), CSD 768-dim 0.16s/img, Vendi ok.
+      Download totali 2.9GB (gitignorati). Infrastruttura REALE in factory/tools/
+      (pyproject pin 3.12, scripts/, report.md). Evidenza: factory/tools/report.md.
 - [ ] M1 — VRT Playwright + gate deterministici L1
 - [ ] M2 — ponte DTCG: 6 preset serializzati + build + manifest unico
 - [ ] M3 — quick win: font self-hosted + palette AA-by-construction (HCT)
@@ -40,7 +50,31 @@ trattamento foto), mai da generazione libera.
 
 ## Sorprese & Scoperte [viva]
 
-(vuota — da compilare durante l'implementazione, con evidenza)
+- 2026-07-10 (M0a) — **Terrazzo `makeCSSVar()` collassa `--step--1` in `--step-1` in
+  SILENZIO**: 86 dichiarazioni emesse contro 87 attese, nessun warning. Contromisura per
+  M2: il builder deve avere un check deterministico "n. dichiarazioni emesse = n. token
+  sorgente" (e valutare il rename della property nel renderer). Evidenza: report M0a.
+- 2026-07-10 (M0a) — Dettagli Terrazzo 2.4.0 per M2: notazione stringa per
+  color/dimension/duration è lint error (servono oggetti `{value, unit}` /
+  `colorSpace+components`); `legacyHex:true` necessario; tracking in `em` va come
+  string; shadow multi-layer richiede transform custom (8 righe: l'emissione nativa
+  `0px 1px 2px 0px #hex` diverge dalla sorgente). `color-mix()` su var() e `clamp()`
+  passano verbatim con `$type:"string"` + `$extensions raw:true`.
+- 2026-07-10 (M0b) — **I 2 siti ConsulBuild live sono build legacy GoHighLevel (font
+  Barlow), NON l'output Astro/Archivo del repo**: le dist in `out/<slug>/` non sono
+  deployate su quei domini. Impatto su M4: il gold set "siti consegnati reali" va
+  costruito dai render del REPO (`out/<slug>/dist`), non dagli URL live. Il primary
+  repo (#2f568e) resta valido e ritrovato dall'estrattore.
+- 2026-07-10 (M0b) — Rumori sistematici di dembrandt da filtrare a valle (M6):
+  `#000000` sempre in testa alla palette (conteggio gonfiato dai default); l'accent
+  "semantico" è inaffidabile (blu default browser/GHL in 2 casi su 4 — fidarsi del
+  primary, ricavare l'accent dall'evidenza per frequenza+contesto); typography.styles
+  ordinata per stili distinti, non per volume (usare il campo `context`). Inoltre
+  dembrandt auto-clicca "accept" sui cookie banner: da annotare nel log del gate M5.
+- 2026-07-10 (M0c) — transformers 5.13: `get_image/text_features` ritorna
+  `BaseModelOutputWithPooling` → fix `.pooler_output` in `scripts/uiclip_score.py`.
+  Per M6: tenere i modelli caricati in un processo long-running (il load 0.4–6s domina
+  sullo score 0.16–0.25s) e `HF_HUB_OFFLINE=1` dopo il primo download.
 
 ## Decision Log [viva]
 
@@ -54,6 +88,24 @@ trattamento foto), mai da generazione libera.
   presente in `~/.claude/skills/impeccable/scripts/detector/` (invocazione esatta da
   verificare in M1). `StickyCta` ESISTE già (componente + blueprint): la ricerca su quel
   punto è superata, non va costruito.
+- 2026-07-10 — M0b, scelta siti di prova (deviazione minore dal piano, che prevedeva
+  "scelti da Mattia"): per non bloccare lo spike si usano 2 siti consegnati da
+  ConsulBuild (ssccostruzionisrls.it, costruzionigeneralidilaceciliagiovanni.it — ground
+  truth nota nel repo: Archivo, primary #2f568e) + 2 esterni già noti al progetto
+  (newfutureservice.it, designprojectroma.it), con check opt-out eseguito comunque su
+  tutti come prova generale del gate M5. Lo spike è rilanciabile in minuti su siti scelti
+  da Mattia se vorrà un campione diverso. Alternativa scartata: chiedere e aspettare.
+- 2026-07-10 — **D2 RISOLTA (esito M0a): si adotta Terrazzo** per il builder M2, con due
+  contromisure obbligatorie: transform custom per le shadow e check "dichiarazioni
+  emesse = token sorgente" contro il collasso silenzioso di `--step--1`. Alternativa
+  scartata: emitter in-house (non necessario, fedeltà 100% con 10 righe di hack).
+- 2026-07-10 — **M0b RISOLTA: si adotta dembrandt (v0.23.1)** come estrattore della
+  fabbrica, col post-filtro del rumore documentato in Sorprese. Fallback in-house non
+  necessario (resta descritto nel piano come piano B se il progetto venisse abbandonato).
+- 2026-07-10 — **M0c RISOLTA: runtime uv/Python 3.12 promosso** (UIClip+CSD+Vendi tutti
+  operativi su MPS, offline, sotto i 5s). `samples/` aggiunto al .gitignore di
+  factory/tools: gli screenshot di siti terzi non si versionano (igiene TDM "solo il
+  tempo necessario"); si rigenerano al bisogno.
 
 ## Contesto e orientamento
 

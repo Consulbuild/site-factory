@@ -1,0 +1,17 @@
+[project]
+name = "tools"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "clip",
+    "ftfy>=6.3.1",
+    "numpy>=2.5.1",
+    "pillow>=12.3.0",
+    "torch>=2.13.0",
+    "torchvision>=0.28.0",
+    "transformers>=5.13.0",
+    "vendi-score>=0.0.3",
+]
+
+[tool.uv.sources]
+clip = { git = "https://github.com/openai/CLIP.git" }
