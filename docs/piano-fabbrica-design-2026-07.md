@@ -38,7 +38,14 @@ trattamento foto), mai da generazione libera.
       riverificato di persona fuori dallo spike), CSD 768-dim 0.16s/img, Vendi ok.
       Download totali 2.9GB (gitignorati). Infrastruttura REALE in factory/tools/
       (pyproject pin 3.12, scripts/, report.md). Evidenza: factory/tools/report.md.
-- [ ] M1 — VRT Playwright + gate deterministici L1
+- [x] 2026-07-10 M1 — VRT Playwright + gate deterministici L1. Accettazione osservata:
+      `npx playwright test --grep @visual` verde 12/12 (×2 run consecutivi, stabilità);
+      mutation test: `--brand-radius-card` di terra alterato → falliscono SOLO
+      terra-390/terra-1280 (10 passed), ripristino pulito; `gate:overflow` esce 0 sui 6
+      preset e 1 sulla fixture degradata (scrollWidth 1490>390); `gate:tokens` pulito
+      (statico + 4/4 computed per preset); `gate:impeccable` produce JSON filtrato
+      (3 regole whitelistate motivate, 4 residui overused-font → M4); suite @a11y
+      operativa (trova violazioni reali → M4). 144 baseline (47MB) in git.
 - [ ] M2 — ponte DTCG: 6 preset serializzati + build + manifest unico
 - [ ] M3 — quick win: font self-hosted + palette AA-by-construction (HCT)
 - [ ] M4 — critico visivo calibrato (gold set, κ) + re-audit dei 5 preset
@@ -75,6 +82,28 @@ trattamento foto), mai da generazione libera.
   `BaseModelOutputWithPooling` → fix `.pooler_output` in `scripts/uiclip_score.py`.
   Per M6: tenere i modelli caricati in un processo long-running (il load 0.4–6s domina
   sullo score 0.16–0.25s) e `HF_HUB_OFFLINE=1` dopo il primo download.
+- 2026-07-10 (M1) — **Astro auto-incrementa la porta**: l'astro dev dell'editor
+  (lanciato per 4321, finito su 4322) veniva riusato in silenzio da
+  `reuseExistingServer:true` → i test giravano sul rendering DEV con dev toolbar. E i
+  locator Playwright ATTRAVERSANO gli shadow root (18 `section` viste contro le 9 di
+  querySelectorAll: le 9 extra erano della toolbar, invisibili → timeout). Fix triplo:
+  porta dedicata 4787 + `reuseExistingServer:false` (errore esplicito se occupata) +
+  locator scopati `body >`. Le prime baseline erano contaminate: cancellate e rigenerate.
+- 2026-07-10 (M1) — Le immagini lazy della Gallery gareggiano col decode durante gli
+  screenshot per-sezione (flake 19% pixel su atelier): fix eager+`decode()` prima degli
+  shot. Le baseline restano dipendenti da Unsplash finché il golden sample usa URL
+  remoti: se ri-flappa, cache locale via route interception.
+- 2026-07-10 (M1) — Semantica corretta del check computed di lint-tokens: "elemento =
+  token" era sbagliato (i re-skin per-preset sono leciti: canon `.surface-card` radius 0
+  deliberato). Confronto giusto: elemento nel componente vs SONDA con la stessa classe
+  semantica; per i font conta la prima famiglia (i componenti aggiungono lo stack di
+  fallback Tailwind, conforme).
+- 2026-07-10 (M1) — **I gate trovano problemi reali sui preset attuali** (input M4):
+  axe color-contrast serious su 12/12 celle (1–29 nodi; peggiori: span dell'eyebrow,
+  `.accent-word` su hero scuro, `.t-lead`) — conferma il sospetto di CLAUDE.md sui 5
+  preset da ri-auditare; impeccable: 4 residui `overused-font` (Inter/Fraunces/Space
+  Grotesk/Plus Jakarta sui preset alternativi) — input per la font-whitelist M3 e il
+  re-audit M4.
 
 ## Decision Log [viva]
 
@@ -106,6 +135,11 @@ trattamento foto), mai da generazione libera.
   operativi su MPS, offline, sotto i 5s). `samples/` aggiunto al .gitignore di
   factory/tools: gli screenshot di siti terzi non si versionano (igiene TDM "solo il
   tempo necessario"); si rigenerano al bisogno.
+- 2026-07-10 — (M1) `rounded-full` AMMESSO dal lint-tokens, in deviazione dall'esempio
+  di CLAUDE.md: lo standard consegnato lo usa deliberatamente per i badge circolari
+  (nodo processo, FAB chiamata) e un cerchio è un cerchio in ogni preset. Il lint
+  bandisce le scale estetiche (shadow-sm..2xl, rounded-sm..3xl, text-xs..9xl), gli hex
+  letterali e gli style= non funzionali (ammessi solo env(/var().
 
 ## Contesto e orientamento
 

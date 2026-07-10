@@ -1,0 +1,18 @@
+{
+  "descrizione": "Regole del detector impeccable in conflitto DELIBERATO con lo standard ConsulBuild (site-renderer/DESIGN.md). Ogni voce cita il motivo; 'soloPreset' limita l'eccezione a quei preset. Consumata da site-renderer/scripts/run-impeccable.mjs.",
+  "ignora": [
+    {
+      "regola": "single-font",
+      "soloPreset": ["meridian"],
+      "motivo": "Lo standard usa UNA sola famiglia (Archivo) per scelta di brand — DESIGN.md §Tipografia. Per gli altri preset e per i candidati della fabbrica la regola resta attiva."
+    },
+    {
+      "regola": "numbered-section-markers",
+      "motivo": "Il processo numerato 01–04 è grammatica deliberata dello standard (DESIGN.md §5; CLAUDE.md: numeri solo su sequenze reali). L'uso improprio nei candidati lo giudica il critico M4."
+    },
+    {
+      "regola": "border-accent-on-rounded",
+      "motivo": "Il border-b-2 accent della navbar sticky è firma dello standard (DESIGN.md §navbar); il finding scatta sull'header, non su card arrotondate."
+    }
+  ]
+}
