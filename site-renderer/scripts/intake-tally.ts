@@ -18,6 +18,7 @@
 //
 // Exit 0 ok · 1 dati/API invalidi · 2 errore d'uso (key mancante, argomenti).
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 
 const FORM_ID = process.env.TALLY_FORM_ID ?? "QKOx9Y"; // "Iniziamo a costruire il tuo sito web 2.0"
@@ -32,6 +33,7 @@ const Q = {
   description: "oOgog5", //  Descrivi in poche righe cosa fa la tua azienda…
   piva: "52rvKd", //         Partita IVA
   yearActive: "G0kLkQ", //   Da che anno è attiva…
+  cityDedicated: "ZlkqX5", // Città (+ provincia) della sede — campo dedicato (dal 2026-07-06)
   address: "O0rLrk", //      Indirizzo completo della sede
   socialChecked: "V8qVqN", // Su quali canali social sei presente?
   socialLinks: "P04l4P", //  Incolla qui i link ai tuoi profili social
@@ -63,6 +65,7 @@ const Q = {
 /* ------------------------------------------------------------------ */
 const args = process.argv.slice(2);
 const listOnly = args.includes("--list");
+const listJson = args.includes("--list-json");
 const latest = args.includes("--latest");
 const subFlag = args.indexOf("--submission");
 const wantedId = subFlag >= 0 ? args[subFlag + 1] : null;
@@ -71,16 +74,15 @@ const outDir = outFlag >= 0 ? args[outFlag + 1] : null;
 
 function apiKey(): string {
   if (process.env.TALLY_API_KEY) return process.env.TALLY_API_KEY;
-  if (existsSync(".env")) {
-    const m = readFileSync(".env", "utf8").match(/^TALLY_API_KEY=(.+)$/m);
-    if (m) return m[1].trim();
-  }
-  console.error("TALLY_API_KEY mancante: mettila in site-renderer/.env (gitignored) o come env var.");
+  // Le key vivono nel Keychain macOS (servizio site-factory), mai in chiaro su disco.
+  const r = spawnSync("/usr/bin/security", ["find-generic-password", "-s", "site-factory", "-a", "TALLY_API_KEY", "-w"], { encoding: "utf8" });
+  if (r.status === 0 && r.stdout.trim()) return r.stdout.trim();
+  console.error("TALLY_API_KEY mancante: aggiungila dal pannello «Chiavi API» dell'editor (Keychain) o passala come env var.");
   process.exit(2);
 }
 
-if (!listOnly && !outDir) {
-  console.error("uso: intake-tally.ts --list | [--submission <id> | --latest] -o <outdir>");
+if (!listOnly && !listJson && !outDir) {
+  console.error("uso: intake-tally.ts --list | --list-json | [--submission <id> | --latest] -o <outdir>");
   process.exit(2);
 }
 
@@ -88,29 +90,65 @@ if (!listOnly && !outDir) {
 /* Fetch + selezione submission                                        */
 /* ------------------------------------------------------------------ */
 type Answer = string | number | string[] | Array<{ id: string; name: string; url: string }> | null;
+type Submission = { id: string; submittedAt: string; responses: Array<{ questionId: string; answer: Answer }> };
 type ApiResponse = {
   questions: Array<{ id: string; type: string; title: string }>;
-  submissions: Array<{ id: string; submittedAt: string; responses: Array<{ questionId: string; answer: Answer }> }>;
+  submissions: Submission[];
+  hasMore?: boolean;
 };
 
-const res = await fetch(`https://api.tally.so/forms/${FORM_ID}/submissions`, {
-  headers: { Authorization: `Bearer ${apiKey()}` },
-});
-if (!res.ok) {
-  console.error(`API Tally: HTTP ${res.status} — ${(await res.text()).slice(0, 200)}`);
-  process.exit(1);
+// Paginazione: l'API Tally torna a pagine (default ~50). Per gestire MOLTI
+// clienti scorriamo tutte le pagine finché hasMore, così --list/--list-json e
+// la selezione submission vedono l'intero form, non solo la prima pagina.
+const KEY = apiKey();
+const submissionsAll: Submission[] = [];
+let questions: ApiResponse["questions"] = [];
+for (let page = 1; ; page++) {
+  const res = await fetch(`https://api.tally.so/forms/${FORM_ID}/submissions?page=${page}`, {
+    headers: { Authorization: `Bearer ${KEY}` },
+  });
+  if (!res.ok) {
+    console.error(`API Tally: HTTP ${res.status} — ${(await res.text()).slice(0, 200)}`);
+    process.exit(1);
+  }
+  const d = (await res.json()) as ApiResponse;
+  if (!Array.isArray(d.questions) || !Array.isArray(d.submissions)) {
+    console.error("Response API inattesa: mancano questions/submissions — struttura cambiata? Loggare e aggiornare il parser.");
+    process.exit(1);
+  }
+  if (page === 1) questions = d.questions;
+  submissionsAll.push(...d.submissions);
+  if (!d.hasMore || d.submissions.length === 0) break;
+  if (page >= 500) break; // guardia anti-loop (500 pagine è oltre ogni caso reale)
 }
-const data = (await res.json()) as ApiResponse;
-if (!Array.isArray(data.questions) || !Array.isArray(data.submissions)) {
-  console.error("Response API inattesa: mancano questions/submissions — struttura cambiata? Loggare e aggiornare il parser.");
-  process.exit(1);
-}
+const data: ApiResponse = { questions, submissions: submissionsAll };
+
+// Estrae una risposta testuale da una submission (per le liste ricche).
+const answerText = (s: Submission, qid: string): string => {
+  const v = s.responses.find((r) => r.questionId === qid)?.answer;
+  if (typeof v === "string") return v.replace(/\s+/g, " ").trim();
+  if (Array.isArray(v)) return v.map((x) => (typeof x === "string" ? x : (x?.name ?? ""))).join(", ");
+  return v == null ? "" : String(v);
+};
 
 if (listOnly) {
   for (const s of data.submissions) {
-    const name = s.responses.find((r) => r.questionId === Q.businessName)?.answer ?? "?";
-    console.log(`${s.id}  ${s.submittedAt}  ${name}`);
+    console.log(`${s.id}  ${s.submittedAt}  ${answerText(s, Q.businessName) || "?"}`);
   }
+  process.exit(0);
+}
+
+if (listJson) {
+  // Lista ricca per la GUI: consente la ricerca per nome/referente/telefono
+  // sui clienti NON ancora importati, senza doverli importare.
+  const rows = data.submissions.map((s) => ({
+    id: s.id,
+    submittedAt: s.submittedAt,
+    businessName: answerText(s, Q.businessName),
+    ownerName: answerText(s, Q.ownerName),
+    phone: answerText(s, Q.phone),
+  }));
+  console.log(JSON.stringify(rows));
   process.exit(0);
 }
 
@@ -163,18 +201,21 @@ const slug = businessName
   .replace(/[^a-z0-9]+/g, "-")
   .replace(/^-+|-+$/g, "");
 
-// città: euristica dall'indirizzo libero — le parole dopo l'ultimo numero
-// (civico o CAP), tolta l'eventuale sigla provincia. Se fallisce → marker.
+// città: fonte PRIMARIA = campo dedicato "Città (e provincia) della sede"
+// (aggiunto al form il 2026-07-06). Per le submission vecchie che non hanno
+// quel campo, fallback all'euristica dall'indirizzo libero (parole dopo
+// l'ultimo numero, tolta la sigla provincia). Flag solo se città sconosciuta.
 const address = text(Q.address);
 function extractCity(addr: string): string | null {
   const tokens = addr.split(/[\s,]+/).filter(Boolean);
   let lastNum = -1;
   tokens.forEach((t, i) => { if (/^\d+[a-zA-Z]?$/.test(t)) lastNum = i; });
-  let tail = tokens.slice(lastNum + 1).filter((t) => !/^\(?[A-Z]{2}\)?$/.test(t));
+  const tail = tokens.slice(lastNum + 1).filter((t) => !/^\(?[A-Z]{2}\)?$/.test(t));
   return lastNum >= 0 && tail.length ? tail.join(" ") : null;
 }
-const city = extractCity(address);
-if (!city) review.push(`città non estraibile dall'indirizzo "${address}" — inserirla a mano in meta.city`);
+const cityDedicated = text(Q.cityDedicated);
+const city = cityDedicated || extractCity(address);
+if (!city) review.push(`città non ricavabile: campo città vuoto e indirizzo "${address}" non parsabile — inserirla a mano in meta.city`);
 if (address && !/\b\d{5}\b/.test(address)) review.push(`indirizzo senza CAP: "${address}"`);
 
 // social: solo i link realmente forniti, classificati per dominio (chiavi dello schema)

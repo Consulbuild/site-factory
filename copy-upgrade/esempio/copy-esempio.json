@@ -1,0 +1,31 @@
+{
+  "_nota": "Campione RICOSTRUITO (l'originale mancava dallo zip) con le violazioni note del LEGGIMI: 2 sequenze ripetute in 3 slot, 2 frasi bandite, 1 pattern bandito da regex, avvisi (frasi deboli, connettivi, lineette). Attesi: 5 bloccanti + 4 avvisi. cta.button.label non scatta: escluso dal controllo sequenze, formula di cortesia consentita.",
+
+  "meta.seoTitle": "Ristrutturazioni a Milano: bagni e cucine chiavi in mano",
+  "meta.seoDescription": "Ristrutturazioni complete a Milano — richiedi un preventivo gratuito.",
+
+  "sections[0].props.title": "Rifacciamo la tua casa con lavori chiavi in mano e **tempi certi**",
+  "sections[0].props.subtitle": "Siamo il punto di riferimento per le ristrutturazioni a Milano.",
+
+  "sections[1].props.intro": "Seguiamo ogni progetto a 360 gradi, dal preventivo alla consegna.",
+  "sections[1].props.points[*].desc": [
+    "Una squadra fissa segue il cantiere ogni giorno.",
+    "Non solo ristrutturiamo il tuo bagno, ma anche la cucina e il soggiorno.",
+    "Cura dei dettagli in ogni fase, dalla demolizione alla pittura."
+  ],
+
+  "sections[2].props.steps[*].desc": [
+    "Sopralluogo con una squadra fissa e preventivo entro 48 ore.",
+    "Inoltre coordiniamo noi i fornitori; tuttavia il referente resta uno solo.",
+    "Inoltre ti consegniamo la casa pulita. Infine, il collaudo insieme a te."
+  ],
+
+  "sections[3].props.faq[*].a": [
+    "Sì — il preventivo è gratuito e senza impegno.",
+    "Il nostro team esperto lavora con una squadra fissa anche nei condomini."
+  ],
+
+  "sections[4].props.title": "Il tuo preventivo per lavori chiavi in mano — rispondiamo in 24 ore",
+  "sections[4].props.cta.label": "Richiedi un preventivo gratuito",
+  "cta.button.label": "Richiedi un preventivo gratuito"
+}

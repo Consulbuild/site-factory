@@ -7,3 +7,5 @@ dist/
 .env
 .env.*
 site-renderer/out/
+# artifact di build per-cliente (build.ts pulisce e ricopia da out/<slug>/img)
+site-renderer/public/media/

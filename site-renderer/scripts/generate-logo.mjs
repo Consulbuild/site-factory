@@ -12,6 +12,7 @@
 // Senza key: exit 2 con istruzioni (stesso pattern di probe-bfl.mjs).
 // Exit 0 ok · 1 errore API/file · 2 uso/key mancante.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { dirname } from "node:path";
 
 const args = process.argv.slice(2);
@@ -61,12 +62,11 @@ if (recolorSrc) {
 /* ---------------- generazione Recraft ---------------- */
 function apiKey() {
   if (process.env.RECRAFT_API_KEY) return process.env.RECRAFT_API_KEY;
-  if (existsSync(".env")) {
-    const m = readFileSync(".env", "utf8").match(/^RECRAFT_API_KEY=(.+)$/m);
-    if (m) return m[1].trim();
-  }
+  // Le key vivono nel Keychain macOS (servizio site-factory), mai in chiaro su disco.
+  const r = spawnSync("/usr/bin/security", ["find-generic-password", "-s", "site-factory", "-a", "RECRAFT_API_KEY", "-w"], { encoding: "utf8" });
+  if (r.status === 0 && r.stdout.trim()) return r.stdout.trim();
   console.error(`RECRAFT_API_KEY mancante.
-Questo generatore va eseguito quando la chiave sarà disponibile:
+Aggiungila dal pannello «Chiavi API» dell'editor (Keychain) o passala come env:
   RECRAFT_API_KEY=xxx node scripts/generate-logo.mjs …
 Crea la chiave su https://www.recraft.ai (piano PAID obbligatorio: il free
 non dà diritti commerciali sugli output — mai usarlo per loghi di clienti).`);

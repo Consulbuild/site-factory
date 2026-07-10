@@ -6,7 +6,7 @@ description: Per ogni sezione che richiede immagini, sceglie il modello FLUX.2 (
 # Generatore prompt + immagini (FLUX.2)
 
 ## Ruolo
-Per ogni immagine richiesta da una sezione: scegli il modello FLUX.2, scrivi il prompt, chiama l'API BFL, e restituisci l'oggetto immagine **nel formato dello schema** — `image: { src, alt }` (Gallery/BeforeAfter aggiungono `caption`), dove `src` = URL generato e `alt` = alt in **italiano**. Tieni traccia anche di `{ model, aspect_ratio, prompt }` per il checkpoint. **Tutte le immagini di un sito devono sembrare lo stesso servizio fotografico.**
+Per ogni immagine richiesta da una sezione: scegli il modello FLUX.2, scrivi il prompt, chiama l'API BFL via lo script provider, e salvi il **file locale** in `out/<slug>/img/` con `alt` in **italiano**. Tieni traccia di `{ model, width, height, prompt, seed }` per il checkpoint (nella pipeline editor: `images-trace.json`, vedi «Formato artifact»). **Tutte le immagini di un sito devono sembrare lo stesso servizio fotografico.**
 
 ## Fonte delle immagini (policy — PRIMA di scegliere il modello)
 Gerarchia per sezione (aggiornata 2026-07-05 su decisione utente):
@@ -15,14 +15,16 @@ Gerarchia per sezione (aggiornata 2026-07-05 su decisione utente):
 3. **Card servizi / step processo / About** = foto reali del cliente se disponibili, altrimenti generate (flux-2 [pro]).
 Le foto reali passano invariate (`src` dell'asset + `alt` tuo); le didascalie della gallery descrivono il lavoro specifico («Posa piastrelle», «Isolamento pareti») — mai 6 didascalie identiche.
 
-## ⚠ Il soggetto viene dal COPY del sito, mai dal repertorio del settore
-Errore da non commettere MAI: immagini generiche "da edilizia" per una PMI che fa
-altro (l'operaio che monta finestre sul sito di una ditta di imbianchini). Il soggetto
-di OGNI immagine deriva dai contenuti già scritti: per le card servizi da
-`items[i].title + desc` (i servizi REALI del form), per la gallery dalle `caption`
-del copywriter, per l'hero dall'attività principale dichiarata nel brief. Prima di
-scrivere un prompt, rileggi lo slot di copy corrispondente e chiediti: «questa scena
-mostra ESATTAMENTE questo servizio?»
+## ⚠ Il soggetto viene dal CONTESTO e dal COPY, mai dal repertorio del settore
+**`contesto.json` è la verità primaria** (curata e verificata da un umano): mestiere
+reale, zona, target — hero e style bible si ancorano lì, non a ciò che "di solito"
+fa il settore. Errore da non commettere MAI: immagini generiche "da edilizia" per
+una PMI che fa altro (l'operaio che monta finestre sul sito di una ditta di
+imbianchini). Il soggetto di OGNI immagine deriva dai contenuti già scritti: per le
+card servizi da `items[i].title + desc` del copy (i servizi REALI, già curati — non
+reinventarli), per la gallery dalle `caption` del copywriter, per l'hero da
+`identita.frase` del contesto. Prima di scrivere un prompt, rileggi lo slot
+corrispondente e chiediti: «questa scena mostra ESATTAMENTE questo servizio?»
 
 ## Profili per sezione (ogni sezione ha il suo "system prompt" — non generalizzare)
 
@@ -118,6 +120,49 @@ consegna della chiave):
   24 task concorrenti (429 oltre).
 - Tier consapevole del costo: [pro] default ($0.03 primo MP + $0.015/MP extra), [max] solo
   hero/immagini chiave ($0.07 primo MP + $0.03/MP extra).
+
+## Formato artifact (pipeline editor — `claude -p`)
+
+Nella pipeline il prompt dell'orchestratore contiene il **manifest vincolante**:
+quali file produrre (`img/hero.jpg`, `img/card-<i>.jpg`), con quale soggetto,
+profilo, dimensioni e modello. Non decidere tu i nomi né aggiungere immagini:
+il manifest È il contratto. **La gallery NON si genera in pipeline** (solo foto
+reali del cliente, arriveranno da una scheda dedicata): la gerarchia «gallery
+generata col profilo lavori» vale solo fuori dalla pipeline editor.
+
+Scrivi ESATTAMENTE un file di traccia, `out/<slug>/images-trace.json`:
+
+```json
+{
+  "styleBible": "…la stringa riusata in ogni prompt…",
+  "immagini": [
+    {
+      "file": "img/hero.jpg",
+      "sezione": "hero",            // "hero" | "card"
+      "index": 0,                    // 0 per hero, 1-based per le card
+      "riferimento": "…soggetto dal manifest…",
+      "profilo": "hero",
+      "prompt": "…prompt integrale inviato a BFL…",
+      "alt": "…italiano, ≤140 caratteri…",
+      "model": "max",                // "pro" | "max"
+      "width": 1920, "height": 1088,
+      "seed": 42
+    }
+  ]
+}
+```
+
+`images.json` per l'assembler NON lo scrivi tu: lo deriva l'editor alla conferma
+umana dal trace. La key BFL è già nell'ambiente: non cercarla, non stamparla.
+
+## Modalità rigenerazione (solo file elencati)
+
+Quando il prompt elenca file da rigenerare (scarti del critico con `fix_prompt`,
+o selezione dell'operatore): rigenera SOLO quei file — stesso nome, stesse
+dimensioni e profilo del trace, prompt corretto applicando i fix, **seed nuovo**
+— e aggiorna nel trace SOLO le entry rigenerate (prompt/alt/seed). Tutte le
+altre immagini e entry restano intatte. Mantieni lo style bible: l'immagine
+rigenerata deve ancora appartenere allo stesso servizio fotografico.
 
 ## Checklist finale (auto-valutazione)
 - [ ] **Gallery/BeforeAfter = solo foto reali del cliente** (o placeholder «DA CONFERMARE»), didascalie specifiche non ripetute

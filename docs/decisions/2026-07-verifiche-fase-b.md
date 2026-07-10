@@ -139,6 +139,21 @@ headless di `claude -p`** dal backend Next.js (usa il login Max; artifact su dis
 stesso contratto) oppure il token da `claude setup-token`. Da rivalutare quando la
 Fase C parte; il contratto runner-agnostico del punto 1 resta invariato.
 
+✅ **Confermato in produzione (2026-07-06, Fase C parte 1)**: lo spawn headless `claude -p`
+dal backend Next.js (`site-factory-editor/lib/run-step.ts`) funziona col login Max
+(`apiKeySource: "none"`, nessuna `ANTHROPIC_API_KEY`). Flag usati: `--output-format
+stream-json --verbose --model claude-opus-4-8 --effort xhigh --allowedTools Read Skill
+Write --disallowedTools WebSearch WebFetch Bash Edit Task`. Note operative:
+- cwd = repo root (così `.claude/skills` e `.claude/agents` si caricano); il file
+  prodotto va scritto DENTRO il workspace (Write fuori dalla cwd è negato).
+- La cartella NON serve marcarla "trusted": con `--allowedTools` espliciti e path dentro
+  la cwd, i tool girano senza prompt (0 permission_denials).
+- Evento finale affidabile: `{"type":"result","subtype":"success"}`; parser tollerante
+  alle righe non-JSON (warning CLI, hook SessionStart).
+- Primo step reale: `context-enricher` → `contesto.json`, con gate di copertura
+  deterministico e verifica avversariale multi-lente (FAIL→PASS su cliente reale, la
+  skill ha imparato a vietare le promesse-bonus fiscali inventate).
+
 Managed Agents (server-hosted Anthropic) scartati: non caricano skill filesystem.
 Messages API raw scartata: reimplementerebbe skill loading + tool + loop agentico
 senza vantaggi.

@@ -2,6 +2,24 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Regole di ingaggio (dettate da Mattia — vincolanti, non riderivare)
+
+1. **La qualità è l'unico criterio**: niente scorciatoie per velocità; il bar è
+   l'output di uno sviluppatore/copywriter/designer senior UMANO.
+2. **Tool professionale multi-cliente**: l'editor serve a scalare l'agenzia — ordine
+   nella memoria per-cliente, stati sempre coerenti, zero dati sporchi.
+3. **Una scheda per volta, SEMPRE pianificando prima** (plan mode) e con **studio UX
+   /impeccable PRIMA della UI** (poi critique/polish nel browser, entrambi i temi).
+4. **Niente API Anthropic a pagamento**: gli step AI girano via `claude -p` headless
+   col login Max (`--model claude-opus-4-8 --effort xhigh`), MAI `ANTHROPIC_API_KEY`.
+5. **Niente invenzioni**: ogni claim tracciabile a contesto.json/form. Eccezione:
+   le cortesie di norma di settore (preventivo/sopralluogo gratuito) sono consentite.
+6. **Anti-ripetitività**: la big idea si rifrange (verbatim ≤2×), nessuna sequenza di
+   3+ parole in >2 slot — il copy ripetitivo suona robotico e il cliente lo nota.
+7. **Nulla si committa senza chiedere prima.**
+
+Stato lavori e prossimi passi: **`docs/handoff-fase-c.md`**.
+
 ## Comandi
 
 Node è installato in `~/.local` (niente Homebrew): ogni shell deve prima fare
@@ -27,6 +45,21 @@ node --experimental-strip-types scripts/validate-site.ts <path-al-site.json>
 
 Non c'è suite di test né linter: la verifica è `npm run build` verde + `npm run check`
 + il validatore qui sopra.
+
+**Editor Fase C** (`site-factory-editor/`, Next.js 16 + React 19): il suo `CLAUDE.md`
+importa solo un warning su Next.js, quindi i comandi stanno qui.
+
+```bash
+cd site-factory-editor
+npm run dev      # editor su :3000 (spesso già attivo su :3311)
+npm run build    # build Next
+npx tsc --noEmit # type-check (la verifica standard per ogni scheda)
+```
+
+Attenzione: questa è una versione di Next.js con breaking changes rispetto ai dati di
+training — prima di scrivere codice editor leggi le guide in `node_modules/next/dist/docs/`.
+La verifica per scheda è `tsc --noEmit` + `npm run build` + eventuale parity check
+(`scripts/parity-copy.ts`) + run E2E sui clienti reali in `site-renderer/out/`.
 
 ## Principio architetturale (non negoziabile)
 
@@ -139,9 +172,48 @@ tassonomia sezioni). Regole operative nei componenti:
   risolve creando i componenti, **non** indebolendo il tipo con `Partial`.
 - **Fase B**: pipeline multi-agente Claude API che produce il `site.json`
   (piano in `docs/agents-skills-plan.md`; immagini: FLUX.2 via BFL).
-- **Fase C**: editor Next.js locale (`site-factory-editor/`, non ancora creato) —
-  pull dati da Tally, checkpoint di approvazione, deploy su Cloudflare Workers
-  static assets (decisione 2026-07, vedi `docs/decisions/2026-07-verifiche-fase-b.md`).
+- **Fase C**: editor Next.js locale (`site-factory-editor/`) — pull dati da Tally,
+  checkpoint di approvazione, deploy su Cloudflare Workers static assets (decisione
+  2026-07, vedi `docs/decisions/2026-07-verifiche-fase-b.md`).
+  - **Parte 1 fatta** (2026-07-06): lista clienti (ricerca per nome/referente/telefono +
+    refresh manuale da Tally con dedup; `intake-tally.ts --list-json` pagina tutte le
+    submission), setup key Tally, import, tema chiaro/scuro, guardia modifiche non salvate,
+    revisione intake (dual-write brief+intake, flag qualità, checksum P.IVA), e **context-enricher**
+    — nuovo step che via `claude -p` headless (login Max, no API a pagamento) distilla il
+    form in `out/<slug>/contesto.json` (identità, servizi atomizzati→macro, punti di forza
+    tracciabili, promesse consentite/vietate). Skill `context-enricher` + agente omonimo;
+    runner generico `lib/steps.ts` (seam per palette/copy/immagini). Gate di copertura
+    deterministico prima della conferma. Prerequisito: `claude login` attivo.
+    **Riconciliazione intake→contesto** (`lib/contesto-sync.ts`): correggere l'intake dopo
+    la generazione sincronizza automaticamente i campi meccanici (città, tono, colori…) e
+    segnala il drift semantico (settore, descrizione…) con **riallineo AI in modalità
+    update** (`RunMode`, sezione «Modalità aggiornamento» della skill) che rivede solo le
+    parti impattate e preserva la curatela umana — non rigenera da zero. Provenienza in
+    `client.json steps.contesto.fonte/drift`.
+  - **Parte 2 — scheda Palette fatta** (2026-07-07): step `palette` nel registry
+    (`claude -p` con Bash ristretto al solo `check-contrast.mjs`), input primario
+    `contesto.json` (skill palette-designer aggiornata), artifact flat `palette.json`,
+    gate contrasto rieseguito dall'editor (`lib/contrast.ts` spawna lo script della
+    skill — unica fonte del calcolo), scheda con mini-preview su neutri+font veri del
+    preset, tabella WCAG live e «Scurisci finché passa» (`lib/wcag.ts`, copia marcata),
+    e **staleness generica a valle** (`lib/staleness.ts`: hash upstream in
+    `steps.<key>.upstream`, banner/badge ⚠ + ack). Hook run generico `use-step-run`.
+  - **Parte 3 — scheda Copy fatta** (2026-07-07): **seam multi-fase** in
+    `lib/run-step.ts` (`io.claude()` per fase, evento `phase`, StepDef.run() =
+    orchestrazione TS) — contesto/palette convertiti in wrapper sottili; step `copy`
+    = copywriter → gate formato deterministico → copy-critic → correzioni solo sugli
+    slot bocciati (max 3 round, poi umano). Skill copywriter/copy-critic aggiornate a
+    `contesto.json` come verità primaria (macro=card, `promesse_vietate` = bloccante
+    automatico, martello già scelta) + sezione «Formato artifact» (copy.json flat +
+    copy-coverage.json). `lib/slots.ts validateCopyArtifact` = specchio dell'assembler
+    + bound Zod del renderer (parity check `scripts/parity-copy.ts`, helper client-safe
+    in `lib/slots-shared.ts`). Editor 32 slot in ordine di pagina, pannello critico con
+    anchor ai campi, contatori live, update-mode con estratto per-campo
+    (`steps.copy.fonte`). Ack staleness generalizzato
+    (`steps/[step]/ack-upstream`).
+  - Parti successive: immagini (multi-fase prompter→critic, key BFL), build
+    (deterministico: assemble → validate → `SITE_JSON=… astro build` + preview),
+    poi deploy Workers.
 
 Il form di `ContactCTA` è completo lato client (stati loading/errore, honeypot,
 riga informativa GDPR fissa, redirect a `/grazie` al successo) ma **simulato**:

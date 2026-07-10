@@ -31,12 +31,18 @@ const hexColor = z
 const shortText = (max: number) => z.string().max(max);
 const optText = (max: number) => z.string().max(max).default("");
 
-/** Titolo standard: al massimo UNA frase `**accent**`, parole ≤18 glifi. */
+/** Titolo standard: al massimo UNA frase `**accent**`, parole ≤18 glifi.
+ *  Il budget si misura sulla lunghezza VISIBILE (senza i marker `**`): è lo
+ *  stesso conteggio dell'assembler e dell'editor — il valore resta grezzo
+ *  coi marker, che a render li converte renderAccent(). */
 const accentTitle = (max: number) =>
   z
     .string()
     .min(1)
-    .max(max)
+    .refine(
+      (s) => s.replaceAll("**", "").length <= max,
+      `oltre ${max} caratteri visibili (i marker ** non contano nel budget)`,
+    )
     .refine((s) => {
       const marks = (s.match(/\*\*/g) ?? []).length;
       return marks % 2 === 0 && marks <= 2;

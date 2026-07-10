@@ -9,7 +9,9 @@
       "Bash(echo \"npm: $\\(npm --version 2>&1\\)\")",
       "Bash(npx --version)",
       "Bash(echo \"npx: $\\(npx --version 2>&1\\)\")",
-      "Bash(pnpm --version)"
+      "Bash(pnpm --version)",
+      "Read(//Users/mattia/knowledge/**)",
+      "Bash(cp \"/Users/mattia/.claude/plans/users-mattia-claude-projects-site-facto-spicy-barto.md\" \"/Users/mattia/Claude Projects/Site-factory/docs/piano-fabbrica-design-2026-07.md\" && ls -la \"/Users/mattia/Claude Projects/Site-factory/docs/piano-fabbrica-design-2026-07.md\")"
     ]
   }
 }

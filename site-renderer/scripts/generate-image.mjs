@@ -2,7 +2,7 @@
 // È il punto di swap del provider immagini: l'agente image-prompter e la futura UI
 // chiamano SOLO questo script; i prompt (con i profili per sezione) vivono nella skill.
 //
-// Uso (da site-renderer/, BFL_API_KEY in env o in .env):
+// Uso (da site-renderer/, BFL_API_KEY in env o nel Keychain macOS):
 //   node scripts/generate-image.mjs --prompt "…" --width 1920 --height 1088 \
 //     --model pro|max --out out/x/img/hero.jpg [--seed 42]
 //
@@ -10,7 +10,8 @@
 // max 4MP, output jpeg; gli URL firmati di consegna scadono in ~10 min → download
 // IMMEDIATO, mai riusare l'URL BFL. Poll sulla polling_url restituita, mai hardcoded.
 // Exit 0 ok · 1 errore API/timeout · 2 uso/key mancante.
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { writeFileSync, mkdirSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { dirname } from "node:path";
 
 const args = process.argv.slice(2);
@@ -34,12 +35,11 @@ if ((width * height) > 4_194_304) {
 
 function apiKey() {
   if (process.env.BFL_API_KEY) return process.env.BFL_API_KEY;
-  if (existsSync(".env")) {
-    const m = readFileSync(".env", "utf8").match(/^BFL_API_KEY=(.+)$/m);
-    if (m) return m[1].trim();
-  }
+  // Le key vivono nel Keychain macOS (servizio site-factory), mai in chiaro su disco.
+  const r = spawnSync("/usr/bin/security", ["find-generic-password", "-s", "site-factory", "-a", "BFL_API_KEY", "-w"], { encoding: "utf8" });
+  if (r.status === 0 && r.stdout.trim()) return r.stdout.trim();
   console.error(`BFL_API_KEY mancante.
-Questo generatore va eseguito quando la chiave sarà disponibile:
+Aggiungila dal pannello «Chiavi API» dell'editor (Keychain) o passala come env:
   BFL_API_KEY=xxx node scripts/generate-image.mjs …
 Crea la chiave su https://dashboard.bfl.ai (1 credito = $0.01; [pro] ~$0.03/MP, [max] ~$0.07/MP).`);
   process.exit(2);

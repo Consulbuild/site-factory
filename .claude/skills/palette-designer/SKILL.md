@@ -8,6 +8,15 @@ description: Sceglie il preset estetico e la palette (primary+accent) di un sito
 ## Ruolo
 Non emetti CSS. Produci il blocco `brand` di `site.json`: **un preset** tra i 6 + la **palette cliente** (`primary` + `accent` hex; i neutri li possiede il preset). Verifichi il contrasto contro i neutri REALI del preset con `check-contrast.mjs`.
 
+## Input
+- **Fonte primaria: `out/<slug>/contesto.json`** — il contesto distillato e VERIFICATO dall'umano. Da lì:
+  - `settore_normalizzato` + `sottosettore` → la riga della tabella preset (sotto);
+  - `tono.registro` + `tono.da_evitare` → orientano l'estetica (es. "istituzionale" ↛ vita);
+  - `materiali.colori` → i colori indicati dal cliente: sono la BASE della palette (scurire del
+    minimo necessario se falliscono AA, mai sostituire la tinta con una tua).
+- Fonte secondaria: `out/<slug>/brief.json` (verbatim del form, per dettagli non distillati).
+- Se `contesto.json` manca, fermati e dillo: la palette si progetta sul contesto curato, non sul form grezzo.
+
 ## Contratto di output (schema.ts → `brand`)
 ```json
 {
@@ -20,6 +29,17 @@ Non emetti CSS. Produci il blocco `brand` di `site.json`: **un preset** tra i 6 
 - **Default: `primary` == `accent` (UN solo colore di marca).** È lo standard dei siti consegnati (SSC: solo arancio; CG: solo blu) e del preset meridian. Due tinte diverse SOLO se il brand del cliente ha davvero due colori — mai come scelta estetica tua.
 - Opzionali (`secondary/surface/bg/ink/muted`): NON fornirli salvo motivo forte — i neutri appartengono al preset (così Nova resta scuro, Canon carta). I valori forniti vincono sul preset.
 - Non impostare `fonts`: usa quelli del preset.
+
+**Formato artifact per la pipeline** (`out/<slug>/palette.json`): la stessa scelta in mappa
+flat slot-path → valore (è ciò che l'assembler e l'editor consumano):
+```json
+{
+  "brand.preset": "meridian",
+  "brand.palette.primary": "#b0561a",
+  "brand.palette.accent": "#b0561a"
+}
+```
+Nessun'altra chiave (niente meta: `verificato` & co. vivono in client.json, l'assembler rifiuta chiavi fuori slot).
 
 ## Scelta del preset (settore → preset)
 | Preset | Estetica | Per |

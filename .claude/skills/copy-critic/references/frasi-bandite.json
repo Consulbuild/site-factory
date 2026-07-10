@@ -1,0 +1,78 @@
+{
+  "_nota": "UNICA FONTE delle frasi vietate. Letta da scripts/check-slop.mjs (gate deterministico) e dalle skill copywriter e copy-critic. Match case-insensitive su testo normalizzato (marcatori ** rimossi, spazi collassati, apostrofi normalizzati). 'bloccanti' ferma la build; 'avvisi' segnala senza fermare. Quando trovi un nuovo riempitivo ricorrente, aggiungilo qui: vale ovunque.",
+
+  "bloccanti": [
+    "azienda leader", "leader nel settore", "leader del settore", "leader di mercato",
+    "esperienza e professionalità", "professionalità ed esperienza",
+    "professionalità e serietà", "serietà e professionalità",
+    "serietà e competenza", "competenza e serietà",
+    "competenza e professionalità", "professionalità e competenza",
+    "cortesia e professionalità", "professionalità e cortesia",
+    "il partner ideale", "partner ideale per", "il partner professionale",
+    "a 360 gradi", "a 360°",
+    "soluzioni su misura", "soluzioni personalizzate per ogni esigenza",
+    "punto di riferimento",
+    "all'avanguardia",
+    "vasta gamma", "ampia gamma",
+    "giovane e dinamico", "giovane e dinamica", "team giovane e dinamico",
+    "realtà consolidata", "realtà dinamica",
+    "sinonimo di qualità", "sinonimo di eccellenza", "sinonimo di garanzia",
+    "fiore all'occhiello",
+    "trasformiamo i tuoi sogni", "il tuo sogno in realtà", "i tuoi sogni in realtà",
+    "dalla a alla z",
+    "il cliente al centro", "mettiamo al centro il cliente", "al centro del nostro lavoro",
+    "soddisfare le esigenze", "soddisfare ogni esigenza", "le esigenze di ogni cliente",
+    "per ogni esigenza", "ogni tua esigenza",
+    "che si tratti di",
+    "massima serietà", "la massima cura", "massima professionalità",
+    "con passione e dedizione", "passione e dedizione",
+    "garanzia di qualità", "qualità senza compromessi",
+    "miglior rapporto qualità-prezzo", "miglior rapporto qualità prezzo", "ottimo rapporto qualità-prezzo",
+    "in un mondo in cui", "in un'epoca in cui", "nel panorama",
+    "gioca un ruolo fondamentale", "gioca un ruolo cruciale", "riveste un ruolo",
+    "è importante sottolineare", "va sottolineato che", "occorre sottolineare",
+    "si pone come obiettivo", "ci poniamo come obiettivo",
+    "l'ultima frontiera",
+    "know-how"
+  ],
+
+  "bloccanti_regex": [
+    "non solo [^.!?]{0,60} ma anche",
+    "non è (solo |soltanto )?[a-zàèéìòù' ]{2,30}[,:] è ",
+    "non (siamo|è) (un'?|una |il |la )?semplice"
+  ],
+
+  "avvisi": [
+    "attenzione ai dettagli", "cura dei dettagli", "cura del dettaglio",
+    "curato nei minimi dettagli", "nei minimi dettagli",
+    "materiali di alta qualità", "materiali di prima qualità", "materiali di prima scelta",
+    "di alta qualità",
+    "su misura",
+    "nel rispetto dei tempi",
+    "senza stress",
+    "massima resa", "massima efficienza",
+    "professionisti qualificati", "team qualificato", "personale qualificato",
+    "team esperto", "team di esperti",
+    "qualità garantita",
+    "impeccabile"
+  ],
+
+  "avvisi_regex": [],
+
+  "connettivi_meccanici": [
+    "inoltre", "tuttavia", "infine", "dunque",
+    "in conclusione", "di conseguenza", "in sintesi", "in definitiva"
+  ],
+  "max_connettivi": 3,
+  "max_lineette": 2,
+
+  "sequenze_consentite": [
+    "richiedi un preventivo gratuito", "richiedi il tuo preventivo",
+    "preventivo gratuito e senza impegno", "gratuito e senza impegno", "gratuita e senza impegno",
+    "sopralluogo gratuito e senza impegno", "sopralluogo gratuito senza impegno",
+    "risposta entro 24 ore", "entro 24 ore", "entro 48 ore",
+    "termini e condizioni", "privacy policy", "cookie policy"
+  ],
+
+  "slot_esclusi_regex": "(^|[._\\[-])(btn|buttons?|labels?|nav|navbar|badge|badges|eyebrow|kicker|anchor|links?)([._\\[-]|$)"
+}

@@ -35,6 +35,11 @@ Sei avversariale: cerca il motivo per scartare, non per promuovere. Un'immagine
 
 - FAIL se anche una sola immagine è `scarto`. Si rigenerano SOLO gli scarti (il
   prompt corretto + seed nuovo), max 3 round, poi checkpoint umano col review.
+- Il `round` te lo dà il prompt dell'orchestratore: ricopialo verbatim.
+- **Round successivi a una rigenerazione**: rivaluta gli ex-scarti e la coerenza
+  d'insieme (le immagini nuove appartengono ancora allo stesso servizio
+  fotografico?); le immagini già `ok` nei round precedenti restano `ok` — non
+  ribaltare giudizi su file non cambiati.
 
 ## Rubrica visiva (per OGNI immagine, nell'ordine)
 
