@@ -1,0 +1,37 @@
+{
+  "id": "atelier",
+  "version": "1.0.0",
+  "stato": "attivo",
+  "aaker": { "sincerity": 0, "excitement": 0, "competence": 2, "sophistication": 2, "ruggedness": 0, "primaria": "competence" },
+  "settoriConsigliati": ["consulenza", "servizi-professionali", "architettura"],
+  "antiPatterns": ["mestieri artigianali dove serve calore", "settori consumer ad alta energia"],
+  "requisitiContenuto": {},
+  "vincoliCombinazione": {},
+  "photographySpec": {
+    "soggetto": "still minimali, spazi ordinati, dettagli architettonici",
+    "angolo": "composizioni geometriche, molto negative space",
+    "luce": "alta chiave, diffusa",
+    "grading": "quasi monocromo, contrasto contenuto",
+    "mood": "sobrio, essenziale, controllato"
+  },
+  "fluxStyleFragment": {
+    "style": "minimalist photography, generous negative space",
+    "lighting": "high-key, diffused, even",
+    "film_reference": "medium format digital, muted tones",
+    "mood": "calm, precise, restrained",
+    "color_palette": []
+  },
+  "editor": {
+    "nome": "Atelier",
+    "estetica": "minimal near-monocromo, zero ombre",
+    "per": "chi vuole sobrietà",
+    "fontLabel": "Inter Tight + Inter",
+    "serifHeading": false,
+    "serifBody": false
+  },
+  "fonts": {
+    "googleCss": "https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+  },
+  "provenance": { "runId": null, "references": [], "auditRef": null, "nota": "disegnato a mano (pre-fabbrica)" },
+  "changelog": [{ "version": "1.0.0", "data": "2026-07-10", "nota": "serializzazione DTCG del preset esistente (M2)" }]
+}

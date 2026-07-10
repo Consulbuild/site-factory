@@ -13,7 +13,8 @@
     "test:a11y": "playwright test --grep @a11y",
     "gate:overflow": "node scripts/check-overflow.mjs",
     "gate:tokens": "node scripts/lint-tokens.mjs",
-    "gate:impeccable": "node scripts/run-impeccable.mjs"
+    "gate:impeccable": "node scripts/run-impeccable.mjs",
+    "build:presets": "node scripts/build-presets.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.0",
@@ -25,6 +26,8 @@
     "@astrojs/check": "^0.9.9",
     "@axe-core/playwright": "^4.12.1",
     "@playwright/test": "^1.61.1",
+    "@terrazzo/cli": "^2.4.0",
+    "@terrazzo/plugin-css": "^2.4.0",
     "@types/node": "^26.1.0",
     "typescript": "^5.9.3",
     "wrangler": "4.108.0"

@@ -47,6 +47,21 @@ for (const dir of ["src/sections", "src/components"]) {
   }
 }
 
+// ---------- (a2) niente definizioni token a mano in global.css ----------
+// Dopo M2 i token dei preset vivono SOLO in presets.gen.css (generato dai file
+// DTCG): una definizione --brand-*/--step-*/… scritta a mano in global.css
+// bypasserebbe la libreria e la fabbrica.
+{
+  const globalCss = readFileSync(join(ROOT, "src/styles/global.css"), "utf8");
+  globalCss.split("\n").forEach((riga, i) => {
+    if (/^\s*--(?:brand|step|w|heading|eyebrow)[a-zA-Z0-9-]*\s*:/.test(riga)) {
+      errori.push(
+        `src/styles/global.css:${i + 1}: definizione token a mano ("${riga.trim().slice(0, 50)}…") — appartiene a presets/*.tokens.json`,
+      );
+    }
+  });
+}
+
 // ---------- (b) computed vs token, via elemento-sonda ----------
 if (!process.argv.includes("--static-only")) {
   const { chromium } = await import("@playwright/test");

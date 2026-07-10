@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PRESETS } from "./presets.gen";
 
 /**
  * schema.ts — il CONTRATTO DATI dell'intera Site Factory.
@@ -100,8 +101,9 @@ export const PaletteSchema = z.object({
 });
 export type Palette = z.infer<typeof PaletteSchema>;
 
-// Tenuto allineato a PRESETS in ./presets.ts (single source per i font lì).
-export const PresetEnum = z.enum(["atelier", "meridian", "nova", "canon", "terra", "vita"]);
+// Derivata dalla libreria generata (presets.gen.ts ← presets/*.tokens.json):
+// un preset nuovo pubblicato dalla fabbrica entra nel contratto senza toccare qui.
+export const PresetEnum = z.enum(PRESETS);
 export type PresetName = z.infer<typeof PresetEnum>;
 
 export const BrandSchema = z.object({

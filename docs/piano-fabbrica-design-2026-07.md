@@ -46,7 +46,16 @@ trattamento foto), mai da generazione libera.
       (statico + 4/4 computed per preset); `gate:impeccable` produce JSON filtrato
       (3 regole whitelistate motivate, 4 residui overused-font → M4); suite @a11y
       operativa (trova violazioni reali → M4). 144 baseline (47MB) in git.
-- [ ] M2 — ponte DTCG: 6 preset serializzati + build + manifest unico
+- [x] 2026-07-11 M2 — ponte DTCG: 6 preset serializzati + build Terrazzo + manifest
+      unico. Accettazione osservata: dump computed-vars pre/post = **0 divergenze**
+      (49 token × 6 preset + 6 stili risolti × 6); VRT 12/12 contro le baseline M1
+      PRE-migrazione (parità pixel-perfect); mutation via `terra.tokens.json`
+      (radius 18→2px) → falliscono solo le celle terra, ripristino verificato;
+      `astro check` invariato (1 errore atteso registry); editor `tsc --noEmit` +
+      `next build` verdi col nuovo presets.gen.json; diff della skill = soli marker
+      (tabella rigenerata byte-identica). global.css −312 righe; la terza copia dei
+      neutri è morta (editor importa il JSON generato). 4 trascrizioni via agenti
+      paralleli auto-verificate + confronto indipendente.
 - [ ] M3 — quick win: font self-hosted + palette AA-by-construction (HCT)
 - [ ] M4 — critico visivo calibrato (gold set, κ) + re-audit dei 5 preset
 - [ ] M5 — fabbrica: modello dati, riferimenti+opt-out+estrazione, area editor
@@ -98,6 +107,18 @@ trattamento foto), mai da generazione libera.
   deliberato). Confronto giusto: elemento nel componente vs SONDA con la stessa classe
   semantica; per i font conta la prima famiglia (i componenti aggiungono lo stack di
   fallback Tailwind, conforme).
+- 2026-07-11 (M2) — **Bug silenzioso del resolver Terrazzo**: l'override di una shadow
+  multi-layer (array) con una single-layer (oggetto) NON viene applicato — il blocco
+  emette il valore BASE di meridian senza alcun warning (7 divergenze: shadow-card/hover
+  di terra/vita, shadow-hover di atelier). La guardia conteggio-dichiarazioni non può
+  vederlo (la dichiarazione c'è, col valore sbagliato): l'ha beccato il **confronto
+  indipendente dump pre/post** — che è quindi parte permanente della procedura (mai
+  fidarsi della sola build verde). Fix: tutte le shadow normalizzate ad array-di-layer
+  nei file DTCG + guardia pre-build in build-presets.mjs che rifiuta shadow-oggetto.
+- 2026-07-11 (M2) — Le 4 trascrizioni via agenti paralleli erano PERFETTE
+  (auto-verifica hex-ricostruito=sorgente su ogni colore): le divergenze venivano
+  dal toolchain, non dalla trascrizione. Ordine token nel CSS generato = alfabetico
+  (Terrazzo), irrilevante per le custom property.
 - 2026-07-10 (M1) — **I gate trovano problemi reali sui preset attuali** (input M4):
   axe color-contrast serious su 12/12 celle (1–29 nodi; peggiori: span dell'eyebrow,
   `.accent-word` su hero scuro, `.t-lead`) — conferma il sospetto di CLAUDE.md sui 5
@@ -135,6 +156,16 @@ trattamento foto), mai da generazione libera.
   operativi su MPS, offline, sotto i 5s). `samples/` aggiunto al .gitignore di
   factory/tools: gli screenshot di siti terzi non si versionano (igiene TDM "solo il
   tempo necessario"); si rigenerano al bisogno.
+- 2026-07-11 — (M2) Le copie dei neutri si eliminano GENERANDO, non sorvegliando: al
+  posto di `check-presets-sync.mjs` (previsto dal piano come alternativa) il builder
+  emette direttamente `site-factory-editor/lib/presets.gen.json` (l'editor importa il
+  JSON, tipi derivati con `keyof typeof`) e la tabella della skill tra marker
+  TABELLA-NEUTRI. Un preset nuovo pubblicato dalla fabbrica si propaga a renderer,
+  schema Zod, editor e skill con `npm run build:presets`, zero edit a mano.
+- 2026-07-11 — (M2) Convenzione DTCG interna: shadow SEMPRE array di layer (anche
+  singolo) — vedi Sorprese; `--step--1` resta col nome storico nel renderer, il token
+  si chiama `step-n1` e il builder lo rinomina in emissione (alternativa scartata:
+  rename nel renderer, avrebbe toccato componenti e baseline senza beneficio).
 - 2026-07-10 — (M1) `rounded-full` AMMESSO dal lint-tokens, in deviazione dall'esempio
   di CLAUDE.md: lo standard consegnato lo usa deliberatamente per i badge circolari
   (nodo processo, FAB chiamata) e un cerchio è un cerchio in ogni preset. Il lint

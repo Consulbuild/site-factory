@@ -1,0 +1,310 @@
+{
+  "brand-primary": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.10196078431372549,
+        0.09019607843137255,
+        0.0784313725490196
+      ],
+      "alpha": 1,
+      "hex": "#1a1714"
+    }
+  },
+  "brand-secondary": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.22745098039215686,
+        0.19607843137254902,
+        0.16862745098039217
+      ],
+      "alpha": 1,
+      "hex": "#3a322b"
+    }
+  },
+  "brand-accent": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.48627450980392156,
+        0.17647058823529413,
+        0.17647058823529413
+      ],
+      "alpha": 1,
+      "hex": "#7c2d2d"
+    }
+  },
+  "brand-bg": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.984313725490196,
+        0.9803921568627451,
+        0.9686274509803922
+      ],
+      "alpha": 1,
+      "hex": "#fbfaf7"
+    }
+  },
+  "brand-surface": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.9529411764705882,
+        0.9372549019607843,
+        0.9058823529411765
+      ],
+      "alpha": 1,
+      "hex": "#f3efe7"
+    }
+  },
+  "brand-surface-2": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.9137254901960784,
+        0.8901960784313725,
+        0.8470588235294118
+      ],
+      "alpha": 1,
+      "hex": "#e9e3d8"
+    }
+  },
+  "brand-ink": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.10196078431372549,
+        0.09019607843137255,
+        0.0784313725490196
+      ],
+      "alpha": 1,
+      "hex": "#1a1714"
+    }
+  },
+  "brand-muted": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.43137254901960786,
+        0.396078431372549,
+        0.3607843137254902
+      ],
+      "alpha": 1,
+      "hex": "#6e655c"
+    }
+  },
+  "brand-border": {
+    "$type": "string",
+    "$value": "color-mix(in srgb, var(--brand-ink) 16%, transparent)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "brand-inverse-bg": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.10196078431372549,
+        0.09019607843137255,
+        0.0784313725490196
+      ],
+      "alpha": 1,
+      "hex": "#1a1714"
+    }
+  },
+  "brand-inverse-bg-2": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.07058823529411765,
+        0.06274509803921569,
+        0.03529411764705882
+      ],
+      "alpha": 1,
+      "hex": "#121009"
+    }
+  },
+  "brand-inverse-ink": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.984313725490196,
+        0.9803921568627451,
+        0.9686274509803922
+      ],
+      "alpha": 1,
+      "hex": "#fbfaf7"
+    }
+  },
+  "brand-font-heading": {
+    "$type": "fontFamily",
+    "$value": "Playfair Display"
+  },
+  "brand-font-body": {
+    "$type": "fontFamily",
+    "$value": "Source Serif 4"
+  },
+  "brand-radius-card": {
+    "$type": "dimension",
+    "$value": {
+      "value": 2,
+      "unit": "px"
+    }
+  },
+  "brand-radius-input": {
+    "$type": "dimension",
+    "$value": {
+      "value": 2,
+      "unit": "px"
+    }
+  },
+  "brand-radius-pill": {
+    "$type": "dimension",
+    "$value": {
+      "value": 2,
+      "unit": "px"
+    }
+  },
+  "brand-shadow-card": {
+    "$type": "string",
+    "$value": "none"
+  },
+  "brand-shadow-cta": {
+    "$type": "string",
+    "$value": "none"
+  },
+  "brand-shadow-float": {
+    "$type": "string",
+    "$value": "none"
+  },
+  "brand-shadow-hover": {
+    "$type": "string",
+    "$value": "none"
+  },
+  "brand-dur-fast": {
+    "$type": "duration",
+    "$value": {
+      "value": 200,
+      "unit": "ms"
+    }
+  },
+  "brand-dur-base": {
+    "$type": "duration",
+    "$value": {
+      "value": 400,
+      "unit": "ms"
+    }
+  },
+  "brand-dur-slow": {
+    "$type": "duration",
+    "$value": {
+      "value": 700,
+      "unit": "ms"
+    }
+  },
+  "brand-ease": {
+    "$type": "cubicBezier",
+    "$value": [
+      0.22,
+      1,
+      0.36,
+      1
+    ]
+  },
+  "brand-reveal-y": {
+    "$type": "dimension",
+    "$value": {
+      "value": 12,
+      "unit": "px"
+    }
+  },
+  "heading-case": {
+    "$type": "string",
+    "$value": "none"
+  },
+  "heading-tracking": {
+    "$type": "string",
+    "$value": "-0.02em",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true,
+        "note": "em non ammesso dal $type dimension DTCG (solo px/rem)"
+      }
+    }
+  },
+  "w-display": {
+    "$type": "fontWeight",
+    "$value": 900
+  },
+  "w-heading": {
+    "$type": "fontWeight",
+    "$value": 700
+  },
+  "w-heading-soft": {
+    "$type": "fontWeight",
+    "$value": 600
+  },
+  "brand-space": {
+    "$type": "number",
+    "$value": 1.2
+  },
+  "eyebrow-tracking": {
+    "$type": "string",
+    "$value": "0.18em",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true,
+        "note": "em non ammesso dal $type dimension DTCG (solo px/rem)"
+      }
+    }
+  },
+  "step-0": {
+    "$type": "dimension",
+    "$value": {
+      "value": 1.0625,
+      "unit": "rem"
+    }
+  },
+  "step-4": {
+    "$type": "string",
+    "$value": "clamp(2rem, 1.4rem + 2.6vw, 3rem)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "step-5": {
+    "$type": "string",
+    "$value": "clamp(2.75rem, 1.7rem + 5vw, 5.5rem)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "step-display": {
+    "$type": "string",
+    "$value": "clamp(3.5rem, 2rem + 8vw, 7.5rem)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  }
+}

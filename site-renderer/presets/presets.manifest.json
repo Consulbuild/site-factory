@@ -1,0 +1,252 @@
+{
+  "default": "meridian",
+  "presets": [
+    {
+      "id": "meridian",
+      "version": "1.0.0",
+      "stato": "attivo",
+      "aaker": {
+        "sincerity": 1,
+        "excitement": 0,
+        "competence": 2,
+        "sophistication": 1,
+        "ruggedness": 1,
+        "primaria": "competence"
+      },
+      "settoriConsigliati": [
+        "edilizia",
+        "impianti",
+        "energia",
+        "studi-tecnici"
+      ],
+      "antiPatterns": [],
+      "neutri": {
+        "bg": "#ffffff",
+        "ink": "#1b1a17",
+        "surface": "#f5f4f0"
+      },
+      "scuro": false,
+      "fontHeadingFamily": "Archivo",
+      "fontBodyFamily": "Archivo",
+      "fonts": {
+        "googleCss": "https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap"
+      },
+      "editor": {
+        "nome": "Meridian",
+        "estetica": "professionale, elevazione soffusa — lo standard ConsulBuild",
+        "per": "studi tecnici, consulenza, edilizia/impianti (default)",
+        "fontLabel": "Archivo (unica famiglia)",
+        "serifHeading": false,
+        "serifBody": false
+      }
+    },
+    {
+      "id": "atelier",
+      "version": "1.0.0",
+      "stato": "attivo",
+      "aaker": {
+        "sincerity": 0,
+        "excitement": 0,
+        "competence": 2,
+        "sophistication": 2,
+        "ruggedness": 0,
+        "primaria": "competence"
+      },
+      "settoriConsigliati": [
+        "consulenza",
+        "servizi-professionali",
+        "architettura"
+      ],
+      "antiPatterns": [
+        "mestieri artigianali dove serve calore",
+        "settori consumer ad alta energia"
+      ],
+      "neutri": {
+        "bg": "#ffffff",
+        "ink": "#18181b",
+        "surface": "#f7f7f8"
+      },
+      "scuro": false,
+      "fontHeadingFamily": "Inter Tight",
+      "fontBodyFamily": "Inter",
+      "fonts": {
+        "googleCss": "https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+      },
+      "editor": {
+        "nome": "Atelier",
+        "estetica": "minimal near-monocromo, zero ombre",
+        "per": "chi vuole sobrietà",
+        "fontLabel": "Inter Tight + Inter",
+        "serifHeading": false,
+        "serifBody": false
+      }
+    },
+    {
+      "id": "nova",
+      "version": "1.0.0",
+      "stato": "attivo",
+      "aaker": {
+        "sincerity": 0,
+        "excitement": 2,
+        "competence": 1,
+        "sophistication": 1,
+        "ruggedness": 0,
+        "primaria": "excitement"
+      },
+      "settoriConsigliati": [
+        "software",
+        "tech",
+        "domotica"
+      ],
+      "antiPatterns": [
+        "artigiani tradizionali",
+        "settori trust-heavy (medico, legale)"
+      ],
+      "neutri": {
+        "bg": "#0a0a0f",
+        "ink": "#f5f5ff",
+        "surface": "#14141c"
+      },
+      "scuro": true,
+      "fontHeadingFamily": "Space Grotesk",
+      "fontBodyFamily": "Inter",
+      "fonts": {
+        "googleCss": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@500&display=swap"
+      },
+      "editor": {
+        "nome": "Nova",
+        "estetica": "dark, indaco+ciano neon, glass/glow (unico scuro)",
+        "per": "software, AI, tech",
+        "fontLabel": "Space Grotesk + Inter",
+        "serifHeading": false,
+        "serifBody": false
+      }
+    },
+    {
+      "id": "canon",
+      "version": "1.0.0",
+      "stato": "attivo",
+      "aaker": {
+        "sincerity": 0,
+        "excitement": 0,
+        "competence": 1,
+        "sophistication": 2,
+        "ruggedness": 0,
+        "primaria": "sophistication"
+      },
+      "settoriConsigliati": [
+        "restauro",
+        "design-interni",
+        "lusso",
+        "studi-creativi"
+      ],
+      "antiPatterns": [
+        "urgenze e riparazioni low-cost",
+        "settori dove serve immediatezza operativa"
+      ],
+      "neutri": {
+        "bg": "#fbfaf7",
+        "ink": "#1a1714",
+        "surface": "#f3efe7"
+      },
+      "scuro": false,
+      "fontHeadingFamily": "Playfair Display",
+      "fontBodyFamily": "Source Serif 4",
+      "fonts": {
+        "googleCss": "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap"
+      },
+      "editor": {
+        "nome": "Canon",
+        "estetica": "editoriale serif, carta",
+        "per": "studi creativi, lusso, restauro, portfolio",
+        "fontLabel": "Playfair Display + Source Serif 4",
+        "serifHeading": true,
+        "serifBody": true
+      }
+    },
+    {
+      "id": "terra",
+      "version": "1.0.0",
+      "stato": "attivo",
+      "aaker": {
+        "sincerity": 2,
+        "excitement": 0,
+        "competence": 1,
+        "sophistication": 0,
+        "ruggedness": 2,
+        "primaria": "ruggedness"
+      },
+      "settoriConsigliati": [
+        "artigiani",
+        "falegnameria",
+        "food",
+        "agriturismo"
+      ],
+      "antiPatterns": [
+        "tech/software",
+        "cliniche e settori sterili"
+      ],
+      "neutri": {
+        "bg": "#faf4ec",
+        "ink": "#3b2f26",
+        "surface": "#f0e6d8"
+      },
+      "scuro": false,
+      "fontHeadingFamily": "Fraunces",
+      "fontBodyFamily": "Karla",
+      "fonts": {
+        "googleCss": "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Karla:wght@400;500;700&display=swap"
+      },
+      "editor": {
+        "nome": "Terra",
+        "estetica": "artigianale caldo, terracotta/salvia, bordi 1.5px",
+        "per": "artigiani, legno, food, «fatto con cura»",
+        "fontLabel": "Fraunces + Karla",
+        "serifHeading": true,
+        "serifBody": false
+      }
+    },
+    {
+      "id": "vita",
+      "version": "1.0.0",
+      "stato": "attivo",
+      "aaker": {
+        "sincerity": 2,
+        "excitement": 2,
+        "competence": 0,
+        "sophistication": 0,
+        "ruggedness": 0,
+        "primaria": "excitement"
+      },
+      "settoriConsigliati": [
+        "servizi-consumer",
+        "benessere",
+        "pulizie",
+        "traslochi"
+      ],
+      "antiPatterns": [
+        "settori che richiedono gravitas (legale, medico specialistico)",
+        "lusso"
+      ],
+      "neutri": {
+        "bg": "#ffffff",
+        "ink": "#1e1b2e",
+        "surface": "#f5f5ff"
+      },
+      "scuro": false,
+      "fontHeadingFamily": "Plus Jakarta Sans",
+      "fontBodyFamily": "Inter",
+      "fonts": {
+        "googleCss": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600&display=swap"
+      },
+      "editor": {
+        "nome": "Vita",
+        "estetica": "friendly rounded, micro-bounce",
+        "per": "startup, servizi consumer, app person-facing",
+        "fontLabel": "Plus Jakarta Sans + Inter",
+        "serifHeading": false,
+        "serifBody": false
+      }
+    }
+  ]
+}

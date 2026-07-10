@@ -11,3 +11,4 @@ site-renderer/out/
 site-renderer/public/media/
 test-results/
 playwright-report/
+site-renderer/presets/out/

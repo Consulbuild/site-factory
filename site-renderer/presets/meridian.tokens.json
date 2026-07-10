@@ -1,0 +1,565 @@
+{
+  "brand-primary": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.6901960784313725,
+        0.33725490196078434,
+        0.10196078431372549
+      ],
+      "alpha": 1,
+      "hex": "#b0561a"
+    }
+  },
+  "brand-primary-hover": {
+    "$type": "string",
+    "$value": "color-mix(in oklab, var(--brand-primary), #000 14%)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "brand-secondary": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.5411764705882353,
+        0.2627450980392157,
+        0.08235294117647059
+      ],
+      "alpha": 1,
+      "hex": "#8a4315"
+    }
+  },
+  "brand-accent": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.6901960784313725,
+        0.33725490196078434,
+        0.10196078431372549
+      ],
+      "alpha": 1,
+      "hex": "#b0561a"
+    }
+  },
+  "brand-accent-hover": {
+    "$type": "string",
+    "$value": "color-mix(in oklab, var(--brand-accent), #000 12%)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "brand-accent-soft": {
+    "$type": "string",
+    "$value": "color-mix(in oklab, var(--brand-accent), #fff 88%)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "brand-accent-strong": {
+    "$type": "string",
+    "$value": "color-mix(in oklab, var(--brand-accent), var(--brand-ink) 15%)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "brand-bg": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        1,
+        1,
+        1
+      ],
+      "alpha": 1,
+      "hex": "#ffffff"
+    }
+  },
+  "brand-surface": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.9607843137254902,
+        0.9568627450980393,
+        0.9411764705882353
+      ],
+      "alpha": 1,
+      "hex": "#f5f4f0"
+    }
+  },
+  "brand-surface-2": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.9215686274509803,
+        0.9137254901960784,
+        0.8901960784313725
+      ],
+      "alpha": 1,
+      "hex": "#ebe9e3"
+    }
+  },
+  "brand-ink": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.10588235294117647,
+        0.10196078431372549,
+        0.09019607843137255
+      ],
+      "alpha": 1,
+      "hex": "#1b1a17"
+    }
+  },
+  "brand-muted": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.3411764705882353,
+        0.3254901960784314,
+        0.3058823529411765
+      ],
+      "alpha": 1,
+      "hex": "#57534e"
+    }
+  },
+  "brand-border": {
+    "$type": "string",
+    "$value": "color-mix(in srgb, var(--brand-ink) 10%, transparent)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "brand-inverse-bg": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.09803921568627451,
+        0.09803921568627451,
+        0.09803921568627451
+      ],
+      "alpha": 1,
+      "hex": "#191919"
+    }
+  },
+  "brand-inverse-bg-2": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.06666666666666667,
+        0.06666666666666667,
+        0.06666666666666667
+      ],
+      "alpha": 1,
+      "hex": "#111111"
+    }
+  },
+  "brand-inverse-ink": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.9607843137254902,
+        0.9568627450980393,
+        0.9411764705882353
+      ],
+      "alpha": 1,
+      "hex": "#f5f4f0"
+    }
+  },
+  "brand-font-heading": {
+    "$type": "fontFamily",
+    "$value": "Archivo"
+  },
+  "brand-font-body": {
+    "$type": "fontFamily",
+    "$value": "Archivo"
+  },
+  "brand-font-mono": {
+    "$type": "fontFamily",
+    "$value": "JetBrains Mono"
+  },
+  "brand-font-eyebrow": {
+    "$type": "fontFamily",
+    "$value": "{brand-font-body}"
+  },
+  "brand-radius-card": {
+    "$type": "dimension",
+    "$value": {
+      "value": 12,
+      "unit": "px"
+    }
+  },
+  "brand-radius-input": {
+    "$type": "dimension",
+    "$value": {
+      "value": 8,
+      "unit": "px"
+    }
+  },
+  "brand-radius-pill": {
+    "$type": "dimension",
+    "$value": {
+      "value": 6,
+      "unit": "px"
+    }
+  },
+  "brand-border-w": {
+    "$type": "dimension",
+    "$value": {
+      "value": 1,
+      "unit": "px"
+    }
+  },
+  "brand-shadow-card": {
+    "$type": "shadow",
+    "$value": [
+      {
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 1,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 2,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        },
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0.10588235294117647,
+            0.10196078431372549,
+            0.09019607843137255
+          ],
+          "alpha": 0.05,
+          "hex": "#1b1a17"
+        }
+      },
+      {
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 10,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 28,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        },
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0.10588235294117647,
+            0.10196078431372549,
+            0.09019607843137255
+          ],
+          "alpha": 0.08,
+          "hex": "#1b1a17"
+        }
+      }
+    ]
+  },
+  "brand-shadow-cta": {
+    "$type": "shadow",
+    "$value": [
+      {
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 2,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 6,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        },
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0.10588235294117647,
+            0.10196078431372549,
+            0.09019607843137255
+          ],
+          "alpha": 0.18,
+          "hex": "#1b1a17"
+        }
+      }
+    ]
+  },
+  "brand-shadow-float": {
+    "$type": "shadow",
+    "$value": [
+      {
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 24,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 56,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        },
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "alpha": 0.22,
+          "hex": "#000000"
+        }
+      }
+    ]
+  },
+  "brand-shadow-hover": {
+    "$type": "shadow",
+    "$value": [
+      {
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 1,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 2,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        },
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0.10588235294117647,
+            0.10196078431372549,
+            0.09019607843137255
+          ],
+          "alpha": 0.05,
+          "hex": "#1b1a17"
+        }
+      },
+      {
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 18,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 44,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        },
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0.10588235294117647,
+            0.10196078431372549,
+            0.09019607843137255
+          ],
+          "alpha": 0.14,
+          "hex": "#1b1a17"
+        }
+      }
+    ]
+  },
+  "brand-dur-fast": {
+    "$type": "duration",
+    "$value": {
+      "value": 150,
+      "unit": "ms"
+    }
+  },
+  "brand-dur-base": {
+    "$type": "duration",
+    "$value": {
+      "value": 220,
+      "unit": "ms"
+    }
+  },
+  "brand-dur-slow": {
+    "$type": "duration",
+    "$value": {
+      "value": 450,
+      "unit": "ms"
+    }
+  },
+  "brand-ease": {
+    "$type": "cubicBezier",
+    "$value": [
+      0.22,
+      1,
+      0.36,
+      1
+    ]
+  },
+  "brand-reveal-y": {
+    "$type": "dimension",
+    "$value": {
+      "value": 16,
+      "unit": "px"
+    }
+  },
+  "brand-reveal-scale": {
+    "$type": "number",
+    "$value": 1
+  },
+  "heading-case": {
+    "$type": "string",
+    "$value": "uppercase"
+  },
+  "heading-tracking": {
+    "$type": "string",
+    "$value": "-0.01em",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true,
+        "note": "em non ammesso dal $type dimension DTCG (solo px/rem)"
+      }
+    }
+  },
+  "w-display": {
+    "$type": "fontWeight",
+    "$value": 800
+  },
+  "w-heading": {
+    "$type": "fontWeight",
+    "$value": 800
+  },
+  "w-heading-soft": {
+    "$type": "fontWeight",
+    "$value": 700
+  },
+  "brand-space": {
+    "$type": "number",
+    "$value": 1
+  },
+  "eyebrow-tracking": {
+    "$type": "string",
+    "$value": "0.14em",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true,
+        "note": "em non ammesso dal $type dimension DTCG (solo px/rem)"
+      }
+    }
+  },
+  "step-n1": {
+    "$type": "dimension",
+    "$value": {
+      "value": 0.8125,
+      "unit": "rem"
+    }
+  },
+  "step-0": {
+    "$type": "dimension",
+    "$value": {
+      "value": 1.0625,
+      "unit": "rem"
+    }
+  },
+  "step-1": {
+    "$type": "dimension",
+    "$value": {
+      "value": 1.1875,
+      "unit": "rem"
+    }
+  },
+  "step-2": {
+    "$type": "dimension",
+    "$value": {
+      "value": 1.3125,
+      "unit": "rem"
+    }
+  },
+  "step-3": {
+    "$type": "dimension",
+    "$value": {
+      "value": 1.5,
+      "unit": "rem"
+    }
+  },
+  "step-4": {
+    "$type": "string",
+    "$value": "clamp(1.75rem, 1.3rem + 1.9vw, 2.9rem)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "step-5": {
+    "$type": "string",
+    "$value": "clamp(2rem, 1.4rem + 2.5vw, 3.4rem)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "step-display": {
+    "$type": "string",
+    "$value": "clamp(1.75rem, 0.9rem + 4vw, 4.5rem)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  }
+}

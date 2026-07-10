@@ -54,6 +54,7 @@ Nessun'altra chiave (niente meta: `verificato` & co. vivono in client.json, l'as
 Default se in dubbio: **meridian**. Edilizia/energia locali → di norma meridian (o terra se artigiano).
 
 ## Neutri REALI per preset (verifica il contrasto contro QUESTI valori)
+<!-- TABELLA-NEUTRI:START (generata da build-presets.mjs — non editare a mano) -->
 | Preset | bg | ink (testo) | surface | tipo |
 |---|---|---|---|---|
 | meridian (=`:root`) | `#ffffff` | `#1b1a17` | `#f5f4f0` | chiaro |
@@ -64,6 +65,7 @@ Default se in dubbio: **meridian**. Edilizia/energia locali → di norma meridia
 | vita | `#ffffff` | `#1e1b2e` | `#f5f5ff` | chiaro |
 
 Non esiste un blocco `[data-preset="meridian"]`: **meridian = `:root`**.
+<!-- TABELLA-NEUTRI:END -->
 
 ## Regole colore (da design-system)
 - **60-30-10:** neutri del preset (60/30), **accent solo 10%** su CTA/link/highlight/eyebrow — mai su grandi superfici.

@@ -1,0 +1,37 @@
+{
+  "id": "nova",
+  "version": "1.0.0",
+  "stato": "attivo",
+  "aaker": { "sincerity": 0, "excitement": 2, "competence": 1, "sophistication": 1, "ruggedness": 0, "primaria": "excitement" },
+  "settoriConsigliati": ["software", "tech", "domotica"],
+  "antiPatterns": ["artigiani tradizionali", "settori trust-heavy (medico, legale)"],
+  "requisitiContenuto": {},
+  "vincoliCombinazione": {},
+  "photographySpec": {
+    "soggetto": "superfici riflettenti, tecnologia, dettagli notturni urbani",
+    "angolo": "inquadrature dinamiche, prospettive marcate",
+    "luce": "low-key, tre punti luce, riflessi controllati",
+    "grading": "contrasto alto, ombre profonde, accenti freddi",
+    "mood": "dark, tecnologico, energico"
+  },
+  "fluxStyleFragment": {
+    "style": "moody tech photography, reflective surfaces",
+    "lighting": "low-key, three-point lighting, controlled highlights",
+    "film_reference": "night urban photography, deep blacks",
+    "mood": "dark, futuristic, energetic",
+    "color_palette": []
+  },
+  "editor": {
+    "nome": "Nova",
+    "estetica": "dark, indaco+ciano neon, glass/glow (unico scuro)",
+    "per": "software, AI, tech",
+    "fontLabel": "Space Grotesk + Inter",
+    "serifHeading": false,
+    "serifBody": false
+  },
+  "fonts": {
+    "googleCss": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@500&display=swap"
+  },
+  "provenance": { "runId": null, "references": [], "auditRef": null, "nota": "disegnato a mano (pre-fabbrica)" },
+  "changelog": [{ "version": "1.0.0", "data": "2026-07-10", "nota": "serializzazione DTCG del preset esistente (M2)" }]
+}
