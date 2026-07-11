@@ -5,6 +5,7 @@
 // «Agenti al lavoro». Un solo poller per tutta l'app.
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { MotionConfig } from "motion/react";
 import type { BusRunInfo } from "@/lib/run-bus";
 
 type RunsCtx = {
@@ -63,5 +64,12 @@ export function RunsProvider({ children }: { children: React.ReactNode }) {
   );
 
   const vivi = runs.filter((r) => !r.done);
-  return <Ctx.Provider value={{ runs, vivi, espanso, setEspanso, stopODismiss, refresh }}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={{ runs, vivi, espanso, setEspanso, stopODismiss, refresh }}>
+      {/* reducedMotion="user": ogni componente motion dell'app rispetta
+          prefers-reduced-motion senza doverlo gate-are a mano (il default di
+          motion è "never"). Copre status bar, sfere, card agenti e futuri. */}
+      <MotionConfig reducedMotion="user">{children}</MotionConfig>
+    </Ctx.Provider>
+  );
 }

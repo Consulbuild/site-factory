@@ -60,11 +60,12 @@ const haErrore = (c: ClientSummary) => STEP_ORDER.some((s) => c.steps[s]?.stato 
 type Filtro = "tutti" | "verificare" | "errore" | "online";
 type Ordine = "aggiornati" | "nome" | "importati";
 
+// Forma oltre al colore (daltonismo): errore = spigolo vivo, il resto pillola.
 const TACCA: Record<string, string> = {
-  verificato: "bg-ok",
-  da_verificare: "bg-warn",
-  in_corso: "bg-brand animate-pulse",
-  errore: "bg-err",
+  verificato: "bg-ok rounded-full",
+  da_verificare: "bg-warn rounded-full",
+  in_corso: "bg-brand rounded-full animate-pulse",
+  errore: "bg-err rounded-none",
 };
 
 function MiniPipeline({ c }: { c: ClientSummary }) {
@@ -74,7 +75,7 @@ function MiniPipeline({ c }: { c: ClientSummary }) {
   return (
     <span className="inline-flex items-center gap-1" title={titolo} aria-label={titolo}>
       {STEP_ORDER.map((s) => (
-        <span key={s} className={`h-1.5 w-4 rounded-full ${TACCA[c.steps[s]?.stato ?? ""] ?? "bg-line"}`} />
+        <span key={s} className={`h-1.5 w-4 ${TACCA[c.steps[s]?.stato ?? ""] ?? "bg-line rounded-full"}`} />
       ))}
     </span>
   );

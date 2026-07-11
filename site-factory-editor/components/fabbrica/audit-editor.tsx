@@ -45,7 +45,6 @@ export function AuditEditor({
   const [scelte, setScelte] = useState<{ AB?: string; BA?: string }>({});
   const [meta, setMeta] = useState(prefill);
   const [photoSpecText, setPhotoSpecText] = useState(() => JSON.stringify(prefill.photographySpec, null, 2));
-  const [fluxStyleFragment, setFluxStyleFragment] = useState("");
   const [chiediScarto, setChiediScarto] = useState(false);
   const [note, setNote] = useState("");
   const [decisoDa, setDecisoDa] = useState("Mattia");
@@ -120,7 +119,6 @@ export function AuditEditor({
                   serifBody: meta.serifBody,
                 },
                 photographySpec,
-                fluxStyleFragment: fluxStyleFragment.trim() || undefined,
               }
             : undefined,
       };
@@ -290,15 +288,6 @@ export function AuditEditor({
                 value={photoSpecText}
                 onChange={(e) => setPhotoSpecText(e.target.value)}
                 rows={4}
-                className="mono mt-1.5 w-full"
-                disabled={inCorso}
-              />
-            </label>
-            <label className="text-sm sm:col-span-2">
-              <span className="text-muted">fluxStyleFragment (frammento di stile per i prompt FLUX, opzionale)</span>
-              <input
-                value={fluxStyleFragment}
-                onChange={(e) => setFluxStyleFragment(e.target.value)}
                 className="mono mt-1.5 w-full"
                 disabled={inCorso}
               />

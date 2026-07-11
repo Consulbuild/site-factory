@@ -22,10 +22,12 @@ export type RunRow = {
   roundCritico?: number;
 };
 
+// Forma oltre al colore: ok/fallita non si distinguono solo per verde/rosso
+// (daltonismo rosso-verde). fallita = spigolo vivo, ok = pillola.
 const TACCA: Record<string, string> = {
-  ok: "bg-ok",
-  in_corso: "bg-brand animate-pulse",
-  fallita: "bg-err",
+  ok: "bg-ok rounded-full",
+  in_corso: "bg-brand rounded-full animate-pulse",
+  fallita: "bg-err rounded-none",
 };
 
 type Filtro = "tutte" | "da_audire" | "fallita" | "pubblicata";
