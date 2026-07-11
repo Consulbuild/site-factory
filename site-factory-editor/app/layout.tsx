@@ -25,7 +25,17 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <span className="inline-block size-2 rounded-full bg-brand" aria-hidden />
               Site-factory
             </Link>
-            <ThemeToggle />
+            <div className="flex items-center gap-5">
+              <nav className="flex items-center gap-4 text-sm" aria-label="Aree">
+                <Link href="/" className="text-muted hover:text-ink">
+                  Clienti
+                </Link>
+                <Link href="/fabbrica" className="text-muted hover:text-ink">
+                  Fabbrica
+                </Link>
+              </nav>
+              <ThemeToggle />
+            </div>
           </div>
         </header>
         <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>

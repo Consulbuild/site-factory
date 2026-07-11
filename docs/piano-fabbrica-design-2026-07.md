@@ -85,7 +85,28 @@ trattamento foto), mai da generazione libera.
       congiunzione su soglie hard, blacklist AI-slop), canary.json (10 fissi),
       report-critico.json, `docs/decisions/2026-07-re-audit-preset.md`
       (backlog: bloccanti nova + display serif 390 + renderAccent).
-- [ ] M5 — fabbrica: modello dati, riferimenti+opt-out+estrazione, area editor
+- [x] 2026-07-11 fix backlog re-audit (pre-M7, chiesti da Mattia): axe
+      color-contrast **0 nodi su 6 preset × 2 viewport** (@a11y 12/12), parole
+      spezzate **0** su h1/h2 a 390/768/1280, re-audit post-fix **5/5 PASS**
+      (nova sbloccata), canary critico 10/10 su gold set rigenerato, VRT
+      rigenerato e stabile ×2. Dettaglio in
+      docs/decisions/2026-07-re-audit-preset.md («Esito dei fix»).
+- [x] 2026-07-11 M5 — fabbrica: modello dati, riferimenti+opt-out+estrazione,
+      area editor. Accettazione osservata E2E nel browser (entrambi i temi):
+      fixture locale con TDMRep `tdm-reservation:1` → riferimento **BLOCCATO**
+      con motivo verbatim, badge rosso, NESSUNA estrazione eseguita, non
+      selezionabile; fixture pulita → `consentito` + extraction.tokens.json
+      (dtcg+raw dembrandt@0.23.1) + 2 screenshot su disco; run con 2 rif →
+      422 «servono ALMENO 3»; run con rif bloccato → 422 col motivo del gate;
+      run valida con 3 → creata, timeline 5 fasi «In attesa» renderizzata.
+      check-optout.mjs testato anche live (Guardian→bloccato per robots AI,
+      example.com→consentito, host morto→errore fail-closed). Deliverable:
+      scripts/factory/{check-optout,extract-tokens}.mjs, `export IO` (D5),
+      lib/factory/{paths,schemas,state,run}.ts, 3 route API (references
+      streaming NDJSON, references/[id]/run, runs), pagine /fabbrica,
+      /fabbrica/riferimenti, /fabbrica/run/[runId] (studio UX impeccable
+      prima della UI, vocabolario editor esistente), nav header. Screenshot
+      di terzi gitignorati. tsc+build verdi; dati di test rimossi.
 - [ ] M6 — fabbrica: preset-designer + gate L1–L4 (pipeline completa)
 - [ ] M7 — pilota end-to-end: primo preset nuovo pubblicato
 - [ ] M8 — assegnazione deterministica cliente→design + anti-collisione
@@ -190,9 +211,46 @@ trattamento foto), mai da generazione libera.
 - 2026-07-11 (M4) — Deviazione da D5: `calibrate-critic.mjs` NON passa dal
   seam `io.claude()` (streaming per la UI) — è batch sincrono con spawn
   proprio. Il seam si esporta in M5 per la fabbrica, come da piano.
+- 2026-07-11 (fix M4) — **Le variabili `--color-*` di @theme si sostituiscono
+  a `:root`**: un override scoped di `--brand-*` dentro una banda non le
+  raggiunge più (il valore è già risolto a monte). La cascata della palette
+  cliente funziona SOLO perché lo style inline vive sullo stesso elemento
+  `<html>` dei token. Regola operativa: le override scoped (bande inverse,
+  hero su foto) ridefiniscono le variabili THEME (`--color-muted`,
+  `--color-inverse-*`), mai le `--brand-*`. Scoperto perché il primo fix
+  "giusto in teoria" ha PEGGIORATO axe (21–46 nodi): mai fidarsi del fix
+  senza il dump dei nodi reali.
+- 2026-07-11 (fix M4) — **`overflow-wrap:anywhere` + `text-wrap:balance` =
+  parole spezzate anche quando starebbero**: con `anywhere` ogni punto è un
+  break legale e il balance lo usa. Rete di sicurezza giusta: `break-word`
+  (spezza solo in emergenza vera). E **Fraunces ha l'asse ottico (opsz)**: le
+  metriche cambiano non linearmente con la taglia — le stime lineari
+  sottostimano; misurare sempre sul render (probe getClientRects per parola).
+- 2026-07-11 (fix M4) — **Terrazzo rifiuta token presenti solo in un set
+  override** («No token …», stavolta errore esplicito, non silenzioso):
+  i token guardrail vivono nel BASE meridian come identità
+  (`var(--brand-accent)`) e i preset che ne hanno bisogno li ridefiniscono.
+- 2026-07-11 (fix M4) — **L'inverso dell'inverso**: la card bianca del form
+  dentro la sezione scura ereditava il muted invertito (grigio chiaro su
+  bianco, ratio 1.5). Regola: le superfici in tinta base dentro `.section-dark`
+  ripristinano `--color-muted: var(--brand-muted)`.
+
+- 2026-07-11 (M5) — dembrandt 0.23.1 **non ha un campo confidence** (né nel
+  formato default né nel DTCG): la nota M0b si riferiva ai conteggi d'uso.
+  extraction.tokens.json salva ENTRAMBI i formati (`dtcg` per il designer,
+  `raw` con frequenze e `context` per i filtri anti-rumore M6). E promemoria
+  dalle fixture: TDMRep è **origin-scoped** (/.well-known alla radice del
+  dominio) — una riserva su un path non esiste.
 
 ## Decision Log [viva]
 
+- 2026-07-11 (M5) — Il gate opt-out è **fail-closed**: pagina o robots.txt
+  non raggiungibili = esito «errore», riferimento non selezionabile finché la
+  verifica non riesce. UA trasparente
+  («ConsulBuild-SiteFactory/1.0 … info@consulbuild.com»): è una verifica di
+  conformità, ci si identifica. Blocco totale di `*` in robots.txt trattato
+  come riserva (prudenza). Il runner del riferimento legge l'ESITO da
+  optout.json, mai dall'exit code (bloccato non è un crash).
 - 2026-07-11 — **nova è bloccato per l'assegnazione finché il FAIL del
   re-audit non rientra** (3 bloccanti di contrasto). I fix del backlog sono
   quasi tutti token/overlay per-preset; chiusura misurabile: axe

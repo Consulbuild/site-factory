@@ -31,6 +31,7 @@
     "@terrazzo/cli": "^2.4.0",
     "@terrazzo/plugin-css": "^2.4.0",
     "@types/node": "^26.1.0",
+    "dembrandt": "^0.23.1",
     "typescript": "^5.9.3",
     "wrangler": "4.108.0"
   }

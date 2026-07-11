@@ -250,7 +250,8 @@ async function* scriptPhase(opts: {
   return { ok: true };
 }
 
-const IO: StepIO = { claude: claudePhase, script: scriptPhase };
+/** Il seam delle fasi, riusato dal runner della fabbrica (lib/factory/run.ts, D5). */
+export const IO: StepIO = { claude: claudePhase, script: scriptPhase };
 
 /**
  * Esegue uno step per un cliente e restituisce un async iterable di eventi.
