@@ -65,6 +65,13 @@ training — prima di scrivere codice editor leggi le guide in `node_modules/nex
 La verifica per scheda è `tsc --noEmit` + `npm run build` + eventuale parity check
 (`scripts/parity-copy.ts`) + run E2E sui clienti reali in `site-renderer/out/`.
 
+**Design della UI dell'editor**: il design system è
+`site-factory-editor/DESIGN-SYSTEM.md` — LEGGERLO prima di costruire o toccare
+qualunque scheda della dashboard (token, componenti condivisi in `components/ui.tsx`,
+utility `card`, status bar agenti, regole AA/motion, ricetta per una scheda nuova).
+È distinto da `docs/design-system.md` (che è il sistema dei 6 preset dei SITI
+generati, non dell'editor). Lo studio che l'ha prodotto: `site-factory-editor/DESIGN-REFACTOR-2026-07.md`.
+
 ## Principio architetturale (non negoziabile)
 
 **L'AI non scrive mai codice: produce solo un `site.json`** (sezioni + ordine + copy +

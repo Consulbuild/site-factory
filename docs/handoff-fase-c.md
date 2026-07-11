@@ -2,6 +2,10 @@
 
 ## Refactoring UI v2 (2026-07-11, COMPLETO)
 
+**Per sviluppare nuove schede: `site-factory-editor/DESIGN-SYSTEM.md`** è il manuale
+operativo (token, componenti condivisi, regole, ricetta scheda) — leggerlo prima di
+toccare la UI dell'editor.
+
 L'editor ha un design nuovo (spec: `site-factory-editor/DESIGN-REFACTOR-2026-07.md`,
 riferimento visivo fornito da Mattia): shell con sidebar+topbar (ricerca clienti
 globale ⌘K, chiavi API in /impostazioni), primario blu royal + Inter (il teal resta
