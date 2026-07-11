@@ -13,7 +13,7 @@
 // Uso: npm run build:presets
 
 import { spawnSync } from "node:child_process";
-import { readFileSync, writeFileSync, readdirSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -69,9 +69,16 @@ if (errori.length) {
 }
 
 const intestazione = `/* GENERATO da scripts/build-presets.mjs — NON EDITARE A MANO.
- * Fonte di verità: presets/*.tokens.json (DTCG) + presets/resolver.json.
+ * Fonte di verità: presets/*.tokens.json (DTCG) + presets/resolver.json
+ * + presets/fonts.gen.json (@font-face self-hosted, da scripts/fetch-fonts.mjs).
  * Rigenera con: npm run build:presets */\n\n`;
-writeFileSync(join(ROOT, "src/styles/presets.gen.css"), intestazione + cssGen);
+// @font-face self-hosted (M3): senza fonts.gen.json i siti tornerebbero al CDN
+if (!existsSync(join(PRESETS_DIR, "fonts.gen.json"))) {
+  console.error("GUARDIA: presets/fonts.gen.json assente — esegui prima: node scripts/fetch-fonts.mjs");
+  process.exit(1);
+}
+const fontFaceCss = leggi("fonts.gen.json").fontFaces.join("\n") + "\n\n";
+writeFileSync(join(ROOT, "src/styles/presets.gen.css"), intestazione + fontFaceCss + cssGen);
 
 // ---------- 2. manifest ----------
 const lum = (hex) => {
@@ -113,11 +120,6 @@ export const PRESETS = ${JSON.stringify(PRESETS)} as const;
 export type Preset = (typeof PRESETS)[number];
 
 export const DEFAULT_PRESET: Preset = ${JSON.stringify(DEFAULT_PRESET)};
-
-/** URL Google Fonts per preset (solo i pesi/assi realmente usati). */
-export const PRESET_FONTS: Record<Preset, string> = {
-${manifest.map((m) => `  ${m.id}: ${JSON.stringify(m.fonts.googleCss)},`).join("\n")}
-};
 `;
 writeFileSync(join(ROOT, "src/lib/presets.gen.ts"), genTs);
 

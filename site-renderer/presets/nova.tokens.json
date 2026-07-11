@@ -470,6 +470,10 @@
     "$type": "fontWeight",
     "$value": 500
   },
+  "w-strong": {
+    "$type": "fontWeight",
+    "$value": 700
+  },
   "eyebrow-tracking": {
     "$type": "string",
     "$value": "0.08em",

@@ -210,6 +210,12 @@
     font-size: var(--step--1);
     line-height: 1.4;
   }
+  /* Peso "forte" degli accenti di brand (marchio in footer, numeri di processo):
+     tokenizzato perché non tutte le famiglie hanno l'800 (Space Grotesk finisce
+     a 700) — mai l'utility Tailwind extrabold hardcoded nei componenti. */
+  .font-strong {
+    font-weight: var(--w-strong);
+  }
 
   /* La frase evidenziata dentro un titolo (da renderAccent, marcatore **...**).
      Sempre testo grande → basta 3:1, l'accent grezzo regge su chiaro e scuro. */

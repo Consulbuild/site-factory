@@ -6,7 +6,7 @@
 // preset nuovo pubblicato dalla fabbrica arriva qui senza toccare questo file.
 // La vecchia terza copia dei neutri è morta con la milestone M2.
 
-import gen from "./presets.gen.json";
+import gen from "./presets.gen.json" with { type: "json" };
 
 export type PresetKey = keyof typeof gen;
 export const PRESET_KEYS = Object.keys(gen) as PresetKey[];

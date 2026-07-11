@@ -1,0 +1,113 @@
+{
+  "nota": "Famiglie tipografiche curate per i preset e vincolo di generazione della fabbrica (M6): il preset-designer può scegliere SOLO da qui. Tutte OFL, self-hosted via scripts/fetch-fonts.mjs. corpoTesto=true: leggibile a corpo 16-18 su paragrafi lunghi.",
+  "famiglie": {
+    "Archivo": {
+      "modello": "grottesca",
+      "pesi": [
+        400,
+        500,
+        600,
+        700,
+        800
+      ],
+      "corpoTesto": true,
+      "nota": "lo standard ConsulBuild: heading e body di meridian"
+    },
+    "Inter": {
+      "modello": "grottesca-neutra",
+      "pesi": [
+        400,
+        500,
+        600,
+        700
+      ],
+      "corpoTesto": true,
+      "nota": "solo come body: da sola è il marker AI-slop n.1"
+    },
+    "Inter Tight": {
+      "modello": "grottesca-stretta",
+      "pesi": [
+        400,
+        500,
+        600,
+        700,
+        800
+      ],
+      "corpoTesto": false,
+      "nota": "display di atelier"
+    },
+    "Space Grotesk": {
+      "modello": "grottesca-geometrica",
+      "pesi": [
+        500,
+        700,
+        800
+      ],
+      "corpoTesto": false,
+      "nota": "display di nova"
+    },
+    "JetBrains Mono": {
+      "modello": "mono",
+      "pesi": [
+        500
+      ],
+      "corpoTesto": false,
+      "nota": "accenti tecnici di nova"
+    },
+    "Playfair Display": {
+      "modello": "serif-display",
+      "pesi": [
+        600,
+        700,
+        800,
+        900
+      ],
+      "corsivo": true,
+      "corpoTesto": false,
+      "nota": "display di canon"
+    },
+    "Source Serif 4": {
+      "modello": "serif-testo",
+      "pesi": [
+        400,
+        500,
+        600,
+        700
+      ],
+      "corpoTesto": true,
+      "nota": "body di canon, asse opsz"
+    },
+    "Fraunces": {
+      "modello": "serif-display",
+      "pesi": [
+        500,
+        600,
+        700,
+        800
+      ],
+      "corsivo": true,
+      "corpoTesto": false,
+      "nota": "display di terra, asse opsz"
+    },
+    "Karla": {
+      "modello": "grottesca-umanista",
+      "pesi": [
+        400,
+        500,
+        600,
+        700
+      ],
+      "corpoTesto": true,
+      "nota": "body di terra"
+    },
+    "Plus Jakarta Sans": {
+      "modello": "geometrica-friendly",
+      "pesi": [
+        700,
+        800
+      ],
+      "corpoTesto": false,
+      "nota": "display di vita"
+    }
+  }
+}

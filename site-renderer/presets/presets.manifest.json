@@ -70,7 +70,7 @@
       "fontHeadingFamily": "Inter Tight",
       "fontBodyFamily": "Inter",
       "fonts": {
-        "googleCss": "https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        "googleCss": "https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
       },
       "editor": {
         "nome": "Atelier",
@@ -111,7 +111,7 @@
       "fontHeadingFamily": "Space Grotesk",
       "fontBodyFamily": "Inter",
       "fonts": {
-        "googleCss": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@500&display=swap"
+        "googleCss": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap"
       },
       "editor": {
         "nome": "Nova",
@@ -153,7 +153,7 @@
       "fontHeadingFamily": "Playfair Display",
       "fontBodyFamily": "Source Serif 4",
       "fonts": {
-        "googleCss": "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap"
+        "googleCss": "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap"
       },
       "editor": {
         "nome": "Canon",
@@ -195,7 +195,7 @@
       "fontHeadingFamily": "Fraunces",
       "fontBodyFamily": "Karla",
       "fonts": {
-        "googleCss": "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Karla:wght@400;500;700&display=swap"
+        "googleCss": "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,500&family=Karla:wght@400;500;600;700&display=swap"
       },
       "editor": {
         "nome": "Terra",
@@ -237,7 +237,7 @@
       "fontHeadingFamily": "Plus Jakarta Sans",
       "fontBodyFamily": "Inter",
       "fonts": {
-        "googleCss": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600&display=swap"
+        "googleCss": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600;700&display=swap"
       },
       "editor": {
         "nome": "Vita",

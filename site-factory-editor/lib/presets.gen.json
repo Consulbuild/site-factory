@@ -18,7 +18,7 @@
     "estetica": "minimal near-monocromo, zero ombre",
     "per": "chi vuole sobrietà",
     "fontLabel": "Inter Tight + Inter",
-    "fontsHref": "https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap",
+    "fontsHref": "https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap",
     "fontHeading": "\"Inter Tight\", system-ui, sans-serif",
     "fontBody": "\"Inter\", system-ui, sans-serif",
     "neutri": {
@@ -32,7 +32,7 @@
     "estetica": "dark, indaco+ciano neon, glass/glow (unico scuro)",
     "per": "software, AI, tech",
     "fontLabel": "Space Grotesk + Inter",
-    "fontsHref": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@500&display=swap",
+    "fontsHref": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap",
     "fontHeading": "\"Space Grotesk\", system-ui, sans-serif",
     "fontBody": "\"Inter\", system-ui, sans-serif",
     "neutri": {
@@ -47,7 +47,7 @@
     "estetica": "editoriale serif, carta",
     "per": "studi creativi, lusso, restauro, portfolio",
     "fontLabel": "Playfair Display + Source Serif 4",
-    "fontsHref": "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap",
+    "fontsHref": "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap",
     "fontHeading": "\"Playfair Display\", serif",
     "fontBody": "\"Source Serif 4\", serif",
     "neutri": {
@@ -61,7 +61,7 @@
     "estetica": "artigianale caldo, terracotta/salvia, bordi 1.5px",
     "per": "artigiani, legno, food, «fatto con cura»",
     "fontLabel": "Fraunces + Karla",
-    "fontsHref": "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Karla:wght@400;500;700&display=swap",
+    "fontsHref": "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,500&family=Karla:wght@400;500;600;700&display=swap",
     "fontHeading": "\"Fraunces\", serif",
     "fontBody": "\"Karla\", system-ui, sans-serif",
     "neutri": {
@@ -75,7 +75,7 @@
     "estetica": "friendly rounded, micro-bounce",
     "per": "startup, servizi consumer, app person-facing",
     "fontLabel": "Plus Jakarta Sans + Inter",
-    "fontsHref": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600&display=swap",
+    "fontsHref": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600;700&display=swap",
     "fontHeading": "\"Plus Jakarta Sans\", system-ui, sans-serif",
     "fontBody": "\"Inter\", system-ui, sans-serif",
     "neutri": {

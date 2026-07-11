@@ -486,6 +486,10 @@
     "$type": "fontWeight",
     "$value": 700
   },
+  "w-strong": {
+    "$type": "fontWeight",
+    "$value": 800
+  },
   "brand-space": {
     "$type": "number",
     "$value": 1

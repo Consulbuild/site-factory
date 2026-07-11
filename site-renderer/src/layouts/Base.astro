@@ -1,7 +1,7 @@
 ---
 import "../styles/global.css";
 import type { SiteConfig } from "@/lib/schema";
-import { PRESET_FONTS, customFontsHref, type Preset } from "@/lib/presets";
+import { customFontsHref, type Preset } from "@/lib/presets";
 
 interface Props {
   site: SiteConfig;
@@ -26,11 +26,12 @@ if (brand.fonts.body) vars.push(`--brand-font-body:'${brand.fonts.body}'`);
 if (brand.fonts.mono) vars.push(`--brand-font-mono:'${brand.fonts.mono}'`);
 const brandStyle = vars.join(";");
 
-// Font: override del cliente se presente, altrimenti i font del preset.
+// Font: i font di preset sono self-hosted (@font-face in presets.gen.css, M3);
+// il CDN Google si tocca SOLO se il cliente impone famiglie custom.
 const overrideFonts = [brand.fonts.heading, brand.fonts.body, brand.fonts.mono].filter(
   (x): x is string => !!x,
 );
-const fontsHref = overrideFonts.length ? customFontsHref(overrideFonts) : PRESET_FONTS[preset];
+const fontsHref = overrideFonts.length ? customFontsHref(overrideFonts) : null;
 
 const title = pageTitle
   ? `${pageTitle} · ${meta.businessName}`
@@ -52,9 +53,15 @@ const description =
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href={fontsHref} />
+    {
+      fontsHref && (
+        <>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+          <link rel="stylesheet" href={fontsHref} />
+        </>
+      )
+    }
   </head>
   <body>
     <slot />

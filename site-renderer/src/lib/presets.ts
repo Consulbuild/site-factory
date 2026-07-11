@@ -1,11 +1,12 @@
 /**
  * Manifest dei 6 style-preset. La fonte di verità sono i file DTCG in
- * presets/*.tokens.json (+ *.meta.json): PRESETS, DEFAULT_PRESET e
- * PRESET_FONTS sono GENERATI da `npm run build:presets` in presets.gen.ts.
+ * presets/*.tokens.json (+ *.meta.json): PRESETS e DEFAULT_PRESET sono
+ * GENERATI da `npm run build:presets` in presets.gen.ts. I font di preset
+ * sono self-hosted (@font-face in presets.gen.css, via fetch-fonts.mjs).
  * Qui vive solo il codice a mano (override font del cliente).
  */
 
-export { PRESETS, DEFAULT_PRESET, PRESET_FONTS, type Preset } from "./presets.gen";
+export { PRESETS, DEFAULT_PRESET, type Preset } from "./presets.gen";
 
 /** Costruisce un URL Google Fonts da famiglie arbitrarie (override cliente). */
 export function customFontsHref(families: string[]): string {

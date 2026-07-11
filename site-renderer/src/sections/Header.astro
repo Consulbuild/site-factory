@@ -29,8 +29,8 @@ const { brand, meta, contact } = site;
         <img src={brand.logo.src} alt={brand.logo.alt} class="h-9 w-auto md:h-10" />
       ) : (
         <>
-          <span class="grid h-9 w-9 shrink-0 place-items-center rounded-[8px] bg-primary font-heading text-[1.1rem] font-extrabold text-white" aria-hidden="true">{meta.businessName.charAt(0)}</span>
-          <span class="hidden truncate font-heading text-[0.95rem] font-extrabold uppercase tracking-tight text-ink lg:block">{meta.businessName}</span>
+          <span class="grid h-9 w-9 shrink-0 place-items-center rounded-[8px] bg-primary font-heading text-[1.1rem] font-strong text-white" aria-hidden="true">{meta.businessName.charAt(0)}</span>
+          <span class="hidden truncate font-heading text-[0.95rem] font-strong uppercase tracking-tight text-ink lg:block">{meta.businessName}</span>
         </>
       )}
     </a>

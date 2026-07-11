@@ -2,9 +2,24 @@
   "id": "terra",
   "version": "1.0.0",
   "stato": "attivo",
-  "aaker": { "sincerity": 2, "excitement": 0, "competence": 1, "sophistication": 0, "ruggedness": 2, "primaria": "ruggedness" },
-  "settoriConsigliati": ["artigiani", "falegnameria", "food", "agriturismo"],
-  "antiPatterns": ["tech/software", "cliniche e settori sterili"],
+  "aaker": {
+    "sincerity": 2,
+    "excitement": 0,
+    "competence": 1,
+    "sophistication": 0,
+    "ruggedness": 2,
+    "primaria": "ruggedness"
+  },
+  "settoriConsigliati": [
+    "artigiani",
+    "falegnameria",
+    "food",
+    "agriturismo"
+  ],
+  "antiPatterns": [
+    "tech/software",
+    "cliniche e settori sterili"
+  ],
   "requisitiContenuto": {},
   "vincoliCombinazione": {},
   "photographySpec": {
@@ -30,8 +45,19 @@
     "serifBody": false
   },
   "fonts": {
-    "googleCss": "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Karla:wght@400;500;700&display=swap"
+    "googleCss": "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,500&family=Karla:wght@400;500;600;700&display=swap"
   },
-  "provenance": { "runId": null, "references": [], "auditRef": null, "nota": "disegnato a mano (pre-fabbrica)" },
-  "changelog": [{ "version": "1.0.0", "data": "2026-07-10", "nota": "serializzazione DTCG del preset esistente (M2)" }]
+  "provenance": {
+    "runId": null,
+    "references": [],
+    "auditRef": null,
+    "nota": "disegnato a mano (pre-fabbrica)"
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "data": "2026-07-10",
+      "nota": "serializzazione DTCG del preset esistente (M2)"
+    }
+  ]
 }

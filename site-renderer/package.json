@@ -14,7 +14,9 @@
     "gate:overflow": "node scripts/check-overflow.mjs",
     "gate:tokens": "node scripts/lint-tokens.mjs",
     "gate:impeccable": "node scripts/run-impeccable.mjs",
-    "build:presets": "node scripts/build-presets.mjs"
+    "build:presets": "node scripts/build-presets.mjs",
+    "fetch:fonts": "node scripts/fetch-fonts.mjs",
+    "make:goldset": "node scripts/make-goldset.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.0",

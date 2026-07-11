@@ -3,6 +3,8 @@
 // il gate AUTORITATIVO resta lo script, spawnato server-side in lib/contrast.ts
 // a ogni salvataggio/conferma. Se cambia là, cambiare qui.
 
+import { fixTone } from "./hct.ts";
+
 function lin(hex: string): [number, number, number] {
   let h = hex.replace("#", "").trim();
   if (h.length === 3) h = h.split("").map((c) => c + c).join("");
@@ -24,31 +26,14 @@ export function contrastRatio(fg: string, bg: string): number {
 
 export const isHex6 = (v: string) => /^#[0-9a-fA-F]{6}$/.test(v);
 
-function scale(hex: string, k: number, verso: "nero" | "bianco"): string {
-  const h = hex.replace("#", "");
-  const ch = (i: number) => {
-    const c = parseInt(h.slice(i, i + 2), 16);
-    const v = verso === "nero" ? c * k : c + (255 - c) * (1 - k);
-    return Math.max(0, Math.min(255, Math.round(v)))
-      .toString(16)
-      .padStart(2, "0");
-  };
-  return `#${ch(0)}${ch(2)}${ch(4)}`;
-}
-
 /**
  * La regola della skill in un click: «scurisci del minimo necessario
- * mantenendo la tinta» (o schiarisci, su sfondo scuro tipo nova). Scala i
- * canali RGB a piccoli passi verso nero/bianco finché la coppia passa.
+ * mantenendo la tinta» (o schiarisci, su sfondo scuro tipo nova).
+ * Da M3 la correzione è HCT (lib/hct.ts): si sposta solo il tone,
+ * la tinta e la saturazione del brand non si toccano più.
  */
 export function fixUntilPass(fg: string, bg: string, need: number): string | null {
-  const verso: "nero" | "bianco" = lum(lin(fg)) < lum(lin(bg)) ? "nero" : "bianco";
-  let out = fg;
-  for (let i = 0; i < 120; i++) {
-    if (contrastRatio(out, bg) >= need) return out;
-    out = scale(out, 0.98, verso);
-  }
-  return contrastRatio(out, bg) >= need ? out : null;
+  return fixTone(fg, bg, need);
 }
 
 /** Direzione della correzione, per l'etichetta del bottone. */

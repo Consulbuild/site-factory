@@ -23,7 +23,7 @@ const errori = [];
 
 // ---------- (a) scan statico ----------
 const BANNED_UTILITY =
-  /\b(shadow-(sm|md|lg|xl|2xl)|rounded-(sm|md|lg|xl|2xl|3xl)|text-(xs|sm|lg|xl|[2-9]xl))\b/;
+  /\b(shadow-(sm|md|lg|xl|2xl)|rounded-(sm|md|lg|xl|2xl|3xl)|text-(xs|sm|lg|xl|[2-9]xl)|font-(extrabold|black))\b/;
 const HEX = /#[0-9a-fA-F]{3,8}\b/;
 // style= è ammesso solo per valori funzionali (safe-area, var del sistema)
 const STYLE_OK = /^[a-z-]+:\s*(env\(|var\(--)/;
@@ -108,7 +108,31 @@ if (!process.argv.includes("--static-only")) {
       else if (!e.ok)
         errori.push(`${preset}: ${e.sel} ${e.prop} = "${e.reale}" ≠ token ${e.token} = "${e.atteso}"`);
     }
-    console.log(`ok  ${preset}: ${esiti.filter((e) => e.ok).length}/${CHECKS.length} check computed`);
+    // Niente grassetto sintetico (M3): ogni coppia (famiglia, peso, stile) usata
+    // nel render deve avere una @font-face vera dichiarata — col CDN i preset
+    // usavano pesi mai caricati e il browser li falsificava.
+    const orfane = await page.evaluate(() => {
+      const facce = new Set(
+        [...document.fonts].map(
+          (f) => `${f.family.replaceAll(/["']/g, "")}|${f.weight}|${f.style}`,
+        ),
+      );
+      const famiglieDichiarate = new Set([...facce].map((k) => k.split("|")[0]));
+      const mancano = new Set();
+      for (const el of document.querySelectorAll("body *")) {
+        if (!el.textContent?.trim() || !el.checkVisibility?.()) continue;
+        const cs = getComputedStyle(el);
+        const fam = cs.fontFamily.split(",")[0].trim().replaceAll(/["']/g, "");
+        if (!famiglieDichiarate.has(fam)) continue; // fallback di sistema: fuori scope
+        const stile = cs.fontStyle === "italic" ? "italic" : "normal";
+        if (!facce.has(`${fam}|${cs.fontWeight}|${stile}`))
+          mancano.add(`${fam} ${cs.fontWeight}${stile === "italic" ? " italic" : ""}`);
+      }
+      return [...mancano].sort();
+    });
+    for (const o of orfane)
+      errori.push(`${preset}: "${o}" usato nel render ma senza @font-face — peso sintetico (aggiungi il peso a fonts.googleCss del preset)`);
+    console.log(`ok  ${preset}: ${esiti.filter((e) => e.ok).length}/${CHECKS.length} check computed, ${orfane.length} pesi orfani`);
   }
   await browser.close();
   await server.close();

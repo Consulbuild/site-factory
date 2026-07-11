@@ -24,7 +24,7 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
         <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
           {data.points.map((point, i) => (
             <li class="surface-card p-7">
-              <p class="t-h3 font-extrabold text-accent" aria-hidden="true">{num(i)}</p>
+              <p class="t-h3 font-strong text-accent" aria-hidden="true">{num(i)}</p>
               <h3 class="t-h4 mt-3 font-bold">{point.title}</h3>
               <p class="mt-2 text-muted">{point.desc}</p>
             </li>
@@ -43,7 +43,7 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
         <ul class="space-y-8 lg:col-span-6 lg:col-start-7">
           {data.points.map((point, i) => (
             <li class="flex gap-5 border-t border-line pt-6 first:border-t-0 first:pt-0">
-              <p class="t-h4 font-extrabold text-accent" aria-hidden="true">{num(i)}</p>
+              <p class="t-h4 font-strong text-accent" aria-hidden="true">{num(i)}</p>
               <div>
                 <h3 class="t-h4 font-bold">{point.title}</h3>
                 <p class="mt-1.5 max-w-[52ch] text-muted">{point.desc}</p>

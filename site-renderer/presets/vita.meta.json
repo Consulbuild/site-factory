@@ -2,9 +2,24 @@
   "id": "vita",
   "version": "1.0.0",
   "stato": "attivo",
-  "aaker": { "sincerity": 2, "excitement": 2, "competence": 0, "sophistication": 0, "ruggedness": 0, "primaria": "excitement" },
-  "settoriConsigliati": ["servizi-consumer", "benessere", "pulizie", "traslochi"],
-  "antiPatterns": ["settori che richiedono gravitas (legale, medico specialistico)", "lusso"],
+  "aaker": {
+    "sincerity": 2,
+    "excitement": 2,
+    "competence": 0,
+    "sophistication": 0,
+    "ruggedness": 0,
+    "primaria": "excitement"
+  },
+  "settoriConsigliati": [
+    "servizi-consumer",
+    "benessere",
+    "pulizie",
+    "traslochi"
+  ],
+  "antiPatterns": [
+    "settori che richiedono gravitas (legale, medico specialistico)",
+    "lusso"
+  ],
   "requisitiContenuto": {},
   "vincoliCombinazione": {},
   "photographySpec": {
@@ -30,8 +45,19 @@
     "serifBody": false
   },
   "fonts": {
-    "googleCss": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600&display=swap"
+    "googleCss": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600;700&display=swap"
   },
-  "provenance": { "runId": null, "references": [], "auditRef": null, "nota": "disegnato a mano (pre-fabbrica)" },
-  "changelog": [{ "version": "1.0.0", "data": "2026-07-10", "nota": "serializzazione DTCG del preset esistente (M2)" }]
+  "provenance": {
+    "runId": null,
+    "references": [],
+    "auditRef": null,
+    "nota": "disegnato a mano (pre-fabbrica)"
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "data": "2026-07-10",
+      "nota": "serializzazione DTCG del preset esistente (M2)"
+    }
+  ]
 }

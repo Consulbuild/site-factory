@@ -26,7 +26,7 @@ const isTimeline = variant === "timeline";
       <ol class="step-track relative mt-16 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
         {data.steps.map((step, i) => (
           <li class="step-col relative">
-            <span class="step-node relative z-10 grid h-12 w-12 place-items-center rounded-full bg-accent font-heading font-extrabold text-white outline outline-8 outline-bg" aria-hidden="true">{num(i)}</span>
+            <span class="step-node relative z-10 grid h-12 w-12 place-items-center rounded-full bg-accent font-heading font-strong text-white outline outline-8 outline-bg" aria-hidden="true">{num(i)}</span>
             <h3 class="t-h4 mt-5 font-bold">{step.title}</h3>
             <p class="mt-2 text-muted">{step.desc}</p>
           </li>
@@ -39,7 +39,7 @@ const isTimeline = variant === "timeline";
         {data.steps.map((step, i) => (
           <li class="grid grid-cols-[3.5rem_1fr] gap-x-6 sm:grid-cols-[5rem_1fr] sm:gap-x-8">
             <div class="flex flex-col items-center">
-              <p class="t-h2 font-extrabold text-accent" aria-hidden="true">{num(i)}</p>
+              <p class="t-h2 font-strong text-accent" aria-hidden="true">{num(i)}</p>
               {i < data.steps.length - 1 && <div class="my-2 w-px grow bg-line" aria-hidden="true"></div>}
             </div>
             <div class="pb-12 pt-1 sm:pt-2">

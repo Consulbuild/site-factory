@@ -50,8 +50,8 @@ const stickySec = site.sections.find((s) => s.type === "StickyCta");
           <img src={brand.logo.src} alt={brand.logo.alt} class="h-8 w-auto" />
         ) : (
           <>
-            <span class="hidden truncate font-heading text-[0.85rem] font-extrabold uppercase tracking-tight text-ink sm:block">{meta.businessName}</span>
-            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-[7px] bg-primary font-heading text-[1rem] font-extrabold text-white" aria-hidden="true">{meta.businessName.charAt(0)}</span>
+            <span class="hidden truncate font-heading text-[0.85rem] font-strong uppercase tracking-tight text-ink sm:block">{meta.businessName}</span>
+            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-[7px] bg-primary font-heading text-[1rem] font-strong text-white" aria-hidden="true">{meta.businessName.charAt(0)}</span>
           </>
         )}
       </a>

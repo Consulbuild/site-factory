@@ -378,5 +378,9 @@
   "w-heading-soft": {
     "$type": "fontWeight",
     "$value": 600
+  },
+  "w-strong": {
+    "$type": "fontWeight",
+    "$value": 800
   }
 }
