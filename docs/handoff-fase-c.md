@@ -1,4 +1,24 @@
-# Handoff Fase C — sviluppo schede editor (aggiornato 2026-07-07)
+# Handoff Fase C — sviluppo schede editor (aggiornato 2026-07-11)
+
+## Refactoring UI v2 (2026-07-11, COMPLETO)
+
+L'editor ha un design nuovo (spec: `site-factory-editor/DESIGN-REFACTOR-2026-07.md`,
+riferimento visivo fornito da Mattia): shell con sidebar+topbar (ricerca clienti
+globale ⌘K, chiavi API in /impostazioni), primario blu royal + Inter (il teal resta
+ai siti generati), card con ombre soffuse nei due temi (dark = grafite blu).
+Novità operative da conoscere:
+- **I run AI girano in background** (`lib/run-bus.ts`): navigare o chiudere il tab
+  NON li uccide più; stop esplicito (DELETE sulla route del run o dalla status bar);
+  eventi persistiti in `run.ndjson` (clienti: `out/<slug>/logs/`, fabbrica: nella
+  cartella run); run interrotti da riavvio rilevati e riparati da `/api/runs/active`.
+- **Status bar agenti** in basso ovunque: sfera per agente (fasi reali + tempo mono,
+  mai % inventate), pannello espanso con timeline fasi e log live, card «Agenti al
+  lavoro» in sidebar.
+- Dashboard clienti con KPI card-filtro e **eliminazione diretta** (dialog che
+  richiede la ragione sociale digitata; deciso da Mattia 2026-07-11); hub col
+  prossimo passo primario; ⌘S salva nelle schede; fabbrica con run/riferimenti
+  eliminabili, shot visibili nel dettaglio run, audit con tokenDiff e campi meta
+  completi.
 
 Contesto minimo per riprendere il lavoro in una chat nuova. Le regole di ingaggio e
 l'architettura sono nel CLAUDE.md a root (letto automaticamente): qui solo stato e prossimi passi.

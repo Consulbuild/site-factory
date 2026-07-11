@@ -1,5 +1,9 @@
 # Refactoring design editor — studio UX/UI (Fase 1, 2026-07-11)
 
+> **STATO: IMPLEMENTATO** (Fase 2 completata 2026-07-11, fette A–H nei commit
+> `368460e…f003fca` + fix post-review). Questo documento resta la spec di
+> riferimento del design v2; il §8 descrive com'è stato costruito.
+
 Studio completo pre-implementazione richiesto da Mattia: audit UX pagina-per-pagina,
 sistema di coerenza, concept della **status bar agenti**, direzione visiva e piano
 Fase 2. Registro: **product** (PRODUCT.md). Metodo: 2 agenti di inventario sul codice
