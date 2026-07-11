@@ -149,7 +149,26 @@ trattamento foto), mai da generazione libera.
       resolver.json governa anche build-presets, lint-tokens, check-overflow,
       dump-vars e playwright.config (prima erano 5 liste hardcoded — il bug
       è emerso proprio alla prima pubblicazione).
-- [ ] M8 — assegnazione deterministica cliente→design + anti-collisione
+- [x] 2026-07-11 M8 — assegnazione deterministica cliente→design +
+      anti-collisione. `lib/assign-design.ts` (puro TS, zero AI): Aaker del
+      cliente da `contesto.personalita_aaker` (skill context-enricher estesa,
+      punteggi tracciabili al form) o fallback deterministico DICHIARATO dal
+      tono; hard filter (stato, antiPatterns) → distanza Aaker (primaria ×2,
+      bonus settore consigliato) → anti-collisione sul registro
+      factory/assignments.json (stesso mercato = settore+comune: penalità sul
+      preset già usato + vincolo hue-bucket per il palette-designer, 12 bucket
+      da 30°) → tie-break seed=slug. Lo step palette ha la pre-fase che scrive
+      design.json e passa preset+vincoli alla skill; validate() rifiuta preset
+      ≠ assegnazione e primary nei bucket vietati; afterSuccess registra la
+      tinta scelta nel registro. Pannello «Assegnazione» nella scheda Palette
+      (motivo, alternative scartate, vincoli, override umano registrato — per
+      i clienti storici mostra «palette storica, pre-M8»). Accettazione
+      (check-assign.ts, deterministico): stessa assegnazione ×2 ✓; fixture
+      «impianti/Monza» → ferro (il preset del pilota, subito utile) e il
+      secondo cliente nello stesso mercato spostato su meridian
+      dall'anti-collisione ✓; override in design.json e registro ✓; clienti
+      esistenti intoccati (nessun design.json finché non si rigenera) ✓;
+      tsc+build verdi.
 - [ ] M9 — varianti di sezione, layout per-preset, trattamento foto, fotografia per-preset
 
 ## Sorprese & Scoperte [viva]

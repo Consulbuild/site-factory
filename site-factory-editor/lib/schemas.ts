@@ -226,6 +226,20 @@ export const ContestoSchema = z.object({
   promessa_martello: z.string(),
 
   tono: z.object({ registro: z.string(), da_evitare: z.string() }),
+  // M8: personalità di marca per l'assegnazione deterministica del design.
+  // Opzionale per retrocompatibilità: i contesti storici non ce l'hanno e
+  // assign-design usa un fallback deterministico dichiarato (dal tono).
+  personalita_aaker: z
+    .object({
+      sincerity: z.number().min(0).max(2),
+      excitement: z.number().min(0).max(2),
+      competence: z.number().min(0).max(2),
+      sophistication: z.number().min(0).max(2),
+      ruggedness: z.number().min(0).max(2),
+      primaria: z.enum(["sincerity", "excitement", "competence", "sophistication", "ruggedness"]),
+      fonte: z.array(nonEmpty).min(1),
+    })
+    .optional(),
   materiali: z.object({
     logo: z.boolean(),
     foto_reali: z.string(),

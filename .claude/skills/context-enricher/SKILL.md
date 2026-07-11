@@ -211,10 +211,29 @@ ripetute su tutto il sito senza che il cliente le abbia mai fatte.
   "promesse_vietate": ["risposta entro 24 ore", "anni di esperienza (attività dal 2026)", "garanzia di N anni"],
   "promessa_martello": "Gestione chiavi in mano, un solo referente dal progetto alla consegna",
   "tono": { "registro": "elegante e sofisticato, tecnico e professionale", "da_evitare": "" },
+  "personalita_aaker": {
+    "sincerity": 1, "excitement": 0, "competence": 2, "sophistication": 1, "ruggedness": 1,
+    "primaria": "competence",
+    "fonte": ["tono: «tecnico e professionale» → competence 2", "settore: edilizia con direzione lavori → ruggedness 1", "tono: «elegante e sofisticato» → sophistication 1"]
+  },
   "materiali": { "logo": false, "foto_reali": "qualche foto, non professionali", "colori": "nero e oro (preferenza, non ufficiale)" },
   "note_operatore": ""
 }
 ```
+
+### personalita_aaker (M8 — alimenta l'assegnazione deterministica del design)
+
+Cinque dimensioni di Aaker con punteggio 0–2 + `primaria` (la dominante) +
+`fonte` (array: OGNI punteggio ≠ 0 va motivato citando il campo del form che
+lo giustifica — tono, settore, target, descrizione; stessa regola d'oro di
+tutto il contesto: niente fonte ⇒ punteggio 0). Guida rapida:
+- **sincerity**: familiare, onesto, vicino («impresa di famiglia», «trasparenza»)
+- **excitement**: giovane, dinamico, innovativo («domotica», «smart», «moderno»)
+- **competence**: affidabile, tecnico, certificato («direzione lavori», «a norma»)
+- **sophistication**: elegante, curato, di fascia alta («design», «finiture di pregio»)
+- **ruggedness**: concreto, da cantiere, robusto («demolizioni», «strutture»)
+Non è una descrizione del SITO desiderato ma dell'AZIENDA come si presenta:
+il design lo sceglie a valle l'assegnazione deterministica, non tu.
 
 - `version`, `generatedAt`, `submissionId`, `verificato` li normalizza comunque la GUI dopo
   il run: mettili come sopra (generatedAt stringa vuota, verificato false), non inventare

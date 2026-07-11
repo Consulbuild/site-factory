@@ -1,5 +1,5 @@
 import path from "node:path";
-import { REPO_ROOT, SITE_RENDERER } from "../paths";
+import { REPO_ROOT, SITE_RENDERER } from "../paths.ts";
 
 // Path della fabbrica design (D6): tutto file JSON in <repo>/factory/.
 export const FACTORY_ROOT = path.join(REPO_ROOT, "factory");

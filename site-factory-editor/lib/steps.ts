@@ -21,6 +21,7 @@ import { checkSlop, type SlopReport, type SlopResult } from "./slop";
 import { expectedImages, probeBfl, validateImagesTrace } from "./images";
 import { buildRun } from "./build";
 import { getSecret } from "./secrets";
+import { assignDesign, writeDesign, readDesign, registraAssegnazione, hueBucket } from "./assign-design.ts";
 import type { RunEvent, PhaseResult, StepIO } from "./run-step";
 
 // Registry degli step AI. Ogni step orchestra in TS le proprie fasi
@@ -140,17 +141,35 @@ export const STEPS: Record<StepKey, StepDef> = {
         ? null
         : "Prima conferma il contesto: la palette si progetta sul contesto curato.",
     run: async function* (slug, _ctx, io) {
+      // Pre-fase deterministica (M8): il PRESET lo decide l'assegnazione,
+      // non l'AI — la skill sceglie SOLO primary+accent contro i suoi neutri.
+      yield { type: "phase", label: "Assegnazione deterministica del design" };
+      let design;
+      try {
+        design = assignDesign(slug);
+        writeDesign(slug, design);
+      } catch (e) {
+        return { ok: false, error: `assegnazione design fallita: ${e instanceof Error ? e.message : e}` };
+      }
+      yield { type: "text", text: `Preset assegnato: ${design.preset} — ${design.motivo}` };
+      const vincoloHue = design.vincoliPalette.hueBucketEvitare.length
+        ? `VINCOLO ANTI-COLLISIONE (nello stesso mercato ${design.preset} è già usato con quelle tinte): il PRIMARY non deve cadere nelle famiglie di tinta ${design.vincoliPalette.hueBucketEvitare.join(", ")} (bucket = floor(hue/30°), 0–11).\n`
+        : "";
+      if (vincoloHue) yield { type: "text", text: vincoloHue.trim() };
       return yield* io.claude({
         phase: "palette-designer",
         prompt:
           `Usa la skill palette-designer per il cliente «${slug}».\n` +
+          `IL PRESET È GIÀ DECISO dall'assegnazione deterministica (site-renderer/out/${slug}/design.json): «${design.preset}» ` +
+          `— ${design.motivo}. NON sceglierlo tu: scegli SOLO primary e accent contro i neutri di ${design.preset}.\n` +
+          vincoloHue +
           `Input primario: site-renderer/out/${slug}/contesto.json (contesto curato e verificato dall'umano); ` +
           `secondario site-renderer/out/${slug}/brief.json per il verbatim.\n` +
           `Gate di contrasto (obbligatorio, dalla root del repo): scrivi le coppie in site-renderer/out/${slug}/coppie.json ` +
           `ed esegui \`node .claude/skills/palette-designer/check-contrast.mjs site-renderer/out/${slug}/coppie.json\` — deve uscire con codice 0.\n` +
           `Poi scrivi SOLO site-renderer/out/${slug}/palette.json in formato flat slot-map, esattamente queste 3 chiavi:\n` +
-          `{"brand.preset": "…", "brand.palette.primary": "#……", "brand.palette.accent": "#……"}\n` +
-          `Nessun altro file oltre coppie.json e palette.json. Chiudi con UNA riga: preset scelto e perché.`,
+          `{"brand.preset": "${design.preset}", "brand.palette.primary": "#……", "brand.palette.accent": "#……"}\n` +
+          `Nessun altro file oltre coppie.json e palette.json. Chiudi con UNA riga: la palette scelta e perché.`,
         // Bash SOLO per il gate di contrasto della skill (matcher a prefisso).
         allowed: [...READ_SKILL_WRITE, "Bash(node .claude/skills/palette-designer/check-contrast.mjs:*)"],
         disallowed: ["WebSearch", "WebFetch", "Edit", "Task"],
@@ -161,6 +180,20 @@ export const STEPS: Record<StepKey, StepDef> = {
       fs.rmSync(path.join(OUT_DIR, slug, "coppie.json"), { force: true });
       const palette = readPalette(slug);
       if (!palette) return { ok: false, errore: "palette.json non scritto o non valido (preset/hex)" };
+      // M8: il preset deve essere quello dell'assegnazione deterministica
+      const design = readDesign(slug);
+      if (design && palette["brand.preset"] !== design.preset) {
+        return {
+          ok: false,
+          errore: `preset "${palette["brand.preset"]}" ≠ assegnazione "${design.preset}": il preset non lo sceglie la skill`,
+        };
+      }
+      if (design?.vincoliPalette.hueBucketEvitare.includes(hueBucket(palette["brand.palette.primary"]))) {
+        return {
+          ok: false,
+          errore: `primary ${palette["brand.palette.primary"]} cade in una famiglia di tinta vietata dall'anti-collisione (bucket ${hueBucket(palette["brand.palette.primary"])})`,
+        };
+      }
       const gate = checkPalette(palette["brand.preset"], palette["brand.palette.primary"], palette["brand.palette.accent"]);
       if (gate.errore) return { ok: false, errore: gate.errore };
       if (!gate.ok) {
@@ -176,6 +209,10 @@ export const STEPS: Record<StepKey, StepDef> = {
       patchClientState(slug, (s) => {
         s.steps.palette.upstream = computeUpstream(slug, ["contesto.json"]);
       });
+      // M8: registro anti-collisione — la voce del cliente entra/aggiorna
+      // con la famiglia di tinta effettivamente scelta
+      const palette = readPalette(slug);
+      if (palette) registraAssegnazione(slug, hueBucket(palette["brand.palette.primary"]));
     },
   },
 

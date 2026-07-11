@@ -3,8 +3,11 @@ import { notFound } from "next/navigation";
 import { readClientBundle } from "@/lib/clients";
 import { STEPS } from "@/lib/steps";
 import { staleFiles } from "@/lib/staleness";
+import { readDesign } from "@/lib/assign-design";
+import { listPresets } from "@/lib/factory/state";
 import { PaletteRunner } from "@/components/palette-runner";
 import { PaletteEditor, type ContestoRef } from "@/components/palette-editor";
+import { AssegnazionePanel, type AssegnazioneView } from "@/components/assegnazione-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +25,26 @@ export default async function PalettePage({ params }: { params: Promise<{ slug: 
   const contestoOk = bundle.client.steps.contesto.stato === "verificato";
   const stato = bundle.client.steps.palette.stato;
 
+  // M8: assegnazione design (deterministica) + override umano
+  const design = readDesign(slug);
+  const vista: AssegnazioneView | null = design
+    ? {
+        preset: design.preset,
+        motivo: design.motivo,
+        alternativeScartate: design.alternativeScartate,
+        hueBucketEvitare: design.vincoliPalette.hueBucketEvitare,
+        aakerFonte: design.aakerCliente.fonte,
+      }
+    : null;
+  const presetsAttivi = listPresets()
+    .filter((p) => p.stato === "attivo")
+    .map((p) => p.id);
+  const pannello = (
+    <div className="mt-6">
+      <AssegnazionePanel slug={slug} design={vista} presetsAttivi={presetsAttivi} paletteEsistente={!!bundle.palette} />
+    </div>
+  );
+
   // Con la palette su disco → editor (guardia navigazione propria).
   if (bundle.palette) {
     const contestoRef: ContestoRef | null = bundle.contesto
@@ -34,14 +57,17 @@ export default async function PalettePage({ params }: { params: Promise<{ slug: 
     const stale =
       staleFiles(slug, STEPS.palette.upstream, bundle.client.steps.palette.upstream).length > 0;
     return (
-      <PaletteEditor
-        slug={slug}
-        businessName={businessName}
-        initial={bundle.palette}
-        contestoRef={contestoRef}
-        stale={stale}
-        verificato={stato === "verificato"}
-      />
+      <div>
+        <PaletteEditor
+          slug={slug}
+          businessName={businessName}
+          initial={bundle.palette}
+          contestoRef={contestoRef}
+          stale={stale}
+          verificato={stato === "verificato"}
+        />
+        {pannello}
+      </div>
     );
   }
 
@@ -77,6 +103,7 @@ export default async function PalettePage({ params }: { params: Promise<{ slug: 
         contestoOk={contestoOk}
         errore={stato === "errore" ? bundle.client.steps.palette.errore : undefined}
       />
+      {pannello}
     </div>
   );
 }
