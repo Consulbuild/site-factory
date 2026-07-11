@@ -33,13 +33,15 @@
     "è importante sottolineare", "va sottolineato che", "occorre sottolineare",
     "si pone come obiettivo", "ci poniamo come obiettivo",
     "l'ultima frontiera",
-    "know-how"
+    "know-how",
+    "da confermare", "da definire", "lorem ipsum"
   ],
 
   "bloccanti_regex": [
     "non solo [^.!?]{0,60} ma anche",
     "non è (solo |soltanto )?[a-zàèéìòù' ]{2,30}[,:] è ",
-    "non (siamo|è) (un'?|una |il |la )?semplice"
+    "non (siamo|è) (un'?|una |il |la )?semplice",
+    "\\b(tbd|todo|xxx|placeholder)\\b"
   ],
 
   "avvisi": [

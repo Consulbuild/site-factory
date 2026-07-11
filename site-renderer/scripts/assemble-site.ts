@@ -231,6 +231,35 @@ if (fotoReali !== null && fotoReali < GALLERY_DROP.minFoto) {
   warnings.push(`Gallery rimossa (${fotoReali} foto reali < ${GALLERY_DROP.minFoto}) + link "${GALLERY_DROP.navHref}" tolti da nav e footer`);
 }
 
+/* ---------------- guard fixture: il golden example non va MAI in una build completa ---------------- */
+
+// La build parziale usa i valori d'oro by design; quella completa no: un
+// marcatore della fixture nell'output completo è un leak (foto stock altrui,
+// brand inventato) che finirebbe pubblicato sul dominio del cliente.
+const MARCATORI_FIXTURE = ["Edil Roma", "unsplash.com"];
+if (!partial) {
+  const testo = JSON.stringify(merged);
+  for (const m of MARCATORI_FIXTURE)
+    if (testo.includes(m)) errors.push(`marcatore fixture del golden example ("${m}") presente in una build completa`);
+}
+
+/* ---------------- contatti meccanici: le CTA tel: seguono SEMPRE contact ---------------- */
+
+// Il golden example ha un numero fittizio nelle CTA telefoniche (es. hero secondaria),
+// che non sono slot: senza questa riscrittura ogni cliente pubblicherebbe il numero
+// finto. I dati di contatto sono meccanici — mai del modello, mai del blueprint.
+const PHONE_LIKE = /^[+\d][\d\s./-]{5,}$/;
+const fixTelCtas = (node: any): void => {
+  if (Array.isArray(node)) return void node.forEach(fixTelCtas);
+  if (!node || typeof node !== "object") return;
+  if (typeof node.href === "string" && node.href.startsWith("tel:") && merged.contact?.phone) {
+    node.href = `tel:${String(merged.contact.phone).replace(/[^+\d]/g, "")}`;
+    if (typeof node.label === "string" && PHONE_LIKE.test(node.label.trim())) node.label = merged.contact.phone;
+  }
+  for (const v of Object.values(node)) fixTelCtas(v);
+};
+fixTelCtas(merged.sections);
+
 /* ---------------- esito ---------------- */
 
 for (const w of warnings) console.warn(`⚠ ${w}`);

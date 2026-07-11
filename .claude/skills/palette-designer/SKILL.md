@@ -6,7 +6,9 @@ description: Sceglie il preset estetico e la palette (primary+accent) di un sito
 # Palette & preset designer (contratto site.json)
 
 ## Ruolo
-Non emetti CSS. Produci il blocco `brand` di `site.json`: **un preset** tra i 6 + la **palette cliente** (`primary` + `accent` hex; i neutri li possiede il preset). Verifichi il contrasto contro i neutri REALI del preset con `check-contrast.mjs`.
+Non emetti CSS. Produci il blocco `brand` di `site.json`: il **preset** + la **palette cliente** (`primary` + `accent` hex; i neutri li possiede il preset). Verifichi il contrasto contro i neutri REALI del preset con `check-contrast.mjs`.
+
+**In pipeline il preset ti viene DATO** (assegnazione deterministica M8, comunicata nel prompt: non lo scegli tu — il validate della pipeline boccia un preset diverso da quello assegnato). Il tuo lavoro è la palette contro i neutri del preset dato; se l'assegnazione include un vincolo `hueBucketEvitare`, il primary non deve cadere in quei bucket di tinta (bucket = floor(hue/30°), 0–11): anche questo è verificato dal gate.
 
 ## Input
 - **Fonte primaria: `out/<slug>/contesto.json`** — il contesto distillato e VERIFICATO dall'umano. Da lì:
@@ -41,7 +43,8 @@ flat slot-path → valore (è ciò che l'assembler e l'editor consumano):
 ```
 Nessun'altra chiave (niente meta: `verificato` & co. vivono in client.json, l'assembler rifiuta chiavi fuori slot).
 
-## Scelta del preset (settore → preset)
+## Scelta del preset — SOLO se l'assegnazione manca (uso interattivo/legacy)
+In pipeline questa tabella è consultiva: il preset arriva dall'assegnazione deterministica.
 | Preset | Estetica | Per |
 |---|---|---|
 | **meridian** (default/standard) | professionale, elevazione soffusa | studi tecnici, consulenza, **edilizia/impianti** |
@@ -50,8 +53,9 @@ Nessun'altra chiave (niente meta: `verificato` & co. vivono in client.json, l'as
 | **nova** | dark, indaco+ciano neon, glass/glow | software/AI/tech (UNICO dark) |
 | **atelier** | minimal near-monocromo, zero ombre | chi vuole sobrietà |
 | **vita** | friendly rounded, micro-bounce | startup, servizi consumer, app person-facing |
+| **ferro** | industriale, blu-acciaio, spigoli netti | edilizia strutturale, carpenteria, impianti pesanti |
 
-Default se in dubbio: **meridian**. Edilizia/energia locali → di norma meridian (o terra se artigiano).
+Default se in dubbio: **meridian**. Edilizia/energia locali → di norma meridian (o terra se artigiano, ferro se strutturale/industriale).
 
 ## Neutri REALI per preset (verifica il contrasto contro QUESTI valori)
 <!-- TABELLA-NEUTRI:START (generata da build-presets.mjs — non editare a mano) -->

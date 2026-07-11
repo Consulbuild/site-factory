@@ -7,12 +7,14 @@ import {
   readClientState,
   readPalette,
   readCopy,
+  readCopyCoverage,
   readCopyReview,
   readImagesTrace,
   readImageReview,
   patchClientState,
   type Brief,
 } from "./clients";
+import { checkCoperturaCopy } from "./slots-shared";
 import { snapshotFonte, driftLabels } from "./contesto-sync";
 import { checkPalette } from "./contrast";
 import { computeUpstream, hashValue } from "./staleness";
@@ -45,7 +47,7 @@ export interface StepDef {
   /** Artifact a monte, per lo snapshot di staleness (lib/staleness.ts). */
   upstream: string[];
   /** Prerequisito del run: ritorna il messaggio d'errore se NON eseguibile. */
-  gate?(slug: string): string | null;
+  gate?(slug: string, mode?: RunMode): string | null;
   /** Orchestrazione delle fasi `claude -p` (io.claude). L'esito è il return. */
   run(slug: string, ctx: RunCtx, io: StepIO): AsyncGenerator<RunEvent, PhaseResult>;
   /** Valida + normalizza l'artifact appena scritto. */
@@ -230,6 +232,24 @@ export const STEPS: Record<StepKey, StepDef> = {
       if (!copy) return { ok: false, errore: "copy.json non scritto o non leggibile" };
       const errs = validateCopyArtifact(copy);
       if (errs.length) return { ok: false, errore: `formato non conforme: ${errs.slice(0, 5).join("; ")}` };
+      // Copertura servizi (stessa definizione del CoveragePanel): la lezione
+      // Cavaliere — servizi reali spariti dal sito — non deve ripetersi a valle.
+      const contesto = readContesto(slug);
+      const coverage = readCopyCoverage(slug);
+      if (contesto && coverage) {
+        const titles = copy["sections[3].props.items[*].title"];
+        const cov = checkCoperturaCopy(
+          contesto.servizi_atomizzati.map((s) => s.servizio),
+          coverage.voci_atomiche,
+          Array.isArray(titles) ? (titles as string[]) : [],
+        );
+        const problemi = [
+          cov.scoperti.length ? `servizi del contesto senza copertura nel copy: ${cov.scoperti.join(" · ")}` : null,
+          cov.extranei.length ? `voci di copertura estranee al contesto: ${cov.extranei.join(" · ")}` : null,
+          cov.cardFantasma.length ? `voci mappate su card inesistenti: ${cov.cardFantasma.join(" · ")}` : null,
+        ].filter(Boolean);
+        if (problemi.length) return { ok: false, errore: `copertura servizi incompleta: ${problemi.join("; ")}` };
+      }
       return { ok: true };
     },
     afterSuccess(slug) {
@@ -271,11 +291,12 @@ export const STEPS: Record<StepKey, StepDef> = {
     // l'editor alla conferma umana (lib/images.ts deriveImagesArtifact).
     artifact: "images-trace.json",
     upstream: ["contesto.json", "copy.json", "palette.json"],
-    gate(slug) {
+    gate(slug, mode) {
       const s = readClientState(slug).steps;
       if (s.copy.stato !== "verificato" || s.palette.stato !== "verificato")
         return "Prima verifica copy e palette: le immagini derivano da titoli card e colori curati.";
-      if (!getSecret("BFL_API_KEY")) return "BFL_API_KEY non configurata: aggiungila dal pannello «Chiavi API».";
+      // Il solo ricontrollo del critico legge i file già generati: non chiama BFL.
+      if (mode !== "critic" && !getSecret("BFL_API_KEY")) return "BFL_API_KEY non configurata: aggiungila dal pannello «Chiavi API».";
       return null;
     },
     run: imagesRun,
@@ -351,11 +372,16 @@ function promptCopywriter(slug: string, mode: RunMode): string {
   return `Usa la skill local-service-copywriter per il cliente «${slug}». ` + base;
 }
 
-function promptCritico(slug: string, round: number, gate?: SlopReport): string {
+function promptCritico(slug: string, round: number, gate?: SlopReport, postFix = false): string {
   const p = COPY_PATHS(slug);
   return (
     `Usa la skill copy-critic per il cliente «${slug}». ` +
     `Input: ${p.contesto} (verità curata), ${p.brief} (verbatim), ${p.copy} (l'imputato), ${p.coverage}, ${p.slots}. ` +
+    (postFix
+      ? `È un round successivo a una correzione: il review precedente è in ${p.review} (leggilo PRIMA di sovrascriverlo); ` +
+        `il copywriter ha corretto SOLO gli slot nei suoi findings. Rivaluta quegli slot corretti e le dimensioni ` +
+        `globali G1/G2; gli slot promossi al round precedente restano promossi salvo regressione evidente. `
+      : "") +
     (gate
       ? `Report del gate deterministico anti-slop (check-slop.mjs), già eseguito a monte — i suoi esiti valgono ` +
         `così come sono: non ridiscuterli e non ripeterli, parti da lì e valuta il resto.\n${JSON.stringify(gate, null, 1)}\n`
@@ -420,10 +446,16 @@ async function* formatGate(slug: string, io: StepIO): AsyncGenerator<RunEvent, P
   return { ok: true };
 }
 
-/** Esegue il gate anti-slop con nome azienda (dal brief) e martello (dal contesto). */
+/** Esegue il gate anti-slop con nome azienda (dal brief), città/area (dal
+ *  contesto) e martello (dal contesto): le zone legittime ricorrono per SEO
+ *  locale e non devono scattare come sequenze ripetute. */
 function runSlop(slug: string): SlopResult {
   const azienda = readBrief(slug)?.azienda;
-  return checkSlop(slug, typeof azienda === "string" ? azienda : undefined, readContesto(slug)?.promessa_martello);
+  const contesto = readContesto(slug);
+  const consenti = [typeof azienda === "string" ? azienda : undefined, contesto?.zona.sede, contesto?.zona.area_intervento].filter(
+    (s): s is string => typeof s === "string",
+  );
+  return checkSlop(slug, consenti, contesto?.promessa_martello);
 }
 
 /**
@@ -496,7 +528,7 @@ async function* copyRun(slug: string, ctx: RunCtx, io: StepIO): AsyncGenerator<R
   for (let round = 1; round <= MAX_ROUNDS; round++) {
     const c = yield* io.claude({
       phase: `critico (round ${round})`,
-      prompt: promptCritico(slug, round, s.report),
+      prompt: promptCritico(slug, round, s.report, round > 1),
       allowed: READ_SKILL_WRITE,
       disallowed: NO_NET_NO_BASH,
     });

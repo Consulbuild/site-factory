@@ -1,5 +1,13 @@
 # Oracolo di test — brief cliente + rubriche di valutazione
 
+> **⚠ STORICO (2026-07): le rubriche R1–R3 sono riferite al contratto pre-Round 3/4
+> e oggi sono FUORVIANTI** — R1.1 impone il registro voi/Lei (dal Round 4 il registro
+> vincolante è **noi+tu**), R2.3/R2.5 chiedono scale OKLCH e output Tailwind `@theme`
+> (dal Round 3 il contratto è `brand = { preset, palette: { primary, accent } }`).
+> **Non usarle come oracolo**: il contratto vigente vive nelle skill installate
+> (`.claude/skills/`), in `slots.json` e in `schema.ts`. I **brief A/B restano
+> fixture valide** per eval future.
+
 Fixture per l'A/B testing dei 3 agent (Copywriter, Palette, Image-prompt).
 Dati **fittizi ma realistici**, nel formato normalizzato che arriverà da Tally.
 

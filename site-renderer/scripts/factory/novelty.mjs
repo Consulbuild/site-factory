@@ -73,6 +73,14 @@ const shotPreset = (id, nome) =>
 const shotCandidato = (nome) => join(shotsDir, `${nome}.jpg`);
 const SHOTS_LIBRERIA = ["hero-1280", "servizi-1280"];
 for (const s of SHOTS_LIBRERIA) if (!existsSync(shotCandidato(s))) errore(`shot candidato mancante: ${shotCandidato(s)}`);
+// Fail-fast con istruzione: un preset del manifest senza shot (tipico dopo una
+// pubblicazione, es. «ferro») darebbe altrimenti un ENOENT criptico in dHashBatch.
+for (const id of libreria)
+  for (const s of SHOTS_LIBRERIA)
+    if (!existsSync(shotPreset(id, s)))
+      errore(
+        `shot di libreria mancante per "${id}": ${shotPreset(id, s)} — rigenerare con «npm run build && node scripts/make-goldset.mjs --presets», poi ricalibrare le soglie con calibrate-novelty.mjs`,
+      );
 
 // riferimenti: screenshot-<larghezza>.png; shot candidati alla stessa larghezza
 const SHOTS_PER_LARGHEZZA = {

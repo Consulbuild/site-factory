@@ -73,7 +73,7 @@ Rilievi vietati perché non ancorabili: "il tono potrebbe essere più coinvolgen
 - 0: sezioni fotocopiate nella struttura.
 
 **G2 · Architettura CTA**
-- 2: una sola azione primaria formulata coerentemente; l'ultimo attrito abbattuto (gratuito, senza impegno, tempi di risposta); etichette coerenti con la destinazione (preventivo → form, contatti → canali).
+- 2: una sola azione primaria formulata coerentemente; l'ultimo attrito abbattuto (gratuito, senza impegno; tempi di risposta SOLO se il contesto li consente — altrimenti la loro assenza non penalizza, la loro presenza è invenzione); etichette coerenti con la destinazione (preventivo → form, contatti → canali).
 - 1: incoerenze minori tra le formulazioni.
 - 0: CTA in conflitto tra loro o azione primaria ambigua.
 

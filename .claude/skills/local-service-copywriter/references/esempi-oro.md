@@ -1,6 +1,6 @@
 # Esempi d'oro — copy reale consegnato (calibro di qualità)
 
-**Come usare questo file.** Estratti da 5 siti reali consegnati da ConsulBuild a clienti paganti. Servono a calibrare il LIVELLO e a imparare le MOSSE (il tipo di frase, non la frase). **Vietato riusare le frasi distintive su altri clienti**: un lead che ritrova la stessa frase su due nostri siti è un cliente perso, e il gate non può accorgersene — è responsabilità del copywriter.
+**Come usare questo file.** Estratti da 5 siti reali consegnati da ConsulBuild a clienti paganti. Servono a calibrare il LIVELLO e a imparare le MOSSE (il tipo di frase, non la frase). **Vietato riusare le frasi distintive su altri clienti**: un lead che ritrova la stessa frase su due nostri siti è un cliente perso, e il gate non può accorgersene — è responsabilità del copywriter. **Attenzione ai tempi**: gli impegni sui tempi negli estratti («entro 24/48 ore», «sopralluogo entro N ore») valgono solo perché QUEI clienti li avevano dichiarati — su un altro cliente sono fonte 3 (invenzione) salvo che stiano nelle sue `promesse_consentite`.
 
 I 5 siti: **SSC Costruzioni** (ristrutturazioni, Guidonia/Roma) · **Costruzioni Generali A.L.** (bagni in 5 giorni, San Severo/Puglia) · **Futur Service** (fotovoltaico + eolico + grafene, Sicilia) · **Progetto Restauro Murolo** (cappotto/terrazzi, Bologna) · **Design Project** (finiture di pregio, Roma).
 

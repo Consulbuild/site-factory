@@ -19,7 +19,7 @@
 // Con --candidato <id> <out-dir> fotografa /anteprima/<id>/ dalla dist corrente
 // nello stesso formato a 7 scatti (input dei gate L2/L3/L4 della fabbrica).
 
-import { mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdirSync, writeFileSync, rmSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { chromium } from "@playwright/test";
@@ -112,10 +112,16 @@ const OUT_DIR = MODO_CANDIDATO
   : MODO_PRESETS
     ? join(ROOT, "..", "factory", "calibration", "presets")
     : GOLDSET;
+// --presets è manifest-driven: una lista hardcoded lascerebbe i preset nuovi
+// (es. «ferro», pubblicato dalla fabbrica) senza shot, rompendo il gate novelty.
+const presetsAlternativi = () =>
+  JSON.parse(readFileSync(join(ROOT, "presets", "presets.manifest.json"), "utf8"))
+    .presets.map((p) => p.id)
+    .filter((id) => id !== "meridian");
 const ITEMS = MODO_CANDIDATO
   ? [{ id: CAND_ID, base: anteprima(CAND_ID), label: "candidato" }]
   : MODO_PRESETS
-    ? ["atelier", "nova", "canon", "terra", "vita"].map((p) => ({ id: p, base: anteprima(p), label: "da giudicare" }))
+    ? presetsAlternativi().map((p) => ({ id: p, base: anteprima(p), label: "da giudicare" }))
     : [...PASSA, ...BOCCIA];
 
 // ---------- shot per item: 3 @390 + 4 @1280, per posizione (robusto su ogni pagina) ----------

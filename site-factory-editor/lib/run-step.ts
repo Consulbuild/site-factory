@@ -258,6 +258,10 @@ export const IO: StepIO = { claude: claudePhase, script: scriptPhase };
  * Lo stato in client.json passa a `in_corso` PRIMA delle fasi (così una
  * ricarica pagina vede lo stato coerente anche se lo stream si perde).
  */
+// Run in volo per (cliente, step): il doppio avvio corromperebbe artifact e stato.
+// In-process: si azzera al riavvio del server, quindi niente lock zombie da ripulire.
+const inFlight = new Set<string>();
+
 export async function* runStep(
   slug: string,
   stepKey: StepKey,
@@ -269,32 +273,45 @@ export async function* runStep(
     return;
   }
 
-  setStepState(slug, step.stateKey, "in_corso");
-  yield { type: "start", step: stepKey };
-
-  let res: PhaseResult;
+  const flightKey = `${slug}:${stepKey}`;
+  if (inFlight.has(flightKey)) {
+    yield { type: "error", message: "step già in esecuzione per questo cliente — attendere la fine del run in corso" };
+    return;
+  }
+  inFlight.add(flightKey);
   try {
-    res = yield* step.run(slug, ctx, IO);
-  } catch (e) {
-    res = { ok: false, error: e instanceof Error ? e.message : String(e) };
-  }
-  if (!res.ok) {
-    const msg = res.error ?? "step fallito";
-    setStepState(slug, step.stateKey, "errore", msg);
-    yield { type: "error", message: msg };
-    return;
-  }
+    setStepState(slug, step.stateKey, "in_corso");
+    yield { type: "start", step: stepKey };
 
-  // Validazione deterministica dell'artifact.
-  const v = step.validate(slug);
-  if (!v.ok) {
-    setStepState(slug, step.stateKey, "errore", v.errore);
-    yield { type: "error", message: v.errore ?? "artifact non valido" };
-    return;
+    let res: PhaseResult;
+    try {
+      res = yield* step.run(slug, ctx, IO);
+    } catch (e) {
+      res = { ok: false, error: e instanceof Error ? e.message : String(e) };
+    }
+    if (!res.ok) {
+      const msg = res.error ?? "step fallito";
+      setStepState(slug, step.stateKey, "errore", msg);
+      yield { type: "error", message: msg };
+      return;
+    }
+
+    // Validazione deterministica dell'artifact.
+    const v = step.validate(slug);
+    if (!v.ok) {
+      setStepState(slug, step.stateKey, "errore", v.errore);
+      yield { type: "error", message: v.errore ?? "artifact non valido" };
+      return;
+    }
+    setStepState(slug, step.stateKey, "da_verificare");
+    // Provenienza/upstream si ri-snapshottano SOLO quando l'artifact è stato
+    // (ri)generato: un run di solo critico non tocca l'artifact e non deve
+    // disarmare il sensore di staleness.
+    if (ctx.mode !== "critic") step.afterSuccess?.(slug);
+    yield { type: "done", artifact: step.artifact };
+  } finally {
+    inFlight.delete(flightKey);
   }
-  setStepState(slug, step.stateKey, "da_verificare");
-  step.afterSuccess?.(slug); // aggiorna provenienza/drift/upstream
-  yield { type: "done", artifact: step.artifact };
 }
 
 function handleEvent(e: Record<string, unknown>, push: (ev: RunEvent) => void) {

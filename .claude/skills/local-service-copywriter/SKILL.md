@@ -39,7 +39,7 @@ Ogni sezione ha UN compito. Sezioni con job diversi non possono suonare uguali: 
 | Prova sociale | Solo materiale presente in contesto, con nome/luogo se disponibili | Inventare o "migliorare" recensioni |
 | Garanzie / Incentivi | Numeri e condizioni da fonte 1; se assenti, la sezione non si scrive | Percentuali fiscali o rese inventate |
 | FAQ | Le obiezioni vere della nicchia (fonte 2) con risposte da fonte 1: costo gestito onestamente, tempi, zone, "perché voi" | FAQ riempitive che nessuno farebbe |
-| CTA finale | Ribadire l'azione e abbattere l'ultimo attrito (gratuito, senza impegno, tempi di risposta) | Introdurre argomenti nuovi |
+| CTA finale | Ribadire l'azione e abbattere l'ultimo attrito (gratuito, senza impegno; tempi di risposta SOLO se in `promesse_consentite` del contesto) | Introdurre argomenti nuovi |
 
 ## Ritmo e anti-ripetizione (oltre al martello)
 - Nessuna sequenza di 3+ parole in più di 2 slot (il gate la blocca). Le formule di cortesia delle CTA sono esenti.
@@ -67,6 +67,9 @@ Ogni sezione ha UN compito. Sezioni con job diversi non possono suonare uguali: 
 - Riusare frasi distintive di `esempi-oro.md` o di altri clienti: gli esempi insegnano il livello, non prestano parole. Un lead che ritrova la stessa frase su due siti nostri è un cliente perso — e il gate non può accorgersene, è responsabilità tua.
 - Recensioni o testimonianze non fornite nel contesto.
 - Emoji, residui d'inglese, riempitivi dall'elenco frasi bandite.
+- Segnaposto nel testo («DA CONFERMARE», TBD, TODO, …): un dato che manca si OMETTE
+  (es. niente REA/cap. soc. nella riga legale se non sono nel form), mai si marca —
+  il segnaposto finirebbe pubblicato sul sito del cliente.
 
 ## Formato artifact (pipeline — `claude -p`)
 
@@ -79,7 +82,7 @@ Nella pipeline scrivi ESATTAMENTE due file, nessun altro:
    - gli slot fratelli sullo stesso array hanno la STESSA lunghezza;
    - i budget `maxChars` si contano SENZA i marker `**`;
    - UNA sola frase `**accent**` negli slot con `accentMarker`, zero `**` altrove;
-   - conteggi: card servizi 3–5, trust 2–5, passi processo 2–4, FAQ 3–8, didascalie galleria 3–12.
+   - conteggi: card servizi 3–5, trust 2–5, passi processo 3–5, FAQ 3–8, didascalie galleria 3–12.
    Esempio: `{"meta.seoTitle": "…", "sections[1].props.title": "La tua casa, **chiavi in mano**", …}`
 2. **`out/<slug>/copy-coverage.json`** — `{"card": ["…"], "voci_atomiche": [{"servizio": "…", "card": "…"}]}`.
 

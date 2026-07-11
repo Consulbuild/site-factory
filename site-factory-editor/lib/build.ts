@@ -34,7 +34,24 @@ function distStats(dist: string): { pages: number; sizeKb: number } {
   return { pages, sizeKb: Math.round(bytes / 1024) };
 }
 
+// La build usa risorse condivise TRA clienti (public/media viene svuotata e
+// ricopiata, astro builda nella stessa cwd): due build simultanee mescolerebbero
+// i media di un cliente nel sito dell'altro. Catena di promise = mutex globale.
+let buildLock: Promise<void> = Promise.resolve();
+
 export async function* buildRun(slug: string, ctx: RunCtx, io: StepIO): AsyncGenerator<RunEvent, PhaseResult> {
+  const prev = buildLock;
+  let release!: () => void;
+  buildLock = new Promise((r) => (release = r));
+  await prev;
+  try {
+    return yield* buildRunSerial(slug, ctx, io);
+  } finally {
+    release();
+  }
+}
+
+async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGenerator<RunEvent, PhaseResult> {
   const partial = ctx.mode === "partial";
   const dir = clientDir(slug);
   const siteJson = path.join(dir, "site.json");

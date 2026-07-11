@@ -31,7 +31,11 @@ function readJson<T>(file: string): T | null {
 }
 
 export function writeJson(file: string, data: unknown): void {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2) + "\n", "utf8");
+  // Scrittura atomica (tmp + rename): un crash a metà non lascia mai un JSON
+  // troncato — per client.json significherebbe perdere stati «verificato».
+  const tmp = file + ".tmp";
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2) + "\n", "utf8");
+  fs.renameSync(tmp, file);
 }
 
 /**
@@ -41,10 +45,17 @@ export function writeJson(file: string, data: unknown): void {
  */
 export function readClientState(slug: string): ClientState {
   const dir = clientDir(slug);
-  const onDisk = readJson<unknown>(path.join(dir, "client.json"));
+  const clientJson = path.join(dir, "client.json");
+  const onDisk = readJson<unknown>(clientJson);
   if (onDisk) {
     const parsed = ClientStateSchema.safeParse(onDisk);
     if (parsed.success) return fillLazySteps(slug, parsed.data);
+  }
+  // File presente ma illeggibile/invalido: mai sovrascriverlo in silenzio coi
+  // default (perderebbe i «verificato» per sempre) — copia in .bak e log.
+  if (fs.existsSync(clientJson)) {
+    fs.renameSync(clientJson, clientJson + ".bak");
+    console.error(`[clients] client.json corrotto o fuori schema per "${slug}" — salvato in client.json.bak, stato risintetizzato`);
   }
   const brief = readJson<Brief>(path.join(dir, "brief.json"));
   const contesto = readJson<unknown>(path.join(dir, "contesto.json"));

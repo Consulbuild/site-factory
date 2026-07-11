@@ -12,9 +12,11 @@
 //   node scripts/calibrate-critic.mjs --canary      # solo i 10 del canary set
 //   node scripts/calibrate-critic.mjs --only <id>   # un item singolo (smoke test)
 //   node scripts/calibrate-critic.mjs --audit       # re-audit: factory/calibration/presets/<preset>/
-// I verdetti già presenti in reviews/ vengono riusati (--force per rifare).
+// I verdetti già presenti in reviews/ vengono riusati (--force per rifare);
+// in --canary si riesegue SEMPRE (riusare renderebbe il canary un finto 10/10).
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
 import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -111,7 +113,10 @@ async function lavoratore() {
   while (indice < items.length) {
     const item = items[indice++];
     const f = join(REVIEWS, `${item.id}.json`);
-    if (!FORCE && existsSync(f) && !leggiVerdetto(item.id).errore) {
+    // Il canary esiste per rieseguire il critico dopo una modifica della skill
+    // o una release del modello: riusare i verdetti su disco lo renderebbe un
+    // banale 10/10 che non misura nulla — in --canary si riesegue SEMPRE.
+    if (!FORCE && !CANARY && existsSync(f) && !leggiVerdetto(item.id).errore) {
       const { review } = leggiVerdetto(item.id);
       esiti.push({ item, review, riusato: true });
       console.log(`riusato  ${item.id}: ${review.verdict}`);
@@ -150,8 +155,15 @@ const pe = (((bb + bp) / n) * ((bb + pb) / n)) + (((pp + pb) / n) * ((pp + bp) /
 const kappa = (po - pe) / (1 - pe);
 const recall = bb / (bb + bp || 1);
 
+// Contro COSA è stato misurato: senza skill+modello un report canary di ieri
+// e uno di oggi sono indistinguibili anche se nel mezzo è cambiato tutto.
+const skillMd = join(REPO_ROOT, ".claude", "skills", "design-critic", "SKILL.md");
 const report = {
   data: new Date().toISOString().slice(0, 10),
+  misuratoContro: {
+    skillHash: createHash("sha256").update(readFileSync(skillMd)).digest("hex").slice(0, 12),
+    modello: "claude-opus-4-8",
+  },
   itemTotali: items.length,
   itemValidi: n,
   errori: esiti.filter((e) => e.errore).map((e) => ({ id: e.item.id, errore: e.errore })),

@@ -11,6 +11,7 @@ import { site } from "@/lib/loadSite";
   <span id="top"></span>
   {site.sections.map((section) => {
     const Comp = registry[section.type];
+    if (!Comp) throw new Error(`Sezione "${section.type}" senza componente nel registry (tipo Fase 4?)`);
     const variant = "variant" in section ? section.variant : undefined;
     return <Comp data={section.props} site={site} variant={variant} />;
   })}

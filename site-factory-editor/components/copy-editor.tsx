@@ -12,6 +12,7 @@ import {
   visibleLen,
   accentOk,
   arrayPrefix,
+  checkCoperturaCopy,
   ARRAY_BOUNDS,
   BULLETS_MAX,
   type CopySlot,
@@ -738,10 +739,8 @@ function CoveragePanel({
   cardTitles: string[];
 }) {
   if (!coverage) return null;
-  const coperti = new Set(coverage.voci_atomiche.map((v) => v.servizio));
-  const scoperti = contestoServizi.filter((s) => !coperti.has(s));
-  const extranei = coverage.voci_atomiche.filter((v) => contestoServizi.length > 0 && !contestoServizi.includes(v.servizio));
-  const cardFantasma = coverage.voci_atomiche.filter((v) => cardTitles.length > 0 && !cardTitles.includes(v.card));
+  // Stessa definizione del validate deterministico dello step (lib/steps.ts).
+  const { scoperti, extranei, cardFantasma } = checkCoperturaCopy(contestoServizi, coverage.voci_atomiche, cardTitles);
 
   return (
     <details className="mt-3 rounded-lg border border-line bg-surface/50 px-4 py-3">
@@ -758,12 +757,12 @@ function CoveragePanel({
       )}
       {extranei.length > 0 && (
         <p className="mt-2 rounded-md bg-warn-bg px-3 py-1.5 text-sm text-warn">
-          In copertura ma non nel contesto: {extranei.map((v) => v.servizio).join(" · ")}
+          In copertura ma non nel contesto: {extranei.join(" · ")}
         </p>
       )}
       {cardFantasma.length > 0 && (
         <p className="mt-2 rounded-md bg-warn-bg px-3 py-1.5 text-sm text-warn">
-          Card in copertura assenti dalle card correnti: {Array.from(new Set(cardFantasma.map((v) => v.card))).join(" · ")}
+          Card in copertura assenti dalle card correnti: {cardFantasma.join(" · ")}
         </p>
       )}
       <table className="mt-2 w-full text-sm">

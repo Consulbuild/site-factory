@@ -31,12 +31,13 @@ export interface SlopResult {
 
 /**
  * Esegue check-slop.mjs su out/<slug>/copy.json. `consenti` (nome azienda,
- * città multi-parola) ricorre legittimamente e non deve far scattare il
- * controllo sequenze; `martello` attiva il tetto di 2 occorrenze verbatim.
+ * città/area multi-parola — l'opzione è ripetibile) ricorre legittimamente e
+ * non deve far scattare il controllo sequenze; `martello` attiva il tetto di
+ * 2 occorrenze verbatim.
  */
-export function checkSlop(slug: string, consenti?: string, martello?: string): SlopResult {
+export function checkSlop(slug: string, consenti?: string | string[], martello?: string): SlopResult {
   const args = [CHECK_SLOP, path.join(clientDir(slug), "copy.json"), "--json"];
-  if (consenti?.trim()) args.push("--consenti", consenti);
+  for (const c of [consenti].flat()) if (c?.trim()) args.push("--consenti", c);
   if (martello?.trim()) args.push("--martello", martello);
   // Path con spazio nel repo: sempre spawn(bin, [args]), mai stringhe shell.
   const res = spawnSync(NODE_BIN, args, { env: childEnv(), encoding: "utf8" });

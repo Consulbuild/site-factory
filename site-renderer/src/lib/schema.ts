@@ -32,7 +32,7 @@ const hexColor = z
 const shortText = (max: number) => z.string().max(max);
 const optText = (max: number) => z.string().max(max).default("");
 
-/** Titolo standard: al massimo UNA frase `**accent**`, parole ≤18 glifi.
+/** Titolo standard: esattamente UNA frase `**accent**`, parole ≤18 glifi.
  *  Il budget si misura sulla lunghezza VISIBILE (senza i marker `**`): è lo
  *  stesso conteggio dell'assembler e dell'editor — il valore resta grezzo
  *  coi marker, che a render li converte renderAccent(). */
@@ -44,10 +44,12 @@ const accentTitle = (max: number) =>
       (s) => s.replaceAll("**", "").length <= max,
       `oltre ${max} caratteri visibili (i marker ** non contano nel budget)`,
     )
+    // Stessa regola dell'assembler (slots accentMarker): l'accent è la grammatica
+    // dello standard, un titolo senza non è un'opzione ma una dimenticanza.
     .refine((s) => {
       const marks = (s.match(/\*\*/g) ?? []).length;
-      return marks % 2 === 0 && marks <= 2;
-    }, "al massimo UNA frase **accent**, con marcatori bilanciati")
+      return marks === 2 && /\*\*[^*]+\*\*/.test(s);
+    }, "serve ESATTAMENTE una frase **accent** con marcatori bilanciati")
     .refine(
       (s) => s.replace(/\*\*/g, "").split(/\s+/).every((w) => w.length <= 18),
       "parole oltre 18 caratteri sfondano il layout mobile (390px)",

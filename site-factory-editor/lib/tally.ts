@@ -131,7 +131,11 @@ export async function importSubmission(submissionId: string, overwrite = false):
     submissionId,
     importedAt: prevState?.importedAt ?? now,
     updatedAt: now,
+    // Si preservano TUTTI gli step (palette/copy/images/build, inclusa la storia
+    // deploy di un sito già online): a segnalare cosa rivedere dopo il re-import
+    // pensano drift del contesto e staleness — è il loro mestiere.
     steps: {
+      ...(prevState?.steps ?? {}),
       intake: { stato: "da_verificare" },
       contesto: prevState?.steps?.contesto ?? { stato: "assente" },
     },

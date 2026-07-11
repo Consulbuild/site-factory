@@ -24,7 +24,9 @@ skill copywriter +«Varietà e ritmo» (martello verbatim ≤2, tetto sequenze 3
 critic +C7 ripetitività (bloccante se sistemica), **norma di settore** (preventivo/
 sopralluogo gratuito = consentiti di default) in enricher+copywriter+critic e nei
 contesto.json dei 2 clienti. Risultato misurato: sequenze ripetute 32→8 (costruzioni).
-Metro: nessuna sequenza di 3+ parole in >2 slot (script eval non in repo; banale da rifare).
+Metro: nessuna sequenza di 3+ parole in >2 slot — oggi è un gate deterministico IN REPO
+(`.claude/skills/copy-critic/scripts/check-slop.mjs`, spawnat da `lib/slop.ts`) eseguito
+automaticamente a ogni run copy, prima del critico.
 
 ## Prossime schede (ordine deciso: una per volta, SEMPRE pianificando prima)
 
@@ -53,7 +55,8 @@ Metro: nessuna sequenza di 3+ parole in >2 slot (script eval non in repo; banale
 `npx tsc --noEmit` + `npm run build` (editor) · parity dove c'è un contratto
 (`scripts/parity-copy.ts` è l'esempio) · run E2E sui clienti reali · passata
 /impeccable (shape PRIMA della UI, critique/polish dopo, entrambi i temi) ·
-DESIGN-BRIEF.md raccoglie gli studi UX per scheda. Nulla si committa senza chiedere.
+DESIGN-BRIEF.md raccoglie gli studi UX per scheda. Commit autonomi a verifiche passate
+(regola 7 del CLAUDE.md, decisa 2026-07-11 — sostituisce «nulla si committa senza chiedere»).
 
 ## Fabbrica design (piano 2026-07, COMPLETO M0–M9)
 

@@ -341,7 +341,7 @@
       "constraints": {
         "maxChars": 90
       },
-      "note": "ragione sociale · P.IVA (obbligo art. 35 DPR 633/72) · REA e capitale sociale se società di capitali (art. 2250 c.c.) — dal form"
+      "note": "ragione sociale · P.IVA (obbligo art. 35 DPR 633/72) · REA e capitale sociale se società di capitali (art. 2250 c.c.) — dal form; se REA/capitale NON sono nel form, ometterli — MAI segnaposto tipo «DA CONFERMARE» (finirebbe pubblicato)"
     },
     {
       "path": "sections[1].props.image",
