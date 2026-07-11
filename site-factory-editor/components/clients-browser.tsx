@@ -24,7 +24,7 @@ import type { HomeData } from "@/lib/tally";
 import type { ClientSummary } from "@/lib/clients";
 import { btnSecondary, formatDate, EmptyState } from "./ui";
 import { TallySetup, ImportButton, RetryTally } from "./home";
-import { ConfirmDialog } from "./confirm-dialog";
+import { EliminaClienteDialog } from "./elimina-cliente-dialog";
 
 const norm = (s: string) =>
   s
@@ -173,8 +173,6 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
   const [filtro, setFiltro] = useState<Filtro>("tutti");
   const [ordine, setOrdine] = useState<Ordine>("aggiornati");
   const [daEliminare, setDaEliminare] = useState<ClientSummary | null>(null);
-  const [nomeDigitato, setNomeDigitato] = useState("");
-  const [erroreElimina, setErroreElimina] = useState<string | null>(null);
 
   const perQuery = data.clients.filter((c) => match(q, c.businessName, c.referente, c.phone, c.citta));
   const conteggi = {
@@ -226,25 +224,6 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
       setRefreshMsg(`errore: ${e instanceof Error ? e.message : String(e)}`);
     }
     setRefreshing(false);
-  }
-
-  async function elimina() {
-    if (!daEliminare) return;
-    setErroreElimina(null);
-    const res = await fetch(`/api/clients/${daEliminare.slug}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome: nomeDigitato }),
-    });
-    if (res.ok) {
-      setDaEliminare(null);
-      setNomeDigitato("");
-      setData((d) => ({ ...d, clients: d.clients.filter((c) => c.slug !== daEliminare.slug) }));
-      router.refresh();
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setErroreElimina(data.error ?? `errore ${res.status}`);
-    }
   }
 
   return (
@@ -401,48 +380,20 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
         </section>
       ) : null}
 
-      {/* Eliminazione forte: digita il nome (decisione Mattia: diretta, niente archivio) */}
-      <ConfirmDialog
+      {/* Eliminazione forte condivisa (decisione Mattia: diretta, niente archivio) */}
+      <EliminaClienteDialog
         open={daEliminare !== null}
-        title="Eliminare il cliente?"
-        tone="danger"
-        message={
-          <>
-            Verrà cancellata la cartella <span className="mono">out/{daEliminare?.slug}</span> con tutti gli artifact
-            (contesto, palette, copy, immagini, build). La submission su Tally resta e potrà essere reimportata.
-            {daEliminare && deployUrl(daEliminare) && (
-              <>
-                {" "}
-                <strong className="text-warn">
-                  Il sito già pubblicato resta online finché non lo rimuovi da Cloudflare.
-                </strong>
-              </>
-            )}
-            <span className="mt-3 block">
-              Per confermare digita <strong className="text-ink">{daEliminare?.businessName}</strong>
-            </span>
-          </>
-        }
-        confirmLabel="Elimina definitivamente"
-        confirmDisabled={nomeDigitato.trim() !== daEliminare?.businessName}
-        onConfirm={elimina}
-        onCancel={() => {
+        slug={daEliminare?.slug ?? ""}
+        businessName={daEliminare?.businessName ?? ""}
+        haSitoOnline={!!(daEliminare && deployUrl(daEliminare))}
+        onClose={() => setDaEliminare(null)}
+        onDeleted={() => {
+          const slug = daEliminare?.slug;
           setDaEliminare(null);
-          setNomeDigitato("");
-          setErroreElimina(null);
+          if (slug) setData((d) => ({ ...d, clients: d.clients.filter((c) => c.slug !== slug) }));
+          router.refresh();
         }}
-      >
-        <input
-          type="text"
-          value={nomeDigitato}
-          onChange={(e) => setNomeDigitato(e.target.value)}
-          placeholder={daEliminare?.businessName}
-          className="mt-3"
-          aria-label="Digita il nome del cliente per confermare"
-          autoFocus
-        />
-        {erroreElimina && <p className="mt-2 text-sm text-err">{erroreElimina}</p>}
-      </ConfirmDialog>
+      />
     </div>
   );
 }
