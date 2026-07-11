@@ -118,3 +118,27 @@ Lo standard È il default (`:root`, preset `meridian`). Gli altri 5 preset
 richieste esplicite dal form ("minimal", "futuristico"...), ma la struttura dei
 componenti — la grammatica qui sopra — è unica. I preset che vogliono un'altra voce
 tipografica sovrascrivono `--heading-case: none` e i propri font.
+
+## Varietà controllata (M9)
+
+**Varianti di sezione** — regola di split: è una *variante* (valore enum
+`variant` + un ramo di classi + un esempio) finché consuma GLI STESSI slot
+Zod; se servono slot nuovi è un *tipo* nuovo. Le varianti non sono slot degli
+agenti copy/immagini: le fissa il blueprint o l'operatore (prospettiva: il
+campo `varianti` del registro assegnazioni M8). Attive: Hero `D` (big number —
+i badge che iniziano con un numero diventano statistiche grandi, SOLO numeri
+reali dal form), ContactCTA `B` (gradual reassurance: form in 2 passi,
+fallback no-JS = form intero).
+
+**Layout nei token** — le sezioni split (contatti col form, hero B) dichiarano
+solo aree nominate (`.area-testo` / `.area-focale`); la disposizione la decide
+il preset via token raw `layout-split-*` (grid-template-areas sulla griglia a
+12 colonne — il default replica il layout storico, un preset può invertire le
+aree senza toccare il DOM; ferro le inverte).
+
+**Trattamento foto come token** — `--media-duotone` (tinta primary in
+mix-blend color) e `--media-grain` (feTurbulence statico) su `.media-frame`,
+SPENTI di default su tutti i preset: si accendono per-preset nei token, con
+due guardie: la didascalia resta sopra i trattamenti (z-index, chip sempre
+AA) e MAI trattamenti su volti in primo piano (voce bloccante V8
+dell'image-critic — i trattamenti sui visi erodono la fiducia).

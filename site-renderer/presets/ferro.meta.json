@@ -23,8 +23,24 @@
   ],
   "requisitiContenuto": {},
   "vincoliCombinazione": {},
-  "photographySpec": {},
-  "fluxStyleFragment": {},
+  "photographySpec": {
+    "soggetto": "impianti e quadri elettrici ordinati, cantieri tecnici puliti, strumentazione di precisione, edifici moderni",
+    "angolo": "frontale o ortogonale, geometrie architettoniche, linee pulite",
+    "luce": "diurna fredda e uniforme, cielo coperto o luce industriale diffusa",
+    "grading": "freddo controllato, blu-grigio, contrasto medio, nitidezza alta",
+    "mood": "preciso, ingegneristico, ordinato — mai caldo o romantico"
+  },
+  "fluxStyleFragment": {
+    "style": "technical architectural photography, clean industrial detail, precise compositions",
+    "lighting": "cool diffuse daylight, overcast, even industrial light",
+    "film_reference": "digital medium format, high clarity, low saturation",
+    "mood": "precise, engineered, orderly",
+    "color_palette": [
+      "#16232e",
+      "#3fb27f",
+      "#f8fafb"
+    ]
+  },
   "fonts": {
     "googleCss": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Karla:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap"
   },

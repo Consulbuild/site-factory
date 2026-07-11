@@ -16,7 +16,14 @@ const { data, variant = "A" } = Astro.props;
 // sottotitolo breve, CTA piena + telefono outline. B = split su fondo scuro
 // (foto incorniciata a destra); C = centrato sull'overlay.
 const isSplit = variant === "B";
-const isCentered = variant === "C";
+const isCentered = variant === "C" || variant === "D";
+// D "big number": i badge che iniziano con un numero ("120+ cantieri") si
+// mostrano come statistiche grandi; gli altri restano badge normali.
+const isBigNumber = variant === "D";
+const statDi = (badge) => {
+  const m = badge.match(/^([\d][\d.,+%×x~]*)\s+(.+)$/);
+  return m ? { numero: m[1], label: m[2] } : null;
+};
 
 ---
 
@@ -67,7 +74,7 @@ const isCentered = variant === "C";
         </div>
       )}
 
-      {data.badges.length > 0 && (
+      {data.badges.length > 0 && !isBigNumber && (
         <ul
           class:list={["mt-8 flex flex-wrap gap-x-7 gap-y-2", isCentered && "justify-center"]}
         >
@@ -79,14 +86,34 @@ const isCentered = variant === "C";
           ))}
         </ul>
       )}
+      {data.badges.length > 0 && isBigNumber && (
+        <ul class="mt-10 flex flex-wrap justify-center gap-x-12 gap-y-5">
+          {data.badges.map((badge) => {
+            const stat = statDi(badge);
+            return stat ? (
+              <li class="text-center">
+                <p class="t-h2 font-heading font-strong text-accent" aria-hidden="true">{stat.numero}</p>
+                <p class="t-caption mt-1 font-semibold uppercase tracking-[0.08em] text-white/75">
+                  <span class="sr-only">{stat.numero} </span>{stat.label}
+                </p>
+              </li>
+            ) : (
+              <li class="flex items-center gap-2 t-caption font-semibold text-white/75">
+                <Icon name="check" class="h-4 w-4 shrink-0 text-accent" />
+                {badge}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   </section>
 )}
 
 {isSplit && (
   <section class="section-dark overflow-hidden">
-    <div class="container-site grid items-center gap-x-12 gap-y-12 py-20 md:py-24 lg:grid-cols-12">
-      <div class="lg:col-span-6">
+    <div class="container-site layout-split-hero grid items-center gap-x-12 gap-y-12 py-20 md:py-24">
+      <div class="area-testo">
         {data.eyebrow && (
           <p
             class="t-caption font-bold uppercase tracking-[var(--eyebrow-tracking)] text-white/80"
@@ -117,7 +144,7 @@ const isCentered = variant === "C";
           </ul>
         )}
       </div>
-      <div class="lg:col-span-6">
+      <div class="area-focale">
         <div class="media-frame aspect-[4/3] shadow-float">
           <img
             src={data.image.src}

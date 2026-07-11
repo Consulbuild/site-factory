@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PRESETS } from "./presets.gen";
+import { PRESETS } from "./presets.gen.ts";
 
 /**
  * schema.ts — il CONTRATTO DATI dell'intera Site Factory.
@@ -168,7 +168,10 @@ export const HeaderSection = z.object({
 export const HeroSection = z.object({
   ...base,
   type: z.literal("Hero"),
-  variant: z.enum(["A", "B", "C"]).default("A"),
+  // D = "big number" (M9): centrato su foto, i badge che iniziano con un
+  // numero diventano statistiche grandi — solo se i numeri sono REALI e
+  // tracciabili al form (regola niente-invenzioni).
+  variant: z.enum(["A", "B", "C", "D"]).default("A"),
   props: z.object({
     eyebrow: optText(48),
     title: accentTitle(52),
@@ -343,6 +346,10 @@ export const FaqSection = z.object({
 export const ContactCtaSection = z.object({
   ...base,
   type: z.literal("ContactCTA"),
+  // B = "gradual reassurance" (M9): form in 2 passi (prima solo nome+telefono,
+  // poi i dettagli facoltativi) — evidenza A/B della ricerca: chiedere poco
+  // all'inizio alza le conversioni. Fallback senza JS: tutti i campi visibili.
+  variant: z.enum(["A", "B"]).default("A"),
   props: z.object({
     eyebrow: shortText(40).default("Contatti"),
     headline: accentTitle(60),

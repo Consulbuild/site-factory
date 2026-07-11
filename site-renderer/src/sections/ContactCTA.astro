@@ -10,8 +10,13 @@ interface Props {
   site: SiteConfig;
   variant?: string;
 }
-const { data, site } = Astro.props;
+const { data, site, variant = "A" } = Astro.props;
 const c = site.contact;
+// Variante B (M9, "gradual reassurance"): il form si presenta in 2 passi —
+// prima SOLO nome+telefono («ci basta questo per richiamarti»), poi i
+// dettagli facoltativi. Con JS spento tutti i campi restano visibili e il
+// form funziona identico alla A.
+const isReassurance = variant === "B";
 
 // Due modalità, come nei siti di riferimento:
 // - showForm=true  → sezione scura split: messaggio + contatti diretti a sinistra,
@@ -60,8 +65,8 @@ if (!hasForm) {
 
 {hasForm && (
   <section class:list={[sectionPad, "section-dark"]} id="contatti" aria-labelledby="contatti-title">
-    <div class="container-site grid gap-x-12 gap-y-14 lg:grid-cols-12 lg:items-center">
-      <div class="lg:col-span-5">
+    <div class="container-site layout-split-contatti grid gap-x-12 gap-y-14 lg:items-center">
+      <div class="area-testo">
         <p class="eyebrow">{data.eyebrow}</p>
         <h2 id="contatti-title" class="t-h2 mt-4 text-balance" set:html={renderAccent(data.headline)} />
         {data.subtitle && <p class="t-lead mt-5 max-w-[46ch] text-pretty">{data.subtitle}</p>}
@@ -95,21 +100,27 @@ if (!hasForm) {
         )}
       </div>
 
-      <div class="lg:col-span-6 lg:col-start-7">
+      <div class="area-focale">
         <form
           class="rounded-card bg-bg p-6 text-ink shadow-float sm:p-8"
           name="contatti"
           method="post"
           action=""
           data-contact-form
+          data-variant={isReassurance ? "B" : "A"}
           data-demo={isDemo ? "true" : "false"}
           data-success={data.successHref}
         >
           <div>
             <h3 class="t-h4 font-bold uppercase">{data.formTitle}</h3>
 
+            {isReassurance && (
+              <p data-step-progress class="t-caption mt-2 font-semibold uppercase tracking-[0.08em] text-muted" hidden>
+                Passo <span data-step-n>1</span> di 2
+              </p>
+            )}
             <div class="mt-6 grid gap-4">
-              <div class="grid gap-4 sm:grid-cols-2">
+              <div data-step="1" class="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label for="cta-nome" class={labelClass}>Nome e cognome *</label>
                   <input id="cta-nome" name="nome" type="text" required autocomplete="name" placeholder="Il tuo nome" class:list={[inputClass, "mt-1.5"]} />
@@ -120,7 +131,18 @@ if (!hasForm) {
                 </div>
               </div>
 
-              <div class="grid gap-4 sm:grid-cols-2">
+              {isReassurance && (
+                <div data-step-next-row class="grid gap-3" hidden>
+                  <button type="button" class="btn btn-primary w-full" data-step-next>
+                    Continua — ci basta questo per richiamarti
+                  </button>
+                  <p class="flex items-center justify-center gap-2 t-caption text-muted">
+                    <Icon name="check" class="h-4 w-4 shrink-0 text-accent" />
+                    Nessun impegno: al passo 2 solo dettagli facoltativi.
+                  </p>
+                </div>
+              )}
+              <div data-step="2" class="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label for="cta-email" class={labelClass}>E-mail</label>
                   <input id="cta-email" name="email" type="email" autocomplete="email" placeholder="tua@email.com" class:list={[inputClass, "mt-1.5"]} />
@@ -131,7 +153,7 @@ if (!hasForm) {
                 </div>
               </div>
 
-              <div>
+              <div data-step="2b">
                 <label for="cta-messaggio" class={labelClass}>Descrizione dei lavori</label>
                 <textarea id="cta-messaggio" name="messaggio" rows="4" placeholder="Raccontaci il tuo progetto" class:list={[inputClass, "mt-1.5"]}></textarea>
               </div>
@@ -152,6 +174,11 @@ if (!hasForm) {
                 oppure chiamaci: <a href={telHref(c.phone)} class="font-bold underline">{c.phone}</a>
               </p>
 
+              {isReassurance && (
+                <button type="button" class="btn btn-ghost -mb-2 justify-self-start" data-step-back hidden>
+                  ← Torna al passo 1
+                </button>
+              )}
               <button type="submit" class="btn btn-primary mt-1 w-full" data-form-submit>
                 Richiedi un preventivo gratuito
               </button>
@@ -204,6 +231,35 @@ if (!hasForm) {
         errorBox.hidden = false;
         status.textContent = "Invio non riuscito, riprova";
       };
+
+      // Variante B: due passi con validazione del primo (gradual reassurance).
+      if (form.dataset.variant === "B") {
+        const passo1 = form.querySelector('[data-step="1"]');
+        const passo2 = [form.querySelector('[data-step="2"]'), form.querySelector('[data-step="2b"]')];
+        const nextRow = form.querySelector("[data-step-next-row]");
+        const back = form.querySelector("[data-step-back]");
+        const progress = form.querySelector("[data-step-progress]");
+        const stepN = form.querySelector("[data-step-n]");
+        const vai = (n) => {
+          const alPrimo = n === 1;
+          passo2.forEach((el) => (el.hidden = alPrimo));
+          submitBtn.parentElement && (submitBtn.hidden = alPrimo);
+          back.hidden = alPrimo;
+          nextRow.hidden = !alPrimo;
+          stepN.textContent = String(n);
+          status.textContent = "Passo " + n + " di 2";
+        };
+        progress.hidden = false;
+        vai(1);
+        nextRow.querySelector("[data-step-next]").addEventListener("click", () => {
+          const campi = passo1.querySelectorAll("input");
+          for (const campo of campi) {
+            if (!campo.reportValidity()) return;
+          }
+          vai(2);
+        });
+        back.addEventListener("click", () => vai(1));
+      }
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();

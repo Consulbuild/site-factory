@@ -71,9 +71,23 @@ in primo piano, niente che si spacci per un progetto specifico realizzato.
 l'hero con l'overlay e il titolo sopra, la card a 400px di larghezza. Dettagli chiave
 leggibili? Soggetto ancora chiaro nel crop?
 
+**V7 — Fotografia del preset (M9).** Leggi `photographySpec` in
+`site-renderer/presets/<preset>.meta.json` (preset da `palette.json`): medium,
+chiave di luce, grading e mood dell'immagine devono essere CONFORMI alla spec
+(es. su ferro: luce fredda uniforme e geometrie ordinate — una golden hour
+calda è scarto; su terra l'opposto). Dominanti cromatiche coerenti col
+grading dichiarato; nessun «doppio scurimento» (immagine già scura + overlay
+scuro dell'hero = nero illeggibile).
+
+**V8 — Trattamenti su volti (bloccante).** Se l'immagine ha un trattamento
+grafico (duotone, tinta piena, grana marcata, posterizzazione) applicato a un
+VOLTO in primo piano → scarto automatico: i trattamenti sui volti erodono la
+fiducia (U.Oregon). I trattamenti sono ammessi su ambienti, dettagli,
+materiali — mai su persone riconoscibili.
+
 ## Procedura
 
 1. Leggi trace + copy + brief. Apri OGNI immagine con Read.
-2. Applica V1→V6; annota cosa VEDI (mai "sembra ok": descrivi la prova visiva).
+2. Applica V1→V8; annota cosa VEDI (mai "sembra ok": descrivi la prova visiva).
 3. Scrivi `image-review.json` con fix_prompt concreti per gli scarti.
 4. Fermati: giudichi, non rigeneri tu.

@@ -1,0 +1,370 @@
+{
+  "meta": {
+    "businessName": "Edil Roma Costruzioni",
+    "industry": "Ristrutturazioni e costruzioni edili",
+    "city": "Roma",
+    "slug": "edil-roma-costruzioni",
+    "seoTitle": "Edil Roma Costruzioni · Ristrutturazioni chiavi in mano a Roma",
+    "seoDescription": "Ristrutturazioni complete di appartamenti, bagni e cucine a Roma. Sopralluogo gratuito, preventivo chiaro, consegna a data certa."
+  },
+  "brand": {
+    "preset": "meridian",
+    "palette": {
+      "primary": "#b0561a",
+      "accent": "#b0561a"
+    },
+    "logo": null,
+    "tone": "solido, diretto, operativo"
+  },
+  "contact": {
+    "phone": "+39 06 4547 8890",
+    "whatsapp": "+39 345 678 9012",
+    "email": "info@edilromacostruzioni.it",
+    "address": "Via Tiburtina 145, 00185 Roma RM",
+    "social": {
+      "instagram": "https://www.instagram.com/edilromacostruzioni"
+    }
+  },
+  "sections": [
+    {
+      "type": "Header",
+      "variant": "solid",
+      "props": {
+        "nav": [
+          {
+            "label": "Servizi",
+            "href": "#servizi"
+          },
+          {
+            "label": "Lavori",
+            "href": "#lavori"
+          },
+          {
+            "label": "Processo",
+            "href": "#processo"
+          },
+          {
+            "label": "Domande",
+            "href": "#faq"
+          },
+          {
+            "label": "Contatti",
+            "href": "#canali"
+          }
+        ],
+        "cta": {
+          "label": "Preventivo gratuito",
+          "href": "#contatti",
+          "style": "primary"
+        },
+        "showPhone": true
+      }
+    },
+    {
+      "type": "Hero",
+      "variant": "D",
+      "props": {
+        "eyebrow": "Sopralluogo gratuito · Risposta in 24 ore",
+        "title": "La tua ristrutturazione, **chiavi in mano**",
+        "subtitle": "Dalla prima consulenza all'ultima mano di vernice: un solo team gestisce progetto, cantiere e finiture, con tempi e costi definiti prima di iniziare.",
+        "ctas": [
+          {
+            "label": "Richiedi un preventivo gratuito",
+            "href": "#contatti",
+            "style": "primary"
+          },
+          {
+            "label": "+39 06 4547 8890",
+            "href": "tel:+390645478890",
+            "style": "secondary"
+          }
+        ],
+        "badges": [
+          "120+ cantieri completati",
+          "15 anni di esperienza",
+          "Preventivo in 48 ore"
+        ],
+        "image": {
+          "src": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2000&q=80",
+          "alt": "Soggiorno di un appartamento ristrutturato da Edil Roma Costruzioni"
+        }
+      }
+    },
+    {
+      "type": "TrustBar",
+      "props": {
+        "items": [
+          {
+            "value": "Progettazione 3D",
+            "label": "Vedi il risultato prima del cantiere"
+          },
+          {
+            "value": "Squadre interne",
+            "label": "Nessun subappalto, un solo referente"
+          },
+          {
+            "value": "Chiavi in mano",
+            "label": "Pratiche, cantiere e finiture inclusi"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Services",
+      "variant": "grid",
+      "props": {
+        "eyebrow": "I nostri servizi",
+        "title": "Soluzioni complete per **ogni spazio**",
+        "subtitle": "Un processo organizzato ed efficiente per ristrutturare senza stress.",
+        "items": [
+          {
+            "title": "Ristrutturazioni complete",
+            "desc": "Appartamenti e case rinnovati da cima a fondo, su misura.",
+            "bullets": [
+              "Rinnovo totale degli ambienti",
+              "Pratiche edilizie incluse",
+              "Consegna a data certa"
+            ],
+            "image": {
+              "src": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+              "alt": "Villa moderna ristrutturata con facciata bianca"
+            }
+          },
+          {
+            "title": "Bagni e cucine",
+            "desc": "Gli ambienti più delicati, rifatti con impianti a norma.",
+            "bullets": [
+              "Demolizione e rifacimento",
+              "Idraulica ed elettrica nuove",
+              "Sanitari e finiture di qualità"
+            ],
+            "image": {
+              "src": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80",
+              "alt": "Bagno moderno con doppio lavabo dopo il rifacimento"
+            }
+          },
+          {
+            "title": "Impianti e infissi",
+            "desc": "Efficienza energetica e comfort per la casa di tutti i giorni.",
+            "bullets": [
+              "Impianti certificati",
+              "Serramenti su misura",
+              "Domotica e risparmio energetico"
+            ],
+            "image": {
+              "src": "https://images.unsplash.com/photo-1556912167-f556f1f39fdf?auto=format&fit=crop&w=1200&q=80",
+              "alt": "Cucina ristrutturata con impianti e illuminazione nuovi"
+            }
+          },
+          {
+            "title": "Finiture d'interni",
+            "desc": "Dettagli curati che trasformano una casa in casa tua.",
+            "bullets": [
+              "Pareti e controsoffitti",
+              "Pavimenti e rivestimenti",
+              "Verniciature di pregio"
+            ],
+            "image": {
+              "src": "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1200&q=80",
+              "alt": "Salotto con finiture d'interni curate nei dettagli"
+            }
+          }
+        ],
+        "cta": null
+      }
+    },
+    {
+      "type": "Gallery",
+      "variant": "masonry",
+      "props": {
+        "eyebrow": "Risultati reali",
+        "title": "Scopri i nostri **lavori recenti**",
+        "subtitle": "Una selezione di ristrutturazioni residenziali completate a Roma e provincia.",
+        "images": [
+          {
+            "src": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+            "alt": "Zona giorno open space dopo la ristrutturazione completa",
+            "caption": "Ristrutturazione completa"
+          },
+          {
+            "src": "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+            "alt": "Facciata moderna rinnovata con rivestimento in legno",
+            "caption": "Esterni e facciate"
+          },
+          {
+            "src": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&w=1200&q=80",
+            "alt": "Soggiorno rinnovato con arredi e controsoffitti su misura",
+            "caption": "Zona giorno su misura"
+          },
+          {
+            "src": "https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=1200&q=80",
+            "alt": "Bagno moderno con vasca freestanding appena completato",
+            "caption": "Rifacimento bagno"
+          },
+          {
+            "src": "https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&w=1200&q=80",
+            "alt": "Bagno di design con doccia in vetro e finiture scure",
+            "caption": "Bagno di design"
+          },
+          {
+            "src": "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?auto=format&fit=crop&w=1200&q=80",
+            "alt": "Ampliamento con struttura e rivestimento in legno",
+            "caption": "Ampliamenti e strutture"
+          },
+          {
+            "src": "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80",
+            "alt": "Camera da letto padronale con finiture di pregio",
+            "caption": "Camera padronale"
+          }
+        ]
+      }
+    },
+    {
+      "type": "ProcessSteps",
+      "variant": "cards",
+      "props": {
+        "eyebrow": "Come funziona",
+        "title": "Come prende forma il **tuo progetto**",
+        "subtitle": "Un processo strutturato per mantenere ogni fase chiara, organizzata ed efficiente.",
+        "steps": [
+          {
+            "title": "Consulenza e sopralluogo",
+            "desc": "Ascoltiamo le tue idee, misuriamo gli spazi e definiamo obiettivi e budget.",
+            "image": null
+          },
+          {
+            "title": "Progetto e preventivo",
+            "desc": "Prepariamo il progetto, la tempistica e una stima chiara e bloccata dei costi.",
+            "image": null
+          },
+          {
+            "title": "Cantiere gestito",
+            "desc": "Il nostro team esegue i lavori con precisione, ordine e attenzione ai dettagli.",
+            "image": null
+          },
+          {
+            "title": "Consegna garantita",
+            "desc": "Controlli finali insieme e consegna di uno spazio finito, pronto da vivere.",
+            "image": null
+          }
+        ]
+      }
+    },
+    {
+      "type": "ContactCTA",
+      "props": {
+        "eyebrow": "Inizia oggi",
+        "headline": "Ristrutturare casa non deve essere **complicato**",
+        "subtitle": "Partiamo dal sopralluogo gratuito: ti mostriamo il risultato in 3D e ricevi un preventivo chiaro prima di iniziare.",
+        "showForm": true,
+        "formTitle": "Richiedi il tuo preventivo gratuito",
+        "formNote": "Rispondiamo entro 24 ore lavorative. I tuoi dati restano riservati."
+      },
+      "variant": "B"
+    },
+    {
+      "type": "FAQ",
+      "props": {
+        "eyebrow": "Hai ancora dubbi?",
+        "title": "Domande **frequenti**",
+        "subtitle": "Lo capiamo. Ecco le cinque domande più frequenti per aiutarti a decidere subito.",
+        "items": [
+          {
+            "q": "La consulenza iniziale è gratuita?",
+            "a": "Sì. Il primo sopralluogo e la consulenza sono gratuiti e senza impegno: servono a capire il tuo progetto e darti una stima realistica."
+          },
+          {
+            "q": "Posso vedere il risultato prima dell'inizio dei lavori?",
+            "a": "Sì: per le ristrutturazioni complete prepariamo render 3D degli ambienti principali, così scegli materiali e finiture vedendo il risultato finale."
+          },
+          {
+            "q": "Devo occuparmi io di permessi e pratiche?",
+            "a": "No, gestiamo noi CILA, SCIA e tutte le pratiche edilizie necessarie, comprese le comunicazioni al condominio."
+          },
+          {
+            "q": "In quali zone operate?",
+            "a": "Lavoriamo a Roma e in tutta la provincia. Per progetti importanti valutiamo anche cantieri fuori provincia."
+          },
+          {
+            "q": "Quanto tempo richiede una ristrutturazione completa?",
+            "a": "Dipende dalla superficie e dagli interventi: un appartamento medio richiede 8–12 settimane. Il cronoprogramma esatto è nel preventivo, con data di consegna."
+          }
+        ]
+      }
+    },
+    {
+      "type": "CtaBanner",
+      "props": {
+        "eyebrow": "",
+        "title": "Inizia la tua **ristrutturazione**",
+        "subtitle": "Le consulenze sono gratuite e senza impegno. Parla direttamente con chi seguirà il tuo cantiere e scopri cosa possiamo fare per il tuo spazio.",
+        "cta": {
+          "label": "Richiedi un preventivo gratuito",
+          "href": "#contatti",
+          "style": "primary"
+        },
+        "showPhone": true,
+        "note": "Sopralluogo gratuito · Nessun impegno · Risposta entro 24 ore"
+      }
+    },
+    {
+      "type": "ContactCTA",
+      "props": {
+        "eyebrow": "Contatti",
+        "headline": "Mettiti in **contatto**",
+        "subtitle": "Contattaci per una consulenza gratuita e scopri come possiamo trasformare il tuo immobile con un progetto su misura.",
+        "showForm": false
+      }
+    },
+    {
+      "type": "Footer",
+      "props": {
+        "tagline": "Ristrutturazioni complete di appartamenti, bagni e cucine a Roma. Dal 2008, cantieri gestiti con serietà e consegnati nei tempi.",
+        "columns": [
+          {
+            "title": "Link utili",
+            "links": [
+              {
+                "label": "Servizi",
+                "href": "#servizi"
+              },
+              {
+                "label": "Lavori recenti",
+                "href": "#lavori"
+              },
+              {
+                "label": "Come funziona",
+                "href": "#processo"
+              },
+              {
+                "label": "Domande frequenti",
+                "href": "#faq"
+              }
+            ]
+          },
+          {
+            "title": "Legale",
+            "links": [
+              {
+                "label": "Informativa privacy",
+                "href": "/privacy"
+              },
+              {
+                "label": "Termini e condizioni",
+                "href": "/termini"
+              }
+            ]
+          }
+        ],
+        "legalNote": "Edil Roma Costruzioni S.r.l. · P.IVA 01234567890 · REA RM-1234567 · Cap. €10.000 i.v."
+      }
+    },
+    {
+      "type": "StickyCta",
+      "props": {
+        "showCall": true,
+        "showWhatsapp": false
+      }
+    }
+  ]
+}

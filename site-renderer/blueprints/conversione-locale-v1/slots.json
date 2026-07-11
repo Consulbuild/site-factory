@@ -382,5 +382,18 @@
       },
       "note": "descrive la foto generata, parlante e specifico"
     }
-  ]
+  ],
+  "varianti": {
+    "nota": "Le varianti NON sono slot degli agenti copy/immagini: le fissa il blueprint o l'operatore (in prospettiva l'assegnazione M8, campo varianti del registro). Un valore fuori enum viene bocciato da Zod alla validazione/build (parseSiteConfig).",
+    "Hero": {
+      "A": "foto full-bleed, testo a sinistra (lo standard)",
+      "B": "split su fondo scuro, foto incorniciata a destra",
+      "C": "centrato sull'overlay",
+      "D": "big number (M9): centrato, i badge che iniziano con un numero diventano statistiche grandi — SOLO numeri reali e tracciabili al form"
+    },
+    "ContactCTA": {
+      "A": "form intero (lo standard)",
+      "B": "gradual reassurance (M9): form in 2 passi — prima nome+telefono, poi dettagli facoltativi; fallback no-JS = form intero"
+    }
+  }
 }

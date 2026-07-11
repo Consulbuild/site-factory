@@ -351,5 +351,23 @@
         "raw": true
       }
     }
+  },
+  "layout-split-contatti": {
+    "$type": "string",
+    "$value": "\"f f f f f f . t t t t t\"",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "layout-split-hero": {
+    "$type": "string",
+    "$value": "\"f f f f f f t t t t t t\"",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
   }
 }

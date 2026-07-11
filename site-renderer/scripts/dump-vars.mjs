@@ -47,7 +47,7 @@ const sorgenti = [join(ROOT, "src/styles/global.css"), join(ROOT, "src/styles/pr
   .map((f) => readFileSync(f, "utf8"))
   .join("\n");
 const nomi = [...new Set(
-  [...sorgenti.matchAll(/(--(?:brand|step|w|heading|eyebrow)[a-zA-Z0-9-]*)\s*:/g)].map((m) => m[1]),
+  [...sorgenti.matchAll(/(--(?:brand|step|w|heading|eyebrow|layout|media)[a-zA-Z0-9-]*)\s*:/g)].map((m) => m[1]),
 )].sort();
 
 const out = process.argv[2];

@@ -169,7 +169,34 @@ trattamento foto), mai da generazione libera.
       dall'anti-collisione ✓; override in design.json e registro ✓; clienti
       esistenti intoccati (nessun design.json finché non si rigenera) ✓;
       tsc+build verdi.
-- [ ] M9 — varianti di sezione, layout per-preset, trattamento foto, fotografia per-preset
+- [x] 2026-07-11 M9 — varianti, layout per-preset, trattamento foto,
+      fotografia per-preset (tutte e 4 le fette). **Varianti**: Hero `D`
+      (big-number: badge numerici → statistiche grandi, sr-only per gli
+      screen reader) e ContactCTA `B` (gradual reassurance: 2 passi con
+      validazione del primo, fallback no-JS = form intero) — stessi slot Zod,
+      blocco `varianti` documentato in slots.json, fixture renderizzate e
+      verificate al passo 1 e 2 nel browser, Zod rifiuta variant fuori enum
+      (exit 1). Scoperta collaterale: schema.ts importava `./presets.gen`
+      senza estensione e validate-site.ts era rotto da M2 in node puro —
+      riparato (estensioni .ts + allowImportingTsExtensions). **Layout nei
+      token**: aree nominate `.area-testo`/`.area-focale` su contatti e hero
+      B, `grid-template-areas` da token raw su griglia a 12 colonne (default
+      = layout storico, pixel-parity; ferro inverte le aree) — **DOM identico
+      col flip acceso/spento** (diff HTML vuoto ad asset normalizzati),
+      screenshot diverso, baseline ferro rigenerate, VRT 14/14. **Trattamento
+      foto**: `--media-duotone`/`--media-grain` su .media-frame (default 0
+      ovunque; didascalia sopra i trattamenti con chip sempre AA — axe verde
+      anche con duotone 0.6), meccanismo provato nei due sensi (a 0.6 il VRT
+      fallisce la cella lavori; a 0.12 quantizza a zero sulle foto calde:
+      sotto la soglia percettiva, annotato). **Fotografia per-preset**:
+      photographySpec/fluxStyleFragment di ferro compilati; style bible
+      dell'image-prompt-generator ora parte dalla spec del preset; rubrica
+      image-critic +V7 (conformità alla spec, no doppio scurimento) e +V8
+      (trattamenti su volti = bloccante) — VERIFICATA sul serio: fixture
+      ritratto duotonato → FAIL su V8 con descrizione visiva corretta.
+      Regole di split e trattamenti documentate in DESIGN.md. Rinviato
+      dichiaratamente: la prova dei frammenti FLUX su hero+card+gallery
+      richiede la key BFL e avverrà alla prima run immagini reale.
 
 ## Sorprese & Scoperte [viva]
 

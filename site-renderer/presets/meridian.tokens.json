@@ -583,5 +583,41 @@
         "raw": true
       }
     }
+  },
+  "layout-split-contatti": {
+    "$type": "string",
+    "$value": "\"t t t t t . f f f f f f\"",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "layout-split-hero": {
+    "$type": "string",
+    "$value": "\"t t t t t t f f f f f f\"",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "media-duotone": {
+    "$type": "string",
+    "$value": "0",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "media-grain": {
+    "$type": "string",
+    "$value": "0",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
   }
 }

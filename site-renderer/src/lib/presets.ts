@@ -6,7 +6,7 @@
  * Qui vive solo il codice a mano (override font del cliente).
  */
 
-export { PRESETS, DEFAULT_PRESET, type Preset } from "./presets.gen";
+export { PRESETS, DEFAULT_PRESET, type Preset } from "./presets.gen.ts";
 
 /** Costruisce un URL Google Fonts da famiglie arbitrarie (override cliente). */
 export function customFontsHref(families: string[]): string {
