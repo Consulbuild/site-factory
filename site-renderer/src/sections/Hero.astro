@@ -20,7 +20,7 @@ const isCentered = variant === "C" || variant === "D";
 // D "big number": i badge che iniziano con un numero ("120+ cantieri") si
 // mostrano come statistiche grandi; gli altri restano badge normali.
 const isBigNumber = variant === "D";
-const statDi = (badge) => {
+const statDi = (badge: string) => {
   const m = badge.match(/^([\d][\d.,+%×x~]*)\s+(.+)$/);
   return m ? { numero: m[1], label: m[2] } : null;
 };
