@@ -1,0 +1,35 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 0, "sogliaHard": 1, "motivo": "In ogni sezione il titolo è reso più PICCOLO del suo paragrafo di supporto: nell'hero 'La tua ristrutturazione, chiavi in mano' è più piccolo del body 'Dalla prima consulenza…', e lo stesso accade in 'Come prende forma il tuo progetto' e 'Mettiti in contatto' rispetto ai rispettivi lead — l'occhio parte dal corpo, non dal titolo." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Ritmo verticale deliberato con alternanza chiaro/scuro (hero scuro → fascia servizi nera → processo chiaro → footer scuro); nessuna sezione schiacciata o addossata, processo e righe contatti ben respirati." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo bianco su foto hero ben protetto dall'overlay e nitido; titoli bianchi e sottotitoli grigi sulla fascia nera leggibili, testo scuro su crema del processo nitido senza sforzo." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta caldo + crema + quasi-nero con intenzione evidente: l'accent guida CTA, parole chiave ('chiavi in mano', 'tuo progetto'), badge numerati 01–04 e icone; neutri come palcoscenico, carattere artigianale coerente col mestiere edile." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Allineamenti puliti, nessun overflow, badge processo 01–04 e icone coerenti, eyebrow con lineetta uniforme, raggi e bordi consistenti tra card e bottoni; nessun artefatto." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Nessun marker AI-slop (niente gradiente viola, niente radius 16px uniforme, niente emoji-icone): la grammatica eyebrow-lineetta + parola-accent + processo numerato con palette terracotta è una scelta estetica riconoscibile e decisa." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "Il titolo display 'La tua ristrutturazione, chiavi in mano' è tipograficamente più piccolo del paragrafo di supporto che lo segue: l'headline non domina, l'occhio atterra sul body e l'eyebrow in maiuscolo bold risulta più forte del titolo stesso. Inversione gerarchica del blocco più importante della pagina.",
+      "fixTokenProposto": "titolo su --step-display / --step-5 (sopra il --step-1 del lead); non abbassare i minimi tarati a 390px"
+    },
+    {
+      "sezione": "processo 'Come funziona' (blocco centrale)",
+      "viewport": "1280",
+      "gravita": "maggiore",
+      "motivo": "L'H2 'Come prende forma il tuo progetto' è più piccolo del lead 'Un processo strutturato…' sottostante: il titolo di sezione non prevale sul suo stesso sottotitolo, la gerarchia del SectionHeader è invertita.",
+      "fixTokenProposto": "H2 su --step-4 (sopra il --step-1 del lead)"
+    },
+    {
+      "sezione": "contatti (coda)",
+      "viewport": "390",
+      "gravita": "maggiore",
+      "motivo": "L'H2 'Mettiti in contatto' è reso più piccolo del paragrafo 'Contattaci per una consulenza gratuita…': stesso difetto di gerarchia titolo-vs-lead che si ripete su tutta la pagina.",
+      "fixTokenProposto": "H2 su --step-4 (sopra il --step-1 del lead)"
+    }
+  ]
+}

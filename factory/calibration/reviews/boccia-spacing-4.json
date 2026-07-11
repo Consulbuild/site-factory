@@ -1,0 +1,33 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Scala chiara e intenzionale ovunque: display enorme in grassetto nell'hero, H2 maiuscolo con frase in accent nel processo, eyebrow small-caps, lead e body nettamente subordinati; il percorso dell'occhio è ovvio a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 0, "sogliaHard": 1, "motivo": "La fascia scura dei tre punti (Progettazione 3D / Squadre interne / Chiavi in mano) ha padding verticale quasi nullo: a 1280 è una striscia sottilissima col testo a filo dei bordi, a 390 gli item si addossano — la sezione soffoca invece di respirare, in stridente contrasto col ritmo generoso di hero, processo e footer." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo bianco+accent su overlay scuro nell'hero, ink scuro su chiaro nel processo, chiari su navy in fascia e footer: tutto si legge senza sforzo, foto sempre protetta." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta come unico accent che guida (CTA, parole chiave, numeri 01–04), navy e lavanda tenue come palcoscenico: intenzione evidente e carattere coerente su tutte le sezioni." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Pulito ma con due sbavature: a 390 il pulsante telefono flottante si sovrappone al terzo item della fascia, e a 1280 compare uno spazio spurio prima della virgola in «La tua ristrutturazione ,»." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Personalità ConsulBuild riconoscibile e decisa: eyebrow con lineetta, H2 maiuscolo con parola in accent, processo numerato 01–04, ritmo scuro/chiaro, foto pertinente al mestiere; nessun marker AI-slop." }
+  ],
+  "findings": [
+    {
+      "sezione": "fascia vantaggi (Progettazione 3D / Squadre interne / Chiavi in mano)",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "Padding verticale della fascia quasi assente: a 1280 il blocco è una striscia sottile con titoli e sottotitoli quasi a contatto coi bordi; a 390 i tre item si accalcano. La sezione appare schiacciata e rompe il ritmo respirante del resto della pagina.",
+      "fixTokenProposto": "--brand-space (alzare la spaziatura verticale di sezione .section-pad della fascia)"
+    },
+    {
+      "sezione": "fascia vantaggi",
+      "viewport": "390",
+      "gravita": "maggiore",
+      "motivo": "Il pulsante telefono flottante (cerchio arancio) copre il terzo item «Chiavi in mano / finiture inclusi», sovrapponendosi a contenuto leggibile su mobile."
+    },
+    {
+      "sezione": "hero",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "Spazio spurio prima della virgola in «La tua ristrutturazione ,», artefatto di resa della parola in accent che tradisce la rifinitura."
+    }
+  ]
+}

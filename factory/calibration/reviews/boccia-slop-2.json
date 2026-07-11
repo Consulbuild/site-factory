@@ -1,0 +1,72 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    {
+      "nome": "D1 Gerarchia tipografica",
+      "score": 2,
+      "sogliaHard": 1,
+      "motivo": "Scala chiara e intenzionale: display hero dominante, H2 «Come prende forma il tuo progetto» ben staccato dal lead, titoli processo/card in bold vs descrizioni grigie; il percorso dell'occhio è ovvio a 390 come a 1280."
+    },
+    {
+      "nome": "D2 Spaziatura e ritmo",
+      "score": 2,
+      "sogliaHard": 1,
+      "motivo": "Respiro generoso e costante, con alternanza scuro (hero+fascia servizi, footer) / chiaro (processo, contatti); nessun blocco schiacciato né vuoto ingiustificato."
+    },
+    {
+      "nome": "D3 Contrasto e leggibilità",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Leggibile ovunque (bianco+accent su hero scuro nitidi), ma il paragrafo intro dei contatti in grigio chiaro su crema e le micro-label caps grige sono al limite."
+    },
+    {
+      "nome": "D4 Palette",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Neutri crema/scuro e accent blu coerenti, ma la CTA primaria e il pulsante flottante sono viola/indaco: un colore fuori registro rispetto al blu usato in eyebrow, parole-accent, numeri processo e icone — accostamento default viola→blu."
+    },
+    {
+      "nome": "D5 Artigianato dei dettagli",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Pulito e allineato, ma a 390 «ristrutturazione» si spezza a metà parola («ristrutturaz / ione») lasciando una sillaba orfana: la rete di sicurezza overflow-wrap che scatta in modo antiestetico."
+    },
+    {
+      "nome": "D6 Distinzione creativa",
+      "score": 0,
+      "sogliaHard": 1,
+      "motivo": "Estetica AI anonima con marker dominanti: palette default viola→blu (CTA viola + accent blu) e un unico sans geometrico generico ovunque, senza alternanza né intenzione; struttura ConsulBuild corretta ma nessuna scelta che un designer abbia evidentemente deciso."
+    }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "maggiore",
+      "motivo": "La CTA primaria «Richiedi un preventivo gratuito» e il pulsante telefono flottante sono viola/indaco, mentre l'accent che guida tutto il resto (eyebrow, «chiavi in mano», numeri 01–04, icone contatti, marchio footer) è blu: due tinte in conflitto = coppia default viola→blu, l'azione principale non è coerente col sistema cromatico.",
+      "fixTokenProposto": "--brand-primary / --brand-accent verso una coppia coerente (CTA = accent o suo complementare deliberato, non viola default)"
+    },
+    {
+      "sezione": "generale / hero",
+      "viewport": "entrambi",
+      "gravita": "maggiore",
+      "motivo": "Font unico sans geometrico generico su ogni livello, senza alternanza né intenzione, unito alla palette viola/blu default: il sito potrebbe essere di chiunque, nessun tratto tipografico o cromatico memorabile (D6 = 0, marker AI-slop dominante).",
+      "fixTokenProposto": "scelta preset/tipografica con carattere (accoppiata font con intenzione); rientra nella cascata --heading-case e font del preset"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "«ristrutturazione» va a capo dentro la parola («ristrutturaz» + «ione») lasciando una sillaba orfana: rottura antiestetica del display a larghezza mobile.",
+      "fixTokenProposto": "--step-display minimo più basso a 390 per far entrare la parola prima che scatti overflow-wrap"
+    },
+    {
+      "sezione": "contatti (coda)",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Paragrafo intro «Contattaci per una consulenza gratuita…» in grigio chiaro su crema e micro-label caps (TELEFONO/E-MAIL/SEDE) grige: leggibili ma al limite, tolgono nitidezza.",
+      "fixTokenProposto": "--brand-ink-muted verso un grigio più scuro sui fondi chiari"
+    }
+  ]
+}

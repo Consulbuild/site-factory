@@ -1,0 +1,71 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    {
+      "nome": "D1 Gerarchia tipografica",
+      "score": 2,
+      "sogliaHard": 1,
+      "motivo": "Hero con H1 bold enorme + eyebrow + lead ben distinti, e il processo 'Come funziona' ha H2 nettamente sopra il body: percorso dell'occhio ovvio a 390 come a 1280."
+    },
+    {
+      "nome": "D2 Spaziatura e ritmo",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Respiro complessivo giusto ma l'alternanza chiaro/scuro si rompe: hero scuro e fascia servizi quasi-nera sono adiacenti (scuro-scuro), poi processo e contatti chiari adiacenti; la fascia servizi è inoltre una banda sottile con contenuto minuto che sembra schiacciata."
+    },
+    {
+      "nome": "D3 Contrasto e leggibilità",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Leggibile ovunque, ma il lead grigio dell'hero sopra la foto (a 1280 la metà destra dell'immagine è chiara) e il lead dei contatti in grigio tenue su off-white sono al limite."
+    },
+    {
+      "nome": "D4 Palette",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Accent usato in modo coerente (parola-chiave H1, CTA, cerchi processo, chip contatti, brand footer) ma è il viola/indaco di default, senza carattere e sparso su troppi elementi diversi."
+    },
+    {
+      "nome": "D5 Artigianato dei dettagli",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Pulito nel complesso, ma il bottone telefono flottante viola su mobile si sovrappone al contenuto: copre l'angolo della terza colonna servizi ('CHIAVI IN MANO') e sfiora la riga SEDE nei contatti."
+    },
+    {
+      "nome": "D6 Distinzione creativa",
+      "score": 0,
+      "sogliaHard": 1,
+      "motivo": "Marker AI-slop dominante: palette viola/indaco di default ovunque (accent word, CTA, cerchi 01–04, chip icone, brand, FAB) unita a un unico sans generico senza alternanza né intenzione tipografica — media estetica AI, il sito potrebbe essere di chiunque."
+    }
+  ],
+  "findings": [
+    {
+      "sezione": "tutte le sezioni (accent + tipografia)",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "Accent viola/indaco default identico su ogni elemento e singolo font sans generico su titoli e corpo senza pairing: è la firma AI-slop, nessuna scelta di design riconoscibile.",
+      "fixTokenProposto": "--accent / --primary spostati fuori dal viola/indaco default verso una tinta con carattere; considerare un pairing di --brand-font su titoli vs corpo"
+    },
+    {
+      "sezione": "fascia servizi (banda scura) + hero",
+      "viewport": "1280",
+      "gravita": "maggiore",
+      "motivo": "Hero scuro e fascia servizi quasi-nera adiacenti spezzano il ritmo scuro/chiaro dello standard, e la banda servizi è troppo sottile con titoli minuti rispetto all'estensione scura.",
+      "fixTokenProposto": "--section-pad / --brand-space aumentati sulla fascia servizi; alzare la scala dei titoli servizi (--step-*)"
+    },
+    {
+      "sezione": "hero (lead su foto) + contatti (lead)",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Il lead grigio dell'hero appoggia su una foto con zona destra chiara e il lead dei contatti è tenue su off-white: leggibili ma al limite.",
+      "fixTokenProposto": "rinforzare --hero-overlay; --brand-ink del lead verso maggiore contrasto"
+    },
+    {
+      "sezione": "bottone telefono flottante (FAB)",
+      "viewport": "390",
+      "gravita": "maggiore",
+      "motivo": "Il FAB viola si sovrappone al contenuto su mobile: copre l'angolo della card 'CHIAVI IN MANO' nei servizi e sfiora la riga SEDE nei contatti."
+    }
+  ]
+}

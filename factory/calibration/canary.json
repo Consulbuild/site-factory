@@ -1,0 +1,15 @@
+{
+  "nota": "Canary set del design-critic: 10 item FISSI del gold set, da rieseguire a ogni modifica della skill e a ogni release del modello (assunzioni modello nel piano). Attesi: i 3 passa promossi, i 7 boccia respinti nominando la sezione giusta.",
+  "items": [
+    "passa-golden-meridian",
+    "passa-cliente-cavaliere",
+    "passa-palette-2",
+    "boccia-spacing-1",
+    "boccia-contrasto-0",
+    "boccia-gerarchia-2",
+    "boccia-palette-3",
+    "boccia-slop-1",
+    "boccia-overflow-0",
+    "boccia-overflow-2"
+  ]
+}

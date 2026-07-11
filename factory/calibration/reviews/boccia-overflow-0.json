@@ -1,0 +1,28 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 1, "sogliaHard": 1, "motivo": "A 1280 la scala display/H2/body è netta e intenzionale, ma a 390 il titolo hero spezzato in frammenti sillabici non si legge come headline: il percorso dell'occhio è ovvio su desktop, non sul mobile." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro/chiaro (hero scuro → fascia servizi scura → processo chiaro → contatti chiaro → footer scuro) con respiro costante e generoso su desktop e mobile." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo bianco/accent su foto trattata con overlay leggibile senza sforzo, corpo grigio su fondo scuro e titoli scuri su bianco nitidi a entrambi i viewport." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta/rust caldo come unico accent che guida CTA e parole chiave, neutri carbone/avorio come palcoscenico: coerente e appropriata per un'impresa di ristrutturazioni." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 0, "sogliaHard": 1, "motivo": "A 390 il titolo display trabocca: 'RISTRUTTURAZIONE' si rompe a metà in quattro frammenti (RISTR/UTTU/RAZIO/NE) e 'CHIAVI' in due (CHIAV/I IN), artefatto tipografico da consegna bocciata." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Grotesque pesante deciso (non Inter di default), accent terracotta, eyebrow con lineetta '— COME FUNZIONA —', processo numerato 01–04 e foto pertinenti al mestiere: nessun marker AI-slop dominante, personalità riconoscibile." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "bloccante",
+      "motivo": "Il titolo display eccede la larghezza a 390 e overflow-wrap:anywhere lo spezza carattere per carattere: 'RISTRUTTURAZIONE' (16 glifi in maiuscolo) si rompe in RISTR/UTTU/RAZIO/NE e 'CHIAVI' in CHIAV/I IN. La rete di sicurezza dell'overflow-wrap non basta perché il minimo del clamp è troppo alto per la parola lunga.",
+      "fixTokenProposto": "--step-display: abbassare il minimo del clamp affinché una parola di ~16 glifi in maiuscolo entri su una singola riga a 390px"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "maggiore",
+      "motivo": "Conseguenza della stessa rottura: a 390 l'headline non è riconoscibile come unità (frammenti sillabici impilati), il che degrada la gerarchia tipografica sul mobile pur restando forte su desktop.",
+      "fixTokenProposto": "--step-display: stesso abbassamento del minimo del clamp risolve anche la leggibilità della gerarchia a 390"
+    }
+  ]
+}

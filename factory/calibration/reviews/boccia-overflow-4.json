@@ -1,0 +1,27 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Scala chiara e intenzionale ovunque: display/H2/lead/body ben distinti nel processo numerato, nei contatti e nel footer; il percorso dell'occhio è ovvio a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 1, "sogliaHard": 1, "motivo": "Ritmo complessivo buono (alternanza scuro/chiaro, fascia servizi, processo, contatti), ma la hero a 390 è un blocco fuori scala: il titolo occupa quasi l'intero viewport e schiaccia lead+CTA sotto la piega." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo hero (bianco + arancio) leggibile sulla foto grazie all'overlay scuro; fascia servizi, processo su chiaro, contatti e footer tutti nitidi senza sforzo." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Accent arancio caldo con intenzione evidente: guida CTA e parole chiave ('chiavi in mano', 'tuo progetto'), neutri scuri/off-white come palcoscenico; insieme coerente e con carattere." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 0, "sogliaHard": 1, "motivo": "Overflow tipografico grave nella hero a 390: 'ristrutturazione' spezzata a metà parola (ristrutt / urazion / e) dal display sovradimensionato — artefatto da consegna bocciata; a 1280 anche uno spazio orfano prima della virgola ('ristrutturazione ,')." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Personalità riconoscibile e decisa: eyebrow con lineetta, H2 con frase in accent, processo numerato 01–04, palette terra calda su foto reali di interni — nessun marker AI-slop, non è un tema di chiunque." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "bloccante",
+      "motivo": "Il titolo display è troppo grande per 390px: la parola lunga 'ristrutturazione' viene spezzata a metà su più righe (ristrutt / urazion / e), facendo scattare l'overflow-wrap di sicurezza. Il titolo riempie l'intero viewport e spinge lead e CTA sotto la piega, rompendo il ritmo verticale della hero.",
+      "fixTokenProposto": "--step-display: abbassare il minimo del clamp finché 'RISTRUTTURAZIONE' entra su riga senza spezzarsi a 390px"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "Spazio orfano prima della virgola nel titolo: 'La tua ristrutturazione , chiavi in mano' — la virgola resta staccata dalla parola quando 'chiavi in mano' va a capo."
+    }
+  ]
+}

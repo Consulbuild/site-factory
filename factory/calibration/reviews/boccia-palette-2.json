@@ -1,0 +1,42 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display serif enorme e sicuro domina l'hero; lead sans più piccolo, eyebrow tracciato; nel processo H2/lead/step si distinguono nettamente a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Respiro costante con alternanza deliberata scuro (hero, fascia servizi, footer) / chiaro (processo, contatti); nessun blocco schiacciato né vuoto ingiustificato." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Testo leggibile ovunque, ma il bianco sul cyan chiaro del bottone primario è al limite: l'etichetta appare slavata." },
+    { "nome": "D4 Palette", "score": 0, "sogliaHard": 1, "motivo": "Collisione: primary cyan (CTA, FAB) contro accent rosa/cremisi (parola-accent, eyebrow, numeri 01–04) — due tinte sature senza logica condivisa, col cyan fuori registro nel contesto serif caldo." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Pulito e allineato, ma a 390 'ristrutturazione' si spezza a metà parola ('ristrutturaz/ione') per il fallback overflow-wrap." },
+    { "nome": "D6 Distinzione creativa", "score": 1, "sogliaHard": 1, "motivo": "Il sistema tipografico serif con eyebrow-lineetta e processo numerato ha carattere, ma la scelta cromatica primary/accent non appare 'decisa': il cyan sembra accidentale e disinnesca l'intenzione." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "Il bottone primario 'Richiedi un preventivo gratuito' e il FAB telefono sono cyan saturo, mentre parola-accent 'chiavi in mano', eyebrow ed elementi guida sono rosa/cremisi: due hue sature che collidono senza registro comune; il cyan stona con il palcoscenico serif caldo/editoriale.",
+      "fixTokenProposto": "--brand-primary riallineato alla famiglia di --brand-accent (o accent portato sulla tinta del primary) per una sola direzione cromatica"
+    },
+    {
+      "sezione": "processo · come funziona",
+      "viewport": "1280",
+      "gravita": "maggiore",
+      "motivo": "I numeri 01–04 in cerchi rosa/cremisi convivono con il FAB cyan della stessa pagina: la doppia tinta satura conferma l'assenza di una logica cromatica unica.",
+      "fixTokenProposto": "--brand-accent e --brand-primary sulla stessa famiglia"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "maggiore",
+      "motivo": "Bianco su cyan chiaro del bottone primario: contrasto percepito al limite, l'etichetta risulta slavata rispetto al testo su hero e al secondario outline.",
+      "fixTokenProposto": "--brand-primary verso una tinta più scura, oppure --brand-primary-ink per l'etichetta"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "'ristrutturazione' viene spezzata a metà parola in due righe ('ristrutturaz' / 'ione') dal fallback overflow-wrap, effetto poco rifinito sul titolo.",
+      "fixTokenProposto": "--step-display minimo leggermente più basso a 390"
+    }
+  ]
+}

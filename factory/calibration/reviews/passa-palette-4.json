@@ -1,0 +1,28 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display maiuscolo enorme in hero, H2 netti in processo/contatti, titoli step in grassetto contro descrizioni regolari e caption più leggere: il percorso dell'occhio è ovvio a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata hero scuro → fascia servizi scura → processo chiaro → contatti crema → footer scuro; step e righe contatto spaziati con regolarità, nessun salto d'aria ingiustificato." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Bianco su overlay scuro nell'hero e ink scuro su chiaro nel processo/contatti sono nitidi; le caption grigie sulla fascia servizi scura sono al limite ma restano comodamente leggibili." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Sistema terroso coerente: accent ocra guida eyebrow, parole chiave e numeri di processo, verde profondo riservato alla sola CTA d'azione, neutri caldi come palcoscenico — verde e ocra sono entrambi desaturati e non collidono." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Nessun overflow (RISTRUTTURAZIONE sta su una riga a 390), cerchi numerati e riquadri-icona con raggi coerenti, dividers e colonne footer allineati, nessun artefatto visibile." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Personalità riconoscibile: eyebrow con lineette, display maiuscolo con parola-accent, processo numerato 01–04, palette terrosa ocra+verde (non lo slop viola/Inter) e foto reale pertinente al mestiere — scelte evidentemente decise." }
+  ],
+  "findings": [
+    {
+      "sezione": "fascia servizi scura",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Le caption grigie sotto i titoli (es. «Vedi il risultato prima del cantiere») sono al limite di intensità sul fondo quasi nero: leggibili ma il punto più tenue della pagina.",
+      "fixTokenProposto": "opzionale: schiarire leggermente il grigio caption in .section-dark (--brand-ink su fondo scuro) se un altro gate segnala margine AA stretto"
+    },
+    {
+      "sezione": "fascia servizi (FAB telefono)",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "Il bottone verde flottante di chiamata in basso a destra sfiora la terza voce «CHIAVI IN MANO / Pratiche, cantiere e finiture inclusi»; non copre il testo ma lo affianca da vicino.",
+      "fixTokenProposto": "opzionale: aumentare l'offset del FAB (--brand-space) per staccarlo dalla card"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Scala nettissima e intenzionale: eyebrow spaziato, display serif dominante con parola accent, lead, CTA; il percorso dell'occhio è ovvio sia a 1280 sia a 390." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata hero scuro → fascia servizi scura → processo su crema → contatti chiari → footer scuro; i blocchi respirano e scandiscono la lettura." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo bianco e accent rust sull'hero fotografico protetto dall'overlay restano nitidi; corpo scuro su crema nel processo e nei contatti perfettamente leggibile." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta/rust + espresso + crema: palette calda artigianale con intenzione evidente, l'accent guida CTA e parole chiave, i neutri fanno da palcoscenico." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 0, "sogliaHard": 1, "motivo": "A 390px il display spezza «ristrutturazione» a metà sillaba su tre righe (ristrut/turazi/one) senza trattino, e il FAB telefono si sovrappone alla parola accent «chiavi»: due artefatti di overflow/collisione." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Personalità decisa: display serif editoriale, accent terracotta, eyebrow con lineetta «— COME FUNZIONA —», processo numerato 01–04 in pastiglie rust; nessun marker AI-slop." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "bloccante",
+      "motivo": "Il titolo display manda a capo «ristrutturazione» dentro la parola su tre righe (ristrut / turazi / one), effetto della rete di sicurezza overflow-wrap: anywhere che scatta perché il minimo del display è troppo grande per la parola lunga a 390px.",
+      "fixTokenProposto": "abbassare il minimo di --step-display (clamp) finché la parola più lunga entra a 390px"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "maggiore",
+      "motivo": "Il pulsante telefono flottante (FAB) è posizionato sopra la parola accent «chiavi in» del titolo: collisione che copre parte del testo principale a 390px."
+    }
+  ]
+}

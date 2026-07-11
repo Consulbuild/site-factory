@@ -1,0 +1,49 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display serif enorme nell'hero, eyebrow small-caps con lineetta, H2/lead/body e titoli-step nettamente distinti per taglia e peso: il percorso dell'occhio è ovvio in ogni sezione a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata hero scuro → fascia servizi scura → processo/contatti chiari → footer scuro, con padding costante e respiro generoso attorno alle liste contatti e agli step numerati." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 0, "sogliaHard": 1, "motivo": "Il lead dei contatti e del processo è grigio-tenue/tan su crema e si perde nel fondo; i sottotitoli della fascia scura servizi sono grigio spento su quasi-nero; il lead dell'hero a 390 è slavato sulla foto — in più punti si strizza l'occhio per leggere." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Sistema a due colori deliberato — slate-blu freddo per i titoli + terracotta come accent che guida (CTA, parole chiave, cerchi numerati, marchio) — con neutri crema/scuro a fare da palcoscenico; nessun accostamento stridente." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Pulito e coerente su raggi/ombre/allineamenti, ma a 390 il display spezza 'ristrutturazione' a metà parola ('ristrutturaz / ione') senza trattino: sbavatura tipografica visibile." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Carattere editoriale evidente e non-slop: display serif Didone, eyebrow small-caps con em-dash, processo 01–04 in dischi accent, pairing slate+terracotta — scelte che un designer ha chiaramente deciso, nessun marker AI dominante." }
+  ],
+  "findings": [
+    {
+      "sezione": "contatti (sezione chiara 'Mettiti in contatto')",
+      "viewport": "390",
+      "gravita": "bloccante",
+      "motivo": "Il paragrafo lead ('Contattaci per una consulenza gratuita e scopri come possiamo trasformare il tuo immobile...') è tan chiarissimo su fondo crema: si perde nel fondo, illeggibile senza sforzo. Anche le label TELEFONO/E-MAIL/INSTAGRAM/SEDE sono grigio troppo tenue.",
+      "fixTokenProposto": "--brand-ink: portare il colore del lead/testo muted su chiaro verso valori più scuri fino al pass AA sui neutri del preset"
+    },
+    {
+      "sezione": "processo ('Come prende forma il tuo progetto')",
+      "viewport": "1280",
+      "gravita": "maggiore",
+      "motivo": "Il lead sotto l'H2 e il body sotto ogni step (01–04) sono grigio-tan chiaro su crema: leggibili solo forzando la vista, sotto la soglia percepita di nitidezza.",
+      "fixTokenProposto": "--brand-ink: scurire il testo body/lead su fondo chiaro per riportarlo in contrasto pieno"
+    },
+    {
+      "sezione": "fascia scura servizi (PROGETTAZIONE 3D / SQUADRE INTERNE / CHIAVI IN MANO)",
+      "viewport": "entrambi",
+      "gravita": "maggiore",
+      "motivo": "I sottotitoli ('Vedi il risultato prima del cantiere', 'Nessun subappalto...', 'Pratiche, cantiere e finiture inclusi') sono grigio spento su quasi-nero: contrasto debole, difficili da leggere.",
+      "fixTokenProposto": "--brand-ink: alzare il contrasto del testo secondario in .section-dark (schiarirlo di più sul fondo scuro)"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "maggiore",
+      "motivo": "Il paragrafo lead ('Dalla prima consulenza all'ultima mano di vernice...') è grigio slavato sopra la foto della zona giorno, senza protezione sufficiente: al limite della leggibilità.",
+      "fixTokenProposto": "--hero-overlay / --brand-ink: rinforzare l'overlay sotto il testo o scurire l'ink del lead per garantire il contrasto sulla foto"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "Il display serif spezza 'ristrutturazione' a metà parola ('ristrutturaz / ione'): la rete di sicurezza overflow-wrap è visibile e taglia la parola senza trattino.",
+      "fixTokenProposto": "--step-display: abbassare il minimo a 390 quel tanto che basta a far entrare la parola su una riga senza spezzarla"
+    }
+  ]
+}

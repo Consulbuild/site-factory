@@ -1,0 +1,56 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Scala chiara e intenzionale: display enorme, H2 con parola in accent, eyebrow con lineetta, lead e body distinti in ogni sezione, coerente a 390 e 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 1, "sogliaHard": 1, "motivo": "Respiro giusto in hero/processo/contatti, ma la fascia servizi a 1280 è una striscia sottile con tre voci sospese e margini laterali enormi: blocco schiacciato e fuori ritmo." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 0, "sogliaHard": 1, "motivo": "Testo perso nel fondo in più sezioni: display hero in inchiostro scuro sopra la foto, lead e telefono hero illeggibili sull'immagine, sottotitoli servizi e testo footer in grigio chiarissimo su lavanda quasi invisibili." },
+    { "nome": "D4 Palette", "score": 1, "sogliaHard": 1, "motivo": "Accent arancio caldo su navy profondo guida bene CTA, accent-word e cerchi numerati, ma il fondo lavanda tenue delle fasce chiare stona col registro dark/warm del resto." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Nessun overflow o disallineamento, ma il titolo hero che si sovrappone in scuro alla foto e il bottone telefono secondario senza superficie visibile sembrano non rifiniti." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Estetica decisa: dark navy + arancio caldo + glow sottile, processo numerato con cerchi accent e chip-icona nei contatti; personalità riconoscibile, nessun marker AI-slop dominante." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "La prima riga del display «La tua ristrutturazione,» è resa in inchiostro quasi nero sopra la foto/overlay: sul lato scuro sparisce, sul lato chiaro della foto si legge a fatica. In un preset dark il titolo dovrebbe essere chiaro sopra un overlay che lo protegge.",
+      "fixTokenProposto": "--brand-ink (titolo hero su ink chiaro), --hero-overlay (rinforzare la copertura sotto il testo)"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "Il paragrafo lead e il numero di telefono (CTA secondaria) sono testo scuro sopra la foto senza protezione: illeggibili; il bottone secondario non ha superficie visibile e appare come testo nudo sull'immagine.",
+      "fixTokenProposto": "--hero-overlay (protezione testo), --brand-ink (lead chiaro), ctaClass/.btn-secondary (superficie del bottone su foto)"
+    },
+    {
+      "sezione": "griglia servizi (fascia chiara)",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "I sottotitoli («Vedi il risultato prima del cantiere», «Nessun subappalto, un solo referente», «Pratiche, cantiere e finiture inclusi») sono grigio chiarissimo su fondo lavanda: quasi invisibili, si strizza l'occhio per leggerli.",
+      "fixTokenProposto": "--brand-muted / --brand-ink (alzare il contrasto del testo secondario sul neutro chiaro)"
+    },
+    {
+      "sezione": "griglia servizi (fascia chiara)",
+      "viewport": "1280",
+      "gravita": "maggiore",
+      "motivo": "La fascia è una striscia sottile con tre voci titolo+sottotitolo sospese al centro, margini laterali enormi e nessuna card né struttura: sembra una sezione non finita e schiaccia il ritmo verticale.",
+      "fixTokenProposto": "--brand-space (padding di sezione), .surface-card (dare corpo/struttura alle voci)"
+    },
+    {
+      "sezione": "footer (fascia chiara)",
+      "viewport": "1280",
+      "gravita": "maggiore",
+      "motivo": "Descrizione, indirizzo, dati legali e link delle colonne «LINK UTILI»/«LEGALE» sono in grigio chiaro su fondo lavanda: contrasto debole, la lettura richiede sforzo.",
+      "fixTokenProposto": "--brand-muted / --brand-ink (contrasto del corpo e dei link su neutro chiaro)"
+    },
+    {
+      "sezione": "fasce chiare (servizi e footer)",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Il fondo lavanda tenue stona con l'estetica dark/warm del preset: l'accostamento appare fuori registro più che un'alternanza chiaro/scuro deliberata.",
+      "fixTokenProposto": "--brand-bg-alt / neutro di sezione (allineare la fascia chiara al registro del preset)"
+    }
+  ]
+}

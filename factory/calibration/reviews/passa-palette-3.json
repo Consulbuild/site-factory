@@ -1,0 +1,28 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Gerarchia netta e coerente: eyebrow small-caps -> display maiuscolo bold con parola in accent -> lead -> CTA; nel processo H2 + numeri 01-04 + titoli card guidano l'occhio in modo ovvio a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Ritmo scuro/chiaro deliberato (hero e fascia servizi scuri -> processo e contatti chiari -> footer scuro); spaziatura costante, card del processo e righe contatti ben distanziate, nessuna sezione che si addossa." },
+    { "nome": "D3 Contrasto e leggibilita", "score": 1, "sogliaHard": 1, "motivo": "Leggibile ovunque, ma il lead dell'hero su foto trattata e le didascalie grigie della fascia servizi su fondo quasi nero sono i punti piu tenui, al limite." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Sistema accent terracotta coerente e intenzionale (lineette eyebrow, parole chiave, cerchi 01-04, tile icone, brand nel footer) su neutri caldi crema/nero; il primary indaco desaturato lavora in complementare all'arancio, non e uno slop viola/indaco default." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Rifinito come un consegnato: cerchi numerati con hairline coerenti, tile icone uniformi, footer a 3 colonne allineato, underline accent sotto 'CHIAVI IN MANO' coerente, nessun overflow (RISTRUTTURAZIONE regge a 390px)." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Estetica decisa e riconoscibile (display grottesco maiuscolo, accent terracotta, eyebrow con lineetta, processo numerato, ritmo caldo editoriale, foto pertinenti al mestiere); nessun marker AI-slop dominante." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Il lead ('Dalla prima consulenza all'ultima mano di vernice...') poggia sulla foto trattata: e il testo piu tenue del render, al limite dove l'immagine schiarisce (finestra/divano a destra sul 1280).",
+      "fixTokenProposto": "--hero-overlay leggermente piu profondo"
+    },
+    {
+      "sezione": "griglia servizi (fascia scura 3-up)",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Le didascalie grigie ('Vedi il risultato prima del cantiere', 'Nessun subappalto, un solo referente', 'Pratiche, cantiere e finiture inclusi') su fondo quasi nero sono il punto di contrasto piu basso: leggibili ma tenui.",
+      "fixTokenProposto": "schiarire la didascalia verso --brand-ink su .section-dark"
+    }
+  ]
+}

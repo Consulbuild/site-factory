@@ -1,0 +1,28 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display serif ad alto contrasto domina l'hero, lead sans muted sotto, H2 serif con accent e corpo muted nel processo: il percorso dell'occhio è ovvio a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro/chiaro (hero foto → band servizi bruna → processo crema → contatti crema → footer bruno) con padding generoso e costante; nessun blocco schiacciato." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Tutto leggibile, ma le didascalie muted della band scura servizi e il testo descrittivo muted del footer sono i punti al limite (grigio caldo su bruno scuro)." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Espresso/crema come palcoscenico, terracotta come unica guida (accent-word, CTA, cerchi 01–04, icone contatti, marchio footer): intenzione artigianale evidente e coerente." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Allineamenti, raggi e divisori coerenti, ma a 390px il display hero spezza «ristrutturazione» a metà parola («ristrutturazio-ne»): la rete overflow-wrap evita l'overflow ma resta una sbavatura sul titolo principale." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Serif didone per i titoli + palette earthy espresso/terracotta + processo numerato: scelte chiaramente decise da un designer, nessun marker AI-slop (no Inter ovunque, no gradiente viola, no radius 16 uniforme, icone Lucide non emoji)." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "maggiore",
+      "motivo": "Il titolo display serif spezza «ristrutturazione» in «ristrutturazio / ne»: il word-break mid-parola è visibile sull'elemento più importante della pagina. La rete overflow-wrap: anywhere sta lavorando, ma il taglio a metà sillaba abbassa la resa artigianale del headline.",
+      "fixTokenProposto": "--step-display: abbassare leggermente il minimo del clamp a 390px così la parola più lunga entra su una riga senza attivare il break (verificare a 390 con «RISTRUTTURAZIONE» come da nota CLAUDE.md)."
+    },
+    {
+      "sezione": "band servizi (scura) e descrizione footer",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Le didascalie muted sotto i titoli della fascia scura servizi («Vedi il risultato prima del cantiere», ecc.) e il paragrafo descrittivo del footer sono grigio caldo su bruno scuro: restano leggibili ma sono il punto più debole del contrasto percepito.",
+      "fixTokenProposto": "--brand-ink (variante muted su .section-dark): schiarire il testo secondario su fondo scuro per allontanarlo dal limite."
+    }
+  ]
+}

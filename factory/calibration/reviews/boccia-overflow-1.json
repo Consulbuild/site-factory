@@ -1,0 +1,27 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display dominante, H2 con parola accent, titoli di step in bold e corpo grigio subordinato: il percorso dell'occhio è ovvio a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro/chiaro (hero scuro → fascia servizi scura → processo chiaro → contatti chiari → footer scuro) con respiro costante tra i blocchi." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo hero bianco su foto con overlay leggibile, corpo grigio su fondi coerenti, titoli scuri su bianco nel processo: tutto nitido senza strizzare l'occhio." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta caldo come accent che guida (CTA, parole chiave, numeri processo, icone) su carbone e off-white: neutri da palcoscenico, accent con intenzione." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 0, "sogliaHard": 1, "motivo": "A 390px il titolo hero «ristrutturazione,» tocca ed esce dal margine destro (overflow orizzontale) mentre eyebrow/corpo/bottoni rispettano il gutter; l'eyebrow lascia inoltre il separatore «·» orfano su una riga a sé." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Grotesque display pesante + terracotta su carbone + eyebrow con lineette e processo numerato 01–04: identità decisa, nessun marker AI-slop (niente Inter/viola default)." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "bloccante",
+      "motivo": "Il titolo display «La tua ristrutturazione, chiavi in mano» a 390px è dimensionato troppo grande: la riga «ristrutturazione,» riempie l'intera larghezza e sfora il margine destro (comma clippata al bordo), mentre eyebrow, corpo e bottoni mantengono un gutter laterale coerente. È un overflow orizzontale visibile, non una scelta.",
+      "fixTokenProposto": "--step-display: abbassare il minimo del clamp per far rientrare parole lunghe a 390px (overflow-wrap: anywhere resta come rete)"
+    },
+    {
+      "sezione": "hero (eyebrow)",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "Con la forte spaziatura lettere, l'eyebrow «SOPRALLUOGO GRATUITO · RISPOSTA IN 24 ORE» manda il separatore «·» a capo da solo su una riga isolata, spezzando la lettura del kicker."
+    }
+  ]
+}

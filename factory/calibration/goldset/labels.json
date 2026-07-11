@@ -1,0 +1,451 @@
+{
+  "nota": "Etichette per costruzione (iniettato = boccia, curato/verificato = passa); rivedibili a mano. Shot: 7 per item.",
+  "items": [
+    {
+      "id": "passa-golden-meridian",
+      "nota": "il golden sample dello standard",
+      "label": "passa",
+      "base": "/anteprima/meridian/"
+    },
+    {
+      "id": "passa-cliente-cavaliere",
+      "nota": "sito consegnato reale",
+      "label": "passa",
+      "base": "cavaliere-build-srls/dist"
+    },
+    {
+      "id": "passa-cliente-costruzioni",
+      "nota": "sito consegnato reale",
+      "label": "passa",
+      "base": "costruzioni-generali-a-l-di-la-cecilia-giovanni/dist"
+    },
+    {
+      "id": "passa-palette-0",
+      "css": {
+        "--brand-primary": "#1f6f54",
+        "--brand-accent": "#b45309"
+      },
+      "nota": "golden meridian con palette cliente legittima (AA verificata)",
+      "label": "passa",
+      "base": "/anteprima/meridian/"
+    },
+    {
+      "id": "passa-palette-1",
+      "css": {
+        "--brand-primary": "#7a1f1f",
+        "--brand-accent": "#0f766e"
+      },
+      "nota": "golden meridian con palette cliente legittima (AA verificata)",
+      "label": "passa",
+      "base": "/anteprima/meridian/"
+    },
+    {
+      "id": "passa-palette-2",
+      "css": {
+        "--brand-primary": "#1e3a8a",
+        "--brand-accent": "#b91c1c"
+      },
+      "nota": "golden meridian con palette cliente legittima (AA verificata)",
+      "label": "passa",
+      "base": "/anteprima/meridian/"
+    },
+    {
+      "id": "passa-palette-3",
+      "css": {
+        "--brand-primary": "#3f3d56",
+        "--brand-accent": "#c2410c"
+      },
+      "nota": "golden meridian con palette cliente legittima (AA verificata)",
+      "label": "passa",
+      "base": "/anteprima/meridian/"
+    },
+    {
+      "id": "passa-palette-4",
+      "css": {
+        "--brand-primary": "#14532d",
+        "--brand-accent": "#a16207"
+      },
+      "nota": "golden meridian con palette cliente legittima (AA verificata)",
+      "label": "passa",
+      "base": "/anteprima/meridian/"
+    },
+    {
+      "id": "passa-palette-5",
+      "css": {
+        "--brand-primary": "#334155",
+        "--brand-accent": "#0e7490"
+      },
+      "nota": "golden meridian con palette cliente legittima (AA verificata)",
+      "label": "passa",
+      "base": "/anteprima/meridian/"
+    },
+    {
+      "id": "passa-palette-6",
+      "css": {
+        "--brand-primary": "#0c4a6e",
+        "--brand-accent": "#9d174d"
+      },
+      "nota": "golden meridian con palette cliente legittima (AA verificata)",
+      "label": "passa",
+      "base": "/anteprima/meridian/"
+    },
+    {
+      "id": "boccia-spacing-0",
+      "classe": "spacing-collassato",
+      "css": {
+        "--brand-space": "0.25"
+      },
+      "label": "boccia",
+      "base": "/anteprima/meridian/"
+    },
+    {
+      "id": "boccia-spacing-1",
+      "classe": "spacing-collassato",
+      "css": {
+        "--brand-space": "0.3"
+      },
+      "label": "boccia",
+      "base": "/anteprima/atelier/"
+    },
+    {
+      "id": "boccia-spacing-2",
+      "classe": "spacing-collassato",
+      "css": {
+        "--brand-space": "0.35"
+      },
+      "label": "boccia",
+      "base": "/anteprima/canon/"
+    },
+    {
+      "id": "boccia-spacing-3",
+      "classe": "spacing-collassato",
+      "css": {
+        "--brand-space": "0.4"
+      },
+      "label": "boccia",
+      "base": "/anteprima/terra/"
+    },
+    {
+      "id": "boccia-spacing-4",
+      "classe": "spacing-collassato",
+      "css": {
+        "--brand-space": "0.3"
+      },
+      "label": "boccia",
+      "base": "/anteprima/vita/"
+    },
+    {
+      "id": "boccia-contrasto-0",
+      "classe": "contrasto-slavato",
+      "css": {
+        "--brand-ink": "#9ca3af",
+        "--brand-muted": "#c7ccd3"
+      },
+      "label": "boccia",
+      "base": "/anteprima/meridian/"
+    },
+    {
+      "id": "boccia-contrasto-1",
+      "classe": "contrasto-slavato",
+      "css": {
+        "--brand-ink": "#a8a29e",
+        "--brand-muted": "#d6d3d1",
+        "--brand-primary": "#93c5fd"
+      },
+      "label": "boccia",
+      "base": "/anteprima/atelier/"
+    },
+    {
+      "id": "boccia-contrasto-2",
+      "classe": "contrasto-slavato",
+      "css": {
+        "--brand-ink": "#94a3b8",
+        "--brand-muted": "#cbd5e1"
+      },
+      "label": "boccia",
+      "base": "/anteprima/canon/"
+    },
+    {
+      "id": "boccia-contrasto-3",
+      "classe": "contrasto-slavato",
+      "css": {
+        "--brand-ink": "#a3a3a3",
+        "--brand-muted": "#d4d4d4",
+        "--brand-accent": "#fcd34d"
+      },
+      "label": "boccia",
+      "base": "/anteprima/terra/"
+    },
+    {
+      "id": "boccia-contrasto-4",
+      "classe": "contrasto-slavato",
+      "css": {
+        "--brand-ink": "#9e9e9e",
+        "--brand-muted": "#cfcfcf",
+        "--brand-primary": "#a5b4fc"
+      },
+      "label": "boccia",
+      "base": "/anteprima/vita/"
+    },
+    {
+      "id": "boccia-gerarchia-0",
+      "classe": "gerarchia-piatta",
+      "css": {
+        "--step-display": "1rem",
+        "--step-5": "1rem",
+        "--step-4": "1rem",
+        "--step-3": "1rem",
+        "--step-2": "1rem",
+        "--w-display": "400",
+        "--w-heading": "400",
+        "--heading-case": "none"
+      },
+      "label": "boccia",
+      "base": "/anteprima/meridian/"
+    },
+    {
+      "id": "boccia-gerarchia-1",
+      "classe": "gerarchia-piatta",
+      "css": {
+        "--step-display": "1.125rem",
+        "--step-5": "1.125rem",
+        "--step-4": "1.125rem",
+        "--step-3": "1.125rem",
+        "--step-2": "1.125rem",
+        "--w-display": "400",
+        "--w-heading": "400",
+        "--heading-case": "none"
+      },
+      "label": "boccia",
+      "base": "/anteprima/atelier/"
+    },
+    {
+      "id": "boccia-gerarchia-2",
+      "classe": "gerarchia-piatta",
+      "css": {
+        "--step-display": "1.25rem",
+        "--step-5": "1.25rem",
+        "--step-4": "1.25rem",
+        "--step-3": "1.25rem",
+        "--step-2": "1.25rem",
+        "--w-display": "400",
+        "--w-heading": "400",
+        "--heading-case": "none"
+      },
+      "label": "boccia",
+      "base": "/anteprima/canon/"
+    },
+    {
+      "id": "boccia-gerarchia-3",
+      "classe": "gerarchia-piatta",
+      "css": {
+        "--step-display": "1.125rem",
+        "--step-5": "1.125rem",
+        "--step-4": "1.125rem",
+        "--step-3": "1.125rem",
+        "--step-2": "1.125rem",
+        "--w-display": "400",
+        "--w-heading": "400",
+        "--heading-case": "none"
+      },
+      "label": "boccia",
+      "base": "/anteprima/terra/"
+    },
+    {
+      "id": "boccia-gerarchia-4",
+      "classe": "gerarchia-piatta",
+      "css": {
+        "--step-display": "1rem",
+        "--step-5": "1rem",
+        "--step-4": "1rem",
+        "--step-3": "1rem",
+        "--step-2": "1rem",
+        "--w-display": "400",
+        "--w-heading": "400",
+        "--heading-case": "none"
+      },
+      "label": "boccia",
+      "base": "/anteprima/vita/"
+    },
+    {
+      "id": "boccia-palette-0",
+      "classe": "palette-collisione",
+      "css": {
+        "--brand-primary": "#e11d48",
+        "--brand-accent": "#16a34a"
+      },
+      "label": "boccia",
+      "base": "/anteprima/meridian/"
+    },
+    {
+      "id": "boccia-palette-1",
+      "classe": "palette-collisione",
+      "css": {
+        "--brand-primary": "#7c3aed",
+        "--brand-accent": "#f59e0b"
+      },
+      "label": "boccia",
+      "base": "/anteprima/atelier/"
+    },
+    {
+      "id": "boccia-palette-2",
+      "classe": "palette-collisione",
+      "css": {
+        "--brand-primary": "#0ea5e9",
+        "--brand-accent": "#f43f5e"
+      },
+      "label": "boccia",
+      "base": "/anteprima/canon/"
+    },
+    {
+      "id": "boccia-palette-3",
+      "classe": "palette-collisione",
+      "css": {
+        "--brand-primary": "#84cc16",
+        "--brand-accent": "#d946ef"
+      },
+      "label": "boccia",
+      "base": "/anteprima/terra/"
+    },
+    {
+      "id": "boccia-palette-4",
+      "classe": "palette-collisione",
+      "css": {
+        "--brand-primary": "#f97316",
+        "--brand-accent": "#3b82f6"
+      },
+      "label": "boccia",
+      "base": "/anteprima/vita/"
+    },
+    {
+      "id": "boccia-slop-0",
+      "classe": "ai-slop",
+      "css": {
+        "--brand-font-heading": "Inter",
+        "--brand-font-body": "Inter",
+        "--brand-radius-card": "16px",
+        "--brand-radius-input": "16px",
+        "--brand-radius-pill": "16px",
+        "--brand-primary": "#7c3aed",
+        "--brand-accent": "#6366f1",
+        "--heading-case": "none"
+      },
+      "label": "boccia",
+      "base": "/anteprima/meridian/"
+    },
+    {
+      "id": "boccia-slop-1",
+      "classe": "ai-slop",
+      "css": {
+        "--brand-font-heading": "Inter",
+        "--brand-font-body": "Inter",
+        "--brand-radius-card": "16px",
+        "--brand-radius-input": "16px",
+        "--brand-radius-pill": "16px",
+        "--brand-primary": "#8b5cf6",
+        "--brand-accent": "#3b82f6",
+        "--heading-case": "none"
+      },
+      "label": "boccia",
+      "base": "/anteprima/atelier/"
+    },
+    {
+      "id": "boccia-slop-2",
+      "classe": "ai-slop",
+      "css": {
+        "--brand-font-heading": "Inter",
+        "--brand-font-body": "Inter",
+        "--brand-radius-card": "16px",
+        "--brand-radius-input": "16px",
+        "--brand-radius-pill": "16px",
+        "--brand-primary": "#6d28d9",
+        "--brand-accent": "#60a5fa",
+        "--heading-case": "none"
+      },
+      "label": "boccia",
+      "base": "/anteprima/canon/"
+    },
+    {
+      "id": "boccia-slop-3",
+      "classe": "ai-slop",
+      "css": {
+        "--brand-font-heading": "Inter",
+        "--brand-font-body": "Inter",
+        "--brand-radius-card": "16px",
+        "--brand-radius-input": "16px",
+        "--brand-radius-pill": "16px",
+        "--brand-primary": "#7c3aed",
+        "--brand-accent": "#818cf8",
+        "--heading-case": "none"
+      },
+      "label": "boccia",
+      "base": "/anteprima/terra/"
+    },
+    {
+      "id": "boccia-slop-4",
+      "classe": "ai-slop",
+      "css": {
+        "--brand-font-heading": "Inter",
+        "--brand-font-body": "Inter",
+        "--brand-radius-card": "16px",
+        "--brand-radius-input": "16px",
+        "--brand-radius-pill": "16px",
+        "--brand-primary": "#5b21b6",
+        "--brand-accent": "#6366f1",
+        "--heading-case": "none"
+      },
+      "label": "boccia",
+      "base": "/anteprima/vita/"
+    },
+    {
+      "id": "boccia-overflow-0",
+      "classe": "overflow-disallineamenti",
+      "css": {
+        "--step-display": "6.5rem"
+      },
+      "label": "boccia",
+      "base": "/anteprima/meridian/"
+    },
+    {
+      "id": "boccia-overflow-1",
+      "classe": "overflow-disallineamenti",
+      "css": {
+        "--eyebrow-tracking": "0.9em",
+        "--step-4": "3.2rem"
+      },
+      "label": "boccia",
+      "base": "/anteprima/atelier/"
+    },
+    {
+      "id": "boccia-overflow-2",
+      "classe": "overflow-disallineamenti",
+      "css": {
+        "--step-display": "7rem",
+        "--brand-space": "2.2"
+      },
+      "label": "boccia",
+      "base": "/anteprima/canon/"
+    },
+    {
+      "id": "boccia-overflow-3",
+      "classe": "overflow-disallineamenti",
+      "css": {
+        "--step-5": "4.5rem",
+        "--step-4": "4rem"
+      },
+      "label": "boccia",
+      "base": "/anteprima/terra/"
+    },
+    {
+      "id": "boccia-overflow-4",
+      "classe": "overflow-disallineamenti",
+      "css": {
+        "--brand-radius-card": "48px",
+        "--brand-space": "2.5",
+        "--step-display": "6rem"
+      },
+      "label": "boccia",
+      "base": "/anteprima/vita/"
+    }
+  ]
+}

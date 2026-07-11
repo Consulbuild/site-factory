@@ -1,0 +1,26 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display pesante maiuscolo nell'hero, H2 maiuscolo con accento, titoli di step in grassetto e didascalie regolari: il percorso dell'occhio è ovvio in ogni sezione sia a 390 che a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro (hero, fascia servizi, footer) / chiaro (processo, contatti); il processo e la sezione contatti respirano, la fascia servizi è una striscia compatta ma non soffocata." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Leggibile ovunque, ma le didascalie grigie della fascia servizi su fondo quasi nero e il corpo descrittivo del footer sono al limite del contrasto caption (le opacità /70 su scuro)." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Bordeaux come primary sulle CTA e teal come accent per eyebrow, parole chiave e numeri di processo: usi disciplinati (il teal non tocca mai i bottoni, il rosso mai il testo), neutri caldi come palcoscenico, intenzione evidente." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Nessun overflow (RISTRUTTURAZIONE regge a 390), cerchi di processo 01–04 coerenti, icone contatti in riquadri uniformi, lineetta eyebrow e underline dell'accento coerenti; nessun artefatto." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Sistema di brand deciso: eyebrow con lineetta, display grottesco pesante con parola in accent, ritmo scuro/chiaro, processo numerato, coppia bordeaux+teal (non il viola/blu di default). Nessun marker AI-slop." }
+  ],
+  "findings": [
+    {
+      "sezione": "fascia servizi (banda scura)",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Le didascalie sotto i titoli (es. «Vedi il risultato prima del cantiere») sono grigio medio su fondo quasi nero: leggibili ma con contrasto da verificare, il punto più debole della pagina."
+    },
+    {
+      "sezione": "footer",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "Il paragrafo descrittivo e i dati societari in grigio su fondo scuro stanno al limite del contrasto caption; nitidi ma non «senza sforzo» come il resto."
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 1, "sogliaHard": 1, "motivo": "Nell'hero e nel footer la scala serif display→lead→body è chiara; nella fascia chiara «COME FUNZIONA» l'H2 grigio e i titoli step grigi restano nella stessa famiglia tonale slavata del corpo, così la guida dell'occhio si affievolisce nonostante la differenza di taglia." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Ritmo verticale coerente e alternanza scuro (hero, servizi, footer) / chiaro (processo, contatti) leggibile; le card e i blocchi respirano a 390 come a 1280." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 0, "sogliaHard": 1, "motivo": "L'accent giallo è usato come TESTO su fondo crema chiaro («tuo progetto», «contatto», gli eyebrow «— CONTATTI —»/«— COME FUNZIONA —») dove sparisce quasi del tutto; l'H2 grigio e i lead grigio chiaro sulle sezioni crema sono slavati: si strizza l'occhio per leggerli." },
+    { "nome": "D4 Palette", "score": 1, "sogliaHard": 1, "motivo": "Marrone caldo + oro + crema è una combinazione coerente e con carattere editoriale, ma l'accent oro viene spruzzato come colore di testo su fondi chiari — uso discutibile dell'accent che ne tradisce la funzione di guida." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Allineamenti, raggi e icone coerenti, nessun overflow; sbavatura minore nel footer dove la riga legale manda «i.v.» a capo orfano su una riga a sé." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Direzione decisa e riconoscibile: serif display editoriale, palette marrone/oro/crema calda, processo numerato 01–04 — nessun marker AI-slop (niente Inter ovunque, niente gradiente viola, niente radius 16px uniforme, niente emoji)." }
+  ],
+  "findings": [
+    {
+      "sezione": "fascia processo «COME FUNZIONA»",
+      "viewport": "1280",
+      "gravita": "bloccante",
+      "motivo": "L'accent «tuo progetto» reso in giallo su fondo crema è quasi illeggibile; l'H2 «Come prende forma il» e il lead «Un processo strutturato…» sono in grigio chiaro slavato sullo stesso crema. La sezione è tutta a basso contrasto.",
+      "fixTokenProposto": "--accent-strong per il testo accent su fondo chiaro; alzare i titoli/lead verso --brand-ink"
+    },
+    {
+      "sezione": "sezione contatti «Mettiti in contatto»",
+      "viewport": "390",
+      "gravita": "bloccante",
+      "motivo": "Eyebrow «— CONTATTI —» e accent «contatto» in giallo su crema a contrasto insufficiente; il lead «Contattaci per una consulenza gratuita…» è grigio chiaro slavato su crema, faticoso da leggere.",
+      "fixTokenProposto": "--accent-strong per eyebrow/accent su chiaro; --brand-ink per il lead"
+    },
+    {
+      "sezione": "fascia scura servizi (Progettazione 3D / Squadre interne / Chiavi in mano)",
+      "viewport": "entrambi",
+      "gravita": "maggiore",
+      "motivo": "Le didascalie grigie sotto ogni titolo («Vedi il risultato prima del cantiere», «Nessun subappalto…», «Pratiche, cantiere e finiture inclusi») sono al limite sul marrone scuro.",
+      "fixTokenProposto": "schiarire il testo caption verso il neutro chiaro del preset su fondo scuro"
+    },
+    {
+      "sezione": "fascia processo «COME FUNZIONA»",
+      "viewport": "1280",
+      "gravita": "maggiore",
+      "motivo": "Titoli step («Consulenza e sopralluogo», «Progetto e preventivo»…) in grigio e corpo in grigio più chiaro sullo stesso crema: la gerarchia interna non guida, i quattro step si appiattiscono tonalmente.",
+      "fixTokenProposto": "--brand-ink per i titoli step, alzare il contrasto del corpo"
+    },
+    {
+      "sezione": "accent di brand (uso trasversale)",
+      "viewport": "entrambi",
+      "gravita": "maggiore",
+      "motivo": "L'oro accent funziona bene su fondo scuro (hero, footer) ma è riusato come colore di testo su fondi crema chiari, dove il contrasto crolla: l'accent smette di guidare e diventa rumore.",
+      "fixTokenProposto": "--accent-strong come variante testo su chiaro"
+    },
+    {
+      "sezione": "footer",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "La riga legale «Edil Roma Costruzioni S.r.l. · P.IVA… · Cap. €10.000 i.v.» va a capo lasciando «i.v.» orfano su una riga a sé.",
+      "fixTokenProposto": "nessuno (impaginazione riga legale)"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display bold enorme nettamente dominante sul lead grigio; eyebrow small-caps, H2 con parola in accent, titoli card/step in bold vs sottotitoli muti: il percorso dell'occhio è ovvio in ogni sezione a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro/chiaro (hero scuro → fascia servizi scura → processo chiaro → contatti chiari → footer scuro) con respiro costante; la fascia servizi compatta è scelta, non soffocamento." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Titolo bianco e CTA arancio con testo bianco su foto scurita leggibili senza sforzo; corpo grigio muto sempre nitido, testo scuro su fondi chiari e link chiari su navy nel footer tutti puliti." },
+    { "nome": "D4 Palette", "score": 0, "sogliaHard": 1, "motivo": "Due colori quasi a massima saturazione (blu elettrico + arancio) si contendono il ruolo di accent: l'enfasi è divisa in modo incoerente — blu su parole-chiave/eyebrow/numeri 01–04/brand footer, arancio sulla CTA — così nessun accent guida davvero e il blu brillante ha il registro del blu di default generico; i neutri non fanno da palcoscenico perché due colori chiassosi litigano in primo piano." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Impianto pulito e coerente (pill, cerchi numerati, allineamenti), ma nel titolo hero a 1280 c'è uno spazio orfano visibile prima della virgola («ristrutturazione ,») dove la parola in accent va a capo." },
+    { "nome": "D6 Distinzione creativa", "score": 1, "sogliaHard": 1, "motivo": "Esegue bene lo standard (eyebrow con lineetta, H2 con parola in accent, processo 01–04, ritmo scuro/chiaro, foto pertinente) ma resta professionale-anonimo: l'unica scelta forte è il blu elettrico, che sa di default più che di firma di un designer." }
+  ],
+  "findings": [
+    {
+      "sezione": "entrambi (hero, eyebrow, parole-chiave, numeri processo, CTA, footer)",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "Blu elettrico e arancio, entrambi ad alta croma, competono per l'attenzione: l'evidenziazione è spartita in modo incoerente tra i due (blu = parole-chiave/eyebrow/numeri/brand, arancio = pulsante d'azione), quindi non esiste un singolo accent che guida. Il blu brillante è inoltre il tono generico da template AI. La palette risulta chiassosa e senza logica gerarchica chiara.",
+      "fixTokenProposto": "convergere l'enfasi su un solo colore: usare --brand-accent per parola-in-accent/eyebrow/CTA e relegare --brand-primary (blu) a numeri/brand; abbassare la saturazione di --brand-primary; verificare --accent-strong per l'accent piccolo su chiaro"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "Spazio orfano visibile tra «ristrutturazione» e la virgola sul rientro della riga con la parola in accent («chiavi in mano»): la punteggiatura resta staccata dalla parola."
+    },
+    {
+      "sezione": "entrambi (pagina intera)",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Il render segue lo standard in modo corretto ma senza un tratto deciso e memorabile: tipografia e ritmo competenti ma anonimi; l'unica mossa di carattere (il blu) è la tinta di default, non una scelta d'autore."
+    }
+  ]
+}

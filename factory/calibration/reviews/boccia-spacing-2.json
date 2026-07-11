@@ -1,0 +1,28 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display serif enorme, H2 con parola in accent, lead distinto, eyebrow in maiuscoletto: il percorso dell'occhio è ovvio in ogni sezione, a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 0, "sogliaHard": 1, "motivo": "La fascia servizi (tre feature) è schiacciata: a 1280 è una striscia sottilissima con padding verticale quasi nullo, gli elementi premono sui bordi della sezione, mentre hero/processo/contatti/footer respirano largamente." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Titolo bianco e accent arancio nitidi sull'hero fotografico, testo scuro su crema pulito nelle sezioni chiare, footer e link leggibili senza sforzo." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta come unico accent che guida (CTA, parole chiave, numeri 01–04) su neutri crema e fasce quasi-nere: palette editoriale coerente e con carattere." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Rifinitura pulita (cerchi numerati coerenti, righe divisorie omogenee) ma il titolo hero a 390 spezza la parola a metà «ristrutturaz / ione» senza trattino: sbavatura tipografica visibile." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Serif display editoriale, eyebrow in maiuscoletto con lineette, accent terracotta caldo, processo numerato: scelte evidentemente decise da un designer, nessun marker AI-slop." }
+  ],
+  "findings": [
+    {
+      "sezione": "fascia servizi (tre feature su fondo scuro)",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "La sezione è compressa: a 1280 le tre colonne stanno in una striscia bassissima con aria sopra/sotto minima; a 390 i tre item sono stretti tra le righe divisorie. Rompe il ritmo verticale rispetto a tutte le altre sezioni, che respirano.",
+      "fixTokenProposto": "--section-pad (aumentare il padding verticale della fascia), --brand-space tra titolo e didascalia di ogni feature"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "«ristrutturazione» viene spezzata a metà parola («ristrutturaz / ione») dalla rete di sicurezza overflow-wrap, generando un'interruzione tipografica sgraziata.",
+      "fixTokenProposto": "--step-display (abbassare leggermente il minimo del clamp a 390 così la parola rientra senza rottura interna)"
+    }
+  ]
+}

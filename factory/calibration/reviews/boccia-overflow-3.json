@@ -1,0 +1,21 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Scala nitida su ogni livello: display serif dominante, eyebrow small-caps con lineetta, lead medio, body ridotto, processo numerato 01–04 — il percorso dell'occhio è ovvio a 390 e a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro(hero)→scuro(fascia servizi)→chiaro(processo/contatti)→scuro(footer); card e righe contatto respirano senza vuoti ingiustificati." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo hero crema su foto con overlay protettivo leggibile, fascia scura con heading crema e sublabel grigie distinte, corpo scuro su crema nitido; nessun punto in cui si strizza l'occhio." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta/rust come accent che guida (CTA, parole-chiave 'chiavi in mano', numeri processo) su neutri bruno/crema: palette calda artigianale con intenzione evidente." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 0, "sogliaHard": 1, "motivo": "Nel titolo hero a 390px la parola 'ristrutturazione' viene spezzata a metà come 'ristrutturazio / ne,' senza trattino — rottura di parola nell'elemento più prominente della pagina, un consegnato senior non la spedirebbe mai." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Serif display ad alto contrasto + palette terra calda + eyebrow con lineetta + processo numerato: scelte chiaramente DECISE, zero marker AI-slop (niente Inter ovunque, niente gradiente viola, radius e icone Lucide coerenti)." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "bloccante",
+      "motivo": "Il titolo 'La tua ristrutturazione, chiavi in mano' manda a capo 'ristrutturazione' spezzandola a metà ('ristrutturazio' / 'ne,'): il minimo del clamp display è ancora troppo grande per la parola italiana più lunga a 390px e la rete di sicurezza overflow-wrap:anywhere produce una rottura di parola visibile nell'headline.",
+      "fixTokenProposto": "--step-display: abbassare il minimo del clamp finché 'ristrutturazione' sta su una riga a 390px senza spezzarsi"
+    }
+  ]
+}

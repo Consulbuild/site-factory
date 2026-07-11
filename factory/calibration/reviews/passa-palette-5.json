@@ -1,0 +1,21 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display condensato ultra-bold in maiuscolo domina, lead distinto, eyebrow tracciato piccolo: il percorso dell'occhio è ovvio in hero, processo e contatti, a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata hero foto scura → fascia servizi nera → processo chiaro → contatti crema → footer scuro; padding generoso e costante, la banda servizi compatta è una pillar-row voluta, non schiacciata." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Tutto leggibile e testo hero ben protetto dallo scrim, ma i sottotitoli grigio muto nella fascia servizi scura ('Vedi il risultato prima del cantiere') sono l'elemento più dim, al limite." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Accent petrol/teal con intenzione evidente: guida CTA, parole-chiave del titolo, numeri 01–04, icone e brand; neutri near-black/crema fanno da palcoscenico, nessuna collisione." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Nessun overflow a 390 (RISTRUTTURAZIONE sta su una riga), cerchi numerati e icone in riquadri coerenti, CTA e bordi allineati, nessun artefatto." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Sistema di brand deciso: eyebrow con lineetta, display grottesco pesantissimo con UNA frase in accent, processo numerato in cerchi teal, ritmo scuro/chiaro; zero marker AI-slop (niente Inter generico, niente viola, niente glass/radius uniforme)." }
+  ],
+  "findings": [
+    {
+      "sezione": "fascia servizi (banda scura, 3 pilastri)",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "I sottotitoli in grigio muto su fondo near-black sono l'unico testo che si legge un filo meno nitido rispetto al resto della pagina; leggibili ma al limite della percezione.",
+      "fixTokenProposto": "--brand-ink-muted (schiarire di un gradino sul fondo scuro della sezione, o alzarne il peso)"
+    }
+  ]
+}

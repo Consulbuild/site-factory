@@ -1,0 +1,56 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 0, "sogliaHard": 1, "motivo": "In hero, processo e contatti i titoli (H1 'La tua ristrutturazione, chiavi in mano', H2 'Come prende forma il tuo progetto', 'Mettiti in contatto') hanno taglia e peso quasi identici al lead che li segue: il titolo non domina, l'occhio non sa da dove partire." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 1, "sogliaHard": 1, "motivo": "Alternanza scuro/chiaro presente e processo ben respirato, ma la fascia servizi a 1280 è una striscia compressa con padding verticale minimo che spezza il ritmo." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Testo leggibile ovunque, con la riga legale del footer (P.IVA/REA) in grigio piccolo e i lead grigi al limite ma ancora leggibili." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta caldo su carboncino e off-white caldi: accent con intenzione (CTA, numeri 01–04, parole chiave, marchio), neutri come palcoscenico, carattere artigianale coerente." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Nessun overflow o disallineamento; numeri 01–04 allineati con linee di collegamento, icone Lucide coerenti, colonne footer pulite, raggi/bordi uniformi tra elementi vicini." },
+    { "nome": "D6 Distinzione creativa", "score": 1, "sogliaHard": 1, "motivo": "Nessun marker AI-slop dominante (palette calda, icone reali, ritmo scuro/chiaro), ma resta corretto e anonimo: i titoli sottodimensionati tolgono la sensazione di una scelta tipografica decisa." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "L'H1 'La tua ristrutturazione, chiavi in mano' è appena più grande del paragrafo lead sottostante e più corto: il lead a 3 righe pesa visivamente di più e ruba l'attenzione al titolo. A 390 il titolo scompare del tutto sotto il blocco di lead.",
+      "fixTokenProposto": "--step-display / --step-4 (H1) verso l'alto per staccarlo nettamente da --t-lead"
+    },
+    {
+      "sezione": "processo (COME FUNZIONA)",
+      "viewport": "1280",
+      "gravita": "bloccante",
+      "motivo": "L'H2 'Come prende forma il tuo progetto' è più piccolo o pari al lead 'Un processo strutturato...': l'intestazione di sezione non stacca dal corpo, la gerarchia collassa.",
+      "fixTokenProposto": "--step-4 / --step-5 (H2 di sezione) verso l'alto rispetto a --t-lead"
+    },
+    {
+      "sezione": "contatti",
+      "viewport": "390",
+      "gravita": "maggiore",
+      "motivo": "L'H2 'Mettiti in contatto' ha la stessa taglia del lead che lo segue: la sezione parte senza un titolo che domini.",
+      "fixTokenProposto": "--step-4 (H2) verso l'alto per distinguerlo da --t-lead"
+    },
+    {
+      "sezione": "griglia servizi",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "La fascia dei tre value-prop è una striscia orizzontale sottile con padding verticale minimo: respira poco rispetto al resto della pagina e sembra schiacciata tra hero e processo.",
+      "fixTokenProposto": "--brand-space (padding verticale della sezione) verso l'alto"
+    },
+    {
+      "sezione": "footer",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "La riga legale (Edil Roma Costruzioni S.r.l. · P.IVA · REA · Cap.) è in grigio piccolo su fondo scuro, al limite del contrasto comodo.",
+      "fixTokenProposto": "--brand-ink-muted (colore fine-print) verso maggiore contrasto"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Il layout è corretto e riconoscibile (eyebrow con lineetta, accent word, foto pertinente) ma anonimo: manca una decisione tipografica che lo renda memorabile, aggravata dai titoli deboli.",
+      "fixTokenProposto": "--heading-case / --step-display per dare peso e carattere alle intestazioni"
+    }
+  ]
+}

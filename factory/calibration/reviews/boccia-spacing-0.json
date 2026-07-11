@@ -1,0 +1,28 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display enorme maiuscolo, H2 di sezione con parola in accent, lead e caption chiaramente sotto: il percorso dell'occhio è ovvio a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 0, "sogliaHard": 1, "motivo": "La fascia scura dei vantaggi (PROGETTAZIONE 3D / SQUADRE INTERNE / CHIAVI IN MANO) è schiacciata: a 1280 è una striscia sottile senza respiro sopra/sotto, a 390 i tre item si addossano ai divisori — il blocco soffoca." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Hero protetto da overlay scuro, testi nitidi sul fondo scuro e su chiaro; le caption grigie restano leggibili senza strizzare l'occhio." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta come unico accent che guida CTA e parole chiave, neutri caldi a fare da palcoscenico: intenzione cromatica evidente e coerente su tutte le sezioni." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Allineamenti puliti, raggi/ombre coerenti tra card e bottoni, processo numerato 01–04 rifinito, nessun overflow né artefatto." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Personalità decisa: eyebrow con lineetta, display maiuscolo con frase in accent, ritmo scuro/chiaro, processo numerato — nessun marker AI-slop, non è un template anonimo." }
+  ],
+  "findings": [
+    {
+      "sezione": "fascia scura vantaggi (Progettazione 3D / Squadre interne / Chiavi in mano)",
+      "viewport": "1280",
+      "gravita": "bloccante",
+      "motivo": "Il blocco ha padding verticale quasi nullo: i tre item stanno in una striscia sottile che si addossa alle sezioni adiacenti, spezzando il ritmo scuro/chiaro invece di scandirlo.",
+      "fixTokenProposto": "--section-pad / --brand-space: aumentare il padding verticale della sezione fino al valore standard delle altre fasce"
+    },
+    {
+      "sezione": "fascia scura vantaggi (stack mobile)",
+      "viewport": "390",
+      "gravita": "maggiore",
+      "motivo": "In colonna i tre item sono compressi contro i divisori: poca aria tra titolo, caption e la riga successiva, il blocco appare choked.",
+      "fixTokenProposto": "--brand-space: aumentare la gap verticale tra gli item e il padding interno della fascia"
+    }
+  ]
+}

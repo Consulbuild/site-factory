@@ -1,0 +1,21 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Scala nettissima ovunque: H1/H2 in maiuscolo pesante, eyebrow letter-spaced piccolo, lead distinto, body regolare — a 390 come a 1280 l'occhio parte sempre dal titolo." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Ritmo scuro/chiaro deliberato (hero scuro → servizi scuro → form → contatti chiaro → footer), hero generoso e sezioni che respirano senza addossarsi." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Tutto leggibile, ma i sottotitoli grigi della fascia servizi su fondo quasi nero sono al limite (es. «Dallo smontaggio alla posa…»)." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Navy/acciaio come unico accent che guida (CTA, parole chiave «5 GIORNI», «CONTATTO», submit del form) su neutri carbone/crema che fanno da palcoscenico — intenzione evidente, nessun colore fuori registro." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Allineamenti puliti, bottoni e input coerenti, icone contatto uniformi, form rifinito, nessun overflow; la ragione sociale lunga in header è troncata con ellissi in modo intenzionale." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Centra l'ancora ConsulBuild: eyebrow con lineetta, H2 maiuscolo con UNA frase in accent, foto reali di bagni pertinenti al mestiere, CTA ricorrente — zero marker AI-slop (niente Inter+viola, radius uniforme o emoji-icone)." }
+  ],
+  "findings": [
+    {
+      "sezione": "fascia servizi (scura)",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "I sottotitoli in grigio medio sotto i tre titoli («Dallo smontaggio alla posa…», «Sostituiamo la vecchia vasca…», «Arriviamo in ogni provincia…») su fondo quasi nero risultano più spenti del resto: leggibili ma al limite percettivo.",
+      "fixTokenProposto": "sottotitoli servizi su .section-dark: schiarire il token del testo muted verso maggiore luminosità (--brand-ink / colore lead su fondo scuro)"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Percorso dell'occhio ovvio ovunque: eyebrow < lead < display enorme nell'hero, H2 con accent nel processo, titoli di sezione e footer nettamente staccati dal corpo, sia a 390 che a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 0, "sogliaHard": 1, "motivo": "La fascia servizi/ValueProp è schiacciata: a 1280 è una striscia sottile in cui le tre colonne quasi toccano i bordi alto/basso della banda, a 390 gli item sono compressi tra i divisori — padding verticale dimezzato che rompe il ritmo generoso di tutte le altre sezioni." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Titolo bianco e accent arancio nitidi sull'overlay scuro dell'hero, testo scuro su fondo chiaro nei contatti, accent e testo chiaro leggibili sul footer scuro: niente testo che si perde." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta caldo come accent + neutri carbone che fanno da palcoscenico: l'accent guida CTA, parole chiave dei titoli e numeri di processo con logica evidente, insieme con carattere artigianale coerente." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Allineamenti puliti, cerchi numerati e icone-contatto con raggi/ombre coerenti, nessun overflow orizzontale né testo fuori contenitore su entrambi i viewport." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Sistema di brand deciso e riconoscibile: eyebrow con lineetta, H2 con singola frase in accent, processo 01–04, palette terracotta/carbone, ritmo scuro/chiaro — nessun marker AI-slop." }
+  ],
+  "findings": [
+    {
+      "sezione": "fascia servizi (ValueProp) — tre colonne PROGETTAZIONE 3D / SQUADRE INTERNE / CHIAVI IN MANO",
+      "viewport": "1280",
+      "gravita": "bloccante",
+      "motivo": "La banda è troppo bassa: il padding verticale è compresso e il testo delle tre colonne quasi tocca i bordi alto e basso della striscia scura, spezzando bruscamente il ritmo verticale rispetto al respiro ampio di hero, processo, contatti e footer.",
+      "fixTokenProposto": "--brand-space: aumentare il padding verticale della fascia (.section-pad) per riportarla al ritmo delle altre sezioni"
+    },
+    {
+      "sezione": "fascia servizi (ValueProp) — stack mobile",
+      "viewport": "390",
+      "gravita": "maggiore",
+      "motivo": "Gli stessi tre item sono compressi tra i divisori con aria verticale insufficiente attorno a titolo+sottotitolo, coerente con lo schiacciamento visto a 1280.",
+      "fixTokenProposto": "--brand-space: aumentare la spaziatura verticale tra gli item e il padding della fascia"
+    },
+    {
+      "sezione": "fascia servizi — pulsante telefono flottante (FAB)",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "Il FAB arancio si sovrappone quasi al testo dell'item 'CHIAVI IN MANO', accentuando la sensazione di affollamento in una fascia già stretta.",
+      "fixTokenProposto": "--brand-space: margine di rispetto attorno al FAB / più aria nella fascia"
+    }
+  ]
+}

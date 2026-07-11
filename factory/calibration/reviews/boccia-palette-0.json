@@ -1,0 +1,35 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display uppercase enorme, lead grigio piu piccolo, eyebrow spaziato, processo numerato 01-04 con titoli distinti dal corpo: il percorso dell'occhio e ovvio a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Ritmo scuro/chiaro deliberato (hero scuro -> fascia servizi scura -> processo su bianco -> contatti chiari -> footer scuro); padding coerente, nessun blocco che soffoca ne vuoti ingiustificati." },
+    { "nome": "D3 Contrasto e leggibilita", "score": 1, "sogliaHard": 1, "motivo": "Leggibile ovunque, ma il verde accento su bianco (eyebrow «— COME FUNZIONA —», label piccole dei contatti) e il lead grigio sull'immagine hero sono 1-2 punti al limite." },
+    { "nome": "D4 Palette", "score": 0, "sogliaHard": 1, "motivo": "Primary cremisi (CTA) e accent verde saturo convivono nello stesso hero e in tutta la pagina: rosso+verde in collisione (effetto bandiera/Natale), nessuna gerarchia cromatica — l'anti-pattern esatto da bocciare." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Allineamenti puliti, raggi/ombre coerenti tra card, badge numerati e chip icona, nessun overflow o testo fuori contenitore a 390 come a 1280." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Grammatica ConsulBuild eseguita con intenzione: eyebrow con lineette, H2 uppercase con parola-accento, processo 01-04, ritmo scuro/chiaro — personalita riconoscibile, nessun marker AI-slop dominante." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "Il primary cremisi del bottone «RICHIEDI UN PREVENTIVO GRATUITO» e l'accent verde saturo della parola «CHIAVI IN MANO» si scontrano nello stesso hero: due colori forti che competono invece di gerarchizzare, lettura da bandiera italiana / Natale.",
+      "fixTokenProposto": "--brand-primary / --brand-accent: riarmonizzare l'accent (o il primary) cosi che i due hue non collidano"
+    },
+    {
+      "sezione": "griglia servizi / processo / footer",
+      "viewport": "entrambi",
+      "gravita": "maggiore",
+      "motivo": "La collisione si propaga a tutta la pagina: badge numerati 01-04 e brand nel footer in verde, mentre CTA e badge telefono nei servizi sono rossi — il sito legge come due brand diversi, l'accent non ha una logica unica.",
+      "fixTokenProposto": "--brand-accent: unificare l'uso dell'accent verso una sola logica coordinata col primary"
+    },
+    {
+      "sezione": "processo / contatti",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Eyebrow verde su bianco («— COME FUNZIONA —») e le label piccole verdi dei contatti (TELEFONO, E-MAIL, SEDE) sono leggibili ma al limite; il lead grigio sull'immagine hero e l'altro punto borderline.",
+      "fixTokenProposto": "--accent-strong per i testi accent piccoli su fondo chiaro (eyebrow/label)"
+    }
+  ]
+}

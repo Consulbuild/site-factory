@@ -1,0 +1,21 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display maiuscolo pesante nell'hero, H2 di processo con accent, lead distinto, titoli card netti sui neutri: il percorso dell'occhio è ovvio sia a 390 che a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Ritmo scuro/chiaro deliberato (hero+strip scuri → processo chiaro → contatti chiaro → footer scuro), sezioni che respirano senza addossarsi." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Tutto leggibile, ma le didascalie grigie della fascia servizi su fondo quasi nero (\"Vedi il risultato prima del cantiere\") sono il testo più tenue della pagina, al limite." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Accent cremisi con logica evidente (guida CTA-word, eyebrow, cerchi processo, brand, tile icone), navy primary sulla sola CTA principale, neutri caldi come palcoscenico: sistema primary+accent coerente." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Cerchi numerati e linee di connessione allineati, tile icone a raggio coerente, sottolineatura-swash sotto la frase accent dell'hero, nessun overflow a 390." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Cremisi scuro + fotografia calda + swash sotto l'accent + processo con cerchi magenta = scelte decise; zero marker AI-slop (niente viola/blu, niente radius uniforme, icone Lucide reali)." }
+  ],
+  "findings": [
+    {
+      "sezione": "fascia servizi (strip scura)",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Le didascalie sotto i titoli (grigio tenue su fondo quasi nero, testo piccolo) sono al limite della leggibilità comoda rispetto al resto della pagina; leggibili ma il punto più debole.",
+      "fixTokenProposto": "--brand-ink-muted (o equivalente colore didascalia su scuro) leggermente più chiaro sulla fascia scura"
+    }
+  ]
+}

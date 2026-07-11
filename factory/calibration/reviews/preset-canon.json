@@ -1,0 +1,21 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display serif Didone enorme, eyebrow in maiuscoletto spaziato, lead grigio medio, H3 bold serif e body: il percorso dell'occhio è ovvio in hero, processo e contatti, sia a 390 che a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata hero scuro → fascia servizi scura → 'come funziona' chiaro → contatti crema → footer scuro; card processo e blocchi contatti respirano con margini coerenti." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo bianco/accent su overlay scuro dell'hero nitido; i sottotitoli grigi della fascia servizi e il lead su foto sono al limite ma restano leggibili senza strizzare l'occhio." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta/rust come unico accent che guida (CTA, parole chiave 'chiavi in mano'/'tuo progetto'/'contatto', cerchi numerati, brand nel footer) su charcoal e crema: neutri palcoscenico, carattere caldo editoriale." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Allineamenti, divisori e cerchi coerenti, ma a 390px il display spezza 'ristrutturazione' a metà parola ('ristrutturaz'/'ione') senza trattino: la rete overflow-wrap si vede." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Serif ad alto contrasto in stile Didone, palette terracotta/crema, ritmo scuro/chiaro e processo a cerchi numerati: estetica evidentemente DECISA, nessun marker AI-slop (niente Inter, niente radius uniforme, niente gradiente viola)." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "Il display serif a 390px è così grande che 'ristrutturazione' si spezza a metà parola su due righe ('ristrutturaz' / 'ione') senza trattino, effetto sgradevole tipico della rete di sicurezza overflow-wrap.",
+      "fixTokenProposto": "--step-display: abbassare il minimo del clamp così le parole italiane lunghe entrano su una riga a 390px senza spezzarsi"
+    }
+  ]
+}

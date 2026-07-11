@@ -1,0 +1,48 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 0, "sogliaHard": 1, "motivo": "Inversione sistematica: nell'hero l'H1 «La tua ristrutturazione, chiavi in mano» è più piccolo del paragrafo lead sottostante, che diventa l'elemento più grande e ruba il ruolo di titolo; stesso schema in contatti («Mettiti in contatto» < il suo body) e nel processo. Il titolo si distingue solo per peso/accent, non per taglia, e l'occhio non sa da dove partire." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Ritmo verticale coerente e deliberato: alternanza scuro/chiaro (fascia servizi scura, processo e contatti chiari, footer scuro), padding ampi, i passi 01–04 e le righe contatto ben distanziati sia a 390 che a 1280." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Leggibile ovunque, ma i sottotitoli muted sulla fascia servizi scura («Vedi il risultato prima del cantiere» ecc.) e il testo descrittivo del footer sono grigio-bluastri al limite: si leggono ma con contrasto tirato." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Palette con intenzione: accent terracotta caldo che guida (CTA, parole chiave, cerchi numerati, icone, marchio) su neutri navy/crema che fanno da palcoscenico; coerente con la foto d'interni calda, ha carattere." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Rifinito: nessun overflow, CTA pill coerenti (primario pieno / secondario ghost), chip icona a raggio uniforme, cerchi 01–04 identici, linee divisorie pulite tra le colonne servizi. Nessun artefatto visibile." },
+    { "nome": "D6 Distinzione creativa", "score": 1, "sogliaHard": 1, "motivo": "Segue correttamente la grammatica di brand (eyebrow con lineetta, H2 con parola in accent, processo 01–04) e non mostra marker AI-slop, ma resta professionale-ma-anonimo: nessun tratto tipografico deciso, e la gerarchia rotta gli toglie l'aria di pezzo curato da un senior." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "L'H1 «La tua ristrutturazione, / chiavi in mano» è di taglia uguale o inferiore al paragrafo lead «Dalla prima consulenza all'ultima mano di vernice…»: il body domina otticamente e il titolo si legge come un sopratitolo. La gerarchia è invertita, l'occhio parte dal paragrafo anziché dal titolo.",
+      "fixTokenProposto": "alzare --step-display / --step-4 per il titolo hero e/o abbassare --step-1 del paragrafo lead, così il titolo torna a dominare"
+    },
+    {
+      "sezione": "contatti (coda)",
+      "viewport": "390",
+      "gravita": "maggiore",
+      "motivo": "Stessa inversione: l'H2 «Mettiti in contatto» è più piccolo del paragrafo «Contattaci per una consulenza gratuita…», che diventa l'elemento più grande del blocco. La testata non stacca dal corpo.",
+      "fixTokenProposto": "alzare --step-4 dell'H2 di sezione e ridurre --step-1 del paragrafo introduttivo"
+    },
+    {
+      "sezione": "processo (come funziona)",
+      "viewport": "1280",
+      "gravita": "maggiore",
+      "motivo": "L'H2 «Come prende forma il tuo progetto» è appena più grande del lead sottostante «Un processo strutturato…»: la testata non domina, conferma che l'inversione di scala è sistemica su tutta la pagina, non un caso isolato dell'hero.",
+      "fixTokenProposto": "alzare --step-4 delle testate di sezione per ristabilire lo stacco titolo→lead→body"
+    },
+    {
+      "sezione": "fascia servizi scura / footer",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "I sottotitoli muted sotto PROGETTAZIONE 3D / SQUADRE INTERNE / CHIAVI IN MANO e il testo descrittivo del footer sono grigio-bluastri su navy: leggibili ma con contrasto al limite.",
+      "fixTokenProposto": "schiarire il neutro del testo secondario su .section-dark (--brand-ink muted) verso il chiaro"
+    },
+    {
+      "sezione": "generale",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Impianto corretto e coerente col brand ma senza un tratto memorabile; la scala titoli schiacciata gli impedisce di leggersi come lavoro deciso da un designer. Distinzione risolvibile a valle una volta ripristinata la gerarchia."
+    }
+  ]
+}

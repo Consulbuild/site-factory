@@ -1,0 +1,41 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Scala chiara e intenzionale: display serif marcato, eyebrow con lineetta, H2 con parola accent, lead, corpo e numeri di processo 01–04 ben separati per taglia e peso a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 0, "sogliaHard": 1, "motivo": "La fascia scura dei servizi è schiacciata: il padding verticale è collassato in una striscia sottile che stringe titoli e didascalie contro i bordi, rompendo il ritmo generoso di hero, processo e contatti." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Leggibile ovunque, ma le didascalie grigie della fascia servizi su fondo marrone sono al limite e richiedono un minimo di sforzo rispetto al resto della pagina, nitido." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Intenzione evidente: accent terracotta che guida (CTA, parole chiave, cerchi del processo), neutri caldi marrone/crema come palcoscenico; insieme coerente e con carattere artigianale." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Pulito ma con sbavature: a 390 il display spezza a metà parola («ristrutturazio / ne») sul serif e il pulsante-telefono flottante si sovrappone al terzo servizio della fascia scura." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Personalità decisa: display serif editoriale, palette terracotta/marrone calda, processo numerato, eyebrow con lineette — nessun marker AI-slop, non è un tema di chiunque." }
+  ],
+  "findings": [
+    {
+      "sezione": "fascia scura servizi (Progettazione 3D / Squadre interne / Chiavi in mano)",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "Il padding verticale della sezione è dimezzato/collassato: a 1280 la fascia è una striscia sottile con titoli e didascalie quasi a contatto coi bordi, a 390 gli item restano compressi. Rompe l'alternanza di respiro con le sezioni adiacenti e fa soffocare il blocco.",
+      "fixTokenProposto": "--brand-space (aumentare il padding verticale della sezione servizi / .section-pad fino ad allinearlo alle altre sezioni)"
+    },
+    {
+      "sezione": "hero (display «La tua ristrutturazione, chiavi in mano»)",
+      "viewport": "390",
+      "gravita": "maggiore",
+      "motivo": "Il titolo display spezza a metà parola («ristrutturazio» / «ne») su un carattere serif, dove la sillabazione forzata è particolarmente evidente e poco curata.",
+      "fixTokenProposto": "--step-display (abbassare il minimo del clamp a 390 così la parola lunga rientra senza break a metà)"
+    },
+    {
+      "sezione": "fascia scura servizi",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "Il pulsante-telefono flottante arancione si sovrappone al terzo servizio («Chiavi in mano») coprendone in parte l'area, artefatto di impaginazione mobile."
+    },
+    {
+      "sezione": "fascia scura servizi",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Le didascalie grigie su fondo marrone («Vedi il risultato prima del cantiere», ecc.) sono percettivamente più deboli del resto: leggibili ma al limite.",
+      "fixTokenProposto": "--brand-ink / colore didascalia della fascia scura verso un grigio più chiaro"
+    }
+  ]
+}

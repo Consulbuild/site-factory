@@ -1,0 +1,28 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 0, "sogliaHard": 1, "motivo": "Nell'hero il display «La tua ristrutturazione, chiavi in mano» è quasi della stessa taglia del lead di tre righe sottostante: l'occhio entra sul paragrafo, non sul titolo. Peggio, l'H2 del processo «Come prende forma il tuo progetto» appare grande quanto o più del display dell'hero — gerarchia invertita, il display non comanda la pagina." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Ritmo scuro/chiaro deliberato (hero scuro → fascia servizi espresso → processo crema → contatti crema → footer scuro); respiro costante dentro ogni sezione, nessun blocco schiacciato né vuoto ingiustificato." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Leggibile ovunque tranne la destra dell'hero a 1280: l'overlay sfuma e l'eyebrow «…IN 24 ORE» e la coda del lead cadono sopra la parete di cornici chiara, perdendo contrasto." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta + crema + espresso: palette calda con intenzione evidente, l'accent guida CTA e parole chiave, i neutri fanno da palcoscenico. Carattere artigianale coerente." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Numeri 01–04 con linee di connessione allineati, icone contatti in riquadri coerenti, colonne footer allineate; nessun overflow orizzontale a 390, raggi/ombre coerenti." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Estetica «terra» decisa: display serif con parola in accent, eyebrow tracked-caps con lineette, processo numerato — nessun marker AI-slop (niente Inter ovunque, niente viola, niente radius 16 uniforme, icone vere non emoji)." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "Il display dell'hero è reso troppo piccolo: taglia quasi pari al lead di tre righe, che per massa visiva vince sul titolo. A 1280 l'H2 del processo risulta grande quanto o più del display dell'hero — inversione di scala che toglie all'hero il suo ruolo di punto d'ingresso.",
+      "fixTokenProposto": "--step-display su, distanziandolo nettamente da --step-lead / --step-1; alleggerire o ridurre --step-lead dell'hero perché smetta di competere col titolo"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "1280",
+      "gravita": "maggiore",
+      "motivo": "L'overlay dell'hero protegge bene la colonna di testo a sinistra ma sfuma verso il centro-destra: eyebrow e coda del lead scorrono sopra la parete di cornici chiara e perdono leggibilità.",
+      "fixTokenProposto": "rafforzare l'overlay dell'hero (.hero-overlay) — fondo più scuro/esteso sotto il blocco di testo"
+    }
+  ]
+}

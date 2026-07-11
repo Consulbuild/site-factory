@@ -1,0 +1,49 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Scala chiara e intenzionale a ogni livello: H1 hero dominante, eyebrow subordinato, lead secondario, titoli step ben staccati dal corpo, sia a 390 che a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 1, "sogliaHard": 1, "motivo": "Respiro complessivo giusto (hero e processo generosi), ma la fascia servizi scura è schiacciata: padding verticale minimo, sembra una striscia divisoria più che una sezione." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Leggibile ovunque, con punti al limite: i sottotitoli grigio-bruno sui servizi in espresso e il lead muted su beige/immagine hero richiedono attenzione." },
+    { "nome": "D4 Palette", "score": 1, "sogliaHard": 1, "motivo": "Neutri caldi (espresso/crema) coerenti, ma l'accent periwinkle-indaco è freddo e fuori registro rispetto al calore del tema, senza alcun legame col mestiere edile." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Pulito e allineato, ma a 390 l'H1 spezza 'ristrutturazio-ne' a metà parola senza sillabazione: sbavatura visibile della rete overflow-wrap." },
+    { "nome": "D6 Distinzione creativa", "score": 0, "sogliaHard": 1, "motivo": "Due marker AI-slop dominanti: accent indaco/periwinkle default su hero, CTA e numeri, e un unico font grotesco ovunque senza alternanza né intenzione — media estetica AI, nessun tratto deciso da un designer." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero e intero sito (accent + tipografia)",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "L'accent periwinkle-indaco (parola in accento H1, bottone 'Richiedi preventivo', numeri 01–04, eyebrow, icone) è la palette viola/indaco di default calata su un brand edile senza logica, e la tipografia è un solo grotesco su titoli e corpo senza alternanza: l'insieme è indistinguibile da qualsiasi output generato.",
+      "fixTokenProposto": "brand.accent: sostituire l'indaco con una tonalità coerente coi neutri caldi (terra/ottone); introdurre alternanza tipografica nel font pairing del preset."
+    },
+    {
+      "sezione": "hero (accent word su immagine)",
+      "viewport": "1280",
+      "gravita": "maggiore",
+      "motivo": "L'accent periwinkle 'chiavi in mano' si stacca male dal calore della foto e sulla porzione destra chiara dell'immagine il contrasto scende; l'accento freddo litiga con la scena calda.",
+      "fixTokenProposto": "brand.accent verso tonalità calda; --accent-strong se resta un accent chiaro su fondo chiaro"
+    },
+    {
+      "sezione": "fascia servizi scura",
+      "viewport": "1280",
+      "gravita": "maggiore",
+      "motivo": "I tre servizi (Progettazione 3D / Squadre interne / Chiavi in mano) sono compressi in una barra sottile con padding verticale minimo: leggono come una striscia di feature, non come una sezione con proprio respiro; a 390 impilati con divisori funziona meglio.",
+      "fixTokenProposto": "--section-pad / --brand-space: aumentare il padding verticale della fascia servizi"
+    },
+    {
+      "sezione": "hero (H1 mobile)",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "'ristrutturazione' si spezza a metà parola in 'ristrutturazio' + 'ne' senza trattino di sillabazione: la rete overflow-wrap:anywhere scatta e produce una rottura visivamente sciatta.",
+      "fixTokenProposto": "--step-display: abbassare il minimo del clamp a 390 così la parola entra sulla riga senza spezzarsi"
+    },
+    {
+      "sezione": "servizi scuri e contatti",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "I sottotitoli muted grigio-bruno su fondo espresso ('Vedi il risultato prima del cantiere') e il lead muted su beige nella sezione contatti sono al limite: leggibili ma spenti.",
+      "fixTokenProposto": "--brand-ink (variante muted): scurire il testo secondario su fondo scuro/beige"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    {
+      "nome": "D1 Gerarchia tipografica",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "La scala per taglia c'è (display enorme, body piccolo), ma la parte non-accent dei titoli è in grigio medio invece che ink scuro, così l'H2 comanda meno del dovuto."
+    },
+    {
+      "nome": "D2 Spaziatura e ritmo",
+      "score": 2,
+      "sogliaHard": 1,
+      "motivo": "Ritmo verticale coerente e alternanza scuro/chiaro deliberata (hero scuro → fascia servizi navy → processo chiaro → contatti chiaro → footer scuro); i blocchi respirano a 390 come a 1280."
+    },
+    {
+      "nome": "D3 Contrasto e leggibilità",
+      "score": 0,
+      "sogliaHard": 1,
+      "motivo": "Testi secondari grigio-chiarissimo su fondo chiaro in più sezioni (lead contatti, descrizioni dei 4 step, sottotitoli) e CTA primario lavanda slavato con testo bianco: si strizza l'occhio in molti punti, non 1-2 al limite."
+    },
+    {
+      "nome": "D4 Palette",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Palette di fondo coerente e intenzionale (arancio ruggine come accent, navy e crema come palcoscenico), ma il primary lavanda/pervinca è fuori registro rispetto al registro caldo."
+    },
+    {
+      "nome": "D5 Artigianato dei dettagli",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Allineamenti e coerenza di raggi/icone puliti, ma refuso tipografico nel titolo hero: spazio spurio prima della virgola in \"ristrutturazione ,\"."
+    },
+    {
+      "nome": "D6 Distinzione creativa",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "La grammatica ConsulBuild dà professionalità (eyebrow con lineetta, H2 con parola in accent, processo numerato 01-04, foto pertinenti), ma il CTA lavanda/pervinca ripete il marker viola/indaco default e nulla lo rende memorabile."
+    }
+  ],
+  "findings": [
+    {
+      "sezione": "sezione contatti",
+      "viewport": "390",
+      "gravita": "bloccante",
+      "motivo": "Il paragrafo lead (\"Contattaci per una consulenza gratuita e scopri come possiamo trasformare il tuo immobile...\") è grigio chiarissimo su fondo lavanda chiaro: si legge a fatica, strizzando l'occhio.",
+      "fixTokenProposto": "scurire il token del testo secondario (--brand-muted verso --brand-ink)"
+    },
+    {
+      "sezione": "processo Come funziona",
+      "viewport": "1280",
+      "gravita": "bloccante",
+      "motivo": "Le descrizioni dei 4 step (\"Ascoltiamo le tue idee...\", ecc.) e il sottotitolo sono in grigio troppo chiaro su bianco: testo slavato, sotto la soglia di leggibilità comoda.",
+      "fixTokenProposto": "scurire --brand-muted; garantire AA sui testi di corpo"
+    },
+    {
+      "sezione": "griglia servizi",
+      "viewport": "entrambi",
+      "gravita": "maggiore",
+      "motivo": "Le didascalie (\"Vedi il risultato prima del cantiere\", ecc.) sono grigio-violetto tenue sul navy scuro: leggibili solo al limite, poco nitide.",
+      "fixTokenProposto": "schiarire il testo secondario in .section-dark (--brand-muted)"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "maggiore",
+      "motivo": "Il bottone primario \"Richiedi un preventivo gratuito\" è lavanda chiaro con testo bianco: contrasto insufficiente, il CTA principale risulta slavato.",
+      "fixTokenProposto": "portare --brand-primary a un tono più profondo o usare --accent-strong per il testo del bottone"
+    },
+    {
+      "sezione": "intestazioni di sezione (H2)",
+      "viewport": "entrambi",
+      "gravita": "maggiore",
+      "motivo": "La parte non-accent dei titoli (\"Come prende forma il\", \"Mettiti in\") è in grigio medio invece che ink scuro: il titolo perde forza e leggibilità.",
+      "fixTokenProposto": "usare --brand-ink per il corpo del titolo, riservando l'accent alla sola parola marcata"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "Spazio spurio prima della virgola nel titolo: \"La tua ristrutturazione ,\" — refuso tipografico visibile."
+    },
+    {
+      "sezione": "hero / CTA e pulsante flottante",
+      "viewport": "entrambi",
+      "gravita": "maggiore",
+      "motivo": "Il primary lavanda/pervinca è fuori registro rispetto alla palette calda (arancio ruggine + navy + crema) e ripete il marker AI-slop viola/indaco default sul CTA (ricorre nel pulsante flottante e nell'icona telefono dei servizi).",
+      "fixTokenProposto": "riallineare --brand-primary alla famiglia calda della palette"
+    }
+  ]
+}

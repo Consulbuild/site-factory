@@ -1,0 +1,28 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display bold enorme, eyebrow tracciato con lineetta, lead grigio più piccolo, H3 delle card e numeri di processo: il percorso dell'occhio è ovvio sia a 390 sia a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro (hero/fascia servizi/footer) e chiaro (processo/contatti) con padding coerente; colonne e card respirano, nessun blocco schiacciato." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo nitido ovunque: bianchi su overlay hero, sottotitoli grigi sulla fascia scura dei servizi, corpo su fondo chiaro del processo e dei contatti tutti leggibili senza sforzo." },
+    { "nome": "D4 Palette", "score": 0, "sogliaHard": 1, "motivo": "Il CTA primario è viola/indaco default mentre l'intero brand è guidato dall'arancione (parole-accent, numeri 01–04, marchio footer, icone, FAB): un colore fuori registro e in collisione sull'elemento più prominente, il caso 'primary X + accent Y nello stesso hero'." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Allineamenti puliti, raggi e ombre coerenti tra bottoni, card e cerchi numerati; nessun overflow neppure a 390 con 'ristrutturazione,' su due righe." },
+    { "nome": "D6 Distinzione creativa", "score": 0, "sogliaHard": 1, "motivo": "Marker AI-slop dominante: CTA viola/indaco default sull'hero (e pulsante flottante viola) — la scelta cromatica più memorabile è quella di default e annulla la personalità che il sistema-accent arancione avrebbe dato." }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "Il pulsante 'Richiedi un preventivo gratuito' è viola/indaco, colore senza alcun legame con l'arancione che definisce il brand (titoli-accent, numeri di processo, marchio): scontro cromatico sull'elemento più importante e ripetuto della pagina; sembra il primary di default mai personalizzato.",
+      "fixTokenProposto": "--brand-primary portato su una tonalità coerente col sistema (neutro scuro o declinazione terra/arancione dell'accent), eliminando il viola/indaco default"
+    },
+    {
+      "sezione": "griglia servizi / contatti (pulsante flottante telefono)",
+      "viewport": "390",
+      "gravita": "maggiore",
+      "motivo": "Il pulsante flottante di chiamata è viola, ripetendo la collisione col brand arancione in sezioni diverse dall'hero e rendendo il difetto di palette sistemico, non isolato.",
+      "fixTokenProposto": "--brand-primary (stessa correzione del CTA hero, così il FAP eredita il colore coerente)"
+    }
+  ]
+}

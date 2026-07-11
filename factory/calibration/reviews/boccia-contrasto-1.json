@@ -1,0 +1,48 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 1, "sogliaHard": 1, "motivo": "La scala per taglia c'è (display hero grande, H2 medi, processo numerato 01–04), ma sulle sezioni chiare la parte non-accent dell'H2 è grigio slavato quasi come il lead: il titolo non domina e il percorso dell'occhio all'inizio di quelle sezioni è debole." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Ritmo verticale costante e deliberato, con alternanza scuro (hero, servizi, footer) / chiaro (processo, contatti); padding generoso e coerente, card e step ben respirati a 390 come a 1280." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 0, "sogliaHard": 1, "motivo": "Sulle sezioni chiare (Contatti a 390, 'Come funziona' a 1280) eyebrow, coda dell'H2, lead e testi-guida sono grigio chiarissimo su fondo crema: si strizza l'occhio per leggerli; anche il bottone primario azzurro pastello con testo bianco è slavato." },
+    { "nome": "D4 Palette", "score": 1, "sogliaHard": 1, "motivo": "Base calda coerente (arancio accent + crema + carbone) con accent che guida bene (parole chiave, numeri 01–04, marchio footer), ma il bottone primario e il FAB sono azzurro pastello freddo: un secondo colore fuori registro che collide col sistema arancio." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Allineamenti, raggi e divisori sono puliti e senza overflow, ma il bottone azzurro (bianco su azzurro chiaro) appare slavato e il FAB telefono galleggia sovrapposto al contenuto in basso a destra su mobile." },
+    { "nome": "D6 Distinzione creativa", "score": 1, "sogliaHard": 1, "motivo": "I marcatori di brand ci sono (eyebrow con lineetta, H2 con parola in accent, processo numerato, ritmo scuro/chiaro) e non c'è slop AI dominante, ma l'esecuzione slavata e il bottone freddo fuori palette la rendono corretta ma anonima, non memorabile." }
+  ],
+  "findings": [
+    {
+      "sezione": "Contatti (sezione chiara 'Mettiti in contatto')",
+      "viewport": "390",
+      "gravita": "bloccante",
+      "motivo": "Su fondo crema l'eyebrow '— CONTATTI —', la coda dell'H2 'Mettiti in' e soprattutto il lead 'Contattaci per una consulenza gratuita…' sono grigio/tan chiarissimo: illeggibili senza sforzo. Anche le label TELEFONO/E-MAIL/INSTAGRAM/SEDE sono troppo tenui.",
+      "fixTokenProposto": "--brand-ink più scuro per lead e corpo su sezioni chiare; --accent-strong per l'eyewbrow su chiaro"
+    },
+    {
+      "sezione": "Processo 'Come funziona'",
+      "viewport": "1280",
+      "gravita": "bloccante",
+      "motivo": "Sempre su fondo chiaro: la coda dell'H2 'Come prende forma il', il lead 'Un processo strutturato…' e le descrizioni dei quattro step ('Ascoltiamo le tue idee…', ecc.) sono grigio slavato che si perde nel bianco.",
+      "fixTokenProposto": "--brand-ink più scuro per titoli e descrizioni step su sezioni chiare"
+    },
+    {
+      "sezione": "Hero — CTA primaria e H2 su sezioni chiare",
+      "viewport": "entrambi",
+      "gravita": "maggiore",
+      "motivo": "Il bottone 'Richiedi un preventivo gratuito' è azzurro pastello con testo bianco: contrasto slavato e, insieme al FAB azzurro, introduce un secondo colore che collide col sistema arancio caldo del resto del sito.",
+      "fixTokenProposto": "riportare il bottone primario su primary/accent della palette calda"
+    },
+    {
+      "sezione": "Testata sezioni chiare (gerarchia)",
+      "viewport": "entrambi",
+      "gravita": "maggiore",
+      "motivo": "Nelle sezioni chiare la parte non-accent dell'H2 ha lo stesso valore chiaro del lead: il titolo non stacca dal sottotitolo e la gerarchia in testa alle sezioni è debole.",
+      "fixTokenProposto": "--brand-ink più scuro per i titoli su chiaro"
+    },
+    {
+      "sezione": "FAB telefono",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "Il pulsante circolare azzurro del telefono galleggia sovrapposto ai contenuti in basso a destra (servizi e contatti), fuori dal registro cromatico caldo."
+    }
+  ]
+}

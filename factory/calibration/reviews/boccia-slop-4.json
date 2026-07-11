@@ -1,0 +1,86 @@
+{
+  "round": 1,
+  "verdict": "FAIL",
+  "criteri": [
+    {
+      "nome": "D1 Gerarchia tipografica",
+      "score": 2,
+      "sogliaHard": 1,
+      "motivo": "H1 hero grande e bold nettamente sopra il body; nel processo H2 > lead > titolo step > descrizione; nei servizi titolo caps bold vs sottotitolo leggero: il percorso dell'occhio è ovvio a 390 come a 1280."
+    },
+    {
+      "nome": "D2 Spaziatura e ritmo",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Respiro complessivo giusto ma la fascia servizi a 1280 è una striscia sottile con 3 coppie di testo che galleggiano in un vuoto verticale ampio, e hero (foto scura) + servizi (navy) sono due blocchi scuri adiacenti che rompono l'alternanza chiaro/scuro."
+    },
+    {
+      "nome": "D3 Contrasto e leggibilità",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Leggibile ovunque ma con più punti al limite: sottotitoli grigi sui servizi su fondo navy risultano spenti a 1280, e il body hero + l'accent viola 'chiavi in mano' cadono sopra la foto in zona a mezzitoni."
+    },
+    {
+      "nome": "D4 Palette",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Schema coerente monocromatico ma l'accent indaco è usato su tutto (CTA, parole chiave, numeri processo, icone, FAB) e anche i neutri sono virati lavanda: manca il palcoscenico neutro, l'accent non guida più perché è ovunque."
+    },
+    {
+      "nome": "D5 Artigianato dei dettagli",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Pulito ma con sbavature: l'eyebrow hero è senza lineetta mentre 'COME FUNZIONA' e 'CONTATTI' hanno '— … —', e il bottone telefono flottante viola si sovrappone al contenuto delle sezioni."
+    },
+    {
+      "nome": "D6 Distinzione creativa",
+      "score": 0,
+      "sogliaHard": 1,
+      "motivo": "Marker AI-slop dominante: palette viola/indaco default spruzzata su hero, CTA, accent, numeri, icone e FAB, con sans generico senza intenzione tipografica — è l'estetica 'startup violet' anonima, il sito potrebbe essere di chiunque."
+    }
+  ],
+  "findings": [
+    {
+      "sezione": "hero e CTA",
+      "viewport": "entrambi",
+      "gravita": "bloccante",
+      "motivo": "L'accent è l'indaco/viola default: CTA piena viola nell'hero, parola 'chiavi in mano' viola, e lo stesso viola si ripete su numeri processo, icone contatti e bottone flottante. È il marker AI-slop 'palette viola/indaco default', privo di una scelta cromatica decisa.",
+      "fixTokenProposto": "--brand-primary / --brand-accent verso una tinta con carattere (non indaco default); ridurne la diffusione ai soli elementi interattivi/chiave"
+    },
+    {
+      "sezione": "fascia servizi",
+      "viewport": "1280",
+      "gravita": "maggiore",
+      "motivo": "La sezione è una striscia bassa: 3 coppie titolo/sottotitolo senza icone né card galleggiano in una banda larga con grande vuoto verticale, e sta subito dopo l'hero scuro creando due blocchi scuri consecutivi.",
+      "fixTokenProposto": "--section-pad / --brand-space per dare corpo alla banda; alternare il fondo (uno dei due blocchi verso chiaro)"
+    },
+    {
+      "sezione": "fascia servizi",
+      "viewport": "1280",
+      "gravita": "maggiore",
+      "motivo": "I sottotitoli grigi ('Vedi il risultato prima del cantiere', ecc.) su fondo navy risultano spenti e faticosi a taglia piccola.",
+      "fixTokenProposto": "--brand-ink-muted più chiaro dentro .section-dark"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Body 'Dalla prima consulenza…' e accent viola 'chiavi in mano' cadono sopra la foto in zona a mezzitoni: leggibili ma al limite dove l'immagine schiarisce.",
+      "fixTokenProposto": "--hero-overlay più forte per proteggere il testo"
+    },
+    {
+      "sezione": "eyebrow (hero vs processo/contatti)",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "Trattamento incoerente dell'eyebrow: nell'hero è senza lineetta, nel processo e nei contatti ha '— … —'. Il sistema di brand va applicato uniformemente.",
+      "fixTokenProposto": "uniformare l'uso di .eyebrow su tutte le sezioni"
+    },
+    {
+      "sezione": "bottone telefono flottante",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "Il FAB circolare viola si sovrappone al contenuto (sopra 'CHIAVI IN MANO' nei servizi, in basso nei contatti): pattern generico e ingombrante.",
+      "fixTokenProposto": "—"
+    }
+  ]
+}

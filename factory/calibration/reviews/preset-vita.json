@@ -1,0 +1,34 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "H1 rotondo e pieno domina nettamente sul lead nell'hero; nel processo l'H2 con accent, i titoli-step in bold e il body grigio scalano con chiarezza; a 390 come a 1280 il percorso dell'occhio è ovvio." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 1, "sogliaHard": 1, "motivo": "Respiro generoso e deliberato in hero, processo, contatti e footer, ma la fascia scura value-prop (Progettazione 3D / Squadre interne / Chiavi in mano) è compressa in altezza e stona col padding ampio del resto." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Tutto leggibile, con i sottotitoli grigio-medio su navy della fascia scura al limite; H1/accent, valori di contatto e testo su foto restano nitidi grazie all'overlay dell'hero." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta caldo come unico accent che guida (CTA, accent-word, numeri 01–04, icone, marchio) contro neutri navy profondo e fondo lavanda chiaro: pairing complementare intenzionale, nessuna collisione." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Raggi, pill dei bottoni, chip-icona e cerchi-step coerenti, nessun overflow; unica sbavatura lo spazio spurio prima della virgola in 'ristrutturazione ,' nell'hero a 1280 (split dell'accent-word)." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Il display rotondo e amichevole (non Inter) unito al calore terracotta, ai chip morbidi e al fondo lavanda dà una personalità 'friendly/warm' evidentemente decisa; nessun marker AI-slop dominante." }
+  ],
+  "findings": [
+    {
+      "sezione": "fascia scura value-prop (Progettazione 3D / Squadre interne / Chiavi in mano)",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "Banda verticale troppo sottile: i tre value-prop sono schiacciati in un nastro basso mentre le altre sezioni respirano, spezzando il ritmo verticale.",
+      "fixTokenProposto": "aumentare il padding verticale della fascia (--section-pad / --brand-space)"
+    },
+    {
+      "sezione": "fascia scura value-prop",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "I sottotitoli in grigio medio su fondo navy scuro ('Vedi il risultato prima del cantiere' ecc.) sono leggibili ma al limite, più deboli del resto della pagina.",
+      "fixTokenProposto": "in .section-dark schiarire il testo secondario/muted verso il chiaro"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "Spazio spurio prima della virgola in 'La tua ristrutturazione , chiavi in mano': artefatto tipografico dallo split della accent-word su nuova riga."
+    }
+  ]
+}

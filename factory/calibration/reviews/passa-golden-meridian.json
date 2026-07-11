@@ -1,0 +1,13 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Scala nettissima e intenzionale: display maiuscolo enorme e pesante nell'hero, H2 maiuscolo con frase in accent, eyebrow small-caps spaziato, lead e body chiaramente subordinati; il percorso dell'occhio è ovvio a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro/chiaro (hero scuro → fascia servizi scura → processo chiaro → contatti chiari → footer scuro) con padding generoso e costante; la fascia servizi è una striscia compatta per scelta, non schiacciata." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo bianco nitido sull'hero grazie all'overlay forte sulla foto; i sottotitoli grigi della fascia servizi e il corpo del footer sono grigi medi secondari, muti per gerarchia ma leggibili senza sforzo." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta/arancio bruciato come unico accent (CTA, parole chiave, numeri 01–04, icone) su neutri caldi off-white e neri profondi: intenzione evidente, i neutri fanno da palcoscenico, nessun accostamento stridente." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Allineamenti puliti, cerchi numerati e chip-icona coerenti per raggio, divisori regolari, nessun overflow: anche 'RISTRUTTURAZIONE' a 390px va a capo netto senza uscire dal contenitore." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Firma ConsulBuild riconoscibile e decisa (eyebrow con lineetta, display maiuscolo con singola frase in accent, calore terracotta, processo numerato, ritmo scuro/chiaro); nessun marker AI-slop — niente Inter ovunque, niente radius 16px uniforme, niente gradiente viola, niente emoji-icona." }
+  ],
+  "findings": []
+}

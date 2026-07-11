@@ -56,8 +56,35 @@ trattamento foto), mai da generazione libera.
       (tabella rigenerata byte-identica). global.css −312 righe; la terza copia dei
       neutri è morta (editor importa il JSON generato). 4 trascrizioni via agenti
       paralleli auto-verificate + confronto indipendente.
-- [ ] M3 — quick win: font self-hosted + palette AA-by-construction (HCT)
-- [ ] M4 — critico visivo calibrato (gold set, κ) + re-audit dei 5 preset
+- [x] 2026-07-11 M3 — font self-hosted + palette AA-by-construction (HCT).
+      Accettazione osservata: dist senza alcuna richiesta a
+      `fonts.googleapis|gstatic` (grep = 0; 24 WOFF2 in public/fonts, 1.0MB,
+      latin+latin-ext); VRT meridian 2/2 verde SENZA update (parità del
+      self-hosting in sé); `check-hct.ts` → 40/40 coppie corrette passano
+      check-contrast.mjs (autorità), deriva tinta max 0.88°; editor `tsc` +
+      `next build` verdi. In più (sorpresa → fix alla radice): pesi sintetici
+      eliminati su tutti i preset — censimento (famiglia,peso) usato vs
+      dichiarato, URL font corretti nei meta.json, token `w-strong`
+      (800; nova 700 perché Space Grotesk finisce a 700), classe `.font-strong`
+      al posto di `font-extrabold` hardcoded, gate "pesi orfani" in
+      lint-tokens + ban statico `font-(extrabold|black)`; baseline dei 5 preset
+      alternativi rigenerate consapevolmente dopo verifica visiva → VRT 12/12.
+      Nato `presets/font-whitelist.json` (10 famiglie, vincolo fabbrica M6).
+- [x] 2026-07-11 M4 — critico visivo calibrato + re-audit dei 5 preset.
+      Accettazione osservata: `calibrate-critic.mjs` → **κ di Cohen = 1.0,
+      recall(boccia) = 1.0** su 40/40 item validi, 0 errori (gate κ≥0.6 ∧
+      recall≥0.9 superato al primo colpo, nessuna iterazione di rubrica);
+      i degradati canary bocciati nominando sezione e difetto giusti
+      (spot-check: contrasto→D3, overflow→D5 con «RISTRUTTURAZIONE 16 glifi»,
+      slop→D4+D6, collisione→D4); re-audit = 5 review JSON valide
+      (`factory/calibration/reviews/preset-*.json`). Verdetti: atelier/canon/
+      terra/vita PASS con backlog, **nova FAIL** (D3=0, 3 bloccanti di
+      contrasto sull'hero e sulle fasce chiare — triangolato coi 29 nodi axe).
+      Deliverable: gold set 40 item (make-goldset.mjs, defect injection su
+      6 classi, basi miste), skill+agente design-critic (rubrica D1–D6,
+      congiunzione su soglie hard, blacklist AI-slop), canary.json (10 fissi),
+      report-critico.json, `docs/decisions/2026-07-re-audit-preset.md`
+      (backlog: bloccanti nova + display serif 390 + renderAccent).
 - [ ] M5 — fabbrica: modello dati, riferimenti+opt-out+estrazione, area editor
 - [ ] M6 — fabbrica: preset-designer + gate L1–L4 (pipeline completa)
 - [ ] M7 — pilota end-to-end: primo preset nuovo pubblicato
@@ -126,8 +153,64 @@ trattamento foto), mai da generazione libera.
   Grotesk/Plus Jakarta sui preset alternativi) — input per la font-whitelist M3 e il
   re-audit M4.
 
+- 2026-07-11 (M3) — **Tutti i preset alternativi usavano pesi font mai
+  caricati**: col CDN ogni pagina dichiarava solo i pesi del proprio URL e il
+  browser falsificava i mancanti (grassetto sintetico: atelier Inter 700 e
+  Inter Tight 800, nova Inter 600/700, canon Playfair 800 e Source Serif
+  500/700, terra Fraunces 700/800 e Karla 600). Il difetto è emerso perché
+  presets.gen.css dichiara l'UNIONE delle facce: su nova il matching ha scelto
+  l'Inter 600 vero (di atelier) al posto del sintetico → VRT rosso su nova
+  sola. Meridian era l'unico preset senza pesi orfani. Caso limite: Space
+  Grotesk non ha l'800 (range 300–700) che i componenti chiedevano via
+  `font-extrabold` hardcoded → token `w-strong`. Il censimento è ora un gate
+  permanente (lint-tokens: "pesi orfani" = 0).
+- 2026-07-11 (M3) — `@material/material-color-utilities` 0.4.0 ha un import
+  ESM rotto (`dynamiccolor/dynamic_color` senza estensione): funziona nei
+  bundler, crasha in node puro (script di check). Pinnata **0.2.7** (stabile,
+  Hct+Contrast presenti). `Contrast.ratioOfTones(100,50)=4.484`: la regola
+  Material "gap di tone 50 ⇒ 4.5" è FALSA al margine — si usa la matematica
+  inversa esatta `Contrast.darker/lighter` + verifica con nudge ≤0.25 di tone.
+
+- 2026-07-11 (M4) — **Calibrazione perfetta al primo colpo (κ=1.0)** — da
+  leggere con prudenza: i difetti iniettati sono decisivi per costruzione
+  (valori scelti per essere inequivocabili). Il gold set separa bene
+  rotto/sano ma non misura ancora i casi-limite: quando la fabbrica produrrà
+  candidati "quasi buoni", aggiungere item near-miss al gold set. Intanto il
+  critico ha dimostrato qualità oltre il verdetto: ogni classe di difetto
+  presa dal criterio GIUSTO, e sul re-audit ha trovato difetti REALI di nova
+  convergenti con axe (29 nodi) senza conoscerne l'esito.
+- 2026-07-11 (M4) — Il re-audit ha scoperto una radice condivisa: i minimi di
+  `--step-display` sono tarati sulle metriche dell'Archivo maiuscolo
+  (meridian); i display SERIF di terra e canon spezzano «ristrutturazione» a
+  metà parola a 390px → servono minimi per-preset nei token. E un bug vero di
+  `renderAccent` (spazio spurio prima della virgola quando l'accent-word va a
+  capo). Backlog completo in docs/decisions/2026-07-re-audit-preset.md.
+- 2026-07-11 (M4) — I 4 residui impeccable `overused-font` sono spariti coi
+  fix font di M3: impeccable = 0 residui su tutti i 6 preset.
+- 2026-07-11 (M4) — Deviazione da D5: `calibrate-critic.mjs` NON passa dal
+  seam `io.claude()` (streaming per la UI) — è batch sincrono con spawn
+  proprio. Il seam si esporta in M5 per la fabbrica, come da piano.
+
 ## Decision Log [viva]
 
+- 2026-07-11 — **nova è bloccato per l'assegnazione finché il FAIL del
+  re-audit non rientra** (3 bloccanti di contrasto). I fix del backlog sono
+  quasi tutti token/overlay per-preset; chiusura misurabile: axe
+  color-contrast = 0 nodi su tutti i preset + canary del critico verde.
+  Dettaglio e criteri in docs/decisions/2026-07-re-audit-preset.md.
+- 2026-07-11 — **Pesi font: mai sintetici.** Ogni coppia (famiglia, peso,
+  stile) usata nel render deve avere una @font-face vera: gate deterministico
+  in lint-tokens (censimento su elementi visibili vs document.fonts), utility
+  `font-extrabold|font-black` bandite staticamente, peso "forte" degli accenti
+  di brand tokenizzato in `w-strong`. Le baseline VRT dei 5 preset alternativi
+  sono state rigenerate una tantum (2026-07-11) dopo verifica visiva: il
+  rendering coi pesi veri È il fix, meridian resta la prova di parità del
+  self-hosting (2/2 verde senza update).
+- 2026-07-11 — **Font self-hosted = mirror verbatim della CSS di Google**
+  (descriptor family/style/weight/unicode-range identici, src locale, subset
+  latin+latin-ext): niente reinterpretazione, il rendering identico lo prova
+  il VRT. `fetch-fonts.mjs` è idempotente e whitelist-driven; il CDN resta
+  SOLO per l'override font esplicito del cliente (raro, scelta sua).
 - 2026-07-10 — Decisioni di kickoff prese con Mattia: (1) perimetro = SOLO asse design,
   niente verticali nuovi (ristorante/dentista = piano successivo che riuserà questa
   infrastruttura); (2) budget = solo tool gratuiti, si paga solo davanti a un collo di

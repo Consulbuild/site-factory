@@ -1,0 +1,62 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "criteri": [
+    {
+      "nome": "D1 Gerarchia tipografica",
+      "score": 2,
+      "sogliaHard": 1,
+      "motivo": "Scala nettissima ovunque: eyebrow tracciato piccolo → H1/H2 maiuscolo pesante → lead → corpo; il percorso dell'occhio è ovvio a 390 come a 1280 in hero, processo, contatti e footer."
+    },
+    {
+      "nome": "D2 Spaziatura e ritmo",
+      "score": 2,
+      "sogliaHard": 1,
+      "motivo": "Ritmo scuro/chiaro deliberato: hero scuro → fascia servizi scura → processo chiaro → contatti chiari → footer antracite; card processo e righe contatti hanno respiro costante e baseline allineate, nessun blocco soffocato."
+    },
+    {
+      "nome": "D3 Contrasto e leggibilità",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Leggibile ovunque, ma i sottotitoli grigi della fascia servizi su nero e il testo legale piccolo del footer su antracite sono i due punti al limite."
+    },
+    {
+      "nome": "D4 Palette",
+      "score": 1,
+      "sogliaHard": 1,
+      "motivo": "Palette terra coerente e con carattere (terracotta + neutri caldi), ma la CTA primaria è verde mentre tutto l'accent — eyebrow, parole chiave, numeri 01–04, icone — è terracotta: l'accent non guida il bottone principale, che resta l'unico verde della pagina."
+    },
+    {
+      "nome": "D5 Artigianato dei dettagli",
+      "score": 2,
+      "sogliaHard": 1,
+      "motivo": "Rifinitura da consegnato: allineamenti puliti nelle card processo e nelle righe contatti, raggi coerenti tra bottoni, quadrati-icona e cerchi numero, nessun overflow — 'RISTRUTTURAZIONE' regge a 390px."
+    },
+    {
+      "nome": "D6 Distinzione creativa",
+      "score": 2,
+      "sogliaHard": 1,
+      "motivo": "Estetica decisa (terra/artigianale): grotesque pesante maiuscolo per i titoli + humanist per il corpo, accent terracotta, processo 01–04 in cerchi pieni con linea di connessione, foto d'interni reali; nessun marker AI-slop, personalità riconoscibile."
+    }
+  ],
+  "findings": [
+    {
+      "sezione": "hero",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "La CTA primaria è verde mentre l'intero sistema accent (eyebrow, parola chiave del titolo, numeri di processo, icone contatti) è terracotta: il verde è l'unica occorrenza sulla pagina e resta leggermente fuori dal registro cromatico dominante."
+    },
+    {
+      "sezione": "fascia servizi",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "I sottotitoli grigi ('Vedi il risultato prima del cantiere', ecc.) sono grigio medio su nero: leggibili ma al limite, il punto più debole del contrasto della pagina."
+    },
+    {
+      "sezione": "footer",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "La riga legale piccola (ragione sociale · P.IVA · REA · capitale) e il copyright centrato sono grigio tenue su antracite: leggibili con leggero sforzo, borderline."
+    }
+  ]
+}
