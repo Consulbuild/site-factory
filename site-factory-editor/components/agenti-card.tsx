@@ -4,18 +4,19 @@
 // ospita l'upsell): compare solo con run vivi, click = apre il pannello della
 // status bar. Nella sidebar collassata a icone non c'è spazio: nascosta.
 
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { useRuns } from "./run-provider";
 import { AgentOrb } from "./agent-orb";
 import { agenteDaFase, nomeStep, formatElapsed } from "@/lib/agenti";
 
 export function AgentiCard() {
   const { vivi, setEspanso } = useRuns();
+  const ridotto = useReducedMotion();
   if (vivi.length === 0) return null;
 
   return (
     <motion.button
-      initial={{ opacity: 0, y: 8 }}
+      initial={ridotto ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       onClick={() => setEspanso(true)}
       className="card w-full p-3 text-left transition-colors duration-150 hover:bg-raise max-lg:hidden"

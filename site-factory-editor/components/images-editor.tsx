@@ -194,8 +194,8 @@ export function ImagesEditor({
           {stale.length > 0 && (
             <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
               <p className="font-medium text-warn">⚠ Cambiato a monte dopo la generazione delle immagini</p>
-            <p className="mono mt-1 text-warn/90">{stale.join(" · ")}</p>
-              <p className="mt-1 text-warn/90">
+            <p className="mono mt-1 text-warn">{stale.join(" · ")}</p>
+              <p className="mt-1 text-warn">
                 Soggetti delle card, colori dello style bible o identità potrebbero non riflettere le correzioni.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -229,7 +229,7 @@ export function ImagesEditor({
           <p className="font-medium text-err">Problemi da sistemare ({serverErrors.length})</p>
           <ul className="mt-1.5 space-y-1">
             {serverErrors.map((e, i) => (
-              <li key={i} className="text-err/90">
+              <li key={i} className="text-err">
                 {e}
               </li>
             ))}

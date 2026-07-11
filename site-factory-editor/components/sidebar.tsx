@@ -45,6 +45,7 @@ function VoceNav({ voce, pathname }: { voce: Voce; pathname: string }) {
   return (
     <Link
       href={voce.href}
+      aria-label={voce.label}
       aria-current={attiva ? "page" : undefined}
       className={`relative flex items-center gap-2.5 rounded-ctl px-3 py-2 text-sm transition-colors duration-150 max-lg:justify-center max-lg:px-2 ${
         voce.sub ? "lg:ml-3" : ""
@@ -61,7 +62,11 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname();
   return (
     <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-line bg-surface px-3 py-4 max-lg:w-16 max-lg:px-2">
-      <Link href="/" className="flex items-center gap-2 px-3 font-semibold tracking-tight max-lg:justify-center max-lg:px-0">
+      <Link
+        href="/"
+        aria-label="Site-factory"
+        className="flex items-center gap-2 px-3 font-semibold tracking-tight max-lg:justify-center max-lg:px-0"
+      >
         <span className="inline-block size-2 shrink-0 rounded-full bg-brand" aria-hidden />
         <span className="max-lg:hidden">Site-factory</span>
       </Link>

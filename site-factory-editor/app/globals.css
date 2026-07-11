@@ -50,7 +50,7 @@
   --ink: oklch(0.21 0.02 262);
   --muted: oklch(0.45 0.02 258);
   --faint: oklch(0.53 0.015 258);
-  --brand: oklch(0.55 0.2 262); /* blu royal — azioni, selezione, focus */
+  --brand: oklch(0.52 0.2 262); /* blu royal — azioni, selezione, focus; L tarata per AA di text-brand su brand-dim (4.67:1) */
   --brand-ink: oklch(1 0 0);
   --brand-dim: oklch(0.93 0.035 262); /* pill nav attiva, badge brand */
   --warn: oklch(0.5 0.11 70);

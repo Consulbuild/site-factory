@@ -139,8 +139,8 @@ export function BuildPanel({
       {staleFiles.length > 0 && !runner.running && (
         <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
           <p className="font-medium text-warn">⚠ Cambiato a monte dopo l&apos;ultima build</p>
-          <p className="mono mt-1 text-warn/90">{staleFiles.join(" · ")}</p>
-          <p className="mt-1 text-warn/90">Ribuilda per portare le correzioni nel sito.</p>
+          <p className="mono mt-1 text-warn">{staleFiles.join(" · ")}</p>
+          <p className="mt-1 text-warn">Ribuilda per portare le correzioni nel sito.</p>
         </div>
       )}
 

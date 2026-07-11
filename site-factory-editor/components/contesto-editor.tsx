@@ -220,7 +220,7 @@ export function ContestoEditor({
         drift.length > 0 && (
           <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
             <p className="font-medium text-warn">⚠ L&apos;intake è cambiato dopo la generazione del contesto</p>
-            <p className="mt-1 text-warn/90">
+            <p className="mt-1 text-warn">
               Campi cambiati: <strong>{drift.join(", ")}</strong>. Le parti derivate (identità, servizi, punti di forza,
               promesse) potrebbero non riflettere le correzioni. I campi semplici (città, tono, colori…) sono già stati
               allineati automaticamente.

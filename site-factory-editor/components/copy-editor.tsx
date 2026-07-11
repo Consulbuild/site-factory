@@ -356,8 +356,8 @@ export function CopyEditor({
           {stale.length > 0 && (
             <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
               <p className="font-medium text-warn">⚠ Cambiato a monte dopo la generazione del copy</p>
-              <p className="mono mt-1 text-warn/90">{stale.join(" · ")}</p>
-              <p className="mt-1 text-warn/90">
+              <p className="mono mt-1 text-warn">{stale.join(" · ")}</p>
+              <p className="mt-1 text-warn">
                 Macro-categorie, promesse o identità potrebbero essere diverse: i testi derivati potrebbero non
                 riflettere le correzioni.
               </p>
@@ -398,7 +398,7 @@ export function CopyEditor({
             {serverErrors.map((e, i) => {
               const m = e.match(/«([^»]+)»/);
               return (
-                <li key={i} className="flex items-start gap-2 text-err/90">
+                <li key={i} className="flex items-start gap-2 text-err">
                   <span className="flex-1">{e}</span>
                   {m && (
                     <button className="shrink-0 underline underline-offset-2 hover:opacity-80" onClick={() => goto(m[1])}>

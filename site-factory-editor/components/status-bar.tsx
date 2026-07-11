@@ -153,7 +153,11 @@ export function StatusBar() {
           )}
 
           {!focused.done && (
-            <span className="mono text-sm text-ink">
+            // aria-hidden: il cronometro ticca ogni secondo e la barra è una
+            // live-region atomica (role="status") — senza questo lo screen
+            // reader ri-annuncerebbe tutto ogni secondo. Fase ed esito, che
+            // cambiano di rado, restano annunciati.
+            <span className="mono text-sm text-ink" aria-hidden>
               {formatElapsed(Date.now() - focused.startedAt)}
               {focused.tipicoMs ? (
                 <span className="text-faint"> · di solito ~{Math.max(1, Math.round(focused.tipicoMs / 60000))} min</span>

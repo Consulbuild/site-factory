@@ -185,8 +185,8 @@ export function PaletteEditor({
         stale.length > 0 && (
           <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
             <p className="font-medium text-warn">⚠ Cambiato a monte dopo la generazione della palette</p>
-            <p className="mono mt-1 text-warn/90">{stale.join(" · ")}</p>
-            <p className="mt-1 text-warn/90">
+            <p className="mono mt-1 text-warn">{stale.join(" · ")}</p>
+            <p className="mt-1 text-warn">
               Settore, tono o colori del cliente potrebbero essere diversi: controlla che preset e colori siano ancora
               coerenti.
             </p>
