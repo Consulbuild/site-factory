@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/sidebar";
@@ -17,19 +18,14 @@ export const metadata: Metadata = {
   description: "Console della pipeline Site-factory — ConsulBuild",
 };
 
-// No-flash: imposta data-theme PRIMA del paint (localStorage o preferenza di
-// sistema), così non c'è lampo del tema sbagliato al caricamento.
-const themeScript = `(function(){try{var t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='dark';}})();`;
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Tema deciso lato server dal cookie: niente flash per chi ha già scelto e
+  // nessuno <script> inline nell'albero React (che React 19 segnalerebbe a
+  // ogni render). Primo accesso senza cookie → chiaro (il riferimento è chiaro).
+  const tema = (await cookies()).get("theme")?.value === "dark" ? "dark" : "light";
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="it" className={`h-full antialiased ${inter.variable}`} suppressHydrationWarning>
-      <head>
-        {/* Nota: in dev l'overlay Next segnala questo script ai re-render
-            client del layout — è cosmetico: lo script gira dall'HTML iniziale
-            e in produzione non c'è overlay. Pattern standard per il no-flash. */}
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
+    <html lang="it" data-theme={tema} className={`h-full antialiased ${inter.variable}`}>
       <body className="min-h-full">
         <RunsProvider>
           <div className="flex min-h-screen">
