@@ -12,7 +12,7 @@ deterministico anti-pattern (`detect.mjs`: **0 finding**), rubriche impeccable
 1. Librerie: sì con misura — `motion` (animazioni status bar) + `lucide-react` (icone). Niente component library.
 2. Eliminazione clienti: **diretta** (cancella `out/<slug>/`), con conferma forte (digitare il nome).
 3. Progresso run: **fasi reali + tempo trascorso** — mai percentuali inventate.
-4. Riferimento visivo: screenshot forniti da Mattia (in arrivo — la sezione §7 li integrerà).
+4. Riferimento visivo: **screenshot "Shopeers" forniti da Mattia (2026-07-11)** — dashboard SaaS chiara: sidebar bianca, card morbide, blu primario, KPI card, search globale. Direzione estratta in §7. «Prendi ispirazione e copia per la UI e UX del tool.»
 
 ---
 
@@ -114,6 +114,23 @@ crossfade); scala z-index semantica (`--z-sticky/-bar/-dialog/-toast`); token
 spaziatura densità 8/10 (già di fatto così); Button/Banner/EmptyState/Skeleton come
 componenti (oggi stringhe di classi + copie).
 
+**Shell applicativa (nuova — dagli screenshot di riferimento, supera il «niente
+sidebar» del brief 2026-07-06, deciso quando le pagine erano 4; oggi sono 12):**
+- **Sidebar bianca fissa** (~240px): wordmark in alto; voci con icona+label —
+  Clienti, Fabbrica (gruppo espandibile: Run, Riferimenti), divisore, Impostazioni
+  (le Chiavi API escono dal pannello a fondo home e diventano pagina propria),
+  Aiuto se mai servirà (YAGNI per ora). Voce attiva = pill con tinta primaria +
+  testo primario + barretta sinistra 3px (pattern del riferimento). Badge conteggio
+  a destra della voce (es. run attivi in Fabbrica).
+- **Slot inferiore della sidebar** (dove il riferimento ha la card premium): card
+  **«Agenti al lavoro»** — compare quando c'è ≥1 run: sfera dell'agente + fase +
+  tempo; click = apre il pannello della status bar. Vuota = non renderizzata.
+- **Topbar**: ricerca globale clienti stile riferimento (pill con icona + kbd ⌘K,
+  apre/filtra la lista da qualunque pagina), toggle tema, avatar/menu NO (YAGNI:
+  un operatore). Il breadcrumb resta nel contenuto sotto la topbar.
+- Su viewport strette la sidebar collassa a icone (64px) — niente drawer mobile
+  (tool desktop).
+
 ## 5. Studio pagina per pagina (esistente → manca → proposta)
 
 ### 5.1 `/` Lista clienti → **Dashboard clienti**
@@ -121,7 +138,12 @@ componenti (oggi stringhe di classi + copie).
 - **Manca**: visibilità pipeline (solo Intake+Contesto), filtri/sort, azioni per riga, slug/data (duplicati indistinguibili: il test client mostra lo stesso nome di cavaliere), contatori, elimina.
 - **Proposta**:
   - Riga cliente = nome + città·referente + **mini-pipeline a 6 tacche** (una per step, colore = stato, ⚠ se stale, ● online cliccabile) + data aggiornamento + slug mono quando il nome è duplicato.
-  - Testata con **contatori-filtro** (Tutti · Da lavorare · Da verificare · Online) + select ordinamento (Aggiornati di recente / Nome / Importati) — niente dashboard di vanità: i numeri SONO i filtri.
+  - Testata con **4 KPI card in stile riferimento** (Clienti · Da lavorare · Da
+    verificare · Online): numero grande tabulare, icona piccola, sotto-riga con
+    delta reale dove esiste (es. «+2 questa settimana» dai timestamp di import) —
+    e **cliccabili: la card È il filtro** della lista (stato attivo = bordo/tinta
+    primaria). Niente metriche di vanità: solo numeri su cui si agisce. Accanto:
+    select ordinamento (Aggiornati di recente / Nome / Importati).
   - **Menu azioni per riga** (…): Apri, Apri sito online, Copia link sito, **Elimina…** → dialog forte: «Digita CAVALIERE BUILD SRLS per eliminare la cartella out/cavaliere-build-srls. La submission Tally resta e potrà essere reimportata.» (decisione Mattia: eliminazione diretta). Server: `DELETE /api/clients/[slug]` con `rm -rf` di `out/<slug>` (+ revalidate).
   - `/` focalizza la ricerca; sezione Tally invariata.
 
@@ -279,31 +301,74 @@ stessa fonte. Nessun cambiamento alle skill o a `claude -p`.
 | «di solito ~N min» | `steps.<k>.ultimaRun.durataMs` (già registrato, mai mostrato) |
 | Esito/errore | evento `done`/`error` + stato persistito |
 
-## 7. Direzione visiva — da completare con gli screenshot di Mattia
+## 7. Direzione visiva — estratta dagli screenshot di riferimento (Shopeers, 2026-07-11)
 
-Stato: gli screenshot annunciati non sono ancora arrivati; questa sezione resta
-aperta. Baseline dalle evidenze: l'identità attuale (bianco puro/nero sala-controllo,
-teal, mono per i dati) è solida e AA; la ricerca ui-ux-pro-max conferma densità
-8/10, una sola famiglia + mono per dati, no decorazione/ombre complesse. Le sonde
-visive generate (probe immagini) sono saltate: il harness non ha generazione
-immagini nativa. **Quando arrivano gli screenshot**: estrarne gerarchia, superfici
-(elevazione vs bordi), raggio, densità, trattamento delle liste/dashboard e
-mappare le distanze rispetto ai token attuali — le modifiche diventano una fetta
-«re-skin token» del piano (i componenti non cambiano: è la promessa del sistema a
-token).
+Riferimento: dashboard SaaS **chiara, ariosa, morbida** — l'opposto tonale della
+«sala di controllo» attuale, con però la stessa disciplina (un accento, semantici
+sobri, mono per i dati tecnici che TENIAMO). Grammatica estratta e mappatura:
+
+**Superfici e profondità**
+- Pagina grigio-freddo chiarissimo (`oklch ~0.965 0.004 250`), **card bianche pure**
+  con **ombra soffusa diffusa** (`0 1px 2px` + `0 8px 24px` a bassissima opacità)
+  al posto dei bordi hairline come separatore primario; bordo quasi invisibile di
+  rinforzo. Oggi: bordi-only, zero ombre → nuovo token `--elev-card/-raise/-overlay`.
+- Raggio: card **14–16px**, controlli 10px, bottoni e chip **pill** (oggi 6–8px).
+- **Tema scuro derivato** (il riferimento è light-only): grafite tinta blu
+  (`~0.14 0.01 250`) invece del nero puro, card `~0.18`, ombre sostituite da fill
+  elevato + bordo — stessa gerarchia, letta al buio. Resta «sala di controllo»,
+  ma accordata al nuovo hue.
+
+**Colore**
+- **Primario blu royal** (`~oklch 0.55 0.19 262`, dark: `~0.72 0.15 262`) per
+  azioni primarie, voce nav attiva, selezione, focus, link — sostituisce il teal
+  (il teal resta ai SITI generati: l'editor si distingue dal prodotto che produce).
+- Delta e stati: verde/rosso in **chip a tinta morbida** (pill bg 12-15% + testo
+  pieno, come i badge attuali ma pill); triade dati blu/verde/arancio per
+  ripartizioni (già così nei clienti del riferimento: Retailers/Distributors/
+  Wholesalers → nostre ripartizioni step/stati).
+- Semantici ok/warn/err: invariati nella logica, ritarati sul nuovo neutro.
+
+**Tipografia**
+- **Inter** via `next/font` (self-hosted, niente request esterne) al posto di
+  system-ui: è il carattere del riferimento e rende identici i due temi su ogni
+  macchina. Scala invariata (15px base, rem 1.125) — il riferimento è più arioso
+  ma PRODUCT.md impone densità da strumento: compromesso = padding card +4px,
+  form compatti come oggi. Numeri grandi delle KPI card: 28px bold tabulare.
+  Mono invariato per ID/slug/log/contatori.
+
+**Componenti chiave del riferimento → nostri**
+| Riferimento | Nostro uso |
+|---|---|
+| KPI stat card con delta chip | §5.1 card-filtro della dashboard clienti |
+| Sidebar bianca + voce attiva a pill | Shell §4 |
+| Search topbar con ⌘K | Ricerca clienti globale |
+| Tabella prodotti (ID mono, hover, valori colorati) | Lista clienti/run — stessa anatomia |
+| Bar chart giorno-attivo (una barra evidenziata) | Timeline fasi run fabbrica (5 tacche) |
+| Gauge radiale «on track» | NO (YAGNI: nessuna metrica a target) |
+| Widget «Add widget» drag&drop | NO (YAGNI: un operatore, layout fisso) |
+| **Card AI Assistant con sfera blu lucida** | **Conferma 1:1 l'estetica delle sfere agente (§6.4)**: gradiente radiale, highlight speculare, ombra colorata soffusa |
+| Card premium in fondo sidebar | Card «Agenti al lavoro» (§4 Shell) |
+| Bottone Export pill blu con icona | Anatomia del nuovo `btnPrimary` |
+
+**Cosa NON si copia** (bans di registro product): gauge decorativi, upsell,
+notifiche a campanella (la status bar è il nostro canale), avatar/multiutente,
+gradient text. Il numero-eroe gigante si usa SOLO nelle 4 KPI card della home.
+
+Le sonde visive generate (probe immagini) restano saltate: il harness non ha
+generazione immagini nativa; il riferimento fornito da Mattia svolge quel ruolo.
 
 ## 8. Piano Fase 2 (fette compatte, una per volta, ordine consigliato)
 
 | Fetta | Contenuto | Perché in quest'ordine |
 |---|---|---|
-| A. Fondamenta | lucide-react, motion, Button/Banner/EmptyState/Badge unico, Breadcrumb unico, z-scale, tastiera base | tutto il resto ci si appoggia |
-| B. Run in background | §6.1 (tee+detach+active+stop+zombie) | prerequisito status bar; fix del gap #1 |
-| C. Status bar agenti | §6.2-6.5 completa, entrambi i temi | il pezzo nuovo di valore |
-| D. Dashboard clienti | §5.1 (mini-pipeline, filtri, elimina, menu riga) | la pagina d'ingresso quotidiana |
-| E. Hub v2 | §5.2 (prossimo passo, meta, errori inline, azioni cliente) | completa il flusso di lavoro |
-| F. Coerenza schede | §4+§5.3-5.6 (vocabolario, post-conferma, dialoghi mancanti, rail copy, staleness dettagliata) | pulizia sistematica |
-| G. Fabbrica v2 | §5.7-5.9 | area a minor frequenza d'uso |
-| H. Re-skin dagli screenshot | §7 quando definita | solo token, in coda per non rifare due volte |
+| A. Fondamenta visive | token v2 dalla §7 (superfici/ombre/raggi/blu/Inter, ENTRAMBI i temi), lucide-react, motion, Button/Banner/EmptyState/Badge unico, Breadcrumb unico, z-scale, tastiera base | il nuovo linguaggio prima di tutto: ogni fetta dopo nasce già giusta |
+| B. Shell | sidebar + topbar con ⌘K + pagina Impostazioni/chiavi (§4 Shell) | cambia l'ossatura di ogni pagina; slot «Agenti al lavoro» pronto per C |
+| C. Run in background | §6.1 (tee+detach+active+stop+zombie) | prerequisito status bar; fix del gap #1 |
+| D. Status bar agenti | §6.2-6.5 completa + card sidebar, entrambi i temi | il pezzo nuovo di valore |
+| E. Dashboard clienti | §5.1 (KPI card-filtro, mini-pipeline, elimina, menu riga) | la pagina d'ingresso quotidiana |
+| F. Hub v2 | §5.2 (prossimo passo, meta, errori inline, azioni cliente) | completa il flusso di lavoro |
+| G. Coerenza schede | §4+§5.3-5.6 (vocabolario, post-conferma, dialoghi mancanti, rail copy, staleness dettagliata) | pulizia sistematica |
+| H. Fabbrica v2 | §5.7-5.9 | area a minor frequenza d'uso |
 
 Verifiche per fetta (standard handoff): `tsc --noEmit` + `npm run build` + E2E sui
 clienti reali + passata /impeccable critique/polish nel browser su ENTRAMBI i temi.
@@ -311,10 +376,13 @@ Commit autonomo a verifiche verdi (regola 7).
 
 ## 9. Questioni aperte per Mattia
 
-1. **Screenshot di riferimento** — attesi; sbloccano §7 (fetta H).
-2. **Eliminazione cliente e sito pubblicato**: se il cliente ha un deploy Cloudflare
-   attivo, eliminare i file locali NON spegne il sito online. Propongo: il dialog di
-   eliminazione lo dice esplicitamente («il sito su workers.dev resta online finché
-   non lo rimuovi da Cloudflare») — la rimozione remota è fuori scope. Confermi?
-3. **Notifiche di sistema macOS** a fine run (oltre alla barra): utili o rumore?
-   Default: no (YAGNI), la barra basta — si può aggiungere dopo.
+1. ~~Screenshot di riferimento~~ — **arrivati 2026-07-11**, direzione estratta in §7.
+2. **Eliminazione cliente e sito pubblicato**: eliminare i file locali NON spegne un
+   sito già online su Cloudflare. Default adottato (salvo veto): il dialog lo dice
+   esplicitamente («il sito su workers.dev resta online finché non lo rimuovi da
+   Cloudflare»); la rimozione remota è fuori scope.
+3. **Notifiche di sistema macOS** a fine run: default NO (YAGNI, la barra basta);
+   aggiungibili dopo.
+4. **Addio al teal nell'editor** (§7): il primario diventa il blu del riferimento,
+   il teal resta ai siti generati. Da confermare a voce se il teal aveva valore
+   affettivo di brand interno.
