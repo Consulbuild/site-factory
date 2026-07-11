@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { listPresets, listReferences, listRuns, referenceUsabile } from "@/lib/factory/state";
-import { Badge, formatDate } from "@/components/ui";
+import { Badge } from "@/components/ui";
 import { NuovaRun } from "@/components/fabbrica/nuova-run";
+import { RunsBrowser, type RunRow } from "@/components/fabbrica/runs-browser";
 
 export const dynamic = "force-dynamic";
 
@@ -69,43 +70,22 @@ export default async function FabbricaPage() {
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
           Run di fabbrica ({runs.length})
         </h2>
-        {runs.length === 0 ? (
-          <p className="mt-3 text-sm text-muted">
-            Nessuna run. Una run parte da almeno 3 riferimenti verificati e produce un candidato
-            preset che passa i gate (L1–L4) prima dell&apos;audit umano.
-          </p>
-        ) : (
-          <ul className="mt-3 divide-y divide-line card">
-            {runs.map((r) => (
-              <li key={r.runId} className="flex items-center gap-4 px-4 py-3">
-                <div className="min-w-0 flex-1">
-                  <Link href={`/fabbrica/run/${r.runId}`} className="mono font-medium hover:underline">
-                    {r.runId}
-                  </Link>
-                  <p className="mt-0.5 text-xs text-muted">
-                    {formatDate(r.creatoIl)} · {r.references.length} riferimenti
-                  </p>
-                </div>
-                <RunBadge stato={r.stato} />
-              </li>
-            ))}
-          </ul>
-        )}
+        <RunsBrowser
+          runs={runs.map(
+            (r): RunRow => ({
+              runId: r.runId,
+              stato: r.stato,
+              creatoIl: r.creatoIl,
+              nReferences: r.references.length,
+              fasi: r.fasi.map((f) => ({ nome: f.nome, esito: f.esito })),
+              durataMin: r.misure?.durataMin,
+              roundCritico: r.misure?.roundCritico,
+            }),
+          )}
+        />
         <NuovaRun usabili={usabili.map((r) => ({ id: r.id, url: r.meta.url }))} totale={references.length} />
       </section>
     </div>
   );
 }
 
-function RunBadge({ stato }: { stato: string }) {
-  const map: Record<string, { tone: "ok" | "warn" | "brand" | "err" | "idle"; label: string }> = {
-    creata: { tone: "idle", label: "Creata" },
-    in_corso: { tone: "brand", label: "In corso…" },
-    fallita: { tone: "err", label: "Fallita" },
-    da_audire: { tone: "warn", label: "Da audire" },
-    pubblicata: { tone: "ok", label: "Pubblicata" },
-    scartata: { tone: "idle", label: "Scartata" },
-  };
-  const { tone, label } = map[stato] ?? { tone: "idle" as const, label: stato };
-  return <Badge tone={tone}>{label}</Badge>;
-}

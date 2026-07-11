@@ -4,8 +4,10 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReferenceSummary } from "@/lib/factory/schemas";
-import { Badge, btnPrimary, btnGhost, formatDate } from "@/components/ui";
+import { Badge, OptoutBadge, btnPrimary, btnGhost, formatDate } from "@/components/ui";
 import { RunLog, type LogLine } from "@/components/use-step-run";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { Trash2 } from "lucide-react";
 
 // Registro riferimenti: form di aggiunta (attestazione legale OBBLIGATORIA),
 // verifica opt-out + estrazione in streaming NDJSON, lista con esiti.
@@ -20,6 +22,15 @@ export function RiferimentiBrowser({ references }: { references: ReferenceSummar
   const [log, setLog] = useState<LogLine[]>([]);
   const [errore, setErrore] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement | null>(null);
+  const [filtro, setFiltro] = useState<"tutti" | "usabili" | "bloccati">("tutti");
+  const [daEliminare, setDaEliminare] = useState<{ id: string; url: string } | null>(null);
+
+  async function elimina() {
+    if (!daEliminare) return;
+    await fetch(`/api/factory/references/${daEliminare.id}`, { method: "DELETE" }).catch(() => {});
+    setDaEliminare(null);
+    router.refresh();
+  }
 
   const append = (l: LogLine) =>
     setLog((prev) => {
@@ -206,9 +217,29 @@ export function RiferimentiBrowser({ references }: { references: ReferenceSummar
 
       {/* registro */}
       <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
-          Registro ({references.length})
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+            Registro ({references.length})
+          </h2>
+          <div className="flex items-center gap-2">
+            {([
+              ["tutti", "Tutti"],
+              ["usabili", "Usabili"],
+              ["bloccati", "Bloccati"],
+            ] as const).map(([k, label]) => (
+              <button
+                key={k}
+                onClick={() => setFiltro(k)}
+                aria-pressed={filtro === k}
+                className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-150 ${
+                  filtro === k ? "border-brand bg-brand-dim text-brand" : "border-line bg-surface text-muted hover:bg-raise"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
         {references.length === 0 ? (
           <p className="mt-3 text-sm text-muted">
             Nessun riferimento. Aggiungi il primo qui sopra: per una run di fabbrica ne servono
@@ -216,8 +247,27 @@ export function RiferimentiBrowser({ references }: { references: ReferenceSummar
           </p>
         ) : (
           <ul className="mt-3 divide-y divide-line card">
-            {references.map((r) => (
+            {references
+              .filter((r) =>
+                filtro === "usabili"
+                  ? r.optout?.esito === "consentito" && r.estratto
+                  : filtro === "bloccati"
+                    ? r.optout?.esito === "bloccato"
+                    : true,
+              )
+              .map((r) => (
               <li key={r.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+                {r.screenshots ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={`/api/factory/references/${r.id}`}
+                    alt=""
+                    loading="lazy"
+                    className="h-14 w-20 shrink-0 rounded-ctl border border-line bg-raise object-cover object-top"
+                  />
+                ) : (
+                  <span className="h-14 w-20 shrink-0 rounded-ctl border border-line bg-raise" aria-hidden />
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">
                     <a href={r.meta.url} target="_blank" rel="noreferrer" className="hover:underline">
@@ -243,18 +293,36 @@ export function RiferimentiBrowser({ references }: { references: ReferenceSummar
                 >
                   {running === r.id ? "In corso…" : "Riverifica"}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setDaEliminare({ id: r.id, url: r.meta.url })}
+                  className="flex size-8 items-center justify-center rounded-full text-muted transition-colors duration-150 hover:bg-err-bg hover:text-err"
+                  title="Elimina il riferimento…"
+                  aria-label={`Elimina ${r.meta.url}`}
+                >
+                  <Trash2 className="size-4" aria-hidden />
+                </button>
               </li>
             ))}
           </ul>
         )}
       </section>
+      <ConfirmDialog
+        open={daEliminare !== null}
+        title="Eliminare il riferimento?"
+        tone="danger"
+        message={
+          <>
+            <span className="mono">{daEliminare?.url}</span> esce dal registro (screenshot ed estrazione compresi). Un
+            URL con refuso si elimina e si ricrea: l&apos;id è l&apos;hash dell&apos;URL.
+          </>
+        }
+        confirmLabel="Elimina"
+        onConfirm={elimina}
+        onCancel={() => setDaEliminare(null)}
+      />
     </div>
   );
 }
 
-function OptoutBadge({ esito }: { esito: string | null }) {
-  if (esito === "consentito") return <Badge tone="ok">Opt-out: consentito</Badge>;
-  if (esito === "bloccato") return <Badge tone="err">BLOCCATO (opt-out TDM)</Badge>;
-  if (esito === "errore") return <Badge tone="warn">Non verificabile</Badge>;
-  return <Badge tone="idle">Da verificare</Badge>;
-}
+

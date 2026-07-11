@@ -2,7 +2,7 @@ import Link from "next/link";
 import fs from "node:fs";
 import path from "node:path";
 import { notFound } from "next/navigation";
-import { readRun } from "@/lib/factory/state";
+import { readRun, listPresets } from "@/lib/factory/state";
 import { runDir } from "@/lib/factory/paths";
 import { AuditEditor } from "@/components/fabbrica/audit-editor";
 import { Badge } from "@/components/ui";
@@ -38,7 +38,9 @@ export default async function AuditPage(ctx: { params: Promise<{ runId: string }
 
   // preset più vicino per tokenDiff = il confronto pairwise più severo
   const perPreset: Array<{ id: string; tokenDiff: number }> = novelty.vsLibreria?.perPreset ?? [];
-  const contro = [...perPreset].sort((a, b) => a.tokenDiff - b.tokenDiff)[0]?.id ?? "meridian";
+  const vicino = [...perPreset].sort((a, b) => a.tokenDiff - b.tokenDiff)[0];
+  const contro = vicino?.id ?? "meridian";
+  const controVersion = listPresets().find((pr) => pr.id === contro)?.version ?? "1.0.0";
 
   const pos = motivazioni?.posizionamento ?? {};
   const fam = (k: string) => candidato[k]?.$value ?? "";
@@ -62,7 +64,7 @@ export default async function AuditPage(ctx: { params: Promise<{ runId: string }
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Audit pairwise</h1>
           <p className="mono mt-1 text-sm text-muted">
-            {run.runId} · contro <strong>{contro}</strong> (il più vicino per tokenDiff) · stesso golden content
+            {run.runId} · contro <strong>{contro}</strong> (il più vicino: tokenDiff {vicino ? vicino.tokenDiff.toFixed(3) : "n/d"}) · stesso golden content
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -80,7 +82,7 @@ export default async function AuditPage(ctx: { params: Promise<{ runId: string }
         </p>
       )}
 
-      <AuditEditor runId={runId} stato={run.stato} contro={contro} controVersion="1.0.0" prefill={prefill} />
+      <AuditEditor runId={runId} stato={run.stato} contro={contro} controVersion={controVersion} prefill={prefill} />
     </div>
   );
 }

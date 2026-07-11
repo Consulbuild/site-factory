@@ -1,7 +1,10 @@
+import fs from "node:fs";
+import path from "node:path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { readRun, readReference } from "@/lib/factory/state";
-import { Badge, formatDate } from "@/components/ui";
+import { runDir } from "@/lib/factory/paths";
+import { Badge, FaseBadge, formatDate, Breadcrumb, btnSecondary } from "@/components/ui";
 import { RunRunner } from "@/components/fabbrica/run-runner";
 
 export const dynamic = "force-dynamic";
@@ -14,8 +17,29 @@ const NOMI_FASE: Record<string, string> = {
   critico: "Critico visivo (L4, max 3 round)",
 };
 
-// Dettaglio run di fabbrica: timeline delle fasi. L'esecuzione arriva con M6 —
-// qui lo stato è sempre leggibile e la run è riprendibile dalla fase fallita.
+/** Ultimo motivo di fallimento persistito nel run.ndjson (tee del bus). */
+function motivoFallimento(dir: string): string | null {
+  try {
+    const file = path.join(dir, "run.ndjson");
+    if (!fs.existsSync(file)) return null;
+    const righe = fs.readFileSync(file, "utf8").trim().split("\n");
+    for (let i = righe.length - 1; i >= 0; i--) {
+      try {
+        const ev = JSON.parse(righe[i]);
+        if (ev.type === "error") return String(ev.message);
+      } catch {
+        /* riga troncata */
+      }
+    }
+  } catch {
+    /* log illeggibile */
+  }
+  return null;
+}
+
+// Dettaglio run di fabbrica: timeline fasi, screenshot del candidato appena
+// esistono, metriche e motivo del fallimento persistito (non più solo nello
+// stream perso). La run è riprendibile dalla fase fallita, o fermabile.
 export default async function RunPage(ctx: { params: Promise<{ runId: string }> }) {
   const { runId } = await ctx.params;
   let run;
@@ -27,24 +51,38 @@ export default async function RunPage(ctx: { params: Promise<{ runId: string }> 
   if (!run) notFound();
 
   const refs = run.references.map((id) => ({ id, ref: readReference(id) }));
+  const dir = runDir(runId);
+  const shotsDir = path.join(dir, "shots");
+  const shots = fs.existsSync(shotsDir) ? fs.readdirSync(shotsDir).filter((f) => f.endsWith(".jpg")) : [];
+  const motivo = run.stato === "fallita" ? motivoFallimento(dir) : null;
 
   return (
     <div className="space-y-8">
-      <div className="flex items-baseline justify-between">
-        <div>
-          <h1 className="mono text-xl font-semibold tracking-tight">{run.runId}</h1>
-          <p className="mt-1 text-sm text-muted">Creata il {formatDate(run.creatoIl)}</p>
-        </div>
-        <Link href="/fabbrica" className="text-sm text-muted hover:text-ink">
+      <nav className="flex items-center justify-between gap-4">
+        <Breadcrumb items={[{ label: "Fabbrica", href: "/fabbrica" }, { label: run.runId }]} />
+        <Link href="/fabbrica" className={`${btnSecondary} shrink-0`}>
           ← Fabbrica
         </Link>
+      </nav>
+      <div className="!mt-4">
+        <h1 className="mono text-xl font-semibold tracking-tight">{run.runId}</h1>
+        <p className="mt-1 text-sm text-muted">
+          Creata il {formatDate(run.creatoIl)}
+          {run.misure?.durataMin !== undefined && ` · ultima esecuzione ${run.misure.durataMin} min`}
+          {run.misure?.roundCritico !== undefined && ` · critico ×${run.misure.roundCritico}`}
+        </p>
       </div>
 
+      {motivo && (
+        <div className="rounded-ctl border border-err/40 bg-err-bg px-4 py-3 text-sm text-err">
+          <p className="font-medium">Motivo del fallimento</p>
+          <p className="mt-1 whitespace-pre-wrap">{motivo}</p>
+        </div>
+      )}
+
       <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
-          Riferimenti ({refs.length})
-        </h2>
-        <ul className="mt-3 divide-y divide-line card">
+        <h2 className="text-sm font-semibold tracking-wide text-muted uppercase">Riferimenti ({refs.length})</h2>
+        <ul className="card mt-3 divide-y divide-line">
           {refs.map(({ id, ref }) => (
             <li key={id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
               <span className="mono min-w-0 flex-1 truncate">{ref?.meta.url ?? id}</span>
@@ -59,8 +97,8 @@ export default async function RunPage(ctx: { params: Promise<{ runId: string }> 
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">Fasi</h2>
-        <ol className="mt-3 divide-y divide-line card">
+        <h2 className="text-sm font-semibold tracking-wide text-muted uppercase">Fasi</h2>
+        <ol className="card mt-3 divide-y divide-line">
           {run.fasi.map((f, i) => (
             <li key={f.nome} className="flex items-center gap-4 px-4 py-3">
               <span className="mono text-xs text-muted">{i + 1}</span>
@@ -72,7 +110,7 @@ export default async function RunPage(ctx: { params: Promise<{ runId: string }> 
         <div className="mt-4">
           <RunRunner runId={run.runId} stato={run.stato} />
         </div>
-        {(run.stato === "da_audire" || run.stato === "pubblicata") && (
+        {(run.stato === "da_audire" || run.stato === "pubblicata" || run.stato === "scartata") && (
           <div className="mt-4 flex justify-end">
             <Link href={`/fabbrica/run/${run.runId}/audit`} className="text-sm text-brand hover:underline">
               {run.stato === "da_audire" ? "Vai all'audit pairwise →" : "Rivedi l'audit →"}
@@ -80,13 +118,28 @@ export default async function RunPage(ctx: { params: Promise<{ runId: string }> 
           </div>
         )}
       </section>
+
+      {shots.length > 0 && (
+        <section>
+          <h2 className="text-sm font-semibold tracking-wide text-muted uppercase">
+            Screenshot del candidato ({shots.length})
+          </h2>
+          <ul className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {shots.map((f) => (
+              <li key={f} className="card overflow-hidden p-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/api/factory/runs/${run.runId}/shots/${f}`}
+                  alt={`Screenshot ${f}`}
+                  loading="lazy"
+                  className="aspect-[4/3] w-full bg-raise object-cover object-top"
+                />
+                <p className="mono px-2.5 py-1.5 text-[11px] text-muted">{f}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
-}
-
-function FaseBadge({ esito }: { esito: string }) {
-  if (esito === "ok") return <Badge tone="ok">ok</Badge>;
-  if (esito === "in_corso") return <Badge tone="brand">In corso…</Badge>;
-  if (esito === "fallita") return <Badge tone="err">Fallita</Badge>;
-  return <Badge tone="idle">In attesa</Badge>;
 }

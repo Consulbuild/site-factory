@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { btnPrimary } from "@/components/ui";
+import { btnPrimary, btnDanger } from "@/components/ui";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { RunLog, type LogLine } from "@/components/use-step-run";
 
 // Esecuzione di una run di fabbrica: un bottone, log streaming, refresh della
@@ -13,7 +14,14 @@ export function RunRunner({ runId, stato }: { runId: string; stato: string }) {
   const [running, setRunning] = useState(false);
   const [log, setLog] = useState<LogLine[]>([]);
   const [errore, setErrore] = useState<string | null>(null);
+  const [chiediStop, setChiediStop] = useState(false);
   const logRef = useRef<HTMLDivElement | null>(null);
+
+  async function ferma() {
+    setChiediStop(false);
+    await fetch(`/api/factory/runs/${runId}/run`, { method: "DELETE" }).catch(() => {});
+    router.refresh();
+  }
 
   const append = (l: LogLine) =>
     setLog((prev) => {
@@ -73,11 +81,27 @@ export function RunRunner({ runId, stato }: { runId: string; stato: string }) {
           <p className="text-xs text-muted">
             Le fasi ripartono dalla prima non conclusa; ogni fallimento lascia il motivo nel report.
           </p>
-          <button type="button" className={btnPrimary} onClick={esegui} disabled={running}>
-            {running ? "In esecuzione…" : stato === "fallita" ? "Riprendi run" : "Esegui run"}
-          </button>
+          <div className="flex items-center gap-2">
+            {running && (
+              <button type="button" className={btnDanger} onClick={() => setChiediStop(true)}>
+                Ferma
+              </button>
+            )}
+            <button type="button" className={btnPrimary} onClick={esegui} disabled={running}>
+              {running ? "In esecuzione…" : stato === "fallita" ? "Riprendi run" : "Esegui run"}
+            </button>
+          </div>
         </div>
       )}
+      <ConfirmDialog
+        open={chiediStop}
+        title="Fermare la run?"
+        message="I processi in corso vengono interrotti e la run passa a 'fallita': potrai riprenderla dalla fase interrotta."
+        confirmLabel="Ferma la run"
+        tone="danger"
+        onConfirm={ferma}
+        onCancel={() => setChiediStop(false)}
+      />
       {errore && (
         <p className="rounded-ctl bg-err-bg px-3 py-2 text-sm text-err" role="alert">
           {errore}

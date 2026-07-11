@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { btnPrimary, btnSecondary, btnGhost } from "@/components/ui";
 import { RunLog, type LogLine } from "@/components/use-step-run";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 // Audit pairwise (M7): candidato vs preset più vicino, stesso golden content,
 // DOPPIO ordine (AB e BA) per togliere il bias di posizione — i lati sono
@@ -43,6 +44,9 @@ export function AuditEditor({
   const [shot, setShot] = useState(SHOTS[0]);
   const [scelte, setScelte] = useState<{ AB?: string; BA?: string }>({});
   const [meta, setMeta] = useState(prefill);
+  const [photoSpecText, setPhotoSpecText] = useState(() => JSON.stringify(prefill.photographySpec, null, 2));
+  const [fluxStyleFragment, setFluxStyleFragment] = useState("");
+  const [chiediScarto, setChiediScarto] = useState(false);
   const [note, setNote] = useState("");
   const [decisoDa, setDecisoDa] = useState("Mattia");
   const [inCorso, setInCorso] = useState(false);
@@ -77,6 +81,14 @@ export function AuditEditor({
     setErrore(null);
     setLog([]);
     try {
+      let photographySpec: Record<string, string> = meta.photographySpec;
+      if (decisione === "approva") {
+        try {
+          photographySpec = JSON.parse(photoSpecText);
+        } catch {
+          throw new Error("photographySpec non è JSON valido");
+        }
+      }
       const body = {
         decisione,
         confronti: confronti
@@ -107,7 +119,8 @@ export function AuditEditor({
                   serifHeading: meta.serifHeading,
                   serifBody: meta.serifBody,
                 },
-                photographySpec: meta.photographySpec,
+                photographySpec,
+                fluxStyleFragment: fluxStyleFragment.trim() || undefined,
               }
             : undefined,
       };
@@ -192,7 +205,12 @@ export function AuditEditor({
                 <img
                   src={(lato === "sinistra" ? c.sinistra : c.destra)(shot)}
                   alt={`${lato} — ${shot}`}
-                  className="w-full"
+                  loading="lazy"
+                  className="min-h-24 w-full bg-raise"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.minHeight = "6rem";
+                    (e.target as HTMLImageElement).alt = "screenshot mancante";
+                  }}
                 />
                 <figcaption className="flex items-center justify-between px-3 py-2">
                   <span className="text-xs uppercase tracking-wide text-muted">{lato}</span>
@@ -247,6 +265,43 @@ export function AuditEditor({
             <label className="text-sm">
               <span className="text-muted">Font label *</span>
               <input value={meta.fontLabel} onChange={(e) => setMeta({ ...meta, fontLabel: e.target.value })} className="mt-1.5 w-full" disabled={inCorso} />
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={meta.serifHeading}
+                onChange={(e) => setMeta({ ...meta, serifHeading: e.target.checked })}
+                disabled={inCorso}
+              />
+              <span>Titoli serif (editor)</span>
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={meta.serifBody}
+                onChange={(e) => setMeta({ ...meta, serifBody: e.target.checked })}
+                disabled={inCorso}
+              />
+              <span>Body serif (editor)</span>
+            </label>
+            <label className="text-sm sm:col-span-2">
+              <span className="text-muted">photographySpec (JSON — guida fotografica per le skill immagini)</span>
+              <textarea
+                value={photoSpecText}
+                onChange={(e) => setPhotoSpecText(e.target.value)}
+                rows={4}
+                className="mono mt-1.5 w-full"
+                disabled={inCorso}
+              />
+            </label>
+            <label className="text-sm sm:col-span-2">
+              <span className="text-muted">fluxStyleFragment (frammento di stile per i prompt FLUX, opzionale)</span>
+              <input
+                value={fluxStyleFragment}
+                onChange={(e) => setFluxStyleFragment(e.target.value)}
+                className="mono mt-1.5 w-full"
+                disabled={inCorso}
+              />
             </label>
             <label className="text-sm">
               <span className="text-muted">Settori consigliati (virgole)</span>
@@ -306,9 +361,21 @@ export function AuditEditor({
 
       {!chiuso && (
         <div className="flex items-center justify-between">
-          <button type="button" className={btnGhost} onClick={() => salva("scarta")} disabled={inCorso || !confrontiFatti}>
+          <button type="button" className={btnGhost} onClick={() => setChiediScarto(true)} disabled={inCorso || !confrontiFatti}>
             Scarta candidato
           </button>
+          <ConfirmDialog
+            open={chiediScarto}
+            title="Scartare il candidato?"
+            message="La run si chiude come 'scartata' e il candidato non entra in libreria. La decisione è definitiva (l'audit resta come prova)."
+            confirmLabel="Scarta il candidato"
+            tone="danger"
+            onConfirm={() => {
+              setChiediScarto(false);
+              salva("scarta");
+            }}
+            onCancel={() => setChiediScarto(false)}
+          />
           <button
             type="button"
             className={btnPrimary}
