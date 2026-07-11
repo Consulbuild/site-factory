@@ -47,7 +47,7 @@ function Flags({ campo }: { campo: string }) {
       {own.map((f) => (
         <div
           key={f}
-          className="col-start-2 flex items-start justify-between gap-3 rounded-md bg-warn-bg px-3 py-2 text-sm text-warn"
+          className="col-start-2 flex items-start justify-between gap-3 rounded-ctl bg-warn-bg px-3 py-2 text-sm text-warn"
         >
           <span>⚠ {f}</span>
           <button type="button" className="shrink-0 text-xs underline hover:no-underline" onClick={() => risolvi(f)}>
@@ -162,7 +162,7 @@ export function IntakeForm({
         Correggi qui i dati prima di passarli agli agenti: ogni campo salvato riscrive brief e slot in modo coerente.
       </p>
       {flags.length > 0 && (
-        <div className="mt-5 rounded-lg border border-warn/30 bg-warn-bg px-4 py-3 text-sm text-warn">
+        <div className="mt-5 rounded-ctl border border-warn/30 bg-warn-bg px-4 py-3 text-sm text-warn">
           ⚠ {flags.length === 1 ? "1 punto da verificare" : `${flags.length} punti da verificare`} — sono segnalati
           accanto ai campi. Correggi il valore e premi «Risolto».
           {flagsOrfani.map((f) => (

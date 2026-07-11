@@ -116,7 +116,7 @@ export function RiferimentiBrowser({ references }: { references: ReferenceSummar
       </div>
 
       {/* form di aggiunta — l'azione primaria della pagina */}
-      <form onSubmit={aggiungi} className="rounded-lg border border-line bg-surface p-5">
+      <form onSubmit={aggiungi} className="card p-5">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="sm:col-span-2 text-sm">
             <span className="text-muted">URL del sito *</span>
@@ -198,7 +198,7 @@ export function RiferimentiBrowser({ references }: { references: ReferenceSummar
       </form>
 
       {errore && (
-        <p className="rounded-md bg-err-bg px-3 py-2 text-sm text-err" role="alert">
+        <p className="rounded-ctl bg-err-bg px-3 py-2 text-sm text-err" role="alert">
           {errore}
         </p>
       )}
@@ -215,7 +215,7 @@ export function RiferimentiBrowser({ references }: { references: ReferenceSummar
             almeno 3, eterogenei.
           </p>
         ) : (
-          <ul className="mt-3 divide-y divide-line rounded-lg border border-line">
+          <ul className="mt-3 divide-y divide-line card">
             {references.map((r) => (
               <li key={r.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
                 <div className="min-w-0 flex-1">

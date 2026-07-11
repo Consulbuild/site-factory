@@ -74,7 +74,7 @@ export default async function AuditPage(ctx: { params: Promise<{ runId: string }
       </div>
 
       {pos.corsia && (
-        <p className="rounded-lg border border-line bg-surface px-4 py-3 text-sm text-muted">
+        <p className="card px-4 py-3 text-sm text-muted">
           <strong className="text-ink">Corsia dichiarata dal designer:</strong> {pos.corsia}
           {pos.percheNuovo ? ` — ${pos.percheNuovo}` : ""}
         </p>

@@ -12,12 +12,12 @@ export function ContestoRunner({ slug, intakeOk, errore }: { slug: string; intak
   return (
     <div className="mt-8">
       {!intakeOk && (
-        <p className="mb-4 rounded-md bg-warn-bg px-4 py-2.5 text-sm text-warn">
+        <p className="mb-4 rounded-ctl bg-warn-bg px-4 py-2.5 text-sm text-warn">
           Prima verifica i dati dell&apos;intake: il contesto si genera dai dati corretti.
         </p>
       )}
       {err && (
-        <div className="mb-4 rounded-md bg-err-bg px-4 py-3 text-sm text-err">
+        <div className="mb-4 rounded-ctl bg-err-bg px-4 py-3 text-sm text-err">
           <p className="font-medium">Generazione fallita</p>
           <p className="mt-1 whitespace-pre-wrap">{err}</p>
         </div>

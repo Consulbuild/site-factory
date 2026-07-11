@@ -191,7 +191,7 @@ export function ContestoEditor({
         </div>
       ) : (
         drift.length > 0 && (
-          <div className="mt-4 rounded-lg border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
+          <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
             <p className="font-medium text-warn">⚠ L&apos;intake è cambiato dopo la generazione del contesto</p>
             <p className="mt-1 text-warn/90">
               Campi cambiati: <strong>{drift.join(", ")}</strong>. Le parti derivate (identità, servizi, punti di forza,
@@ -221,7 +221,7 @@ export function ContestoEditor({
       )}
 
       {verificato && (
-        <p className="mt-4 mb-2 rounded-md bg-ok-bg px-4 py-2 text-sm text-ok">✓ Contesto confermato. Puoi ancora modificarlo.</p>
+        <p className="mt-4 mb-2 rounded-ctl bg-ok-bg px-4 py-2 text-sm text-ok">✓ Contesto confermato. Puoi ancora modificarlo.</p>
       )}
 
       {/* IDENTITÀ */}
@@ -252,7 +252,7 @@ export function ContestoEditor({
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <span className="text-xs text-muted">Macro-categorie ({macros.length}/5):</span>
           {macros.map((m) => (
-            <span key={m.id} className="inline-flex items-center gap-1 rounded-md border border-line bg-surface px-1.5 py-0.5">
+            <span key={m.id} className="inline-flex items-center gap-1 rounded-ctl border border-line bg-surface px-1.5 py-0.5">
               <input
                 value={m.nome}
                 onChange={(e) => rinominaMacro(m.id, e.target.value)}
@@ -272,12 +272,12 @@ export function ContestoEditor({
         </div>
 
         {scoperti.length > 0 && (
-          <p className="mb-2 rounded-md bg-warn-bg px-3 py-1.5 text-sm text-warn">
+          <p className="mb-2 rounded-ctl bg-warn-bg px-3 py-1.5 text-sm text-warn">
             ⚠ {scoperti.length} {scoperti.length === 1 ? "servizio senza" : "servizi senza"} macro-categoria — assegnali per poter confermare.
           </p>
         )}
 
-        <div className="overflow-hidden rounded-lg border border-line">
+        <div className="overflow-hidden card">
           {servizi.map((s, i) => (
             <div
               key={i}
@@ -458,7 +458,7 @@ function TagList({ tags, tone, onChange }: { tags: string[]; tone: "ok" | "err";
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {tags.map((t, i) => (
-        <span key={i} className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-sm ${cls}`}>
+        <span key={i} className={`inline-flex items-center gap-1 rounded-ctl px-2 py-0.5 text-sm ${cls}`}>
           {t}
           <button type="button" className="opacity-60 hover:opacity-100" onClick={() => onChange(tags.filter((_, j) => j !== i))}>
             ✕

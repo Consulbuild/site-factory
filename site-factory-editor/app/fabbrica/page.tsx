@@ -34,7 +34,7 @@ export default async function FabbricaPage() {
         </h2>
         <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {presets.map((p) => (
-            <li key={p.id} className="rounded-lg border border-line bg-surface p-4">
+            <li key={p.id} className="card p-4">
               <div className="flex items-center justify-between gap-2">
                 <p className="font-semibold">{p.nome}</p>
                 <div className="flex items-center gap-2">
@@ -75,7 +75,7 @@ export default async function FabbricaPage() {
             preset che passa i gate (L1–L4) prima dell&apos;audit umano.
           </p>
         ) : (
-          <ul className="mt-3 divide-y divide-line rounded-lg border border-line">
+          <ul className="mt-3 divide-y divide-line card">
             {runs.map((r) => (
               <li key={r.runId} className="flex items-center gap-4 px-4 py-3">
                 <div className="min-w-0 flex-1">

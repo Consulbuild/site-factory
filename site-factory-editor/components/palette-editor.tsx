@@ -165,7 +165,7 @@ export function PaletteEditor({
         </div>
       ) : (
         stale && (
-          <div className="mt-4 rounded-lg border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
+          <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
             <p className="font-medium text-warn">⚠ Il contesto è cambiato dopo la generazione della palette</p>
             <p className="mt-1 text-warn/90">
               Settore, tono o colori del cliente potrebbero essere diversi: controlla che preset e colori siano ancora
@@ -191,7 +191,7 @@ export function PaletteEditor({
       )}
 
       {verificato && (
-        <p className="mt-4 rounded-md bg-ok-bg px-4 py-2 text-sm text-ok">✓ Palette confermata. Puoi ancora modificarla.</p>
+        <p className="mt-4 rounded-ctl bg-ok-bg px-4 py-2 text-sm text-ok">✓ Palette confermata. Puoi ancora modificarla.</p>
       )}
 
       <div className="mt-6 flex flex-col gap-8 lg:flex-row">
@@ -214,7 +214,7 @@ export function PaletteEditor({
               </option>
             ))}
           </select>
-          <div className="mt-2 rounded-md border border-line bg-surface px-3 py-2.5 text-sm">
+          <div className="mt-2 rounded-ctl border border-line bg-surface px-3 py-2.5 text-sm">
             <p className="text-ink">{p.estetica}</p>
             <p className="mt-1.5 flex items-center gap-2 text-muted">
               <span className="inline-flex overflow-hidden rounded border border-line">
@@ -247,7 +247,7 @@ export function PaletteEditor({
           {/* CONTRASTO */}
           <h2 className="mt-6 mb-2 text-xs font-semibold tracking-wide text-faint uppercase">Contrasto WCAG AA</h2>
           {!hexOk && <p className="text-sm text-err">Inserisci colori hex a 6 cifre (es. #b0561a).</p>}
-          <ul className="divide-y divide-line rounded-md border border-line text-sm">
+          <ul className="divide-y divide-line rounded-ctl border border-line text-sm">
             {pairs.map((c) => (
               <li key={c.label} className="px-3 py-2">
                 <div className="flex items-center justify-between gap-3">
@@ -264,7 +264,7 @@ export function PaletteEditor({
                     <span className="text-xs">Il minimo AA non è rispettato: correggi la tinta.</span>
                     <button
                       type="button"
-                      className="rounded-md bg-err-bg px-2 py-1 text-xs font-medium hover:opacity-80"
+                      className="rounded-ctl bg-err-bg px-2 py-1 text-xs font-medium hover:opacity-80"
                       onClick={() => {
                         const fixed = fixUntilPass(c.fg, c.bg, c.need);
                         if (fixed) {
@@ -318,7 +318,7 @@ function ColorField({ id, label, value, onChange }: { id: string; label: string;
           aria-label={`${label} (selettore)`}
           value={isHex6(value) ? value : "#888888"}
           onChange={(e) => onChange(e.target.value)}
-          className="h-9 w-12 shrink-0 cursor-pointer rounded-md border border-field bg-surface p-1"
+          className="h-9 w-12 shrink-0 cursor-pointer rounded-ctl border border-field bg-surface p-1"
         />
         <input id={id} value={value} onChange={(e) => onChange(e.target.value.trim())} className="mono" spellCheck={false} />
       </div>
@@ -341,7 +341,7 @@ function Preview({ preset, primary, accent }: { preset: PresetKey; primary: stri
     <div className="min-w-0 flex-1">
       {/* React 19 issa il link nel <head>; carica solo i font del preset attivo. */}
       <link rel="stylesheet" href={p.fontsHref} precedence="default" />
-      <div className="overflow-hidden rounded-lg border border-line">
+      <div className="overflow-hidden card">
         <section className="px-8 py-10" style={{ background: p.neutri.bg, color: p.neutri.ink, fontFamily: p.fontBody }}>
           <Eyebrow accent={accent}>Impresa edile · {p.nome}</Eyebrow>
           <h2 className="mt-3 text-3xl leading-tight font-bold text-balance" style={{ fontFamily: p.fontHeading }}>
@@ -351,14 +351,14 @@ function Preview({ preset, primary, accent }: { preset: PresetKey; primary: stri
             Costruzione e ristrutturazione con un unico referente, dal progetto alla consegna.
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-4">
-            <span className="rounded-md px-4 py-2 text-sm font-semibold" style={{ background: primary, color: "#ffffff" }}>
+            <span className="rounded-ctl px-4 py-2 text-sm font-semibold" style={{ background: primary, color: "#ffffff" }}>
               Preventivo gratuito
             </span>
             <span className="text-sm font-medium underline underline-offset-4" style={{ color: accent }}>
               I nostri servizi
             </span>
           </div>
-          <div className="mt-6 rounded-md px-4 py-3 text-sm" style={{ background: p.neutri.surface }}>
+          <div className="mt-6 rounded-ctl px-4 py-3 text-sm" style={{ background: p.neutri.surface }}>
             Card su superficie del preset — testo secondario di prova.
           </div>
         </section>
@@ -368,7 +368,7 @@ function Preview({ preset, primary, accent }: { preset: PresetKey; primary: stri
             Il ritmo <span style={{ color: accent }}>scuro/chiaro</span> dello standard
           </h3>
           <div className="mt-4">
-            <span className="rounded-md px-4 py-2 text-sm font-semibold" style={{ background: primary, color: "#ffffff" }}>
+            <span className="rounded-ctl px-4 py-2 text-sm font-semibold" style={{ background: primary, color: "#ffffff" }}>
               Contattaci
             </span>
           </div>

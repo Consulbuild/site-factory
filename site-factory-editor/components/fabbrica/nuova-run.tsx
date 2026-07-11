@@ -42,7 +42,7 @@ export function NuovaRun({ usabili, totale }: { usabili: { id: string; url: stri
   }
 
   return (
-    <div className="mt-4 rounded-lg border border-line bg-surface p-5">
+    <div className="mt-4 card p-5">
       <h3 className="text-sm font-semibold">Nuova run</h3>
       {usabili.length === 0 ? (
         <p className="mt-2 text-sm text-muted">
@@ -67,7 +67,7 @@ export function NuovaRun({ usabili, totale }: { usabili: { id: string; url: stri
             ))}
           </ul>
           {errore && (
-            <p className="mt-3 rounded-md bg-err-bg px-3 py-2 text-sm text-err" role="alert">
+            <p className="mt-3 rounded-ctl bg-err-bg px-3 py-2 text-sm text-err" role="alert">
               {errore}
             </p>
           )}

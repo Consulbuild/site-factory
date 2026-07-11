@@ -331,7 +331,7 @@ export function CopyEditor({
       ) : (
         <>
           {stale && (
-            <div className="mt-4 rounded-lg border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
+            <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
               <p className="font-medium text-warn">⚠ Il contesto è cambiato dopo la generazione del copy</p>
               <p className="mt-1 text-warn/90">
                 Macro-categorie, promesse o identità potrebbero essere diverse: i testi derivati potrebbero non
@@ -368,7 +368,7 @@ export function CopyEditor({
       )}
 
       {serverErrors.length > 0 && (
-        <div className="mt-4 rounded-lg border border-err/40 bg-err-bg px-4 py-3 text-sm">
+        <div className="mt-4 rounded-ctl border border-err/40 bg-err-bg px-4 py-3 text-sm">
           <p className="font-medium text-err">Contratto di formato non rispettato ({serverErrors.length})</p>
           <ul className="mt-1.5 space-y-1">
             {serverErrors.map((e, i) => {
@@ -389,7 +389,7 @@ export function CopyEditor({
       )}
 
       {verificato && (
-        <p className="mt-4 rounded-md bg-ok-bg px-4 py-2 text-sm text-ok">✓ Copy confermato. Puoi ancora modificarlo.</p>
+        <p className="mt-4 rounded-ctl bg-ok-bg px-4 py-2 text-sm text-ok">✓ Copy confermato. Puoi ancora modificarlo.</p>
       )}
 
       <div className="mx-auto max-w-3xl">
@@ -557,7 +557,7 @@ function BulletChips({ value, max, onChange }: { value: string[]; max: number; o
       {value.map((b, i) => (
         <span
           key={i}
-          className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-sm ${b.length > 36 ? "bg-err-bg text-err" : "bg-surface text-ink"}`}
+          className={`inline-flex items-center gap-1 rounded-ctl px-2 py-0.5 text-sm ${b.length > 36 ? "bg-err-bg text-err" : "bg-surface text-ink"}`}
           title={b.length > 36 ? `${b.length}/36 caratteri: troppo lunga` : `${b.length}/36`}
         >
           {b}
@@ -613,7 +613,7 @@ function ArrayRows({
   return (
     <div className="space-y-3">
       {Array.from({ length: n }, (_, i) => (
-        <div key={i} className="rounded-lg border border-line bg-surface/50 p-3">
+        <div key={i} className="card p-3">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-xs font-semibold text-faint">
               {noun} {i + 1}
@@ -690,7 +690,7 @@ function CriticPanel({
   goto: (slot: string) => void;
 }) {
   return (
-    <div className="mt-4 rounded-lg border border-line bg-surface px-4 py-3">
+    <div className="mt-4 card px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-sm">
           <span className="font-medium">Critico avversariale</span>
@@ -743,7 +743,7 @@ function CoveragePanel({
   const { scoperti, extranei, cardFantasma } = checkCoperturaCopy(contestoServizi, coverage.voci_atomiche, cardTitles);
 
   return (
-    <details className="mt-3 rounded-lg border border-line bg-surface/50 px-4 py-3">
+    <details className="mt-3 card px-4 py-3">
       <summary className="cursor-pointer text-sm font-medium">
         Copertura servizi ({coverage.voci_atomiche.length} voci → {coverage.card.length} card)
         {(scoperti.length > 0 || extranei.length > 0 || cardFantasma.length > 0) && (
@@ -751,17 +751,17 @@ function CoveragePanel({
         )}
       </summary>
       {scoperti.length > 0 && (
-        <p className="mt-2 rounded-md bg-warn-bg px-3 py-1.5 text-sm text-warn">
+        <p className="mt-2 rounded-ctl bg-warn-bg px-3 py-1.5 text-sm text-warn">
           Nel contesto ma non in copertura: {scoperti.join(" · ")}
         </p>
       )}
       {extranei.length > 0 && (
-        <p className="mt-2 rounded-md bg-warn-bg px-3 py-1.5 text-sm text-warn">
+        <p className="mt-2 rounded-ctl bg-warn-bg px-3 py-1.5 text-sm text-warn">
           In copertura ma non nel contesto: {extranei.join(" · ")}
         </p>
       )}
       {cardFantasma.length > 0 && (
-        <p className="mt-2 rounded-md bg-warn-bg px-3 py-1.5 text-sm text-warn">
+        <p className="mt-2 rounded-ctl bg-warn-bg px-3 py-1.5 text-sm text-warn">
           Card in copertura assenti dalle card correnti: {cardFantasma.join(" · ")}
         </p>
       )}

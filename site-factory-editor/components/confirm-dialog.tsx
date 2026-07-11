@@ -43,7 +43,7 @@ export function ConfirmDialog({
 
   const confirmClass =
     tone === "danger"
-      ? "inline-flex items-center gap-2 rounded-md bg-err px-3.5 py-1.5 text-sm font-semibold text-white transition-opacity duration-150 hover:opacity-90"
+      ? "inline-flex items-center gap-2 rounded-ctl bg-err px-3.5 py-1.5 text-sm font-semibold text-white transition-opacity duration-150 hover:opacity-90"
       : btnPrimary;
 
   return (

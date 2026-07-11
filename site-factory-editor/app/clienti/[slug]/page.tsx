@@ -59,7 +59,7 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
         </p>
       </header>
 
-      <ol className="mt-8 divide-y divide-line rounded-lg border border-line">
+      <ol className="mt-8 divide-y divide-line card">
         <li className="flex items-center gap-4 px-4 py-3.5">
           <span className="mono w-5 text-muted">1</span>
           <span className="flex-1 font-medium">Intake</span>
@@ -78,7 +78,7 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
             </Link>
           ) : (
             <span
-              className="cursor-not-allowed rounded-md border border-line px-3.5 py-1.5 text-sm text-faint"
+              className="cursor-not-allowed rounded-ctl border border-line px-3.5 py-1.5 text-sm text-faint"
               title="Prima verifica i dati dell'intake: il contesto si genera dai dati corretti."
             >
               Genera contesto
@@ -96,7 +96,7 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
             </Link>
           ) : (
             <span
-              className="cursor-not-allowed rounded-md border border-line px-3.5 py-1.5 text-sm text-faint"
+              className="cursor-not-allowed rounded-ctl border border-line px-3.5 py-1.5 text-sm text-faint"
               title="Prima conferma il contesto: la palette si progetta sul contesto curato."
             >
               Genera palette
@@ -115,7 +115,7 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
             </Link>
           ) : (
             <span
-              className="cursor-not-allowed rounded-md border border-line px-3.5 py-1.5 text-sm text-faint"
+              className="cursor-not-allowed rounded-ctl border border-line px-3.5 py-1.5 text-sm text-faint"
               title="Prima conferma il contesto: il copy si scrive sul contesto curato."
             >
               Genera copy
@@ -134,7 +134,7 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
             </Link>
           ) : (
             <span
-              className="cursor-not-allowed rounded-md border border-line px-3.5 py-1.5 text-sm text-faint"
+              className="cursor-not-allowed rounded-ctl border border-line px-3.5 py-1.5 text-sm text-faint"
               title="Prima verifica copy e palette: le immagini derivano da titoli card e colori curati."
             >
               Genera immagini
@@ -158,7 +158,7 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
             </Link>
           ) : (
             <span
-              className="cursor-not-allowed rounded-md border border-line px-3.5 py-1.5 text-sm text-faint"
+              className="cursor-not-allowed rounded-ctl border border-line px-3.5 py-1.5 text-sm text-faint"
               title="Prima verifica l'intake: anche l'anteprima parziale parte dai dati corretti."
             >
               Builda il sito

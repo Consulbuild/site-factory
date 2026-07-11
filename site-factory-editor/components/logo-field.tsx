@@ -63,7 +63,7 @@ export function LogoField({
           <img
             src={`/api/clients/${slug}/logo?v=${version}`}
             alt="Logo del cliente"
-            className="max-h-16 max-w-40 rounded-md border border-line bg-surface object-contain p-2"
+            className="max-h-16 max-w-40 rounded-ctl border border-line bg-surface object-contain p-2"
           />
         ) : (
           <span className="text-sm text-muted">Nessun file logo.</span>

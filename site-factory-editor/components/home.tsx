@@ -83,7 +83,7 @@ export function KeySetup({
 
   if (compact) return <div>{form}</div>;
   return (
-    <section className="rounded-lg border border-line bg-surface p-5">
+    <section className="card p-5">
       <h2 className="font-semibold">{title}</h2>
       <p className="mt-1 text-sm text-muted">{description}</p>
       {form}
@@ -123,7 +123,7 @@ export function ApiKeysPanel() {
   }, []);
 
   return (
-    <details className="rounded-lg border border-line bg-surface">
+    <details className="card">
       <summary className="cursor-pointer select-none px-4 py-3 text-sm font-semibold text-muted">
         Chiavi API
       </summary>

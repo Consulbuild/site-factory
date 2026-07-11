@@ -79,7 +79,7 @@ export function RunRunner({ runId, stato }: { runId: string; stato: string }) {
         </div>
       )}
       {errore && (
-        <p className="rounded-md bg-err-bg px-3 py-2 text-sm text-err" role="alert">
+        <p className="rounded-ctl bg-err-bg px-3 py-2 text-sm text-err" role="alert">
           {errore}
         </p>
       )}

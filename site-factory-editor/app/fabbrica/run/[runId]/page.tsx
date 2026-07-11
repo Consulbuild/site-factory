@@ -44,7 +44,7 @@ export default async function RunPage(ctx: { params: Promise<{ runId: string }> 
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
           Riferimenti ({refs.length})
         </h2>
-        <ul className="mt-3 divide-y divide-line rounded-lg border border-line">
+        <ul className="mt-3 divide-y divide-line card">
           {refs.map(({ id, ref }) => (
             <li key={id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
               <span className="mono min-w-0 flex-1 truncate">{ref?.meta.url ?? id}</span>
@@ -60,7 +60,7 @@ export default async function RunPage(ctx: { params: Promise<{ runId: string }> 
 
       <section>
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">Fasi</h2>
-        <ol className="mt-3 divide-y divide-line rounded-lg border border-line">
+        <ol className="mt-3 divide-y divide-line card">
           {run.fasi.map((f, i) => (
             <li key={f.nome} className="flex items-center gap-4 px-4 py-3">
               <span className="mono text-xs text-muted">{i + 1}</span>

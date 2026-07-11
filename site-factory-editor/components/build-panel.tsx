@@ -111,7 +111,7 @@ export function BuildPanel({
       </div>
 
       {staleFiles.length > 0 && !runner.running && (
-        <div className="mt-4 rounded-lg border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
+        <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
           <p className="font-medium text-warn">⚠ Cambiato a monte dopo l&apos;ultima build</p>
           <p className="mono mt-1 text-warn/90">{staleFiles.join(" · ")}</p>
           <p className="mt-1 text-warn/90">Ribuilda per portare le correzioni nel sito.</p>
@@ -119,7 +119,7 @@ export function BuildPanel({
       )}
 
       {errore && (
-        <div className="mt-4 rounded-lg border border-err/40 bg-err-bg px-4 py-3 text-sm text-err">
+        <div className="mt-4 rounded-ctl border border-err/40 bg-err-bg px-4 py-3 text-sm text-err">
           <p className="whitespace-pre-wrap">{errore}</p>
         </div>
       )}
@@ -236,7 +236,7 @@ export function BuildPanel({
             </div>
             {dominioMsg && <p className="mt-2 text-sm text-ok">{dominioMsg}</p>}
 
-            <div className="mt-4 rounded-lg border border-line bg-surface px-4 py-3 text-sm">
+            <div className="mt-4 card px-4 py-3 text-sm">
               {build.deploy ? (
                 <div className="flex flex-wrap items-center gap-3">
                   <Badge tone="ok">● online</Badge>

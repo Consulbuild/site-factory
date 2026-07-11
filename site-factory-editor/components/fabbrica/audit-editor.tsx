@@ -186,7 +186,7 @@ export function AuditEditor({
             {(["sinistra", "destra"] as const).map((lato) => (
               <figure
                 key={lato}
-                className={`overflow-hidden rounded-lg border ${scelte[c.ordine] === lato ? "border-brand" : "border-line"}`}
+                className={`overflow-hidden rounded-ctl border ${scelte[c.ordine] === lato ? "border-brand" : "border-line"}`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -225,7 +225,7 @@ export function AuditEditor({
 
       {/* metadati del preset (prefill dalle motivazioni del designer) */}
       {!chiuso && (
-        <section className="rounded-lg border border-line bg-surface p-5">
+        <section className="card p-5">
           <h2 className="text-sm font-semibold">Metadati del preset (compilati all&apos;audit)</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <label className="text-sm">
@@ -298,7 +298,7 @@ export function AuditEditor({
       )}
 
       {errore && (
-        <p className="rounded-md bg-err-bg px-3 py-2 text-sm text-err" role="alert">
+        <p className="rounded-ctl bg-err-bg px-3 py-2 text-sm text-err" role="alert">
           {errore}
         </p>
       )}

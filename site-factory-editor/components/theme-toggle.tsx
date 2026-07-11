@@ -29,7 +29,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="inline-flex size-8 items-center justify-center rounded-md border border-line text-muted transition-colors duration-150 hover:border-line2 hover:text-ink"
+      className="inline-flex size-8 items-center justify-center rounded-full border border-line text-muted transition-colors duration-150 hover:border-line2 hover:text-ink"
       aria-label={theme === "dark" ? "Passa al tema chiaro" : "Passa al tema scuro"}
       title={theme === "dark" ? "Tema chiaro" : "Tema scuro"}
       suppressHydrationWarning

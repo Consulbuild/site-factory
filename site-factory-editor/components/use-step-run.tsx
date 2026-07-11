@@ -88,7 +88,7 @@ export function RunLog({ log, logRef }: { log: LogLine[]; logRef: React.RefObjec
   return (
     <div
       ref={logRef}
-      className="mono mt-5 max-h-96 overflow-y-auto rounded-lg border border-line bg-surface p-4 text-xs leading-relaxed"
+      className="mono mt-5 max-h-96 overflow-y-auto card p-4 text-xs leading-relaxed"
     >
       {log.map((l, i) =>
         l.kind === "phase" ? (

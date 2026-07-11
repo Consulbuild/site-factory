@@ -1,9 +1,15 @@
 @import "tailwindcss";
 
-/* Design tokens a DUE temi (DESIGN-BRIEF.md). I token semantici sono CSS var
-   commutabili a runtime via [data-theme] su <html>; @theme inline lega le
-   utility Tailwind al var() così lo switch è istantaneo, senza rebuild.
-   Contrasto verificato WCAG AA su entrambi i temi (tutte le coppie ≥4.5:1). */
+/* ============================================================================
+   Design token v2 (DESIGN-REFACTOR-2026-07.md §7 — riferimento "Shopeers").
+   Due temi commutabili a runtime via [data-theme] su <html>; @theme inline lega
+   le utility Tailwind ai var() così lo switch è istantaneo, senza rebuild.
+   Chiaro = pagina grigio-freddo + card bianche con ombra soffusa.
+   Scuro  = grafite tinta blu (mai nero puro), profondità da fill+bordo.
+   Contrasto WCAG AA verificato su entrambi i temi (coppie testo ≥4.5:1).
+   Scala z-index (fissa, non inventare valori): sticky/action-bar 10 ·
+   status bar 30 · dialog 50 · toast 60.
+   ========================================================================== */
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -22,56 +28,94 @@
   --color-ok-bg: var(--ok-bg);
   --color-err: var(--err);
   --color-err-bg: var(--err-bg);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius-card: 16px; /* card e pannelli */
+  --radius-ctl: 10px; /* input, select, controlli */
+  --shadow-card: var(--elev-card);
+  --shadow-raise: var(--elev-raise);
+  --shadow-overlay: var(--elev-overlay);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
 }
 
-/* TEMA CHIARO (default) — Restrained: bianco puro, ink forte, teal profondo. */
+/* TEMA CHIARO (default) — pagina grigio-freddo, card bianche, blu royal. */
 :root,
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: oklch(1 0 0);
-  --surface: oklch(0.975 0.002 172);
-  --raise: oklch(0.955 0.003 172);
-  --line: oklch(0.9 0.004 172);
-  --line2: oklch(0.8 0.006 172);
-  --field: oklch(0.83 0.006 172); /* bordo input */
-  --ink: oklch(0.25 0.015 172);
-  --muted: oklch(0.44 0.015 172);
-  --faint: oklch(0.52 0.012 172);
-  --brand: oklch(0.52 0.12 172);
+  --bg: oklch(0.968 0.004 255);
+  --surface: oklch(1 0 0); /* card */
+  --raise: oklch(0.972 0.005 255); /* pozzetti dentro le card: input, hover */
+  --line: oklch(0.925 0.006 255);
+  --line2: oklch(0.85 0.01 255);
+  --field: oklch(0.885 0.008 255); /* bordo input */
+  --ink: oklch(0.21 0.02 262);
+  --muted: oklch(0.45 0.02 258);
+  --faint: oklch(0.53 0.015 258);
+  --brand: oklch(0.55 0.2 262); /* blu royal — azioni, selezione, focus */
   --brand-ink: oklch(1 0 0);
-  --brand-dim: oklch(0.94 0.03 172);
-  --warn: oklch(0.47 0.11 65);
-  --warn-bg: oklch(0.95 0.045 80);
-  --ok: oklch(0.48 0.13 155);
+  --brand-dim: oklch(0.93 0.035 262); /* pill nav attiva, badge brand */
+  --warn: oklch(0.5 0.11 70);
+  --warn-bg: oklch(0.95 0.045 85);
+  --ok: oklch(0.5 0.13 155);
   --ok-bg: oklch(0.95 0.045 155);
   --err: oklch(0.52 0.17 25);
   --err-bg: oklch(0.95 0.035 25);
+  /* Elevazione: ombre soffuse diffuse (il separatore primario delle card). */
+  --elev-card: 0 1px 2px oklch(0.2 0.02 262 / 0.05), 0 8px 24px oklch(0.2 0.02 262 / 0.06);
+  --elev-raise: 0 2px 6px oklch(0.2 0.02 262 / 0.07), 0 16px 32px oklch(0.2 0.02 262 / 0.09);
+  --elev-overlay: 0 24px 64px oklch(0.2 0.02 262 / 0.22);
+  /* Sfere agente (§6.4): identità per ruolo, critici accomunati dall'ambra. */
+  --agent-contesto: oklch(0.52 0.12 172);
+  --agent-palette: oklch(0.5 0.17 300);
+  --agent-preset: oklch(0.5 0.17 275);
+  --agent-copy: oklch(0.52 0.17 250);
+  --agent-immagini: oklch(0.55 0.17 340);
+  --agent-logo: oklch(0.6 0.15 40);
+  --agent-critico: oklch(0.55 0.13 75);
+  --agent-script: oklch(0.5 0.02 255); /* passi deterministici: chip, non sfera */
 }
 
-/* TEMA SCURO — sala di controllo: nero, teal luminoso. Linee e input alzati
-   per staccare bene dal fondo scuro (leggibilità dei bordi e delle caselle). */
+/* TEMA SCURO — grafite tinta blu, stessa gerarchia letta al buio. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: oklch(0.11 0 0);
-  --surface: oklch(0.17 0 0); /* fill input/card: più separato dal bg */
-  --raise: oklch(0.21 0 0);
-  --line: oklch(0.31 0 0); /* divisori e bordi card: ben visibili */
-  --line2: oklch(0.42 0 0); /* bordi enfatizzati / hover */
-  --field: oklch(0.4 0 0); /* bordo input: chiaramente visibile sul nero */
-  --ink: oklch(0.95 0.005 172);
-  --muted: oklch(0.72 0.008 172);
-  --faint: oklch(0.6 0.006 172);
-  --brand: oklch(0.8 0.11 172);
-  --brand-ink: oklch(0.13 0.02 172);
-  --brand-dim: oklch(0.22 0.03 172);
+  --bg: oklch(0.145 0.012 255);
+  --surface: oklch(0.195 0.014 255);
+  --raise: oklch(0.24 0.014 255);
+  --line: oklch(0.32 0.014 255);
+  --line2: oklch(0.42 0.014 255);
+  --field: oklch(0.4 0.014 255);
+  --ink: oklch(0.95 0.005 255);
+  --muted: oklch(0.72 0.01 255);
+  --faint: oklch(0.6 0.01 255);
+  --brand: oklch(0.72 0.15 262);
+  --brand-ink: oklch(0.16 0.03 262);
+  --brand-dim: oklch(0.3 0.06 262);
   --warn: oklch(0.82 0.11 80);
-  --warn-bg: oklch(0.22 0.04 80);
+  --warn-bg: oklch(0.27 0.05 80);
   --ok: oklch(0.82 0.13 155);
-  --ok-bg: oklch(0.2 0.03 155);
-  --err: oklch(0.75 0.15 25);
-  --err-bg: oklch(0.2 0.05 25);
+  --ok-bg: oklch(0.26 0.045 155);
+  --err: oklch(0.78 0.14 25);
+  --err-bg: oklch(0.26 0.06 25);
+  /* Sul scuro le ombre servono solo a staccare gli overlay; le card si
+     separano con fill+bordo. */
+  --elev-card: 0 1px 2px oklch(0 0 0 / 0.35);
+  --elev-raise: 0 4px 16px oklch(0 0 0 / 0.4);
+  --elev-overlay: 0 24px 64px oklch(0 0 0 / 0.6);
+  --agent-contesto: oklch(0.78 0.11 172);
+  --agent-palette: oklch(0.75 0.13 300);
+  --agent-preset: oklch(0.74 0.13 275);
+  --agent-copy: oklch(0.75 0.13 250);
+  --agent-immagini: oklch(0.76 0.13 340);
+  --agent-logo: oklch(0.78 0.12 40);
+  --agent-critico: oklch(0.8 0.11 80);
+  --agent-script: oklch(0.7 0.02 255);
+}
+
+/* Card standard: l'unico modo di fare un pannello — mai ricomporla a mano. */
+@utility card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--elev-card);
 }
 
 body {
@@ -99,9 +143,9 @@ body {
 input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
 select,
 textarea {
-  background: var(--surface);
+  background: var(--raise);
   border: 1px solid var(--field);
-  border-radius: 6px;
+  border-radius: var(--radius-ctl);
   padding: 0.375rem 0.625rem;
   color: var(--ink);
   width: 100%;

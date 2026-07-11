@@ -87,7 +87,7 @@ export default async function PalettePage({ params }: { params: Promise<{ slug: 
         </span>
         <Link
           href={`/clienti/${slug}`}
-          className="shrink-0 rounded-md border border-line bg-surface px-3.5 py-1.5 font-medium text-ink transition-colors duration-150 hover:border-line2 hover:bg-raise"
+          className="shrink-0 rounded-ctl border border-line bg-surface px-3.5 py-1.5 font-medium text-ink transition-colors duration-150 hover:border-line2 hover:bg-raise"
         >
           ← Torna al cliente
         </Link>

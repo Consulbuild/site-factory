@@ -68,7 +68,7 @@ export function ClientsBrowser({ initial }: { initial: HomeData }) {
             <button
               onClick={refresh}
               disabled={refreshing}
-              className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-3 py-1.5 text-sm font-medium text-ink transition-colors duration-150 hover:border-line2 hover:bg-raise disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-ctl border border-line bg-surface px-3 py-1.5 text-sm font-medium text-ink transition-colors duration-150 hover:border-line2 hover:bg-raise disabled:opacity-50"
               title="Interroga di nuovo il form Tally e recupera eventuali nuove richieste"
             >
               <svg
@@ -109,7 +109,7 @@ export function ClientsBrowser({ initial }: { initial: HomeData }) {
             {data.clients.length === 0 ? "Nessun cliente importato." : "Nessun cliente corrisponde alla ricerca."}
           </p>
         ) : (
-          <ul className="mt-3 divide-y divide-line rounded-lg border border-line">
+          <ul className="mt-3 divide-y divide-line card">
             {clients.map((c) => (
               <li key={c.slug}>
                 <Link
@@ -142,7 +142,7 @@ export function ClientsBrowser({ initial }: { initial: HomeData }) {
       {data.tally === "key_mancante" ? (
         <TallySetup />
       ) : data.tally === "errore" ? (
-        <section className="flex items-center justify-between rounded-lg border border-line bg-surface px-4 py-3">
+        <section className="flex items-center justify-between card px-4 py-3">
           <p className="text-sm text-muted">
             Tally non raggiungibile: <span className="text-err">{data.tallyError}</span>
           </p>
@@ -156,7 +156,7 @@ export function ClientsBrowser({ initial }: { initial: HomeData }) {
           {subs.length === 0 ? (
             <p className="mt-3 text-sm text-muted">Nessuna richiesta corrisponde alla ricerca.</p>
           ) : (
-            <ul className="mt-3 divide-y divide-line rounded-lg border border-line">
+            <ul className="mt-3 divide-y divide-line card">
               {subs.map((s) => (
                 <li key={s.id} className="flex items-center gap-4 px-4 py-3">
                   <div className="min-w-0 flex-1">

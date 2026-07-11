@@ -186,7 +186,7 @@ export function ImagesEditor({
       ) : (
         <>
           {stale && (
-            <div className="mt-4 rounded-lg border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
+            <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
               <p className="font-medium text-warn">⚠ Contesto, copy o palette sono cambiati dopo la generazione</p>
               <p className="mt-1 text-warn/90">
                 Soggetti delle card, colori dello style bible o identità potrebbero non riflettere le correzioni.
@@ -218,7 +218,7 @@ export function ImagesEditor({
       )}
 
       {serverErrors.length > 0 && (
-        <div className="mt-4 rounded-lg border border-err/40 bg-err-bg px-4 py-3 text-sm">
+        <div className="mt-4 rounded-ctl border border-err/40 bg-err-bg px-4 py-3 text-sm">
           <p className="font-medium text-err">Problemi da sistemare ({serverErrors.length})</p>
           <ul className="mt-1.5 space-y-1">
             {serverErrors.map((e, i) => (
@@ -231,7 +231,7 @@ export function ImagesEditor({
       )}
 
       {verificato && (
-        <p className="mt-4 rounded-md bg-ok-bg px-4 py-2 text-sm text-ok">
+        <p className="mt-4 rounded-ctl bg-ok-bg px-4 py-2 text-sm text-ok">
           ✓ Immagini confermate. Puoi ancora modificare gli alt o rigenerare.
         </p>
       )}
@@ -330,7 +330,7 @@ function CriticSummary({
   onRecheck: () => void;
 }) {
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface px-4 py-3 text-sm">
+    <div className="mt-4 flex flex-wrap items-center gap-3 card px-4 py-3 text-sm">
       {review ? (
         <>
           <Badge tone={review.verdict === "PASS" ? "ok" : "err"}>
@@ -377,7 +377,7 @@ function ImageTile({
   const tone = len > ALT_MAX || len === 0 ? "text-err" : len >= ALT_MAX * 0.9 ? "text-warn" : "text-faint";
 
   return (
-    <div className={`overflow-hidden rounded-lg border ${scarto ? "border-err/50" : "border-line"} bg-surface`}>
+    <div className={`overflow-hidden rounded-ctl border ${scarto ? "border-err/50" : "border-line"} bg-surface`}>
       <div className="relative bg-raise" style={{ aspectRatio: `${entry.width} / ${entry.height}` }}>
         {/* eslint-disable-next-line @next/next/no-img-element -- route locale, niente ottimizzatore */}
         <img
@@ -417,7 +417,7 @@ function ImageTile({
           rigenera
         </label>
         {scarto && (
-          <p className="rounded-md bg-warn-bg px-2.5 py-1.5 text-xs text-warn" title={review?.fix_prompt}>
+          <p className="rounded-ctl bg-warn-bg px-2.5 py-1.5 text-xs text-warn" title={review?.fix_prompt}>
             ⚠ {review?.motivo ?? "scartata dal critico"}
           </p>
         )}

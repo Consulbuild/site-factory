@@ -53,7 +53,7 @@ export function AssegnazionePanel({
   }
 
   return (
-    <section className="rounded-lg border border-line bg-surface p-4">
+    <section className="card p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold">Assegnazione design</h2>
         {design ? <Badge tone="brand">{design.preset}</Badge> : <Badge tone="idle">—</Badge>}
@@ -104,7 +104,7 @@ export function AssegnazionePanel({
         </p>
       )}
       {errore && (
-        <p className="mt-2 rounded-md bg-err-bg px-3 py-2 text-xs text-err" role="alert">
+        <p className="mt-2 rounded-ctl bg-err-bg px-3 py-2 text-xs text-err" role="alert">
           {errore}
         </p>
       )}

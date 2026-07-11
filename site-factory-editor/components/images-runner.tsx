@@ -24,9 +24,9 @@ export function ImagesRunner({
 
   return (
     <div className="mt-8">
-      {gateMsg && <p className="mb-4 rounded-md bg-warn-bg px-4 py-2.5 text-sm text-warn">{gateMsg}</p>}
+      {gateMsg && <p className="mb-4 rounded-ctl bg-warn-bg px-4 py-2.5 text-sm text-warn">{gateMsg}</p>}
       {err && (
-        <div className="mb-4 rounded-md bg-err-bg px-4 py-3 text-sm text-err">
+        <div className="mb-4 rounded-ctl bg-err-bg px-4 py-3 text-sm text-err">
           <p className="font-medium">Generazione fallita</p>
           <p className="mt-1 whitespace-pre-wrap">{err}</p>
         </div>
