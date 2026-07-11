@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
 import { runDir } from "@/lib/factory/paths";
-import { eseguiRun } from "@/lib/factory/fasi";
+import { startFactoryRun, stopRun, busIdFabbrica } from "@/lib/run-bus";
+import { rispostaStreamRun } from "@/lib/run-stream";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 3600; // designer + build + gate + critico (max 3 round)
 
-/** POST: esegue la run dalla prima fase non conclusa, streaming NDJSON. */
+/**
+ * POST: esegue la run dalla prima fase non conclusa, IN BACKGROUND (bus dei
+ * run), streaming NDJSON degli eventi. Chiudere lo stream non interrompe la
+ * run; lo stop è il DELETE.
+ */
 export async function POST(_req: NextRequest, ctx: { params: Promise<{ runId: string }> }) {
   const { runId } = await ctx.params;
   let dir: string;
@@ -20,22 +25,15 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ runId: st
     return NextResponse.json({ error: "run inesistente" }, { status: 404 });
   }
 
-  const encoder = new TextEncoder();
-  const stream = new ReadableStream({
-    async start(controller) {
-      try {
-        for await (const ev of eseguiRun(runId))
-          controller.enqueue(encoder.encode(JSON.stringify(ev) + "\n"));
-      } catch (e) {
-        controller.enqueue(
-          encoder.encode(JSON.stringify({ type: "error", message: e instanceof Error ? e.message : String(e) }) + "\n"),
-        );
-      } finally {
-        controller.close();
-      }
-    },
-  });
-  return new Response(stream, {
-    headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store" },
-  });
+  const avvio = startFactoryRun(runId);
+  if ("error" in avvio) return NextResponse.json({ error: avvio.error }, { status: 409 });
+  return rispostaStreamRun(avvio.id);
+}
+
+/** Stop esplicito della run in corso (SIGTERM ai child; stato → fallita, riprendibile). */
+export async function DELETE(_req: NextRequest, ctx: { params: Promise<{ runId: string }> }) {
+  const { runId } = await ctx.params;
+  const fermato = stopRun(busIdFabbrica(runId));
+  if (!fermato) return NextResponse.json({ error: "nessuna run in corso" }, { status: 404 });
+  return NextResponse.json({ ok: true });
 }

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { IO, type RunEvent, type PhaseResult } from "../run-step.ts";
+import { ioWithSignal, type StepIO, type RunEvent, type PhaseResult } from "../run-step.ts";
 import { NODE_BIN, SITE_RENDERER } from "../paths";
 import { runDir, referenceDir, PRESETS_DIR } from "./paths.ts";
 import { readRun, aggiornaFase, aggiornaRun } from "./state.ts";
@@ -68,9 +68,9 @@ function promptDesigner(run: FactoryRun, correzione?: { round: number }): string
   );
 }
 
-async function* faseDesigner(run: FactoryRun, correzione?: { round: number }): AsyncGenerator<RunEvent, PhaseResult> {
+async function* faseDesigner(run: FactoryRun, io: StepIO, correzione?: { round: number }): AsyncGenerator<RunEvent, PhaseResult> {
   const p = percorsi(run.runId);
-  const res = yield* IO.claude({
+  const res = yield* io.claude({
     phase: correzione ? `Preset-designer — correzione round ${correzione.round}` : "Preset-designer (evidenza → candidato)",
     prompt: promptDesigner(run, correzione),
     allowed: READ_SKILL_WRITE,
@@ -87,10 +87,10 @@ async function* faseDesigner(run: FactoryRun, correzione?: { round: number }): A
 
 // ---------- fase: validate (zero-invenzioni) ----------
 
-async function* faseValidate(run: FactoryRun): AsyncGenerator<RunEvent, PhaseResult> {
+async function* faseValidate(run: FactoryRun, io: StepIO): AsyncGenerator<RunEvent, PhaseResult> {
   const p = percorsi(run.runId);
   const refsArgs = run.references.flatMap((id) => ["--refs", referenceDir(id)]);
-  const res = yield* IO.script({
+  const res = yield* io.script({
     phase: "Validatore zero-invenzioni",
     bin: NODE_BIN,
     args: [path.join(SCRIPTS, "validate-candidate.mjs"), p.candidate, p.motivazioni, p.dir, ...refsArgs],
@@ -112,7 +112,7 @@ async function* faseValidate(run: FactoryRun): AsyncGenerator<RunEvent, PhaseRes
 
 // ---------- fase: build (candidato → anteprima + shots, poi ripristino) ----------
 
-async function* faseBuild(run: FactoryRun): AsyncGenerator<RunEvent, PhaseResult> {
+async function* faseBuild(run: FactoryRun, io: StepIO): AsyncGenerator<RunEvent, PhaseResult> {
   const p = percorsi(run.runId);
   const id = candidatoId(run.runId);
   const passi: Array<{ phase: string; args: string[]; timeoutMs: number; bin?: string }> = [
@@ -139,7 +139,7 @@ async function* faseBuild(run: FactoryRun): AsyncGenerator<RunEvent, PhaseResult
     },
   ];
   for (const passo of passi) {
-    const res = yield* IO.script({
+    const res = yield* io.script({
       phase: passo.phase,
       bin: passo.bin ?? NODE_BIN,
       args: passo.args,
@@ -159,27 +159,27 @@ async function* faseBuild(run: FactoryRun): AsyncGenerator<RunEvent, PhaseResult
 // designer rivede SOLO ciò che il report nomina, si ricostruisce e si riprova
 // una volta; se boccia ancora, escalation umana (run fallita, report su disco).
 
-async function* faseGates(run: FactoryRun): AsyncGenerator<RunEvent, PhaseResult> {
-  const primo = yield* faseGatesUnaVolta(run);
+async function* faseGates(run: FactoryRun, io: StepIO): AsyncGenerator<RunEvent, PhaseResult> {
+  const primo = yield* faseGatesUnaVolta(run, io);
   if (primo.ok || primo.error?.startsWith("infrastruttura")) return primo;
 
   yield { type: "text", text: `Gate bocciato (${primo.error}) — correzione unica del designer, poi riprova.` };
   aggiornaRun(run.runId, (r) => {
     r.misure = { ...r.misure, correzioniUmane: r.misure?.correzioniUmane ?? 0 };
   });
-  const fix = yield* faseDesignerFixGate(run, primo.error ?? "gate bocciato");
+  const fix = yield* faseDesignerFixGate(run, io, primo.error ?? "gate bocciato");
   if (!fix.ok) return fix;
-  const rebuild = yield* faseBuild(run);
+  const rebuild = yield* faseBuild(run, io);
   if (!rebuild.ok) return rebuild;
-  const secondo = yield* faseGatesUnaVolta(run);
+  const secondo = yield* faseGatesUnaVolta(run, io);
   if (!secondo.ok)
     return { ok: false, error: `${secondo.error} — anche dopo la correzione unica: escalation umana (report in gates/)` };
   return secondo;
 }
 
-async function* faseDesignerFixGate(run: FactoryRun, motivo: string): AsyncGenerator<RunEvent, PhaseResult> {
+async function* faseDesignerFixGate(run: FactoryRun, io: StepIO, motivo: string): AsyncGenerator<RunEvent, PhaseResult> {
   const p = percorsi(run.runId);
-  const res = yield* IO.claude({
+  const res = yield* io.claude({
     phase: "Preset-designer — correzione da gate",
     prompt:
       promptDesigner(run) +
@@ -198,17 +198,17 @@ async function* faseDesignerFixGate(run: FactoryRun, motivo: string): AsyncGener
   if (!jsonLeggibile(p.candidate) || !jsonLeggibile(p.motivazioni))
     return { ok: false, error: "correzione senza candidate/motivazioni validi" };
   // la correzione deve restare a zero invenzioni
-  return yield* faseValidate(run);
+  return yield* faseValidate(run, io);
 }
 
-async function* faseGatesUnaVolta(run: FactoryRun): AsyncGenerator<RunEvent, PhaseResult> {
+async function* faseGatesUnaVolta(run: FactoryRun, io: StepIO): AsyncGenerator<RunEvent, PhaseResult> {
   const p = percorsi(run.runId);
   const id = candidatoId(run.runId);
   // la dist deve contenere l'anteprima del candidato (prodotta dalla fase build)
   if (!fs.existsSync(path.join(SITE_RENDERER, "dist", "anteprima", id, "index.html"))) {
     return { ok: false, error: "anteprima del candidato assente dalla dist: riesegui la fase build" };
   }
-  const l1 = yield* IO.script({
+  const l1 = yield* io.script({
     phase: "Gate L1 (axe AA · overflow · pesi font · parole spezzate)",
     bin: NODE_BIN,
     args: [path.join(SCRIPTS, "l1-candidato.mjs"), "--dist", path.join(SITE_RENDERER, "dist"), "--preset", id, "--run", p.dir],
@@ -218,7 +218,7 @@ async function* faseGatesUnaVolta(run: FactoryRun): AsyncGenerator<RunEvent, Pha
   if (!l1.ok) return { ok: false, error: motivoDaReport(p.gates, "l1.json") ?? l1.error ?? "gate L1 bocciato" };
 
   const refsArgs = run.references.flatMap((rid) => ["--refs", referenceDir(rid)]);
-  const l2 = yield* IO.script({
+  const l2 = yield* io.script({
     phase: "Gate L2 novelty (dHash · tokenDiff · CSD · Vendi)",
     bin: NODE_BIN,
     args: [path.join(SCRIPTS, "novelty.mjs"), p.candidate, p.shots, p.dir, ...refsArgs],
@@ -227,7 +227,7 @@ async function* faseGatesUnaVolta(run: FactoryRun): AsyncGenerator<RunEvent, Pha
   });
   if (!l2.ok) return { ok: false, error: motivoDaReport(p.gates, "novelty.json") ?? l2.error ?? "gate novelty bocciato" };
 
-  const l3 = yield* IO.script({
+  const l3 = yield* io.script({
     phase: "Gate L3 UIClip (pre-filtro rotto/sano)",
     bin: NODE_BIN,
     args: [path.join(SCRIPTS, "l3-uiclip.mjs"), p.shots, p.dir],
@@ -254,10 +254,10 @@ function motivoDaReport(gatesDir: string, file: string): string | null {
 
 // ---------- fase: critico (L4, max 3 round; le correzioni toccano SOLO i token nominati) ----------
 
-async function* faseCritico(run: FactoryRun): AsyncGenerator<RunEvent, PhaseResult> {
+async function* faseCritico(run: FactoryRun, io: StepIO): AsyncGenerator<RunEvent, PhaseResult> {
   const p = percorsi(run.runId);
   for (let round = 1; round <= 3; round++) {
-    const res = yield* IO.claude({
+    const res = yield* io.claude({
       phase: `Critico visivo — round ${round}`,
       prompt:
         `Usa la skill design-critic. Candidato della run «${run.runId}». ` +
@@ -279,11 +279,11 @@ async function* faseCritico(run: FactoryRun): AsyncGenerator<RunEvent, PhaseResu
 
     // correzione mirata + rebuild + re-L1 (novelty/UIClip non si rifanno: i
     // fix da critico sono ritocchi di token, la distanza non cambia registro)
-    const fix = yield* faseDesigner(run, { round: round + 1 });
+    const fix = yield* faseDesigner(run, io, { round: round + 1 });
     if (!fix.ok) return fix;
-    const rebuild = yield* faseBuild(run);
+    const rebuild = yield* faseBuild(run, io);
     if (!rebuild.ok) return rebuild;
-    const l1 = yield* faseGates(run); // include L2/L3: prudenza — vedi nota
+    const l1 = yield* faseGates(run, io); // include L2/L3: prudenza — vedi nota
     if (!l1.ok) return l1;
   }
   return { ok: false, error: "loop critico esaurito" };
@@ -291,16 +291,17 @@ async function* faseCritico(run: FactoryRun): AsyncGenerator<RunEvent, PhaseResu
 
 // ---------- esecuzione della run (riprendibile) ----------
 
-const FASI: Record<string, (run: FactoryRun) => AsyncGenerator<RunEvent, PhaseResult>> = {
-  designer: (r) => faseDesigner(r),
-  validate: (r) => faseValidate(r),
-  build: (r) => faseBuild(r),
-  gates: (r) => faseGates(r),
-  critico: (r) => faseCritico(r),
+const FASI: Record<string, (run: FactoryRun, io: StepIO) => AsyncGenerator<RunEvent, PhaseResult>> = {
+  designer: (r, io) => faseDesigner(r, io),
+  validate: (r, io) => faseValidate(r, io),
+  build: (r, io) => faseBuild(r, io),
+  gates: (r, io) => faseGates(r, io),
+  critico: (r, io) => faseCritico(r, io),
 };
 
 /** Esegue le fasi dalla prima non conclusa; si ferma al primo fallimento. */
-export async function* eseguiRun(runId: string): AsyncGenerator<RunEvent> {
+export async function* eseguiRun(runId: string, signal?: AbortSignal): AsyncGenerator<RunEvent> {
+  const io = ioWithSignal(signal);
   const run = readRun(runId);
   if (!run) {
     yield { type: "error", message: `run inesistente: ${runId}` };
@@ -328,7 +329,7 @@ export async function* eseguiRun(runId: string): AsyncGenerator<RunEvent> {
     let res: PhaseResult;
     try {
       const corrente = readRun(runId)!;
-      res = yield* FASI[fase.nome](corrente);
+      res = yield* FASI[fase.nome](corrente, io);
     } catch (e) {
       res = { ok: false, error: e instanceof Error ? e.message : String(e) };
     }

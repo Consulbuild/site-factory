@@ -157,7 +157,7 @@ async function* claudePhase(
   const code = await closed;
 
   // Diagnosi errori tipici — SEMPRE come valore di ritorno, mai eventi.
-  if (signal?.aborted) return { ok: false, error: "run interrotto: connessione chiusa dal client" };
+  if (signal?.aborted) return { ok: false, error: "run interrotto" };
   if (spawnError) return { ok: false, error: spawnError };
   if (/logged out|not logged in|authentication|Invalid API key|OAuth/i.test(stderr)) {
     return { ok: false, error: "Sessione Claude non valida. Esegui `claude login` nel terminale e riprova." };
@@ -255,7 +255,7 @@ async function* scriptPhase(
   signal?.removeEventListener("abort", onAbort);
   const code = await closed;
 
-  if (signal?.aborted) return { ok: false, error: "run interrotto: connessione chiusa dal client" };
+  if (signal?.aborted) return { ok: false, error: "run interrotto" };
   if (spawnError) return { ok: false, error: spawnError };
   if (code !== 0) {
     return {
@@ -266,8 +266,8 @@ async function* scriptPhase(
   return { ok: true };
 }
 
-/** IO legato a un AbortSignal: la chiusura dello stream ammazza i child in corso. */
-const ioWithSignal = (signal?: AbortSignal): StepIO => ({
+/** IO legato a un AbortSignal: l'abort (stop esplicito dal bus) ammazza i child in corso. */
+export const ioWithSignal = (signal?: AbortSignal): StepIO => ({
   claude: (opts) => claudePhase(opts, signal),
   script: (opts) => scriptPhase(opts, signal),
 });

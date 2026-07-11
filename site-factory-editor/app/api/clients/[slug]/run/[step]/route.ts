@@ -1,16 +1,21 @@
 import { NextRequest } from "next/server";
 import fs from "node:fs";
 import { clientDir } from "@/lib/paths";
-import { runStep } from "@/lib/run-step";
 import { STEPS, type StepKey, type RunMode } from "@/lib/steps";
+import { listClients } from "@/lib/clients";
+import { startClientRun, stopRun, busIdCliente } from "@/lib/run-bus";
+import { rispostaStreamRun } from "@/lib/run-stream";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 3600; // secondi: gli step multi-fase possono durare a lungo
 
 const MODES: RunMode[] = ["generate", "update", "critic", "regen", "partial"];
 
-/** Esegue uno step AI e streamma gli eventi in NDJSON. Route generica: la
- *  logica per-step (fasi, prompt, modalità) vive tutta nel registry STEPS. */
+/**
+ * Avvia uno step AI IN BACKGROUND (bus dei run) e streamma gli eventi in
+ * NDJSON. Chiudere lo stream non interrompe più il run: lo stop è il DELETE.
+ * La logica per-step (fasi, prompt, modalità) vive tutta nel registry STEPS.
+ */
 export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: string; step: string }> }) {
   const { slug, step } = await ctx.params;
 
@@ -36,32 +41,17 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
     ? body.files.filter((f: unknown): f is string => typeof f === "string" && /^img\/[a-z0-9-]+\.jpg$/.test(f))
     : undefined;
 
-  const encoder = new TextEncoder();
-  const stream = new ReadableStream({
-    async start(controller) {
-      try {
-        // req.signal: se il client abbandona lo stream (tab chiusa, reload),
-        // i child in corso vengono uccisi e lo step finisce in «errore» —
-        // mai più «in_corso» perpetuo con un claude orfano che consuma quota.
-        for await (const ev of runStep(slug, step as StepKey, { mode, files }, req.signal)) {
-          controller.enqueue(encoder.encode(JSON.stringify(ev) + "\n"));
-        }
-      } catch (e) {
-        // enqueue può a sua volta fallire se lo stream è già stato annullato.
-        try {
-          controller.enqueue(
-            encoder.encode(JSON.stringify({ type: "error", message: e instanceof Error ? e.message : String(e) }) + "\n"),
-          );
-        } catch {}
-      } finally {
-        try {
-          controller.close();
-        } catch {}
-      }
-    },
-  });
+  const label = listClients().find((c) => c.slug === slug)?.businessName ?? slug;
+  const avvio = startClientRun(slug, step as StepKey, { mode, files }, label);
+  if ("error" in avvio) return new Response(JSON.stringify({ error: avvio.error }), { status: 409 });
 
-  return new Response(stream, {
-    headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store" },
-  });
+  return rispostaStreamRun(avvio.id);
+}
+
+/** Stop esplicito del run in corso (SIGTERM ai child; stato → errore). */
+export async function DELETE(_req: NextRequest, ctx: { params: Promise<{ slug: string; step: string }> }) {
+  const { slug, step } = await ctx.params;
+  const fermato = stopRun(busIdCliente(slug, step));
+  if (!fermato) return new Response(JSON.stringify({ error: "nessun run in corso" }), { status: 404 });
+  return new Response(JSON.stringify({ ok: true }), { headers: { "Content-Type": "application/json" } });
 }
