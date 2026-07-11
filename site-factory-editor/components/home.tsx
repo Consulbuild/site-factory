@@ -110,7 +110,7 @@ interface KeyInfo {
 }
 
 /** Pannello di gestione di tutte le API key della pipeline (stato + aggiorna). */
-export function ApiKeysPanel() {
+export function ApiKeysPanel({ aperto = false }: { aperto?: boolean }) {
   const [keys, setKeys] = useState<KeyInfo[] | null>(null);
   const [openKey, setOpenKey] = useState<string | null>(null);
 
@@ -123,7 +123,7 @@ export function ApiKeysPanel() {
   }, []);
 
   return (
-    <details className="card">
+    <details className="card" open={aperto}>
       <summary className="cursor-pointer select-none px-4 py-3 text-sm font-semibold text-muted">
         Chiavi API
       </summary>

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { Sidebar } from "@/components/sidebar";
+import { Topbar } from "@/components/topbar";
 
 // Il carattere del riferimento visivo, self-hosted da next/font (nessuna
 // request esterna a runtime); esposto come var per il token --font-sans.
@@ -24,26 +25,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-full">
-        <header className="border-b border-line">
-          <div className="mx-auto flex h-12 max-w-5xl items-center justify-between px-6">
-            <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-              <span className="inline-block size-2 rounded-full bg-brand" aria-hidden />
-              Site-factory
-            </Link>
-            <div className="flex items-center gap-5">
-              <nav className="flex items-center gap-4 text-sm" aria-label="Aree">
-                <Link href="/" className="text-muted hover:text-ink">
-                  Clienti
-                </Link>
-                <Link href="/fabbrica" className="text-muted hover:text-ink">
-                  Fabbrica
-                </Link>
-              </nav>
-              <ThemeToggle />
-            </div>
+        <div className="flex min-h-screen">
+          <Sidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <Suspense>
+              <Topbar />
+            </Suspense>
+            <main className="mx-auto w-full max-w-5xl px-6 py-8">{children}</main>
           </div>
-        </header>
-        <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
+        </div>
       </body>
     </html>
   );

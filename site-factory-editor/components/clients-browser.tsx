@@ -1,15 +1,15 @@
 "use client";
 
-// Schermata clienti interattiva: barra di ricerca (nome azienda / referente /
-// telefono) su clienti importati E submission Tally, + refresh manuale che
+// Schermata clienti: la query di ricerca arriva dalla topbar via URL (?q=)
+// e filtra clienti importati E submission Tally; refresh manuale che
 // ri-chiama l'API Tally e segnala le nuove richieste (dedup per submissionId).
-// Pensata per scalare a molti clienti: filtro live lato client.
 
 import { useState } from "react";
 import Link from "next/link";
+import { RefreshCw } from "lucide-react";
 import type { HomeData } from "@/lib/tally";
-import { StepBadge, formatDate } from "./ui";
-import { TallySetup, ImportButton, RetryTally, ApiKeysPanel } from "./home";
+import { StepBadge, btnSecondary, formatDate } from "./ui";
+import { TallySetup, ImportButton, RetryTally } from "./home";
 
 const norm = (s: string) =>
   s
@@ -25,9 +25,8 @@ function match(q: string, ...fields: string[]): boolean {
   return fields.some((f) => norm(f).includes(nq)) || (dq.length >= 3 && fields.some((f) => digits(f).includes(dq)));
 }
 
-export function ClientsBrowser({ initial }: { initial: HomeData }) {
+export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string }) {
   const [data, setData] = useState<HomeData>(initial);
-  const [q, setQ] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMsg, setRefreshMsg] = useState<string | null>(null);
 
@@ -62,41 +61,20 @@ export function ClientsBrowser({ initial }: { initial: HomeData }) {
     <div className="space-y-8">
       <div>
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-lg font-semibold">Clienti</h1>
+          <h1 className="text-xl font-semibold">Clienti</h1>
           <div className="flex items-center gap-3">
             {refreshMsg && <span className="text-xs text-muted">{refreshMsg}</span>}
             <button
               onClick={refresh}
               disabled={refreshing}
-              className="inline-flex items-center gap-1.5 rounded-ctl border border-line bg-surface px-3 py-1.5 text-sm font-medium text-ink transition-colors duration-150 hover:border-line2 hover:bg-raise disabled:opacity-50"
+              className={btnSecondary}
               title="Interroga di nuovo il form Tally e recupera eventuali nuove richieste"
             >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                className={refreshing ? "animate-spin" : ""}
-                aria-hidden
-              >
-                <path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6" />
-              </svg>
+              <RefreshCw aria-hidden className={`size-3.5 ${refreshing ? "animate-spin" : ""}`} />
               {refreshing ? "Controllo…" : "Controlla nuovi dal form"}
             </button>
           </div>
         </div>
-
-        <input
-          type="search"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Cerca per nome azienda, referente o telefono…"
-          className="mt-3"
-          aria-label="Cerca clienti"
-        />
       </div>
 
       {/* Clienti importati */}
@@ -172,9 +150,6 @@ export function ClientsBrowser({ initial }: { initial: HomeData }) {
           )}
         </section>
       ) : null}
-
-      {/* Gestione chiavi API (Keychain) */}
-      <ApiKeysPanel />
     </div>
   );
 }
