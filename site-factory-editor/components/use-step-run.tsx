@@ -83,12 +83,21 @@ export function useStepRun(slug: string, step: string) {
 }
 
 /** Pannello log stile terminale, condiviso. */
-export function RunLog({ log, logRef }: { log: LogLine[]; logRef: React.RefObject<HTMLDivElement | null> }) {
+export function RunLog({
+  log,
+  logRef,
+  className,
+}: {
+  log: LogLine[];
+  logRef: React.RefObject<HTMLDivElement | null>;
+  /** Override del dimensionamento (default: blocco da scheda, max-h-96). */
+  className?: string;
+}) {
   if (log.length === 0) return null;
   return (
     <div
       ref={logRef}
-      className="mono mt-5 max-h-96 overflow-y-auto card p-4 text-xs leading-relaxed"
+      className={`mono overflow-y-auto card p-4 text-xs leading-relaxed ${className ?? "mt-5 max-h-96"}`}
     >
       {log.map((l, i) =>
         l.kind === "phase" ? (

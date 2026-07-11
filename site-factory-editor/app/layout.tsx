@@ -4,6 +4,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
+import { RunsProvider } from "@/components/run-provider";
+import { StatusBar } from "@/components/status-bar";
+import { AgentiCard } from "@/components/agenti-card";
 
 // Il carattere del riferimento visivo, self-hosted da next/font (nessuna
 // request esterna a runtime); esposto come var per il token --font-sans.
@@ -25,15 +28,20 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-full">
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <Suspense>
-              <Topbar />
-            </Suspense>
-            <main className="mx-auto w-full max-w-5xl px-6 py-8">{children}</main>
+        <RunsProvider>
+          <div className="flex min-h-screen">
+            <Sidebar>
+              <AgentiCard />
+            </Sidebar>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <Suspense>
+                <Topbar />
+              </Suspense>
+              <main className="mx-auto w-full max-w-5xl px-6 py-8">{children}</main>
+            </div>
           </div>
-        </div>
+          <StatusBar />
+        </RunsProvider>
       </body>
     </html>
   );

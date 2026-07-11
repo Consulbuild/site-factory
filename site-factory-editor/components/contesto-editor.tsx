@@ -406,7 +406,7 @@ export function ContestoEditor({
       </Section>
 
       {/* ACTION BAR */}
-      <div className="fixed inset-x-0 bottom-0 border-t border-line bg-bg/95 backdrop-blur-sm">
+      <div className="fixed inset-x-0 bottom-(--statusbar-offset) border-t border-line bg-bg/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-5xl items-center justify-end gap-4 px-6 py-3">
           {msg && <span className={`text-sm ${msg.tone === "ok" ? "text-ok" : "text-err"}`}>{msg.text}</span>}
           {scoperti.length > 0 && <span className="text-sm text-warn">{scoperti.length} servizi da assegnare</span>}

@@ -321,7 +321,7 @@ export function IntakeForm({
           </Riga>
         </Gruppo>
 
-        <div className="fixed inset-x-0 bottom-0 border-t border-line bg-bg/95 backdrop-blur-sm">
+        <div className="fixed inset-x-0 bottom-(--statusbar-offset) border-t border-line bg-bg/95 backdrop-blur-sm">
           <div className="mx-auto flex max-w-3xl items-center justify-end gap-4 px-6 py-3">
             {errore && <span className="text-sm text-err">{errore}</span>}
             {salvato && <span className="text-sm text-ok">Salvato ✓</span>}

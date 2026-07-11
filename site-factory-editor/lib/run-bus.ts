@@ -33,6 +33,8 @@ export type BusRunInfo = {
   esito?: "ok" | "errore" | "interrotto";
   errore?: string;
   endedAt?: number;
+  /** Durata dell'ultima run riuscita dello stesso step (per il «di solito ~N min»). */
+  tipicoMs?: number;
   /** true per gli stati ricostruiti dopo un riavvio (nessun processo vivo). */
   zombie?: boolean;
 };
@@ -127,8 +129,15 @@ export function startClientRun(
   const id = busIdCliente(slug, step);
   const esistente = BUS.runs.get(id);
   if (esistente && !esistente.done) return { error: "step già in esecuzione per questo cliente" };
+  let tipicoMs: number | undefined;
+  try {
+    const ultima = readClientState(slug).steps[STEPS[step].stateKey]?.ultimaRun;
+    if (ultima?.esito === "ok") tipicoMs = ultima.durataMs;
+  } catch {
+    /* stato illeggibile: nessuna stima */
+  }
   const run = nuovoRun(
-    { id, kind: "cliente", slug, step, label },
+    { id, kind: "cliente", slug, step, label, tipicoMs },
     path.join(clientDir(slug), "logs", `run-${step}.ndjson`),
   );
   avvia(run, runStep(slug, step, ctx, run.ac.signal), () =>
