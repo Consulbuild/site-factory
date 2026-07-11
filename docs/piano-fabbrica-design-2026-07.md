@@ -967,4 +967,37 @@ dimostrati) · style queries CSS (fino a Baseline widely-available).
 
 ## Retrospettiva [viva]
 
-(da compilare a fine lavoro)
+Compilata il 2026-07-11, a piano COMPLETO (M0–M9, 10 commit, tutte le
+accettazioni osservate di persona; sviluppo autonomo M7–M9 su delega).
+
+**Cosa ha funzionato (da rifare identico):**
+- Il piano come contratto vivo ha retto 3 riprese di sessione/compattazioni
+  senza perdita di rotta: Progress con evidenza, Sorprese e Decision Log
+  aggiornati a caldo sono stati la memoria vera del progetto.
+- La verifica sull'artefatto reale ha pagato OGNI volta: 3 bug silenziosi del
+  toolchain (override shadow di Terrazzo, token assenti dal base, variabili
+  @theme sostituite a :root), difetti latenti dei preset (pesi sintetici,
+  hero di nova, display serif), e il validator bug scovato SOLO dall'E2E.
+  Build verde ≠ funziona: dump indipendenti, VRT, probe sul render.
+- Difesa in profondità: whitelist bugiarda → validator ingannato → L1 lo
+  prende al render. Nessun gate da solo basta; la catena sì.
+- Fonte unica (resolver.json) scoperta a forza di romperla: 5 liste hardcoded
+  emerse alla PRIMA pubblicazione reale. Il pilota con fixture prima dei
+  riferimenti veri è stato ciò che le ha fatte emergere in sicurezza.
+- Critico calibrato PRIMA di usarlo (κ=1.0) e onestà sui segnali deboli:
+  UIClip declassato a warning con le cause misurate, non nascosto.
+
+**Costato più del previsto:** la sostituzione a :root delle variabili @theme
+(mezzo pomeriggio di nodi axe in salita prima della diagnosi); la catena
+delle liste hardcoded; gli shot del gold set byte-identici per 3 classi di
+difetto (ha azzoppato la calibrazione UIClip).
+
+**Debiti dichiarati (non nascosti):** item near-miss nel gold set del critico
+quando la fabbrica produrrà candidati «quasi buoni»; prova dei frammenti FLUX
+su hero+card+gallery alla prima run immagini con key BFL; eventuale ricalibro
+UIClip con shot 390/sezioni dove i difetti vivono; tono lavanda di nova e
+virgola di Plus Jakarta (note di gusto, non bloccanti).
+
+**Numeri:** libreria 6→7 preset (ferro, dal pilota E2E); 14 celle VRT; axe 0
+nodi ovunque; 40 item gold set; baseline novelty 22 coppie; 4 nuove aree
+editor (/fabbrica, riferimenti, run, audit); 0 € di spesa ricorrente.

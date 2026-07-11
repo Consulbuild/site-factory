@@ -54,3 +54,14 @@ Metro: nessuna sequenza di 3+ parole in >2 slot (script eval non in repo; banale
 (`scripts/parity-copy.ts` è l'esempio) · run E2E sui clienti reali · passata
 /impeccable (shape PRIMA della UI, critique/polish dopo, entrambi i temi) ·
 DESIGN-BRIEF.md raccoglie gli studi UX per scheda. Nulla si committa senza chiedere.
+
+## Fabbrica design (piano 2026-07, COMPLETO M0–M9)
+
+La fabbrica dei preset è operativa: area editor `/fabbrica` (riferimenti con
+gate opt-out TDM, run con 5 fasi riprendibili, audit pairwise, pubblicazione
+one-click), assegnazione deterministica cliente→design nella scheda Palette
+(anti-collisione di mercato), varianti Hero D / ContactCTA B, layout e
+trattamento foto nei token, fotografia per-preset nelle skill immagini.
+Libreria a 7 preset (nuovo: «ferro», dal pilota). Contratto e retrospettiva:
+`docs/piano-fabbrica-design-2026-07.md`. Prossimo passo naturale: la prima
+run con riferimenti REALI scelti da Mattia dalle gallerie.
