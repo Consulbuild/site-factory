@@ -72,6 +72,13 @@ export default async function RunPage(ctx: { params: Promise<{ runId: string }> 
         <div className="mt-4">
           <RunRunner runId={run.runId} stato={run.stato} />
         </div>
+        {(run.stato === "da_audire" || run.stato === "pubblicata") && (
+          <div className="mt-4 flex justify-end">
+            <Link href={`/fabbrica/run/${run.runId}/audit`} className="text-sm text-brand hover:underline">
+              {run.stato === "da_audire" ? "Vai all'audit pairwise →" : "Rivedi l'audit →"}
+            </Link>
+          </div>
+        )}
       </section>
     </div>
   );

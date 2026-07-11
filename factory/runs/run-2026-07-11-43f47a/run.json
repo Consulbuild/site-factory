@@ -6,7 +6,7 @@
     "localhost-4ef660",
     "localhost-6b79a1"
   ],
-  "stato": "da_audire",
+  "stato": "pubblicata",
   "fasi": [
     {
       "nome": "designer",
@@ -36,6 +36,6 @@
   ],
   "misure": {
     "roundCritico": 1,
-    "correzioniUmane": 0
+    "correzioniUmane": 1
   }
 }

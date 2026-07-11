@@ -130,7 +130,25 @@ trattamento foto), mai da generazione libera.
       l3-uiclip.mjs (declassato a warning: calibrazione debole misurata),
       lib/factory/fasi.ts (orchestrazione riprendibile, correzione unica per
       gate, loop critico max 3 round), route run NDJSON + RunRunner UI.
-- [ ] M7 — pilota end-to-end: primo preset nuovo pubblicato
+- [x] 2026-07-11 M7 — pilota end-to-end: **«ferro»@1.0.0 pubblicato, libreria
+      = 7**. Audit UI pairwise (contro il più vicino per tokenDiff = meridian,
+      doppio ordine AB/BA a lati anonimi, metadati prefillati dalle
+      motivazioni del designer, audit.json = prova di titolarità) esercitata
+      nel browser reale; decisione «approva» con 2 confronti «pari» (delega
+      autonoma di Mattia registrata in decisoDa). publish-preset.mjs:
+      tokens+meta+resolver → fetch-fonts → build:presets → baseline VRT delle
+      SOLE celle nuove + verifica → igiene TDM (screenshot riferimenti
+      eliminati) → run «pubblicata»; rollback tutta-o-niente PROVATO sul
+      campo (primo tentativo fallito dalla guardia → zero residui).
+      Accettazione: /anteprima/ferro renderizza (VRT ferro 2/2), card Ferro
+      nella scheda Palette dell'editor e riga nella skill palette-designer
+      (rigenerate), **VRT completo 14/14** (12 celle vecchie intatte), ΔVS
+      +0.003 registrato nel novelty report, gate tutti verdi con ferro
+      (a11y 14/14, overflow, lint-tokens 4/4+0 orfani, impeccable 0 residui),
+      misure {roundCritico: 1, correzioniUmane: 1}. Fonte-unica completata:
+      resolver.json governa anche build-presets, lint-tokens, check-overflow,
+      dump-vars e playwright.config (prima erano 5 liste hardcoded — il bug
+      è emerso proprio alla prima pubblicazione).
 - [ ] M8 — assegnazione deterministica cliente→design + anti-collisione
 - [ ] M9 — varianti di sezione, layout per-preset, trattamento foto, fotografia per-preset
 

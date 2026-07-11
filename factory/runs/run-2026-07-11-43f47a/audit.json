@@ -1,0 +1,49 @@
+{
+  "decisione": "approva",
+  "confronti": [
+    {
+      "contro": "meridian@1.0.0",
+      "ordine": "AB",
+      "scelto": "pari"
+    },
+    {
+      "contro": "meridian@1.0.0",
+      "ordine": "BA",
+      "scelto": "pari"
+    }
+  ],
+  "note": "Pilota M7: entrambe le versioni reggono il confronto con pari qualità artigianale su corsie diverse (pari nei due round AB/BA). Approvato per estendere la libreria sulla corsia tecnica chiara, scoperta dai gate come non presidiata.",
+  "decisoDa": "Claude (delega autonoma di Mattia, 2026-07-11)",
+  "data": "2026-07-11T10:52:52.045Z",
+  "meta": {
+    "id": "ferro",
+    "aaker": {
+      "sincerity": 1,
+      "excitement": 0,
+      "competence": 2,
+      "sophistication": 0,
+      "ruggedness": 2,
+      "primaria": "competence"
+    },
+    "settoriConsigliati": [
+      "impianti",
+      "domotica",
+      "serramenti",
+      "energia"
+    ],
+    "antiPatterns": [
+      "food",
+      "benessere",
+      "artigianato caldo"
+    ],
+    "editor": {
+      "nome": "Ferro",
+      "estetica": "freddo-industriale chiaro: slate-navy, spigoli netti, elevazione piatta, verde-patina",
+      "per": "impianti, domotica, serramenti, ingegneria «precisione tecnica»",
+      "fontLabel": "Space Grotesk + Karla",
+      "serifHeading": false,
+      "serifBody": false
+    },
+    "photographySpec": {}
+  }
+}

@@ -18,7 +18,12 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const PRESETS = ["meridian", "atelier", "nova", "canon", "terra", "vita"];
+// Lista derivata dal resolver (fonte unica): i preset pubblicati dalla
+// fabbrica entrano nei gate senza toccare questo file.
+const PRESETS = Object.keys(
+  JSON.parse(readFileSync(new URL("../presets/resolver.json", import.meta.url), "utf8")).modifiers
+    .preset.contexts,
+);
 const errori = [];
 
 // ---------- (a) scan statico ----------

@@ -5,7 +5,9 @@ import { defineConfig } from "@playwright/test";
 // cella ("terra-390"): i test ne ricavano il preset per l'URL di anteprima.
 // Le baseline si generano SOLO sul Mac di lavoro (mai miste tra macchine: il
 // rendering dei font varia per OS/hardware).
-const PRESETS = ["meridian", "atelier", "nova", "canon", "terra", "vita"];
+// La lista viene dal generato (fonte: presets/*.tokens.json): un preset nuovo
+// pubblicato dalla fabbrica estende la matrice VRT senza toccare questo file.
+import { PRESETS } from "./src/lib/presets.gen";
 const VIEWPORTS: Record<string, { width: number; height: number }> = {
   "390": { width: 390, height: 844 },
   "1280": { width: 1280, height: 900 },

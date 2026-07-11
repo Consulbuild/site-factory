@@ -2,23 +2,56 @@
   "name": "Site-factory presets",
   "version": "2025.10",
   "resolutionOrder": [
-    { "$ref": "#/sets/base" },
-    { "$ref": "#/modifiers/preset" }
+    {
+      "$ref": "#/sets/base"
+    },
+    {
+      "$ref": "#/modifiers/preset"
+    }
   ],
   "sets": {
     "base": {
-      "sources": [{ "$ref": "meridian.tokens.json" }]
+      "sources": [
+        {
+          "$ref": "meridian.tokens.json"
+        }
+      ]
     }
   },
   "modifiers": {
     "preset": {
       "contexts": {
         "meridian": [],
-        "atelier": [{ "$ref": "atelier.tokens.json" }],
-        "nova": [{ "$ref": "nova.tokens.json" }],
-        "canon": [{ "$ref": "canon.tokens.json" }],
-        "terra": [{ "$ref": "terra.tokens.json" }],
-        "vita": [{ "$ref": "vita.tokens.json" }]
+        "atelier": [
+          {
+            "$ref": "atelier.tokens.json"
+          }
+        ],
+        "nova": [
+          {
+            "$ref": "nova.tokens.json"
+          }
+        ],
+        "canon": [
+          {
+            "$ref": "canon.tokens.json"
+          }
+        ],
+        "terra": [
+          {
+            "$ref": "terra.tokens.json"
+          }
+        ],
+        "vita": [
+          {
+            "$ref": "vita.tokens.json"
+          }
+        ],
+        "ferro": [
+          {
+            "$ref": "ferro.tokens.json"
+          }
+        ]
       }
     }
   }

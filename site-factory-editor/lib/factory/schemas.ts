@@ -37,6 +37,47 @@ export interface ReferenceSummary {
   screenshots: boolean;
 }
 
+/** audit.json — la decisione umana pairwise (M7): QA e prova di titolarità. */
+export const AuditSchema = z.object({
+  decisione: z.enum(["approva", "scarta"]),
+  confronti: z.array(
+    z.object({
+      contro: z.string(), // preset più vicino, es. "meridian@1.0.0"
+      ordine: z.enum(["AB", "BA"]),
+      scelto: z.enum(["candidato", "esistente", "pari"]),
+    }),
+  ),
+  note: z.string().optional(),
+  decisoDa: z.string().min(1),
+  data: z.string(),
+  meta: z
+    .object({
+      id: z.string().regex(/^[a-z][a-z0-9]*$/),
+      aaker: z.object({
+        sincerity: z.number(),
+        excitement: z.number(),
+        competence: z.number(),
+        sophistication: z.number(),
+        ruggedness: z.number(),
+        primaria: z.string(),
+      }),
+      settoriConsigliati: z.array(z.string()),
+      antiPatterns: z.array(z.string()),
+      editor: z.object({
+        nome: z.string(),
+        estetica: z.string(),
+        per: z.string(),
+        fontLabel: z.string(),
+        serifHeading: z.boolean(),
+        serifBody: z.boolean(),
+      }),
+      photographySpec: z.record(z.string(), z.string()).optional(),
+      fluxStyleFragment: z.record(z.string(), z.unknown()).optional(),
+    })
+    .optional(), // obbligatorio solo su "approva" (verificato nella route)
+});
+export type Audit = z.infer<typeof AuditSchema>;
+
 /** run.json — stato di una run di fabbrica (le fasi si eseguono in M6). */
 export const FASI_RUN = ["designer", "validate", "build", "gates", "critico"] as const;
 export const RunSchema = z.object({

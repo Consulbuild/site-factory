@@ -1,0 +1,55 @@
+{
+  "id": "ferro",
+  "version": "1.0.0",
+  "stato": "attivo",
+  "aaker": {
+    "sincerity": 1,
+    "excitement": 0,
+    "competence": 2,
+    "sophistication": 0,
+    "ruggedness": 2,
+    "primaria": "competence"
+  },
+  "settoriConsigliati": [
+    "impianti",
+    "domotica",
+    "serramenti",
+    "energia"
+  ],
+  "antiPatterns": [
+    "food",
+    "benessere",
+    "artigianato caldo"
+  ],
+  "requisitiContenuto": {},
+  "vincoliCombinazione": {},
+  "photographySpec": {},
+  "fluxStyleFragment": {},
+  "fonts": {
+    "googleCss": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Karla:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap"
+  },
+  "editor": {
+    "nome": "Ferro",
+    "estetica": "freddo-industriale chiaro: slate-navy, spigoli netti, elevazione piatta, verde-patina",
+    "per": "impianti, domotica, serramenti, ingegneria «precisione tecnica»",
+    "fontLabel": "Space Grotesk + Karla",
+    "serifHeading": false,
+    "serifBody": false
+  },
+  "provenance": {
+    "runId": "run-2026-07-11-43f47a",
+    "references": [
+      "localhost-00d161",
+      "localhost-4ef660",
+      "localhost-6b79a1"
+    ],
+    "auditRef": "factory/runs/run-2026-07-11-43f47a/audit.json"
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "data": "2026-07-11",
+      "nota": "pubblicato dalla run run-2026-07-11-43f47a (audit: Claude (delega autonoma di Mattia, 2026-07-11))"
+    }
+  ]
+}

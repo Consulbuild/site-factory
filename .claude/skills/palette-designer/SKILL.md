@@ -63,6 +63,7 @@ Default se in dubbio: **meridian**. Edilizia/energia locali → di norma meridia
 | canon | `#fbfaf7` | `#1a1714` | `#f3efe7` | chiaro |
 | terra | `#faf4ec` | `#3b2f26` | `#f0e6d8` | chiaro |
 | vita | `#ffffff` | `#1e1b2e` | `#f5f5ff` | chiaro |
+| ferro | `#f8fafb` | `#16232e` | `#eef2f6` | chiaro |
 
 Non esiste un blocco `[data-preset="meridian"]`: **meridian = `:root`**.
 <!-- TABELLA-NEUTRI:END -->

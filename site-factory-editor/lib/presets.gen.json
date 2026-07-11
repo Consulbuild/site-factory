@@ -83,5 +83,19 @@
       "ink": "#1e1b2e",
       "surface": "#f5f5ff"
     }
+  },
+  "ferro": {
+    "nome": "Ferro",
+    "estetica": "freddo-industriale chiaro: slate-navy, spigoli netti, elevazione piatta, verde-patina",
+    "per": "impianti, domotica, serramenti, ingegneria «precisione tecnica»",
+    "fontLabel": "Space Grotesk + Karla",
+    "fontsHref": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Karla:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap",
+    "fontHeading": "\"Space Grotesk\", system-ui, sans-serif",
+    "fontBody": "\"Karla\", system-ui, sans-serif",
+    "neutri": {
+      "bg": "#f8fafb",
+      "ink": "#16232e",
+      "surface": "#eef2f6"
+    }
   }
 }

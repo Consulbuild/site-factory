@@ -29,7 +29,11 @@ import { dirname, join } from "node:path";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PRESETS_DIR = join(ROOT, "presets");
-const BASE_PRESETS = ["meridian", "atelier", "nova", "canon", "terra", "vita"];
+// La lista dei preset viene dal resolver (fonte unica, come terrazzo.config):
+// un preset pubblicato dalla fabbrica entra qui senza toccare questo file.
+const BASE_PRESETS = Object.keys(
+  JSON.parse(readFileSync(join(PRESETS_DIR, "resolver.json"), "utf8")).modifiers.preset.contexts,
+);
 const DEFAULT_PRESET = "meridian";
 
 // ---------- modalità candidato ----------
