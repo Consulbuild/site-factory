@@ -2,20 +2,20 @@
   "round": 1,
   "verdict": "FAIL",
   "criteri": [
-    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Scala nettissima e intenzionale: eyebrow spaziato, display serif dominante con parola accent, lead, CTA; il percorso dell'occhio è ovvio sia a 1280 sia a 390." },
-    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata hero scuro → fascia servizi scura → processo su crema → contatti chiari → footer scuro; i blocchi respirano e scandiscono la lettura." },
-    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo bianco e accent rust sull'hero fotografico protetto dall'overlay restano nitidi; corpo scuro su crema nel processo e nei contatti perfettamente leggibile." },
-    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta/rust + espresso + crema: palette calda artigianale con intenzione evidente, l'accent guida CTA e parole chiave, i neutri fanno da palcoscenico." },
-    { "nome": "D5 Artigianato dei dettagli", "score": 0, "sogliaHard": 1, "motivo": "A 390px il display spezza «ristrutturazione» a metà sillaba su tre righe (ristrut/turazi/one) senza trattino, e il FAB telefono si sovrappone alla parola accent «chiavi»: due artefatti di overflow/collisione." },
-    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Personalità decisa: display serif editoriale, accent terracotta, eyebrow con lineetta «— COME FUNZIONA —», processo numerato 01–04 in pastiglie rust; nessun marker AI-slop." }
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Scala chiara e intenzionale su ogni livello: eyebrow in maiuscoletto spaziato, display serif dominante con parola in accent, lead, corpo, CTA; il percorso dell'occhio è ovvio in ogni sezione a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro/chiaro (hero scuro → fascia servizi scura → processo su crema → contatti chiari → footer scuro); padding coerente, i blocchi respirano e scandiscono la lettura." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo bianco e accent rust sull'hero fotografico protetto dall'overlay restano nitidi; corpo scuro su crema nel processo e nei contatti e testi chiari sulle fasce scure tutti leggibili senza sforzo." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta/rust caldo su espresso e crema: palette artigianale con intenzione evidente, l'accent guida CTA, parole chiave («chiavi in mano», «tuo progetto») e le pastiglie numerate 01–04; i neutri fanno da palcoscenico." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 0, "sogliaHard": 1, "motivo": "A 390px il titolo hero esplode: «ristrutturazione» è spezzata a metà sillaba su tre righe (ristrut / turazi / one) senza trattino, e il pulsante telefono flottante si sovrappone alla parola accent «chiavi in» — due artefatti di overflow/collisione da consegnato bocciato." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Personalità decisa e riconoscibile: display serif editoriale caldo, accent terracotta, eyebrow con lineetta «— COME FUNZIONA —», processo numerato 01–04, foto d'interni pertinenti; nessun marker AI-slop." }
   ],
   "findings": [
     {
       "sezione": "hero",
       "viewport": "390",
       "gravita": "bloccante",
-      "motivo": "Il titolo display manda a capo «ristrutturazione» dentro la parola su tre righe (ristrut / turazi / one), effetto della rete di sicurezza overflow-wrap: anywhere che scatta perché il minimo del display è troppo grande per la parola lunga a 390px.",
-      "fixTokenProposto": "abbassare il minimo di --step-display (clamp) finché la parola più lunga entra a 390px"
+      "motivo": "Il titolo display serif manda a capo «ristrutturazione» dentro la parola su tre righe (ristrut / turazi / one) senza trattino: è la rete di sicurezza overflow-wrap: anywhere che scatta perché il minimo del display è troppo grande per la parola italiana lunga a 390px. Risultato illeggibile e non da consegnato.",
+      "fixTokenProposto": "--step-display: abbassare il minimo del clamp (ed eventualmente --step-4) finché la parola più lunga entra a 390px senza spezzarsi mid-word"
     },
     {
       "sezione": "hero",

@@ -162,7 +162,8 @@ const report = {
   recallBoccia: Number(recall.toFixed(3)),
   gate: { kappaMin: 0.6, recallMin: 0.9, superato: kappa >= 0.6 && recall >= 0.9 },
 };
-writeFileSync(join(CAL, "report-critico.json"), JSON.stringify(report, null, 2) + "\n");
+// il canary non deve sovrascrivere il report della calibrazione completa
+writeFileSync(join(CAL, CANARY ? "report-canary.json" : "report-critico.json"), JSON.stringify(report, null, 2) + "\n");
 console.log(`\nκ di Cohen = ${report.kappa}   recall(boccia) = ${report.recallBoccia}   (${n} item validi, ${report.errori.length} errori)`);
 console.log(`matrice: boccia→FAIL ${bb} · boccia→PASS ${bp} · passa→PASS ${pp} · passa→FAIL ${pb}`);
 console.log(report.gate.superato ? "GATE SUPERATO (κ≥0.6 e recall≥0.9)" : "GATE NON SUPERATO");

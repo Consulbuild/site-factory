@@ -2,27 +2,27 @@
   "round": 1,
   "verdict": "FAIL",
   "criteri": [
-    { "nome": "D1 Gerarchia tipografica", "score": 0, "sogliaHard": 1, "motivo": "Nella hero il titolo «La tua ristrutturazione, chiavi in mano» è quasi identico per taglia al lead sottostante: display e corpo si equivalgono, l'occhio parte dal paragrafo e non dal titolo, sia a 390 che a 1280." },
-    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza scuro/chiaro deliberata (hero scura, fascia servizi scura, processo e contatti su crema, footer scuro); respiro costante nelle sezioni, nessun blocco schiacciato né vuoto ingiustificato." },
-    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Tutto leggibile, ma il lead della hero è testo chiaro su foto: l'overlay tiene sul lato sinistro, resta un punto al limite dove l'immagine si schiarisce verso destra." },
-    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta come unico accent che guida (CTA, parole chiave, numeri 01–04, marchio) su neutri caldi e sezioni quasi nere: intenzione evidente e coerente, nessun colore fuori registro." },
-    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Allineamenti puliti, cerchi numerati e linee di connessione coerenti, divisori dei servizi regolari, footer a colonne allineato; nessun overflow né artefatto a 390 o 1280." },
-    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Estetica editoriale serif decisa con eyebrow in maiuscoletto spaziato e lineette, palette artigianale calda e processo numerato: personalità riconoscibile, nessun marker AI-slop (niente Inter ovunque, niente radius uniforme, niente gradiente viola)." }
+    { "nome": "D1 Gerarchia tipografica", "score": 0, "sogliaHard": 1, "motivo": "Nell'hero l'H1 serif «La tua ristrutturazione, chiavi in mano» rende a una taglia quasi identica al lead sottostante: display e corpo si equivalgono, lo stacco è affidato solo a peso e accent e l'occhio parte dal paragrafo, non dal titolo — a 1280 il display collassa sul corpo, a 390 il lead a piena larghezza pesa quanto il titolo." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza scuro/chiaro deliberata (hero scura, fascia servizi scura, processo e contatti su crema, footer scuro); respiro costante, padding coerente, nessun blocco schiacciato né vuoto ingiustificato." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Leggibile ovunque, ma il lead dell'hero è testo chiaro su foto: l'overlay tiene sul lato sinistro mentre a destra (finestre, divano) l'immagine si schiarisce — un punto al limite." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta come unico accent che guida (CTA, parole chiave, cerchi 01–04, marchio) su neutri caldi e sezioni quasi nere: intenzione evidente e coerente col mestiere edile, nessun colore fuori registro." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Allineamenti puliti (processo 01–04, lista contatti, colonne footer), cerchi numerati e linee di connessione coerenti, divisori dei servizi regolari; nessun overflow a 390 nemmeno su «ristrutturazione»." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Estetica editoriale serif decisa (maiuscoletto spaziato con lineette, accent-word, processo numerato con linea) e palette artigianale calda: personalità riconoscibile, nessun marker AI-slop (niente Inter ovunque, radius uniforme, gradiente viola o glass)." }
   ],
   "findings": [
     {
       "sezione": "hero",
       "viewport": "entrambi",
       "gravita": "bloccante",
-      "motivo": "Il titolo display non domina: ha taglia pressoché uguale al lead, così la hero non ha un ancora d'apertura chiaro e il titolo legge come un sottotitolo del paragrafo. È peggio a 390, dove il lead a piena larghezza pesa quanto o più del titolo.",
-      "fixTokenProposto": "--step-display su (ingrandire il titolo hero); se serve --step-1/--t-lead giù per allargare lo stacco titolo↔lead"
+      "motivo": "Il titolo display non domina: ha taglia pressoché uguale al lead, così la hero non ha un'ancora d'apertura chiara e il titolo legge come sottotitolo del paragrafo. Peggiora a 390, dove il lead a piena larghezza pesa quanto o più del titolo.",
+      "fixTokenProposto": "--step-display su (ingrandire il titolo hero); se serve --t-lead/--step-1 giù per allargare lo stacco titolo↔lead"
     },
     {
       "sezione": "hero",
       "viewport": "1280",
       "gravita": "minore",
       "motivo": "Il lead è testo chiaro sovrapposto alla foto; sul lato destro l'immagine (finestre, divano) si schiarisce e la protezione dell'overlay si assottiglia, tenendo la leggibilità al limite.",
-      "fixTokenProposto": "hero-overlay più opaca sul lato testo (rinforzare l'overlay)"
+      "fixTokenProposto": "hero-overlay più opaca sul lato del testo"
     }
   ]
 }

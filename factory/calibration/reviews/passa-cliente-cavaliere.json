@@ -2,25 +2,27 @@
   "round": 1,
   "verdict": "PASS",
   "criteri": [
-    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Scala nitida a ogni livello: eyebrow gold piccolo con lineetta, H1/H2 maiuscolo bold con la frase-accent in oro, lead grigio medio, body — il percorso dell'occhio è ovvio sia nell'hero a 390 sia nella sezione form/lead a 1280." },
-    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro/chiaro (hero scuro → servizi scuri → contatti chiaro → footer scuro) e lo split dark-lead / white-form al centro scandiscono la lettura; la card form respira, i servizi hanno divisori con aria coerente." },
-    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo bianco su overlay scuro dell'hero leggibile senza sforzo, accent oro nitido su foto e su carbone, form su bianco pulito; anche i testi piccoli del footer (P.IVA, descrizione) grigi su near-black restano leggibili." },
-    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Oro/oliva caldo + carbone + neutri avorio: intenzione evidente, l'accent guida (CTA, parole chiave, icone) e i neutri fanno da palcoscenico — palette con carattere da impresa edile, non default." },
-    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Nessun overflow né disallineamento, raggi/ombre coerenti tra bottoni, input e card, icone in riquadri uniformi; unica sbavatura minore è il placeholder «DA CONFERMARE» visibile nel footer (contenuto, non token)." },
-    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Personalità decisa e riconoscibile: sistema eyebrow-lineetta, H2 maiuscolo con una frase in accent, ritmo scuro/chiaro e split lead+form — grammatica ConsulBuild eseguita, nessun marker AI-slop (palette calda non indaco, radius non uniforme a 16px, nessun gradiente viola)." }
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Scala nitida e intenzionale: eyebrow oro piccolo letter-spaced, display maiuscolo enorme con una frase-accent in oro (CHIAVI IN MANO, UN SALTO NEL BUIO), lead grigio medio, titoli servizi netti — il percorso dell'occhio è ovvio sia nell'hero a 390 sia nello split lead/form a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro/chiaro (hero foto scura → fascia servizi scura → contatti avorio → footer scuro) e lo split dark-lead / white-card al centro scandiscono la lettura; la card form respira, i tre servizi hanno divisori con aria coerente." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "H1 e lead sulla parte scura dell'overlay dell'hero leggibili senza sforzo, accent oro nitido su foto e su carbone, card form su bianco pulita, CTA oro con testo bianco; i sottotitoli grigi nella fascia scura sono morbidi ma restano nitidi." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Oro/oliva caldo + carbone + neutri avorio: intenzione evidente, l'accent guida (CTA, parole chiave, icone) e i neutri fanno da palcoscenico — palette con carattere da impresa edile, nessun default viola/indaco." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Allineamenti curati, raggi/ombre coerenti tra bottoni, input, card e riquadri-icona, nessun overflow; ma due sbavature minori rompono il «nessun artefatto»: il segnaposto letterale «DA CONFERMARE» nel footer e il FAB oro che sfiora il bordo del terzo item servizi a 390." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Personalità decisa e riconoscibile: sistema eyebrow-lineetta, H2 maiuscolo con una sola frase in accent, ritmo scuro/chiaro, split lead+form — grammatica ConsulBuild eseguita; nessun marker AI-slop (palette calda non indaco, radius non uniforme a 16px, nessun gradiente viola)." }
   ],
   "findings": [
     {
       "sezione": "footer",
       "viewport": "1280",
       "gravita": "minore",
-      "motivo": "Nella riga REA/capitale sociale compare il segnaposto «DA CONFERMARE» a testo pieno: nel render è leggibile come contenuto non rifinito. È un dato da riempire a monte, non un difetto di design/token."
+      "motivo": "Nella riga societaria trapela il segnaposto letterale «DA CONFERMARE» (Cavaliere Build S.r.l.s. · P.IVA 14763170967 · REA e cap. soc. «DA CONFERMARE»): nel render si legge come contenuto non rifinito. È un dato di intake da riempire a monte, non un difetto di token.",
+      "fixTokenProposto": null
     },
     {
       "sezione": "griglia servizi",
       "viewport": "390",
       "gravita": "minore",
-      "motivo": "Il pulsante telefono circolare oro flottante in basso a destra sfiora il bordo destro del terzo item («…secondo la commessa»); non occlude il testo ma la prossimità è al limite sul mobile stretto."
+      "motivo": "Il pulsante telefono circolare oro flottante in basso a destra sfiora il bordo del terzo item («…secondo la commessa»): non occlude il testo ma la prossimità è al limite sul mobile stretto.",
+      "fixTokenProposto": null
     }
   ]
 }

@@ -2,20 +2,27 @@
   "round": 1,
   "verdict": "PASS",
   "criteri": [
-    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display uppercase pesante nell'hero, eyebrow con lineetta letter-spaced, lead, CTA: percorso dell'occhio ovvio a 390 e 1280; nel processo H2 grande + step 01-04 con titolo bold e corpo distinto." },
-    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Ritmo scuro/chiaro deliberato (hero+strip scuri → processo/contatti chiari → footer scuro), padding di sezione generoso e coerente, nessun blocco schiacciato." },
-    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo hero protetto da scrim scuro, corpo grigio su bianco/crema nitido, sottotitoli grigi su near-black leggibili senza sforzo; nessun punto in cui si strizza l'occhio." },
-    { "nome": "D4 Palette", "score": 1, "sogliaHard": 1, "motivo": "Sistema rosso coerente (accent word, numeri 01-04, marchio, eyebrow, icone), neutri charcoal/crema come palcoscenico; ma la CTA primaria è un blu isolato che non compare altrove — l'accent NON guida la CTA, che è l'unico punto blu del sito." },
-    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Nessun overflow (anche RISTRUTTURAZIONE a 390 resta nel contenitore), step numerati e righe contatto allineati, raggi/icone coerenti, nessun artefatto visibile." },
-    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Nessun marker AI-slop (niente Inter ovunque, niente radius-16 uniforme, niente gradiente viola, niente ombre soffici): display condensato pesante + rosso su charcoal + processo numerato = carattere deciso, coincide con l'ancora buona ConsulBuild." }
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display grotesco maiuscolo pesante nell'hero, eyebrow spaziato con lineetta, lead grigio e corpo umanista; nel processo H2 grande + step 01–04 con titolo bold e corpo distinto: scala intenzionale, percorso dell'occhio ovvio a 390 e 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro/chiaro (hero + strip servizi scuri → processo/contatti chiari → footer scuro), padding di sezione generoso e coerente, nessun blocco schiacciato né vuoto ingiustificato." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Scrim scuro robusto protegge il testo hero sulla foto; nero su bianco e scuro su crema crisp; sottotitoli grigi su near-black e corpo footer leggibili senza strizzare l'occhio." },
+    { "nome": "D4 Palette", "score": 1, "sogliaHard": 1, "motivo": "Sistema rosso coerente (accent word, numeri 01–04, eyebrow, icone contatto, marchio) su neutri charcoal/crema come palcoscenico; ma la CTA primaria è un blu isolato che non compare in nessun altro elemento — l'accent NON guida la CTA (condizione dell'ancora 2), l'azione più importante non porta il colore del brand." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Nessun overflow (anche RISTRUTTURAZIONE a 390 resta nel contenitore), step numerati e righe contatto allineati, raggi/icone/divisori coerenti, nessun artefatto." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Nessun marker AI-slop (font intenzionali, non-Inter; niente radius-16 uniforme; niente gradiente viola; niente ombre soffici; icone Lucide non emoji): display muscolare + rosso su charcoal + processo numerato 01–04 = carattere deciso, coincide con l'ancora buona ConsulBuild." }
   ],
   "findings": [
     {
       "sezione": "hero (e CTA ricorrenti)",
       "viewport": "entrambi",
       "gravita": "minore",
-      "motivo": "La CTA primaria 'RICHIEDI UN PREVENTIVO GRATUITO' è blu, colore che non appare in nessun altro elemento: tutta l'identità (accent word, numeri processo, marchio, icone) è rossa. Il blu isolato indebolisce la coerenza cromatica — l'azione più importante non porta il colore del brand.",
-      "fixTokenProposto": "valutare CTA primaria su --accent/--accent-strong (rosso) per unificare col sistema, invece del --brand-primary blu isolato"
+      "motivo": "La CTA primaria «RICHIEDI UN PREVENTIVO GRATUITO» (e il FAB telefono) sono blu, colore assente da ogni altro elemento: tutta l'identità — accent word, numeri 01–04, eyebrow, marchio, icone contatto — è rossa. Il blu isolato indebolisce la coerenza cromatica: l'accent non guida l'azione più importante.",
+      "fixTokenProposto": "portare la CTA primaria su --accent/--accent-strong (rosso) per unificarla col sistema, invece del --brand-primary blu isolato"
+    },
+    {
+      "sezione": "footer",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "Il marchio «EDIL ROMA COSTRUZIONI» nel footer rende in un rosa/salmone desaturato, più slavato del rosso crisp usato in hero, eyebrow e numeri processo: leggibile ma tonalmente incoerente con l'accent altrove.",
+      "fixTokenProposto": "allineare il marchio footer verso --accent pieno (o --accent-strong) invece della variante schiarita su scuro"
     }
   ]
 }

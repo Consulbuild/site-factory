@@ -2,34 +2,34 @@
   "round": 1,
   "verdict": "FAIL",
   "criteri": [
-    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display serif dominante nell'hero, H2 editoriali con lead più piccolo, titoli di card/step in bold e caption in tono minore: il percorso dell'occhio è ovvio in ogni sezione, a 390 come a 1280." },
-    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro/chiaro (hero scuro → fascia servizi marrone → processo crema → footer scuro), padding generoso e coerente, step numerati ben distanziati." },
-    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo bianco su overlay scuro dell'hero, titoli chiari su marrone con caption leggibili, corpo scuro su crema nel processo: tutto nitido senza strizzare l'occhio." },
-    { "nome": "D4 Palette", "score": 0, "sogliaHard": 1, "motivo": "Collisione lime/fucsia da manuale: CTA primaria e FAB in verde lime, accent in fucsia acceso, entrambi saturi e quasi complementari che si combattono nello stesso hero; il fucsia è per giunta fuori registro coi neutri caldi editoriali." },
-    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Pulito e allineato ovunque tranne l'hero a 390: la parola 'ristrutturazione' del display serif si spezza a metà senza trattino ('ristrutturazio / ne'), una cesura brutta lasciata dalla rete di overflow-wrap." },
-    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Direzione editoriale evidentemente decisa: display serif ampio, eyebrow con lineetta, processo numerato 01–04, palette calda crema/marrone — una personalità riconoscibile, non la media AI anonima (il difetto è cromatico, non di carattere)." }
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Preset serif editoriale con scala chiara e decisa: display serif ampio nell'hero, H2 serif nel processo, lead più leggero, eyebrow con lineetta, label caps + caption nelle card servizi; il percorso dell'occhio è ovvio a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro/chiaro (hero scuro → fascia servizi marrone → processo crema → contatti crema → footer scuro), padding coerente e generoso, step 01–04 ben distanziati." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Leggibile ovunque (testo su overlay scuro dell'hero, titoli chiari su marrone, corpo scuro su crema), ma il testo bianco sul bottone lime «Richiedi un preventivo gratuito» e l'icona bianca sul FAB telefono restano al limite: il verde è troppo chiaro per far staccare netto il bianco." },
+    { "nome": "D4 Palette", "score": 0, "sogliaHard": 1, "motivo": "Collisione lime/fucsia da manuale: CTA primaria e FAB in verde lime, accent (eyebrow, parole accent, numeri 01–04, icone contatti, marchio) in fucsia acceso — due saturi quasi complementari che si combattono nello stesso sguardo, e il fucsia neon è per giunta fuori registro coi neutri caldi crema/marrone del preset editoriale. Nessun accento guida unico." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Pulito e allineato: nessun overflow a 390 (il display serif manda a capo parola intera, «ristrutturazione,» resta su una riga senza cesure), raggi/bordi coerenti (bottoni pill, cerchi numero, chip icona), hairline servizi allineate, nessun artefatto." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Direzione editoriale evidentemente decisa: display serif ampio, eyebrow con lineetta, processo numerato 01–04, neutri caldi crema/marrone — una personalità riconoscibile, non la media AI anonima; nessun marker AI-slop dominante. Il difetto è cromatico (D4), non di carattere." }
   ],
   "findings": [
     {
       "sezione": "hero",
       "viewport": "entrambi",
       "gravita": "bloccante",
-      "motivo": "Il bottone primario 'Richiedi un preventivo gratuito' (e il FAB telefono) sono lime/chartreuse mentre l'accent word 'chiavi in mano' è fucsia acceso: due colori saturi quasi complementari nello stesso sguardo, la collisione stridente lime/fucsia. Nessuna gerarchia cromatica: la CTA e l'accent tirano in direzioni opposte invece di guidare insieme.",
-      "fixTokenProposto": "--brand-primary e --brand-accent: riportare a una coppia coerente col preset canon (neutri caldi come palcoscenico, un solo estremo saturo che guida), eliminando la coppia lime+fucsia."
+      "motivo": "Il bottone primario «Richiedi un preventivo gratuito» e il FAB telefono sono lime/chartreuse mentre l'accent word «chiavi in mano» è fucsia acceso: due colori saturi quasi complementari nello stesso sguardo, la collisione stridente lime/fucsia. La CTA e l'accent tirano in direzioni opposte invece di guidare insieme.",
+      "fixTokenProposto": "palette cliente `primary` e `accent`: riportare CTA e accent a un'unica logica coerente col preset (neutri caldi come palcoscenico, un solo estremo saturo che guida), eliminando la coppia lime+fucsia."
     },
     {
-      "sezione": "fascia processo e contatti",
+      "sezione": "fascia processo, contatti e footer",
       "viewport": "entrambi",
       "gravita": "maggiore",
-      "motivo": "Il fucsia è spruzzato ovunque — accent word in ogni H2 ('tuo progetto', 'contatto'), cerchi numerati 01–04, icone dei contatti, marchio 'EDIL ROMA COSTRUZIONI' nel footer, eyebrow 'COME FUNZIONA' — e stona con l'estetica editoriale calda crema/marrone: l'accent non guida, invade e appare neon fuori registro.",
-      "fixTokenProposto": "--brand-accent: virare verso una tinta in registro coi neutri caldi del preset e ridurne la frequenza d'uso."
+      "motivo": "Il fucsia è spruzzato ovunque — accent word in ogni H2 («tuo progetto», «contatto»), cerchi numerati 01–04, icone dei contatti, marchio «EDIL ROMA COSTRUZIONI» nel footer, eyebrow «COME FUNZIONA» — e stona con l'estetica editoriale calda crema/marrone: l'accent non guida, invade e appare neon fuori registro.",
+      "fixTokenProposto": "palette cliente `accent`: virare verso una tinta in registro coi neutri caldi del preset e ridurne la frequenza d'uso."
     },
     {
-      "sezione": "hero",
-      "viewport": "390",
-      "gravita": "minore",
-      "motivo": "Il display serif spezza 'ristrutturazione' a metà parola senza trattino ('ristrutturazio' a fine riga, 'ne,' a capo): overflow-wrap:anywhere evita l'overflow ma lascia una cesura sgradevole su un titolo editoriale di pregio.",
-      "fixTokenProposto": "--step-display: abbassare il minimo del clamp a 390 così la parola lunga non forza il break mid-word."
+      "sezione": "hero / CTA + FAB telefono",
+      "viewport": "entrambi",
+      "gravita": "maggiore",
+      "motivo": "Testo bianco su bottone lime «Richiedi un preventivo gratuito» e icona bianca sul FAB telefono lime: leggibili ma al limite, il verde è troppo chiaro perché il bianco stacchi senza sforzo.",
+      "fixTokenProposto": "--accent-strong / colore CTA: scurire il verde del bottone finché il testo bianco stacca netto."
     }
   ]
 }

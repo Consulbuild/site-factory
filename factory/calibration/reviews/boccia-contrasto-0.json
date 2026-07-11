@@ -2,12 +2,12 @@
   "round": 1,
   "verdict": "FAIL",
   "criteri": [
-    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display condensato all-caps enorme, H2 nettamente sopra il corpo, processo numerato 01-04, footer scalato: il percorso dell'occhio è ovvio in ogni sezione a 390 come a 1280." },
-    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata hero scuro → banda servizi scura → processo chiaro → contatti crema → footer scuro; padding generoso e costante, i blocchi respirano." },
-    { "nome": "D3 Contrasto e leggibilità", "score": 0, "sogliaHard": 1, "motivo": "Testo che si perde nel fondo in più sezioni: intro e label (TELEFONO/E-MAIL/…) grigio chiaro su crema nei contatti, lead e descrizioni step grigio chiaro su bianco nel processo, sottotitoli servizi grigio smorto su near-black." },
-    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta come accent che guida CTA e parole chiave, slate-blue come colore di supporto, neutri caldi da palcoscenico: coerente e con carattere, niente accostamenti stridenti." },
-    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Nessun overflow (RISTRUTTURAZIONE va a capo pulito a 390), raggi coerenti tra badge circolari/pill/riquadri icona, allineamenti curati, nessun artefatto." },
-    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Sistema deliberato ConsulBuild — grotesque condensato all-caps, eyebrow con lineetta, processo numerato, ritmo scuro/chiaro, palette terracotta/slate; nessun marker AI-slop (no Inter ovunque, no radius 16px uniforme, no gradiente viola, no emoji)." }
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display maiuscolo condensato enorme, H2 nettamente sopra il corpo, eyebrow con lineetta, processo numerato 01-04, footer scalato: il percorso dell'occhio è ovvio in ogni sezione a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata hero scuro → banda servizi scura → processo chiaro → contatti crema → footer scuro; padding generoso e costante, i blocchi respirano senza addossarsi." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 0, "sogliaHard": 1, "motivo": "Testo che si perde nel fondo in più sezioni: intro e label (TELEFONO/E-MAIL/…) grigio chiaro su crema nei contatti, lead e descrizioni step grigio chiaro su bianco nel processo, sottotitoli servizi grigio smorto su near-black — si strizza l'occhio, non è un difetto isolato." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta come unico accent che guida CTA, parole chiave, cerchi numerati e icone; slate a supporto, neutri caldi da palcoscenico: coerente, con carattere, niente accostamenti stridenti." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Nessun overflow (RISTRUTTURAZIONE va a capo pulito a 390), raggi coerenti tra badge circolari/pill/riquadri icona, allineamenti a griglia curati, icone Lucide coerenti, nessun artefatto." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Sistema deliberato in stile ConsulBuild — grotesque condensato all-caps, eyebrow con lineetta, processo numerato, ritmo scuro/chiaro, palette terracotta/slate, foto reale pertinente; nessun marker AI-slop (no Inter ovunque, no radius 16px uniforme, no gradiente viola, no emoji)." }
   ],
   "findings": [
     {
@@ -15,14 +15,14 @@
       "viewport": "390",
       "gravita": "bloccante",
       "motivo": "Il paragrafo intro «Contattaci per una consulenza gratuita…» e le etichette TELEFONO/E-MAIL/INSTAGRAM/SEDE sono in grigio chiaro su fondo crema: si perdono, si strizza l'occhio per leggerle.",
-      "fixTokenProposto": "avvicinare il neutro dei testi muted/lead/label a --brand-ink (grigio più scuro sul crema)"
+      "fixTokenProposto": "avvicinare il neutro dei testi muted/lead/label a --brand-ink (grigio più scuro sul crema); verificare le label con --accent-strong"
     },
     {
       "sezione": "processo (centro)",
       "viewport": "1280",
       "gravita": "bloccante",
-      "motivo": "Il lead «Un processo strutturato…» e le quattro descrizioni degli step («Ascoltiamo le tue idee…», ecc.) sono grigio chiaro su bianco: leggibilità al di sotto della soglia.",
-      "fixTokenProposto": "avvicinare il neutro di lead/body a --brand-ink"
+      "motivo": "Il lead «Un processo strutturato…» e le quattro descrizioni degli step («Ascoltiamo le tue idee…», ecc.) sono grigio chiaro su bianco, con anche la metà grigia del titolo bicolore slavata: leggibilità sotto soglia.",
+      "fixTokenProposto": "avvicinare il neutro di lead/body e del colore heading non-accent a --brand-ink"
     },
     {
       "sezione": "griglia servizi",
@@ -35,7 +35,7 @@
       "sezione": "hero",
       "viewport": "1280",
       "gravita": "minore",
-      "motivo": "Il bottone-ghost «+39 06 4547 8890» (bordo + testo bianchi) e la coda del paragrafo poggiano sulla porzione più chiara della foto (divano/finestra) dove l'overlay protegge meno: contrasto al limite.",
+      "motivo": "Il bottone-ghost «+39 06 4547 8890» (bordo e testo bianchi) e la coda del paragrafo poggiano sulla porzione più chiara della foto (divano/finestra) dove l'overlay protegge meno: contrasto al limite.",
       "fixTokenProposto": "rinforzare .hero-overlay (overlay più scuro/esteso sul lato testo)"
     }
   ]

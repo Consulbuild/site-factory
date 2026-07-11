@@ -2,62 +2,65 @@
   "round": 1,
   "verdict": "FAIL",
   "criteri": [
-    { "nome": "D1 Gerarchia tipografica", "score": 1, "sogliaHard": 1, "motivo": "H1 dominante e processo/contatti con scala leggibile, ma nella fascia servizi i titoli sono piccoli e sottili, quasi appaiati alle didascalie: gerarchia presente ma debole in quel blocco." },
-    { "nome": "D2 Spaziatura e ritmo", "score": 1, "sogliaHard": 1, "motivo": "Respiro complessivo giusto, ma hero e fascia servizi sono entrambe scure e si addossano (ritmo chiaro/scuro perso) e la sezione processo apre con un vuoto ampio non motivato in alto." },
-    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Testo leggibile ovunque grazie all'overlay scuro sull'hero, ma le didascalie della fascia servizi (grigio su quasi-nero) sono al limite dello sforzo di lettura." },
-    { "nome": "D4 Palette", "score": 0, "sogliaHard": 1, "motivo": "Collisione di due sistemi cromatici nello stesso hero: il bottone primario e il FAB telefono sono viola/indaco, mentre l'accent che evidenzia 'chiavi in mano', i numeri 01–04 e i link sono blu — nessuna logica percepibile su quale sia il colore del brand." },
-    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Sbavature reali ma non catastrofiche: il FAB viola copre la terza card servizi a 390, l'H1 mobile manda a capo una riga che inizia con la virgola ', chiavi in mano', e l'eyebrow usa il middot nell'hero ma la lineetta '— LABEL' altrove." },
-    { "nome": "D6 Distinzione creativa", "score": 0, "sogliaHard": 1, "motivo": "Marker AI-slop dominanti: palette viola/indaco default su CTA e FAB, font sans generico (Inter-like) ovunque senza alternanza, widget telefono galleggiante anonimo — il sito potrebbe essere generato da chiunque, nessun tratto deciso da un designer." }
+    { "nome": "D1 Gerarchia tipografica", "score": 1, "sogliaHard": 1, "motivo": "Hero, processo e contatti hanno scala chiara, ma nella fascia scura servizi i titoli sono piccoli e sottili, quasi appaiati alle didascalie: gerarchia debole in quel blocco isolato." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 1, "sogliaHard": 1, "motivo": "Respiro complessivo giusto, però hero e fascia servizi sono due blocchi scuri consecutivi che si toccano (l'alternanza chiaro/scuro parte solo dal processo) e la sezione processo apre con un vuoto ampio non motivato in alto." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Leggibile ovunque grazie all'overlay sull'hero, ma con punti al limite: le didascalie grigie della fascia servizi su quasi-nero e il lead grigio dell'hero sopra la foto chiedono un minimo di sforzo." },
+    { "nome": "D4 Palette", "score": 0, "sogliaHard": 1, "motivo": "Nessuna logica percepibile su quale sia il colore del brand: il bottone primario e il FAB telefono sono viola/indaco, mentre l'accent che evidenzia 'chiavi in mano', i numeri 01–04 e i link è blu — due sistemi cromatici che competono nello stesso hero." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Sbavature reali ma non catastrofiche: a 390 il FAB viola copre la terza card servizi, l'H1 mobile va a capo iniziando la riga con la virgola ', chiavi in mano', e l'eyebrow usa il middot nell'hero ma la lineetta '— LABEL —' altrove." },
+    { "nome": "D6 Distinzione creativa", "score": 0, "sogliaHard": 1, "motivo": "Marker AI-slop dominanti: palette viola/indaco default su CTA e FAB, un unico sans generico (tipo Inter/system) su tutto senza alternanza, widget telefono galleggiante anonimo — il sito potrebbe essere generato da chiunque, nessun tratto deciso da un designer." }
   ],
   "findings": [
     {
-      "sezione": "hero",
+      "sezione": "hero (CTA) e coda (FAB telefono)",
       "viewport": "entrambi",
       "gravita": "bloccante",
-      "motivo": "Primary viola/indaco (bottone 'Richiedi un preventivo gratuito' + FAB telefono) contro accent blu (parola 'chiavi in mano', numeri processo, link footer): due hue in conflitto senza gerarchia cromatica, esattamente il pattern 'colori in collisione' della rubrica."
+      "motivo": "Il viola/indaco di default della grafica AI sul bottone 'Richiedi un preventivo gratuito' e sul FAB telefono è un marker AI-slop dominante e, insieme all'accent blu delle parole/numeri/link, produce due colori-brand in concorrenza: l'utente non capisce quale sia il colore dell'azienda. Zero aggancio al mestiere (impresa edile).",
+      "fixTokenProposto": "--brand-primary e --brand-accent verso una coppia coerente e con intenzione di settore (allontanarsi dal default viola+blu)"
     },
     {
-      "sezione": "hero",
-      "viewport": "entrambi",
-      "gravita": "bloccante",
-      "motivo": "Il viola/indaco default sul CTA e sul pulsante telefono è un marker AI-slop dominante: leva la personalità e allinea il sito alla media estetica generata."
-    },
-    {
-      "sezione": "intera pagina",
+      "sezione": "intera pagina (tipografia)",
       "viewport": "entrambi",
       "gravita": "maggiore",
-      "motivo": "Un unico sans generico stile Inter/system su titoli, corpo, eyebrow e bottoni, senza alternanza né intenzione tipografica: professionale ma anonimo, nessuna scelta riconoscibile."
+      "motivo": "Un solo sans generico stile Inter/system su titoli, corpo, eyebrow e bottoni, senza alternanza né pairing: professionale ma anonimo, nessuna scelta tipografica riconoscibile."
     },
     {
       "sezione": "griglia servizi",
       "viewport": "390",
       "gravita": "maggiore",
-      "motivo": "Il FAB telefono viola galleggia sopra la terza card ('CHIAVI IN MANO'), sovrapponendosi al contenuto: elemento che copre il testo invece di rispettarne il flusso."
+      "motivo": "Il FAB telefono viola galleggia sopra la terza card ('CHIAVI IN MANO'), sovrapponendosi al contenuto invece di rispettarne il flusso."
     },
     {
-      "sezione": "griglia servizi",
+      "sezione": "fascia scura servizi",
       "viewport": "1280",
       "gravita": "maggiore",
-      "motivo": "La fascia scura servizi è una banda verticale schiacciata: titoli piccoli e sottili e didascalie grigie addossate, senza il respiro di una vera sezione — abbassa insieme gerarchia (D1), ritmo (D2) e contrasto percepito (D3).",
-      "fixTokenProposto": "--brand-space (aumentare il padding verticale della fascia servizi)"
+      "motivo": "La fascia servizi è una banda verticale schiacciata: titoli piccoli e sottili con didascalie grigie addossate e poco padding, senza il respiro di una vera sezione — abbassa insieme gerarchia (D1), ritmo (D2) e contrasto percepito (D3).",
+      "fixTokenProposto": "--brand-space (aumentare il padding verticale della fascia servizi) e --step per i titoli di quel blocco verso l'alto"
     },
     {
-      "sezione": "hero",
-      "viewport": "390",
-      "gravita": "minore",
-      "motivo": "Il titolo va a capo lasciando la virgola in testa alla riga accent (', chiavi in mano'): punteggiatura orfana, rifinitura da consegnato mancante."
-    },
-    {
-      "sezione": "hero",
-      "viewport": "entrambi",
-      "gravita": "minore",
-      "motivo": "L'eyebrow dell'hero separa con il middot ('SOPRALLUOGO GRATUITO · RISPOSTA IN 24 ORE') mentre processo e contatti usano la lineetta '— LABEL —': trattamento eyebrow incoerente rispetto al sistema di brand."
-    },
-    {
-      "sezione": "fascia scura vantaggi/servizi",
+      "sezione": "fascia scura servizi (adiacenza con hero)",
       "viewport": "entrambi",
       "gravita": "minore",
       "motivo": "Hero e fascia servizi sono due blocchi scuri consecutivi che si toccano: l'alternanza chiaro/scuro che dovrebbe scandire la lettura parte solo dalla sezione processo."
+    },
+    {
+      "sezione": "sezione processo",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "La sezione 'Come funziona' apre con un vuoto verticale ampio e non motivato sopra l'eyebrow, rispetto al ritmo più fitto del resto della pagina.",
+      "fixTokenProposto": "--brand-space (ridurre il padding-top della sezione processo per allinearlo al ritmo generale)"
+    },
+    {
+      "sezione": "hero (titolo H1)",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "A 390 il titolo va a capo lasciando la virgola in testa alla riga accent (', chiavi in mano'): punteggiatura orfana sull'elemento più in vista, rifinitura da consegnato mancante.",
+      "fixTokenProposto": "--step-display verso il minimo a 390 per far rientrare 'ristrutturazione,' ed evitare l'orfano"
+    },
+    {
+      "sezione": "eyebrow (hero vs processo/contatti)",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "L'eyebrow dell'hero separa col middot ('SOPRALLUOGO GRATUITO · RISPOSTA IN 24 ORE') mentre processo e contatti usano la lineetta '— LABEL —': trattamento dell'eyebrow incoerente rispetto al sistema di brand."
     }
   ]
 }

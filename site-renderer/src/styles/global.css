@@ -143,24 +143,62 @@
     padding-block: calc(clamp(3.5rem, 7vw, 8rem) * var(--brand-space));
   }
 
-  /* Sezione a fondo scuro (ritmo scuro/chiaro dello standard). Ricolora da sola
-     eyebrow/lead/bottoni secondari, così i componenti non ripetono utility. */
+  /* Sezione a fondo inverso (ritmo scuro/chiaro dello standard; su nova, che è
+     scuro di suo, l'inversione è CHIARA). Ricolora da sola testo secondario,
+     eyebrow, accent e bottoni, così i componenti non ripetono utility e
+     l'inversione resta coerente su ogni preset. */
   .section-dark {
     background: var(--color-inverse-bg);
     color: var(--color-inverse-ink);
+    /* il testo secondario (text-muted, .t-lead) segue l'inversione: il muted
+       del preset è tarato sul fondo BASE e sul fondo inverso non regge.
+       ⚠ Si ridefinisce la variabile THEME (--color-muted), non --brand-muted:
+       le --color-* di @theme sono già sostituite a :root, un override di
+       --brand-* dentro una banda non le raggiunge più. */
+    --color-muted: color-mix(in srgb, var(--color-inverse-ink) 78%, var(--color-inverse-bg));
   }
   .section-dark--deep { background: var(--color-inverse-bg-2); }
-  .section-dark .t-lead {
-    color: color-mix(in srgb, var(--color-inverse-ink) 78%, transparent);
-  }
   .section-dark .eyebrow {
-    /* guardrail AA: accent schiarito per il testo piccolo su fondo scuro */
-    color: color-mix(in oklab, var(--color-accent), #fff 32%);
+    /* guardrail AA: accent spostato verso l'inchiostro inverso (chiaro su
+       banda scura, scuro sulla banda chiara di nova) per il testo piccolo */
+    color: color-mix(in oklab, var(--color-accent), var(--color-inverse-ink) 32%);
+  }
+  .section-dark .accent-word {
+    /* guardrail AA per l'accent grande (3:1) su fondo inverso: nel base è
+       l'identità var(--brand-accent); i preset il cui accent non regge la
+       ridefinisce come mix verso l'inchiostro inverso (es. terra) */
+    color: var(--brand-accent-word-inverse, var(--color-accent));
+  }
+  /* Una superficie in tinta BASE dentro una banda inversa (es. la card bianca
+     del form nel blocco contatti) torna al muted del preset: l'override della
+     banda non deve sanguinare dentro le superfici chiare. */
+  .section-dark :is(.bg-bg, .bg-surface, .surface-card) {
+    --color-muted: var(--brand-muted);
+  }
+  /* Marchio testuale in accent su fondo inverso (footer): testo PICCOLO,
+     serve 4.5 — ogni preset definisce brand-accent-on-inverse nei token
+     (mix dell'accent verso l'inchiostro inverso, segue l'accent cliente). */
+  .brand-mark {
+    color: var(--brand-accent-on-inverse, var(--color-accent));
+  }
+
+  /* Hero su foto: l'overlay (.hero-overlay, velo scuro) è scuro PER COSTRUZIONE
+     su ogni preset → testo e controlli seguono l'overlay, NON l'inversione del
+     preset (su nova l'inversione è chiara: senza questo blocco il titolo era
+     inchiostro scuro sulla foto). I due token pinnati fanno funzionare tutti i
+     ricolori .section-dark qui sopra; il fondo scuro è anche il fallback se la
+     foto non carica. */
+  .hero-photo {
+    --color-inverse-bg: #141414;
+    --color-inverse-ink: #f5f4f0;
   }
 
   /* --- tipografia --- */
-  /* overflow-wrap: ultima rete di sicurezza per copy di pipeline con parole
-     oltre ~16 glifi — meglio uno spezzone raro che il layout che esplode. */
+  /* overflow-wrap: break-word = ultima rete di sicurezza per copy di pipeline
+     con parole fuori misura — spezza SOLO in emergenza vera. Mai `anywhere`:
+     con text-wrap:balance ogni punto diventa un break legale e il balance
+     spezza le parole anche quando starebbero (visto sul re-audit M4:
+     «ristrutturazio/ne» sui display serif a 390px). */
   .t-display {
     font-family: var(--font-heading);
     font-weight: var(--w-display);
@@ -168,7 +206,7 @@
     line-height: 1.04;
     letter-spacing: var(--heading-tracking, -0.01em);
     text-transform: var(--heading-case, none);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
   .t-h1 {
     font-family: var(--font-heading);
@@ -177,7 +215,7 @@
     line-height: 1.08;
     letter-spacing: var(--heading-tracking, -0.01em);
     text-transform: var(--heading-case, none);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
   .t-h2 {
     font-family: var(--font-heading);
@@ -186,7 +224,7 @@
     line-height: 1.1;
     letter-spacing: var(--heading-tracking, -0.01em);
     text-transform: var(--heading-case, none);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
   .t-h3 {
     font-family: var(--font-heading);

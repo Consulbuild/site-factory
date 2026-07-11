@@ -503,7 +503,7 @@
   },
   "step-display": {
     "$type": "string",
-    "$value": "clamp(3.5rem, 2rem + 7vw, 7rem)",
+    "$value": "clamp(2.5rem, 0.68rem + 7.9vw, 7rem)",
     "$extensions": {
       "com.consulbuild": {
         "raw": true

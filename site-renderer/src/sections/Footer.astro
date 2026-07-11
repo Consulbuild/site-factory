@@ -19,22 +19,22 @@ const year = new Date().getFullYear();
   <div class="container-site pb-8 pt-14">
     <div class="grid gap-x-12 gap-y-10 md:grid-cols-12">
       <div class="md:col-span-6 lg:col-span-5">
-        <p class="font-heading text-[1.05rem] font-strong uppercase tracking-tight text-accent">
+        <p class="brand-mark font-heading text-[1.05rem] font-strong uppercase tracking-tight">
           {meta.businessName}
         </p>
-        {data.tagline && <p class="mt-3 max-w-[46ch] text-white/70">{data.tagline}</p>}
+        {data.tagline && <p class="mt-3 max-w-[46ch] text-muted">{data.tagline}</p>}
 
-        <ul class="mt-6 space-y-1.5 t-caption text-white/70">
+        <ul class="mt-6 space-y-1.5 t-caption text-muted">
           {contact.address && <li>{contact.address}</li>}
           {data.legalNote && <li>{data.legalNote}</li>}
           {contact.email && (
             <li>
-              <a href={`mailto:${contact.email}`} class="hover:text-white hover:underline">{contact.email}</a>
+              <a href={`mailto:${contact.email}`} class="hover:text-inverse-ink hover:underline">{contact.email}</a>
             </li>
           )}
           {contact.phone && (
             <li>
-              <a href={telHref(contact.phone)} class="hover:text-white hover:underline">{contact.phone}</a>
+              <a href={telHref(contact.phone)} class="hover:text-inverse-ink hover:underline">{contact.phone}</a>
             </li>
           )}
         </ul>
@@ -44,11 +44,11 @@ const year = new Date().getFullYear();
         <nav class="grid gap-10 sm:grid-cols-2 md:col-span-6 lg:col-span-6 lg:col-start-7" aria-label="Footer">
           {data.columns.map((col) => (
             <div>
-              <h3 class="t-caption font-bold uppercase tracking-[0.1em] text-white/55">{col.title}</h3>
+              <h3 class="t-caption font-bold uppercase tracking-[0.1em] text-muted">{col.title}</h3>
               <ul class="mt-4 space-y-2.5">
                 {col.links.map((link) => (
                   <li>
-                    <a href={link.href} class="t-caption text-white/75 hover:text-white">
+                    <a href={link.href} class="t-caption text-inverse-ink/80 hover:text-inverse-ink">
                       {link.label}
                     </a>
                   </li>
@@ -60,8 +60,8 @@ const year = new Date().getFullYear();
       )}
     </div>
 
-    <div class="mt-12 border-t border-white/10 pt-6 text-center">
-      <p class="t-caption text-white/50">© {year} {meta.businessName}. Tutti i diritti riservati.</p>
+    <div class="mt-12 border-t border-inverse-ink/10 pt-6 text-center">
+      <p class="t-caption text-muted">© {year} {meta.businessName}. Tutti i diritti riservati.</p>
     </div>
   </div>
 </footer>

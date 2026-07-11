@@ -2,20 +2,34 @@
   "round": 1,
   "verdict": "PASS",
   "criteri": [
-    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display serif Didone enorme, eyebrow in maiuscoletto spaziato, lead grigio medio, H3 bold serif e body: il percorso dell'occhio è ovvio in hero, processo e contatti, sia a 390 che a 1280." },
-    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata hero scuro → fascia servizi scura → 'come funziona' chiaro → contatti crema → footer scuro; card processo e blocchi contatti respirano con margini coerenti." },
-    { "nome": "D3 Contrasto e leggibilità", "score": 2, "sogliaHard": 1, "motivo": "Testo bianco/accent su overlay scuro dell'hero nitido; i sottotitoli grigi della fascia servizi e il lead su foto sono al limite ma restano leggibili senza strizzare l'occhio." },
-    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta/rust come unico accent che guida (CTA, parole chiave 'chiavi in mano'/'tuo progetto'/'contatto', cerchi numerati, brand nel footer) su charcoal e crema: neutri palcoscenico, carattere caldo editoriale." },
-    { "nome": "D5 Artigianato dei dettagli", "score": 1, "sogliaHard": 1, "motivo": "Allineamenti, divisori e cerchi coerenti, ma a 390px il display spezza 'ristrutturazione' a metà parola ('ristrutturaz'/'ione') senza trattino: la rete overflow-wrap si vede." },
-    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Serif ad alto contrasto in stile Didone, palette terracotta/crema, ritmo scuro/chiaro e processo a cerchi numerati: estetica evidentemente DECISA, nessun marker AI-slop (niente Inter, niente radius uniforme, niente gradiente viola)." }
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display serif alto-contrasto (Didone) enorme con parola-accent in ruggine, lead nettamente subordinato, eyebrow in maiuscoletto spaziato, titoli H3 bold serif distinti dal body: il percorso dell'occhio è ovvio in hero, processo numerato e contatti, a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro/chiaro (hero e fascia servizi scuri → 'Come funziona' e contatti chiari → footer scuro); padding generoso e coerente, card processo e blocchi contatti che respirano, nessuna sezione addossata né vuoto ingiustificato." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Leggibile ovunque, ma con punti al limite: il lead dei contatti (coda-390) è un taupe smorzato su fondo blush e l'eyebrow in maiuscoletto crema sull'hero fotografico trattato è al confine sul lato destro più luminoso della foto." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta/ruggine come unico accent che guida (CTA, parole-chiave 'chiavi in mano'/'tuo progetto'/'contatto', cerchi numerati, icone, brand nel footer) su neutri caldi charcoal e crema: neutri da palcoscenico, insieme con carattere editoriale, nessun colore fuori registro." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "A 390px 'ristrutturazione,' entra intera su una riga (nessuno spezzamento a metà parola), allineamenti puliti, cerchi numerati e divisori coerenti, colonne del footer a registro, nessun overflow orizzontale." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Estetica evidentemente DECISA: serif Didone ad alto contrasto, palette terracotta/crema calda (non l'indaco AI di default), eyebrow con lineette e maiuscoletto, processo a cerchi numerati 01–04; nessun marker AI-slop (niente Inter ovunque, niente radius uniforme, niente gradiente viola)." }
   ],
   "findings": [
+    {
+      "sezione": "contatti (coda)",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "Il paragrafo lead sotto «Mettiti in contatto» è un taupe smorzato su fondo blush: legge, ma è visibilmente più debole di un corpo pieno ed è il punto meno nitido della pagina.",
+      "fixTokenProposto": "colore del lead verso --brand-ink (ridurre lo smorzamento del muted sul fondo chiaro caldo)"
+    },
     {
       "sezione": "hero",
       "viewport": "390",
       "gravita": "minore",
-      "motivo": "Il display serif a 390px è così grande che 'ristrutturazione' si spezza a metà parola su due righe ('ristrutturaz' / 'ione') senza trattino, effetto sgradevole tipico della rete di sicurezza overflow-wrap.",
-      "fixTokenProposto": "--step-display: abbassare il minimo del clamp così le parole italiane lunghe entrano su una riga a 390px senza spezzarsi"
+      "motivo": "L'eyebrow «SOPRALLUOGO GRATUITO · RISPOSTA IN 24 ORE» in maiuscoletto crema poggia sulla foto trattata; a 390 la parte destra dell'immagine è più chiara e la spaziatura larga porta l'occhiello al limite della lettura.",
+      "fixTokenProposto": "rinforzo di --hero-overlay nella fascia dove corre l'eyebrow"
+    },
+    {
+      "sezione": "hero",
+      "viewport": "390",
+      "gravita": "minore",
+      "motivo": "Sia il display sovradimensionato che l'ultima parola della prima riga del lead ('mano') arrivano a filo del margine destro: nessun overflow o clipping, ma il respiro laterale a 390 è tirato.",
+      "fixTokenProposto": ""
     }
   ]
 }

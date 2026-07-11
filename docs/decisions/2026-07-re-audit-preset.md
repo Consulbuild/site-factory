@@ -66,6 +66,41 @@ difetti farebbero bocciare candidati incolpevoli al gate L4.
 8. **terra+vita / testo muted su `.section-dark`**: leggibile ma al limite;
    schiarire la variante muted su fondo scuro.
 
+## Esito dei fix (2026-07-11, stessa giornata)
+
+Backlog eseguito e verificato — chiusura misurata sui criteri dichiarati:
+
+- **axe color-contrast = 0 nodi su TUTTI i preset, entrambi i viewport**
+  (suite @a11y 12/12 verde; prima: nova 29, terra 46, vita 27, atelier 23,
+  meridian 21 dopo il primo fix sbagliato — vedi Sorprese del piano sulla
+  sostituzione a :root delle variabili @theme).
+- **Re-audit post-fix: 5/5 PASS** (nova era FAIL): hero su foto pinnato al
+  contesto overlay (`.hero-photo` ridefinisce le variabili theme inverse),
+  `.section-dark` ricolora da sé il muted (e le superfici chiare al suo
+  interno lo ripristinano), guardrail token `brand-accent-on-inverse`
+  (footer, 4.5) e `brand-accent-word-inverse` (accent grande, 3:1; identità
+  nel base, mix 25% su terra), muted di terra `#736353` e vita `#69707d`
+  ricalcolati in HCT (tinta conservata).
+- **Parole spezzate: 0 su h1/h2 a 390/768/1280 su tutti i preset** (probe
+  getClientRects): `overflow-wrap: break-word` al posto di `anywhere`
+  (il balance spezzava le parole) + clamp ritarati (canon `0.6rem+8.6vw`,
+  nova `0.68rem+7.9vw`, terra `1.35rem+5.5vw` — Fraunces opsz rende le
+  metriche non lineari, misurato sul render).
+- **Canary del critico: 10/10 (κ=1.0, recall=1.0)** sui render post-fix
+  (gold set rigenerato); VRT rigenerato consapevolmente e stabile ×2;
+  lint-tokens/overflow/impeccable puliti; `astro check` invariato; editor
+  `tsc` ok.
+- Il punto 6 (spazio prima della virgola) è **metrica del glifo di Plus
+  Jakarta Sans** (sidebearing della virgola a corpo display), non un bug di
+  renderAccent: il markup è corretto e su nova/canon la virgola è attaccata.
+  Wontfix per ora; eventuale cura tipografica in M9.
+- Restano come **note estetiche non bloccanti** (identità del preset, da
+  gusto in un futuro giro di taste-review): lavanda fredda di nova accanto
+  all'arancio caldo, glow viola nell'hero nova, TrustBar volutamente sottile
+  (grammatica dei consegnati: su meridian il critico la promuove).
+
+**nova è di nuovo assegnabile.**
+
 ## Decisioni
 
 - **nova non è assegnabile finché il FAIL non rientra** (i bloccanti 1–2):

@@ -2,20 +2,26 @@
   "round": 1,
   "verdict": "PASS",
   "criteri": [
-    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display grotesque pesante domina, lead grigio chiaramente subordinato, eyebrow tracciato piccolo, H2 e numeri di processo distinti: il percorso dell'occhio è ovvio a 390 come a 1280." },
-    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Ritmo deliberato: blocco scuro (hero + fascia servizi) → sezioni chiare (processo, contatti) → footer scuro; il processo a 1280 respira, la fascia servizi compatta funziona da estensione del hero, non da blocco schiacciato." },
-    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Tutto leggibile, ma le ultime righe del lead del hero a 390 scivolano su zone più chiare della foto (tavolo/pavimento) diventando un punto al limite; a 1280 il lead sta sul pannello scuro ed è nitido." },
-    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Neutri caldi (quasi-nero + avorio) con un unico accent terracotta che guida con disciplina — parola-chiave nei titoli, CTA primaria, numeri processo, icone, marchio, FAB; nessuna collisione." },
-    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Allineamenti puliti, cerchi numerati e linee di connessione coerenti, icone contatti uniformi, nessun overflow orizzontale; il display lungo va a capo correttamente." },
-    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Estetica minimale decisa: display grotesque tight e pesante contro corpo regular, superfici flat senza ombre soffici, singolo accent caldo — nessun marker AI-slop (no Inter ovunque, no radius 16 uniforme, no gradiente viola, no glass)." }
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display grotesque pesante e a tracking stretto domina nettamente sul lead grigio; eyebrow tracciato piccolo, H2 di processo/contatti > lead > titoli step: il percorso dell'occhio è ovvio a 390 come a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Ritmo deliberato scuro/chiaro: hero scuro + striscia servizi come proof-strip → processo e contatti chiari che respirano → footer scuro; la fascia servizi compatta funziona da estensione del hero, non da blocco schiacciato." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Leggibile ovunque, ma con punti al limite: a 390 le righe finali del lead del hero scivolano su zone più chiare della foto e a 1280 la descrizione del footer in mauve smorzato con i link in grigio medio è il minimo di contrasto della pagina." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Neutri caldi quasi-nero + avorio con un unico accent terracotta che guida con disciplina — parola-chiave nei titoli, CTA primaria, numeri 01–04, tile icone, marchio, FAB; nessuna collisione, palette con carattere." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Allineamenti puliti, cerchi numerati e linee di connessione coerenti, tile icone contatti uniformi, nessun overflow orizzontale a 390 (display lowercase 'ristrutturazione,' entra), footer ordinato: rifinito come un consegnato." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Estetica minimale decisa: display grotesque tight e pesante contro corpo regular, superfici flat senza ombre soffici, singolo accent caldo e fasce a filo sottile — nessun marker AI-slop (no Inter ovunque, no radius 16 uniforme, no gradiente viola, no glass, icone Lucide non emoji)." }
   ],
   "findings": [
     {
       "sezione": "hero",
       "viewport": "390",
       "gravita": "minore",
-      "motivo": "Le righe finali del paragrafo lead ('con tempi e costi definiti prima di iniziare') si sovrappongono a porzioni più chiare della foto di sfondo, abbassando il contrasto rispetto al testo bianco del titolo; a 1280 il problema non c'è perché il lead resta sul pannello scuro.",
-      "fixTokenProposto": "rafforzare la protezione del gradiente hero (`.hero-overlay`) sul lato testo, opacità più alta verso il basso"
+      "motivo": "Le righe finali del paragrafo lead ('con tempi e costi definiti prima di iniziare') si sovrappongono a porzioni più chiare della foto di sfondo (tavolo/pavimento) dove l'overlay è più debole, abbassando il contrasto rispetto al titolo bianco; a 1280 il lead resta sul pannello scuro ed è nitido."
+    },
+    {
+      "sezione": "footer",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "La descrizione aziendale in tono mauve smorzato e la lista dei link in grigio medio sul fondo quasi-nero restano leggibili ma sono il punto più debole per contrasto della pagina.",
+      "fixTokenProposto": "--brand-ink del testo secondario/link del footer verso più chiaro"
     }
   ]
 }

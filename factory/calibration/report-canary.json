@@ -1,0 +1,21 @@
+{
+  "data": "2026-07-11",
+  "itemTotali": 10,
+  "itemValidi": 10,
+  "errori": [],
+  "matrice": {
+    "bocciaGiudicataFAIL": 7,
+    "bocciaGiudicataPASS": 0,
+    "passaGiudicataPASS": 3,
+    "passaGiudicataFAIL": 0
+  },
+  "falsiPromossi": [],
+  "falsiBocciati": [],
+  "kappa": 1,
+  "recallBoccia": 1,
+  "gate": {
+    "kappaMin": 0.6,
+    "recallMin": 0.9,
+    "superato": true
+  }
+}

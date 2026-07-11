@@ -74,12 +74,12 @@ if (!hasForm) {
         )}
 
         {(c.email || c.address) && (
-          <dl class="mt-9 grid gap-x-10 gap-y-5 border-t border-white/15 pt-7 sm:grid-cols-2">
+          <dl class="mt-9 grid gap-x-10 gap-y-5 border-t border-inverse-ink/15 pt-7 sm:grid-cols-2">
             {c.email && (
               <div>
-                <dt class="t-caption font-bold uppercase tracking-[0.1em] text-white/60">E-mail</dt>
+                <dt class="t-caption font-bold uppercase tracking-[0.1em] text-muted">E-mail</dt>
                 <dd class="mt-1">
-                  <a href={`mailto:${c.email}`} class="text-white/85 hover:text-white hover:underline">
+                  <a href={`mailto:${c.email}`} class="text-inverse-ink/85 hover:text-inverse-ink hover:underline">
                     {c.email}
                   </a>
                 </dd>
@@ -87,8 +87,8 @@ if (!hasForm) {
             )}
             {c.address && (
               <div>
-                <dt class="t-caption font-bold uppercase tracking-[0.1em] text-white/60">Sede</dt>
-                <dd class="mt-1 text-white/85">{c.address}</dd>
+                <dt class="t-caption font-bold uppercase tracking-[0.1em] text-muted">Sede</dt>
+                <dd class="mt-1 text-inverse-ink/85">{c.address}</dd>
               </div>
             )}
           </dl>

@@ -74,6 +74,24 @@
       }
     }
   },
+  "brand-accent-on-inverse": {
+    "$type": "string",
+    "$value": "color-mix(in oklab, var(--brand-accent), var(--brand-inverse-ink) 45%)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "brand-accent-word-inverse": {
+    "$type": "string",
+    "$value": "var(--brand-accent)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
   "brand-bg": {
     "$type": "color",
     "$value": {
