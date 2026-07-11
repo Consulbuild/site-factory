@@ -1,0 +1,256 @@
+{
+  "candidato": {
+    "tokens": "/Users/mattia/Claude Projects/Site-factory/factory/runs/run-2026-07-11-43f47a/candidate.tokens.json",
+    "shots": "/Users/mattia/Claude Projects/Site-factory/factory/runs/run-2026-07-11-43f47a/shots"
+  },
+  "soglie": {
+    "csdDiverse": {
+      "p5": 0.0731,
+      "p10": 0.0765,
+      "p25": 0.1096,
+      "p50": 0.1826
+    },
+    "csdQuasiUguali": {
+      "p50": 0.016,
+      "p90": 0.0232
+    },
+    "tokenDiffDiverse": {
+      "p5": 0.3203,
+      "p10": 0.3441,
+      "p50": 0.438
+    },
+    "cloneDHash": 2
+  },
+  "vsLibreria": {
+    "perPreset": [
+      {
+        "id": "meridian",
+        "dHashHamming": 3,
+        "csdDist": 0.1646,
+        "tokenDiff": 0.3484,
+        "topContributi": [
+          {
+            "gruppo": "font",
+            "punteggio": 0.8,
+            "peso": 0.3,
+            "contributo": 0.24
+          },
+          {
+            "gruppo": "colori",
+            "punteggio": 0.1255,
+            "peso": 0.4,
+            "contributo": 0.0502
+          },
+          {
+            "gruppo": "forma",
+            "punteggio": 0.2346,
+            "peso": 0.2,
+            "contributo": 0.0469
+          },
+          {
+            "gruppo": "scala",
+            "punteggio": 0.1125,
+            "peso": 0.1,
+            "contributo": 0.0113
+          }
+        ]
+      },
+      {
+        "id": "atelier",
+        "dHashHamming": 2,
+        "csdDist": 0.1077,
+        "tokenDiff": 0.3515,
+        "topContributi": [
+          {
+            "gruppo": "font",
+            "punteggio": 0.8,
+            "peso": 0.3,
+            "contributo": 0.24
+          },
+          {
+            "gruppo": "scala",
+            "punteggio": 0.5813,
+            "peso": 0.1,
+            "contributo": 0.0581
+          },
+          {
+            "gruppo": "colori",
+            "punteggio": 0.0937,
+            "peso": 0.4,
+            "contributo": 0.0375
+          },
+          {
+            "gruppo": "forma",
+            "punteggio": 0.0793,
+            "peso": 0.2,
+            "contributo": 0.0159
+          }
+        ]
+      },
+      {
+        "id": "nova",
+        "dHashHamming": 16,
+        "csdDist": 0.1972,
+        "tokenDiff": 0.548,
+        "topContributi": [
+          {
+            "gruppo": "colori",
+            "punteggio": 0.6802,
+            "peso": 0.4,
+            "contributo": 0.2721
+          },
+          {
+            "gruppo": "forma",
+            "punteggio": 0.4672,
+            "peso": 0.2,
+            "contributo": 0.0934
+          },
+          {
+            "gruppo": "scala",
+            "punteggio": 0.925,
+            "peso": 0.1,
+            "contributo": 0.0925
+          },
+          {
+            "gruppo": "font",
+            "punteggio": 0.3,
+            "peso": 0.3,
+            "contributo": 0.09
+          }
+        ]
+      },
+      {
+        "id": "canon",
+        "dHashHamming": 2,
+        "csdDist": 0.2393,
+        "tokenDiff": 0.3928,
+        "topContributi": [
+          {
+            "gruppo": "font",
+            "punteggio": 0.8,
+            "peso": 0.3,
+            "contributo": 0.24
+          },
+          {
+            "gruppo": "scala",
+            "punteggio": 0.9875,
+            "peso": 0.1,
+            "contributo": 0.0988
+          },
+          {
+            "gruppo": "colori",
+            "punteggio": 0.0987,
+            "peso": 0.4,
+            "contributo": 0.0395
+          },
+          {
+            "gruppo": "forma",
+            "punteggio": 0.0729,
+            "peso": 0.2,
+            "contributo": 0.0146
+          }
+        ]
+      },
+      {
+        "id": "terra",
+        "dHashHamming": 3,
+        "csdDist": 0.2581,
+        "tokenDiff": 0.3574,
+        "topContributi": [
+          {
+            "gruppo": "font",
+            "punteggio": 0.5,
+            "peso": 0.3,
+            "contributo": 0.15
+          },
+          {
+            "gruppo": "forma",
+            "punteggio": 0.3826,
+            "peso": 0.2,
+            "contributo": 0.0765
+          },
+          {
+            "gruppo": "scala",
+            "punteggio": 0.7375,
+            "peso": 0.1,
+            "contributo": 0.0738
+          },
+          {
+            "gruppo": "colori",
+            "punteggio": 0.1429,
+            "peso": 0.4,
+            "contributo": 0.0572
+          }
+        ]
+      },
+      {
+        "id": "vita",
+        "dHashHamming": 2,
+        "csdDist": 0.1571,
+        "tokenDiff": 0.4719,
+        "topContributi": [
+          {
+            "gruppo": "font",
+            "punteggio": 0.8,
+            "peso": 0.3,
+            "contributo": 0.24
+          },
+          {
+            "gruppo": "forma",
+            "punteggio": 0.5263,
+            "peso": 0.2,
+            "contributo": 0.1053
+          },
+          {
+            "gruppo": "colori",
+            "punteggio": 0.1634,
+            "peso": 0.4,
+            "contributo": 0.0654
+          },
+          {
+            "gruppo": "scala",
+            "punteggio": 0.6125,
+            "peso": 0.1,
+            "contributo": 0.0613
+          }
+        ]
+      }
+    ],
+    "minimi": {
+      "dHashHamming": 2,
+      "csdDist": 0.1077,
+      "tokenDiff": 0.3484
+    }
+  },
+  "vsRiferimenti": {
+    "perRif": [
+      {
+        "dir": "/Users/mattia/Claude Projects/Site-factory/factory/references/localhost-00d161",
+        "dHashHamming": 16,
+        "csdDist": 0.3167
+      },
+      {
+        "dir": "/Users/mattia/Claude Projects/Site-factory/factory/references/localhost-4ef660",
+        "dHashHamming": 19,
+        "csdDist": 0.4655
+      },
+      {
+        "dir": "/Users/mattia/Claude Projects/Site-factory/factory/references/localhost-6b79a1",
+        "dHashHamming": 21,
+        "csdDist": 0.2475
+      }
+    ],
+    "minimi": {
+      "dHashHamming": 16,
+      "csdDist": 0.2475
+    }
+  },
+  "vendi": {
+    "prima": 1.361,
+    "dopo": 1.3642,
+    "delta": 0.0032
+  },
+  "avvisi": [],
+  "esito": "ok",
+  "motivi": []
+}

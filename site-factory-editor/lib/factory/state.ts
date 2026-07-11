@@ -153,6 +153,25 @@ export function readRun(runId: string): FactoryRun | null {
   return parsed.success ? parsed.data : null;
 }
 
+/** Legge→muta→riscrive run.json (pattern patchClientState). */
+export function aggiornaRun(runId: string, muta: (r: FactoryRun) => void): void {
+  const run = readRun(runId);
+  if (!run) throw new Error(`run inesistente: ${runId}`);
+  muta(run);
+  writeJson(path.join(runDir(runId), "run.json"), RunSchema.parse(run));
+}
+
+export function aggiornaFase(
+  runId: string,
+  nome: FactoryRun["fasi"][number]["nome"],
+  patch: Partial<FactoryRun["fasi"][number]>,
+): void {
+  aggiornaRun(runId, (r) => {
+    const fase = r.fasi.find((f) => f.nome === nome);
+    if (fase) Object.assign(fase, patch);
+  });
+}
+
 export function listRuns(): FactoryRun[] {
   if (!fs.existsSync(RUNS_DIR)) return [];
   return fs

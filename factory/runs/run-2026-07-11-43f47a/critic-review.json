@@ -1,0 +1,28 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "criteri": [
+    { "nome": "D1 Gerarchia tipografica", "score": 2, "sogliaHard": 1, "motivo": "Display condensato bold maiuscolo con seconda riga in accent, eyebrow con lineetta, H2 di sezione e lead nettamente distinti dal corpo: il percorso dell'occhio è ovvio sia a 390 che a 1280." },
+    { "nome": "D2 Spaziatura e ritmo", "score": 2, "sogliaHard": 1, "motivo": "Alternanza deliberata scuro (hero) → fascia scura servizi → chiaro (processo, contatti) → footer scuro; padding generoso nelle sezioni piene e strip servizi compatta ma intenzionale, la lettura è scandita." },
+    { "nome": "D3 Contrasto e leggibilità", "score": 1, "sogliaHard": 1, "motivo": "Tutto leggibile, ma il testo secondario grigio su fondo quasi nero (sottotitoli servizi, descrizione e dati fiscali nel footer) è al limite della lettura comoda." },
+    { "nome": "D4 Palette", "score": 2, "sogliaHard": 1, "motivo": "Terracotta caldo come unico accent che guida (CTA, parole chiave, numeri di processo, icone) su neutri carbone e grigio-azzurro chiaro: coerente e con carattere artigianale/edile." },
+    { "nome": "D5 Artigianato dei dettagli", "score": 2, "sogliaHard": 1, "motivo": "Allineamenti puliti, cerchi di processo e icone in riquadri arrotondati coerenti, bottoni con raggio uniforme, nessun overflow né artefatto a 390 o 1280." },
+    { "nome": "D6 Distinzione creativa", "score": 2, "sogliaHard": 1, "motivo": "Nessun marker AI-slop: display condensato distintivo (non Inter ovunque), accent terracotta al posto del solito viola, ritmo scuro/chiaro e processo numerato 01–04 — scelte evidentemente decise, personalità da impresa edile." }
+  ],
+  "findings": [
+    {
+      "sezione": "griglia servizi (fascia scura)",
+      "viewport": "entrambi",
+      "gravita": "minore",
+      "motivo": "I sottotitoli grigi sotto ogni voce (es. «Vedi il risultato prima del cantiere») su fondo quasi nero sono leggibili ma al limite: un filo di attenzione in più del dovuto.",
+      "fixTokenProposto": "--brand-ink (variante muted) schiarita in .section-dark"
+    },
+    {
+      "sezione": "footer",
+      "viewport": "1280",
+      "gravita": "minore",
+      "motivo": "Testo descrittivo e riga dati fiscali (P.IVA / REA / capitale) in grigio tenue su fondo scuro: leggibili ma percettivamente deboli rispetto al resto della pagina.",
+      "fixTokenProposto": "--brand-ink (variante muted) schiarita in .section-dark"
+    }
+  ]
+}

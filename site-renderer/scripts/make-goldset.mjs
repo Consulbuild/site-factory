@@ -16,6 +16,8 @@
 // Con --presets fotografa invece le anteprime PULITE dei 5 preset alternativi
 // (stesso formato a 7 scatti) in factory/calibration/presets/<preset>/ — è
 // l'input del re-audit M4, senza etichetta (il verdetto lo dà il critico).
+// Con --candidato <id> <out-dir> fotografa /anteprima/<id>/ dalla dist corrente
+// nello stesso formato a 7 scatti (input dei gate L2/L3/L4 della fabbrica).
 
 import { mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -97,10 +99,24 @@ const BOCCIA = [
 ].map((x) => ({ ...x, label: "boccia" }));
 
 const MODO_PRESETS = process.argv.includes("--presets");
-const OUT_DIR = MODO_PRESETS ? join(ROOT, "..", "factory", "calibration", "presets") : GOLDSET;
-const ITEMS = MODO_PRESETS
-  ? ["atelier", "nova", "canon", "terra", "vita"].map((p) => ({ id: p, base: anteprima(p), label: "da giudicare" }))
-  : [...PASSA, ...BOCCIA];
+const MODO_CANDIDATO = process.argv.includes("--candidato");
+const [CAND_ID, CAND_OUT] = MODO_CANDIDATO
+  ? process.argv.slice(process.argv.indexOf("--candidato") + 1, process.argv.indexOf("--candidato") + 3)
+  : [];
+if (MODO_CANDIDATO && (!CAND_ID || !CAND_OUT)) {
+  console.error("uso: make-goldset.mjs --candidato <preset-id> <cartella-out>");
+  process.exit(2);
+}
+const OUT_DIR = MODO_CANDIDATO
+  ? CAND_OUT
+  : MODO_PRESETS
+    ? join(ROOT, "..", "factory", "calibration", "presets")
+    : GOLDSET;
+const ITEMS = MODO_CANDIDATO
+  ? [{ id: CAND_ID, base: anteprima(CAND_ID), label: "candidato" }]
+  : MODO_PRESETS
+    ? ["atelier", "nova", "canon", "terra", "vita"].map((p) => ({ id: p, base: anteprima(p), label: "da giudicare" }))
+    : [...PASSA, ...BOCCIA];
 
 // ---------- shot per item: 3 @390 + 4 @1280, per posizione (robusto su ogni pagina) ----------
 const VIEWPORTS = { 390: ["hero", "servizi", "coda"], 1280: ["hero", "servizi", "centro", "footer"] };
@@ -116,7 +132,7 @@ rmSync(OUT_DIR, { recursive: true, force: true });
 mkdirSync(OUT_DIR, { recursive: true });
 
 for (const item of ITEMS) {
-  const dir = join(OUT_DIR, item.id);
+  const dir = MODO_CANDIDATO ? OUT_DIR : join(OUT_DIR, item.id);
   mkdirSync(dir, { recursive: true });
   const server = await serverFor(item.base.root);
   for (const [width, nomi] of Object.entries(VIEWPORTS)) {
@@ -151,7 +167,7 @@ for (const item of ITEMS) {
   console.log(`ok  ${item.id} (${item.label}${item.classe ? " · " + item.classe : ""})`);
 }
 
-if (!MODO_PRESETS) {
+if (!MODO_PRESETS && !MODO_CANDIDATO) {
   writeFileSync(
     join(OUT_DIR, "labels.json"),
     JSON.stringify(
@@ -168,7 +184,9 @@ if (!MODO_PRESETS) {
 for (const s of servers.values()) await s.close();
 await browser.close();
 console.log(
-  MODO_PRESETS
-    ? `shot re-audit: ${ITEMS.length} preset in factory/calibration/presets/`
-    : `gold set: ${ITEMS.length} item (${PASSA.length} passa / ${BOCCIA.length} boccia) in factory/calibration/goldset/`,
+  MODO_CANDIDATO
+    ? `shot candidato «${CAND_ID}»: 7 scatti in ${CAND_OUT}`
+    : MODO_PRESETS
+      ? `shot re-audit: ${ITEMS.length} preset in factory/calibration/presets/`
+      : `gold set: ${ITEMS.length} item (${PASSA.length} passa / ${BOCCIA.length} boccia) in factory/calibration/goldset/`,
 );

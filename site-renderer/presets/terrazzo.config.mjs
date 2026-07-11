@@ -9,7 +9,11 @@ import css from "@terrazzo/plugin-css";
 // come DELTA (solo i token che ridefiniscono — exclude calcolato dai file).
 
 const DIR = dirname(fileURLToPath(import.meta.url));
-const PRESETS = ["meridian", "atelier", "nova", "canon", "terra", "vita"];
+// La lista dei contesti viene dal resolver (unica fonte): così la modalità
+// candidato di build-presets (--extra) si propaga qui senza altre liste.
+const PRESETS = Object.keys(
+  JSON.parse(readFileSync(join(DIR, "resolver.json"), "utf8")).modifiers.preset.contexts,
+);
 
 const ids = (file) => Object.keys(JSON.parse(readFileSync(join(DIR, file), "utf8")));
 const baseIds = ids("meridian.tokens.json");

@@ -11,18 +11,57 @@
 // blocco (makeCSSVar può collassare nomi IN SILENZIO), niente duplicati.
 //
 // Uso: npm run build:presets
+//
+// Modalità CANDIDATO (fabbrica, M6):
+//   node scripts/build-presets.mjs --extra <candidate.tokens.json> --id candidato-<runId>
+// Inietta il candidato come 7° contesto nello STESSO toolchain Terrazzo
+// (mai un serializzatore parallelo: è la classe di bug scoperta in M2) ed
+// emette SOLO presets.gen.css + presets.gen.ts (manifest/editor/skill restano
+// quelli committati: il candidato non è MAI offerto alla pipeline cliente).
+// resolver.json e il token file temporaneo vengono ripristinati/rimossi alla
+// fine; i file generati restano "sporchi" finché il chiamante non riesegue
+// build:presets senza --extra.
 
 import { spawnSync } from "node:child_process";
-import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, existsSync, copyFileSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PRESETS_DIR = join(ROOT, "presets");
-const PRESETS = ["meridian", "atelier", "nova", "canon", "terra", "vita"];
+const BASE_PRESETS = ["meridian", "atelier", "nova", "canon", "terra", "vita"];
 const DEFAULT_PRESET = "meridian";
 
+// ---------- modalità candidato ----------
+const argv = process.argv.slice(2);
+const EXTRA_FILE = argv.includes("--extra") ? argv[argv.indexOf("--extra") + 1] : null;
+const EXTRA_ID = argv.includes("--id") ? argv[argv.indexOf("--id") + 1] : null;
+if ((EXTRA_FILE && !EXTRA_ID) || (!EXTRA_FILE && EXTRA_ID)) {
+  console.error("uso candidato: --extra <candidate.tokens.json> --id candidato-<runId>");
+  process.exit(2);
+}
+if (EXTRA_ID && !/^candidato-[a-z0-9-]+$/.test(EXTRA_ID)) {
+  console.error(`--id non valido: ${EXTRA_ID} (atteso candidato-<slug>)`);
+  process.exit(2);
+}
+const PRESETS = EXTRA_ID ? [...BASE_PRESETS, EXTRA_ID] : BASE_PRESETS;
+
 const leggi = (f) => JSON.parse(readFileSync(join(PRESETS_DIR, f), "utf8"));
+
+// installa il candidato: token file temporaneo + contesto nel resolver
+const RESOLVER = join(PRESETS_DIR, "resolver.json");
+const resolverOriginale = readFileSync(RESOLVER, "utf8");
+function pulisciCandidato() {
+  writeFileSync(RESOLVER, resolverOriginale);
+  rmSync(join(PRESETS_DIR, `${EXTRA_ID}.tokens.json`), { force: true });
+}
+if (EXTRA_ID) {
+  copyFileSync(EXTRA_FILE, join(PRESETS_DIR, `${EXTRA_ID}.tokens.json`));
+  const resolver = JSON.parse(resolverOriginale);
+  resolver.modifiers.preset.contexts[EXTRA_ID] = [{ $ref: `${EXTRA_ID}.tokens.json` }];
+  writeFileSync(RESOLVER, JSON.stringify(resolver, null, 2) + "\n");
+  process.on("exit", pulisciCandidato);
+}
 
 // ---------- guardia pre-build: shadow SEMPRE come array di layer ----------
 // Il resolver Terrazzo NON applica l'override se una shadow array (multi-layer)
@@ -50,7 +89,7 @@ let cssGen = readFileSync(join(PRESETS_DIR, "out", "tokens.css"), "utf8");
 cssGen = cssGen.replaceAll("--step-n1:", "--step--1:").replaceAll("var(--step-n1)", "var(--step--1)");
 
 const tokensPerPreset = Object.fromEntries(PRESETS.map((p) => [p, leggi(`${p}.tokens.json`)]));
-const blocchi = [...cssGen.matchAll(/(:root|\[data-preset="([a-z]+)"\])\s*\{([^}]*)\}/g)];
+const blocchi = [...cssGen.matchAll(/(:root|\[data-preset="([a-z0-9-]+)"\])\s*\{([^}]*)\}/g)];
 const errori = [];
 for (const [, selettore, preset, corpo] of blocchi) {
   const id = preset ?? DEFAULT_PRESET;
@@ -79,6 +118,24 @@ if (!existsSync(join(PRESETS_DIR, "fonts.gen.json"))) {
 }
 const fontFaceCss = leggi("fonts.gen.json").fontFaces.join("\n") + "\n\n";
 writeFileSync(join(ROOT, "src/styles/presets.gen.css"), intestazione + fontFaceCss + cssGen);
+
+// ---------- 3. presets.gen.ts (renderer) — in modalità candidato include il 7° id ----------
+const genTs = `// GENERATO da scripts/build-presets.mjs — NON EDITARE A MANO.
+// Fonte: presets/*.tokens.json + presets/*.meta.json. Rigenera: npm run build:presets
+
+export const PRESETS = ${JSON.stringify(PRESETS)} as const;
+export type Preset = (typeof PRESETS)[number];
+
+export const DEFAULT_PRESET: Preset = ${JSON.stringify(DEFAULT_PRESET)};
+`;
+writeFileSync(join(ROOT, "src/lib/presets.gen.ts"), genTs);
+
+if (EXTRA_ID) {
+  // Il candidato serve SOLO al render dell'anteprima: manifest, JSON editor e
+  // tabella skill restano quelli committati (mai offerto alla pipeline cliente).
+  console.log(`build:presets ok — modalità candidato «${EXTRA_ID}»: emessi CSS (+${EXTRA_ID}) e presets.gen.ts`);
+  process.exit(0);
+}
 
 // ---------- 2. manifest ----------
 const lum = (hex) => {
@@ -111,17 +168,6 @@ writeFileSync(
   join(PRESETS_DIR, "presets.manifest.json"),
   JSON.stringify({ default: DEFAULT_PRESET, presets: manifest }, null, 2) + "\n",
 );
-
-// ---------- 3. presets.gen.ts (renderer) ----------
-const genTs = `// GENERATO da scripts/build-presets.mjs — NON EDITARE A MANO.
-// Fonte: presets/*.tokens.json + presets/*.meta.json. Rigenera: npm run build:presets
-
-export const PRESETS = ${JSON.stringify(PRESETS)} as const;
-export type Preset = (typeof PRESETS)[number];
-
-export const DEFAULT_PRESET: Preset = ${JSON.stringify(DEFAULT_PRESET)};
-`;
-writeFileSync(join(ROOT, "src/lib/presets.gen.ts"), genTs);
 
 // ---------- 4. presets.gen.json (editor) ----------
 const stack = (famiglia, serif) => `"${famiglia}", ${serif ? "serif" : "system-ui, sans-serif"}`;

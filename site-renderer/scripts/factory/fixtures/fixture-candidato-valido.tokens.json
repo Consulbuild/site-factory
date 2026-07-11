@@ -1,0 +1,121 @@
+{
+  "brand-primary": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [0.12156862745098039, 0.43529411764705883, 0.32941176470588235],
+      "alpha": 1,
+      "hex": "#1f6f54"
+    }
+  },
+  "brand-primary-hover": {
+    "$type": "string",
+    "$value": "color-mix(in oklab, var(--brand-primary), #000 14%)",
+    "$extensions": { "com.consulbuild": { "raw": true } }
+  },
+  "brand-accent": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [0.7058823529411765, 0.3254901960784314, 0.03529411764705882],
+      "alpha": 1,
+      "hex": "#b45309"
+    }
+  },
+  "brand-bg": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [1, 1, 1],
+      "alpha": 1,
+      "hex": "#ffffff"
+    }
+  },
+  "brand-ink": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [0.10588235294117647, 0.10196078431372549, 0.09019607843137255],
+      "alpha": 1,
+      "hex": "#1b1a17"
+    }
+  },
+  "brand-surface": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [0.9607843137254902, 0.9568627450980393, 0.9411764705882353],
+      "alpha": 1,
+      "hex": "#f5f4f0"
+    }
+  },
+  "brand-muted": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [0.3411764705882353, 0.3254901960784314, 0.3058823529411765],
+      "alpha": 1,
+      "hex": "#57534e"
+    }
+  },
+  "brand-inverse-bg": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [0.09803921568627451, 0.09803921568627451, 0.09803921568627451],
+      "alpha": 1,
+      "hex": "#191919"
+    }
+  },
+  "brand-inverse-ink": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [0.9607843137254902, 0.9568627450980393, 0.9411764705882353],
+      "alpha": 1,
+      "hex": "#f5f4f0"
+    }
+  },
+  "brand-font-heading": {
+    "$type": "fontFamily",
+    "$value": "Archivo"
+  },
+  "brand-font-body": {
+    "$type": "fontFamily",
+    "$value": "Archivo"
+  },
+  "brand-radius-card": {
+    "$type": "dimension",
+    "$value": { "value": 12, "unit": "px" }
+  },
+  "brand-shadow-card": {
+    "$type": "shadow",
+    "$value": [
+      {
+        "offsetX": { "value": 0, "unit": "px" },
+        "offsetY": { "value": 1, "unit": "px" },
+        "blur": { "value": 2, "unit": "px" },
+        "spread": { "value": 0, "unit": "px" },
+        "color": {
+          "colorSpace": "srgb",
+          "components": [0.10588235294117647, 0.10196078431372549, 0.09019607843137255],
+          "alpha": 0.05,
+          "hex": "#1b1a17"
+        }
+      }
+    ]
+  },
+  "step-display": {
+    "$type": "string",
+    "$value": "clamp(1.75rem, 0.9rem + 4vw, 4.5rem)",
+    "$extensions": { "com.consulbuild": { "raw": true } }
+  },
+  "w-display": {
+    "$type": "fontWeight",
+    "$value": 800
+  },
+  "heading-case": {
+    "$type": "string",
+    "$value": "uppercase"
+  }
+}

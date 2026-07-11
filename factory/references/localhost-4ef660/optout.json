@@ -1,0 +1,18 @@
+{
+  "url": "http://localhost:8082/",
+  "verificatoIl": "2026-07-11T08:05:15.044Z",
+  "robotsTxt": {
+    "stato": "assente",
+    "dettagli": []
+  },
+  "tdmRep": {
+    "stato": "assente",
+    "dettagli": []
+  },
+  "metaNoai": {
+    "stato": "senza riserve",
+    "dettagli": []
+  },
+  "esito": "consentito",
+  "motivo": "nessun segnale di riserva TDM rilevato (robots.txt, TDMRep, header, meta)"
+}

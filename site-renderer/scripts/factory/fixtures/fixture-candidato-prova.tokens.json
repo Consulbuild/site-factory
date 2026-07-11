@@ -1,0 +1,326 @@
+{
+  "brand-bg": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.9921568627450981,
+        0.9882352941176471,
+        0.9764705882352941
+      ],
+      "alpha": 1,
+      "hex": "#fdfcf9"
+    }
+  },
+  "brand-surface": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.9529411764705882,
+        0.9450980392156862,
+        0.9176470588235294
+      ],
+      "alpha": 1,
+      "hex": "#f3f1ea"
+    }
+  },
+  "brand-surface-2": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.9137254901960784,
+        0.9019607843137255,
+        0.8588235294117647
+      ],
+      "alpha": 1,
+      "hex": "#e9e6db"
+    }
+  },
+  "brand-ink": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.10980392156862745,
+        0.16862745098039217,
+        0.12941176470588237
+      ],
+      "alpha": 1,
+      "hex": "#1c2b21"
+    }
+  },
+  "brand-muted": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.32941176470588235,
+        0.3764705882352941,
+        0.30980392156862746
+      ],
+      "alpha": 1,
+      "hex": "#54604f"
+    }
+  },
+  "brand-inverse-bg": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.09411764705882353,
+        0.12941176470588237,
+        0.09803921568627451
+      ],
+      "alpha": 1,
+      "hex": "#182119"
+    }
+  },
+  "brand-inverse-bg-2": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.06666666666666667,
+        0.09411764705882353,
+        0.06666666666666667
+      ],
+      "alpha": 1,
+      "hex": "#111811"
+    }
+  },
+  "brand-inverse-ink": {
+    "$type": "color",
+    "$value": {
+      "colorSpace": "srgb",
+      "components": [
+        0.9490196078431372,
+        0.9450980392156862,
+        0.9098039215686274
+      ],
+      "alpha": 1,
+      "hex": "#f2f1e8"
+    }
+  },
+  "brand-font-heading": {
+    "$type": "fontFamily",
+    "$value": "Karla"
+  },
+  "brand-font-body": {
+    "$type": "fontFamily",
+    "$value": "Source Serif 4"
+  },
+  "brand-radius-card": {
+    "$type": "dimension",
+    "$value": {
+      "value": 2,
+      "unit": "px"
+    }
+  },
+  "brand-radius-input": {
+    "$type": "dimension",
+    "$value": {
+      "value": 2,
+      "unit": "px"
+    }
+  },
+  "brand-radius-pill": {
+    "$type": "dimension",
+    "$value": {
+      "value": 2,
+      "unit": "px"
+    }
+  },
+  "brand-border-w": {
+    "$type": "dimension",
+    "$value": {
+      "value": 1.5,
+      "unit": "px"
+    }
+  },
+  "brand-shadow-card": {
+    "$type": "shadow",
+    "$value": [
+      {
+        "offsetX": {
+          "value": 4,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 4,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 0,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        },
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0.11,
+            0.17,
+            0.13
+          ],
+          "alpha": 0.18
+        }
+      }
+    ]
+  },
+  "brand-shadow-hover": {
+    "$type": "shadow",
+    "$value": [
+      {
+        "offsetX": {
+          "value": 6,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 6,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 0,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        },
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0.11,
+            0.17,
+            0.13
+          ],
+          "alpha": 0.22
+        }
+      }
+    ]
+  },
+  "brand-shadow-cta": {
+    "$type": "shadow",
+    "$value": [
+      {
+        "offsetX": {
+          "value": 3,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 3,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 0,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        },
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0.11,
+            0.17,
+            0.13
+          ],
+          "alpha": 0.3
+        }
+      }
+    ]
+  },
+  "brand-shadow-float": {
+    "$type": "shadow",
+    "$value": [
+      {
+        "offsetX": {
+          "value": 8,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 8,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 0,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        },
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0.11,
+            0.17,
+            0.13
+          ],
+          "alpha": 0.16
+        }
+      }
+    ]
+  },
+  "heading-case": {
+    "$type": "string",
+    "$value": "uppercase",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "heading-tracking": {
+    "$type": "string",
+    "$value": "0.02em",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "eyebrow-tracking": {
+    "$type": "string",
+    "$value": "0.18em",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "w-display": {
+    "$type": "fontWeight",
+    "$value": 700
+  },
+  "w-heading": {
+    "$type": "fontWeight",
+    "$value": 700
+  },
+  "w-heading-soft": {
+    "$type": "fontWeight",
+    "$value": 600
+  },
+  "w-strong": {
+    "$type": "fontWeight",
+    "$value": 700
+  },
+  "step-display": {
+    "$type": "string",
+    "$value": "clamp(1.9rem, 0.85rem + 4.2vw, 4.6rem)",
+    "$extensions": {
+      "com.consulbuild": {
+        "raw": true
+      }
+    }
+  },
+  "brand-space": {
+    "$type": "number",
+    "$value": 1.1
+  }
+}

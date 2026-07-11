@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { readRun, readReference } from "@/lib/factory/state";
 import { Badge, formatDate } from "@/components/ui";
+import { RunRunner } from "@/components/fabbrica/run-runner";
 
 export const dynamic = "force-dynamic";
 
@@ -68,10 +69,9 @@ export default async function RunPage(ctx: { params: Promise<{ runId: string }> 
             </li>
           ))}
         </ol>
-        <p className="mt-3 text-xs text-muted">
-          L&apos;esecuzione delle fasi arriva con la pipeline completa (M6): la run riparte sempre
-          dalla prima fase non conclusa.
-        </p>
+        <div className="mt-4">
+          <RunRunner runId={run.runId} stato={run.stato} />
+        </div>
       </section>
     </div>
   );

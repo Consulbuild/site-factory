@@ -1,0 +1,197 @@
+{
+  "coppie": [
+    {
+      "a": "meridian",
+      "b": "atelier",
+      "tipo": "diverse",
+      "dHashHamming": 5,
+      "csdDist": 0.0731,
+      "tokenDiff": 0.3869
+    },
+    {
+      "a": "meridian",
+      "b": "nova",
+      "tipo": "diverse",
+      "dHashHamming": 14,
+      "csdDist": 0.1921,
+      "tokenDiff": 0.6728
+    },
+    {
+      "a": "meridian",
+      "b": "canon",
+      "tipo": "diverse",
+      "dHashHamming": 5,
+      "csdDist": 0.135,
+      "tokenDiff": 0.403
+    },
+    {
+      "a": "meridian",
+      "b": "terra",
+      "tipo": "diverse",
+      "dHashHamming": 0,
+      "csdDist": 0.1518,
+      "tokenDiff": 0.4236
+    },
+    {
+      "a": "meridian",
+      "b": "vita",
+      "tipo": "diverse",
+      "dHashHamming": 5,
+      "csdDist": 0.1826,
+      "tokenDiff": 0.4537
+    },
+    {
+      "a": "atelier",
+      "b": "nova",
+      "tipo": "diverse",
+      "dHashHamming": 14,
+      "csdDist": 0.1408,
+      "tokenDiff": 0.5445
+    },
+    {
+      "a": "atelier",
+      "b": "canon",
+      "tipo": "diverse",
+      "dHashHamming": 0,
+      "csdDist": 0.1983,
+      "tokenDiff": 0.3441
+    },
+    {
+      "a": "atelier",
+      "b": "terra",
+      "tipo": "diverse",
+      "dHashHamming": 5,
+      "csdDist": 0.1911,
+      "tokenDiff": 0.3971
+    },
+    {
+      "a": "atelier",
+      "b": "vita",
+      "tipo": "diverse",
+      "dHashHamming": 0,
+      "csdDist": 0.1009,
+      "tokenDiff": 0.3203
+    },
+    {
+      "a": "nova",
+      "b": "canon",
+      "tipo": "diverse",
+      "dHashHamming": 13,
+      "csdDist": 0.275,
+      "tokenDiff": 0.6494
+    },
+    {
+      "a": "nova",
+      "b": "terra",
+      "tipo": "diverse",
+      "dHashHamming": 10,
+      "csdDist": 0.2651,
+      "tokenDiff": 0.5896
+    },
+    {
+      "a": "nova",
+      "b": "vita",
+      "tipo": "diverse",
+      "dHashHamming": 15,
+      "csdDist": 0.0765,
+      "tokenDiff": 0.5238
+    },
+    {
+      "a": "canon",
+      "b": "terra",
+      "tipo": "diverse",
+      "dHashHamming": 5,
+      "csdDist": 0.1096,
+      "tokenDiff": 0.438
+    },
+    {
+      "a": "canon",
+      "b": "vita",
+      "tipo": "diverse",
+      "dHashHamming": 0,
+      "csdDist": 0.2666,
+      "tokenDiff": 0.4885
+    },
+    {
+      "a": "terra",
+      "b": "vita",
+      "tipo": "diverse",
+      "dHashHamming": 5,
+      "csdDist": 0.2405,
+      "tokenDiff": 0.3499
+    },
+    {
+      "a": "passa-golden-meridian",
+      "b": "passa-palette-0",
+      "tipo": "quasi-uguali",
+      "dHashHamming": 0,
+      "csdDist": 0.0052,
+      "tokenDiff": 0.0145
+    },
+    {
+      "a": "passa-golden-meridian",
+      "b": "passa-palette-1",
+      "tipo": "quasi-uguali",
+      "dHashHamming": 0,
+      "csdDist": 0.0161,
+      "tokenDiff": 0.0215
+    },
+    {
+      "a": "passa-golden-meridian",
+      "b": "passa-palette-2",
+      "tipo": "quasi-uguali",
+      "dHashHamming": 0,
+      "csdDist": 0.0232,
+      "tokenDiff": 0.0202
+    },
+    {
+      "a": "passa-golden-meridian",
+      "b": "passa-palette-3",
+      "tipo": "quasi-uguali",
+      "dHashHamming": 0,
+      "csdDist": 0.0028,
+      "tokenDiff": 0.0133
+    },
+    {
+      "a": "passa-golden-meridian",
+      "b": "passa-palette-4",
+      "tipo": "quasi-uguali",
+      "dHashHamming": 0,
+      "csdDist": 0.0107,
+      "tokenDiff": 0.0152
+    },
+    {
+      "a": "passa-golden-meridian",
+      "b": "passa-palette-5",
+      "tipo": "quasi-uguali",
+      "dHashHamming": 0,
+      "csdDist": 0.016,
+      "tokenDiff": 0.0282
+    },
+    {
+      "a": "passa-golden-meridian",
+      "b": "passa-palette-6",
+      "tipo": "quasi-uguali",
+      "dHashHamming": 0,
+      "csdDist": 0.0209,
+      "tokenDiff": 0.0221
+    }
+  ],
+  "percentili": {
+    "csdDiverse": {
+      "p5": 0.0731,
+      "p10": 0.0765,
+      "p25": 0.1096,
+      "p50": 0.1826
+    },
+    "csdQuasiUguali": {
+      "p50": 0.016,
+      "p90": 0.0232
+    },
+    "tokenDiffDiverse": {
+      "p5": 0.3203,
+      "p10": 0.3441,
+      "p50": 0.438
+    }
+  }
+}

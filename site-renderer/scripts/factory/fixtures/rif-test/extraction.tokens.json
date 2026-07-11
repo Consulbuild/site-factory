@@ -1,0 +1,28 @@
+{
+  "fonte": "https://riferimento.esempio/",
+  "estrattoIl": "2026-07-11T00:00:00.000Z",
+  "strumento": "fixture di test (stesso formato {dtcg, raw} di extract-tokens.mjs)",
+  "dtcg": {
+    "color": {
+      "primary": { "$type": "color", "$value": "#1f6f54" },
+      "accent": { "$type": "color", "$value": "#b45309" },
+      "background": { "$type": "color", "$value": "#ffffff" },
+      "text": { "$type": "color", "$value": "#1b1a17" },
+      "surface": { "$type": "color", "$value": "#f7f6f2" },
+      "footer": { "$type": "color", "$value": "#191919" }
+    },
+    "typography": {
+      "heading": { "$type": "fontFamily", "$value": "Archivo" }
+    }
+  },
+  "raw": {
+    "colors": [
+      { "value": "#1f6f54", "count": 41, "context": "button, a" },
+      { "value": "#b45309", "count": 12, "context": "strong, .accent" },
+      { "value": "#ffffff", "count": 88, "context": "body" },
+      { "value": "#1b1a17", "count": 74, "context": "body, p" },
+      { "value": "#f7f6f2", "count": 9, "context": ".card" },
+      { "value": "#191919", "count": 6, "context": "footer" }
+    ]
+  }
+}

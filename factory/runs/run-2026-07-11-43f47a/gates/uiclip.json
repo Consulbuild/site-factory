@@ -1,0 +1,36 @@
+{
+  "shots": [
+    {
+      "file": "hero-390.jpg",
+      "score": 0.297767
+    },
+    {
+      "file": "servizi-390.jpg",
+      "score": 0.280852
+    },
+    {
+      "file": "coda-390.jpg",
+      "score": 0.271826
+    },
+    {
+      "file": "hero-1280.jpg",
+      "score": 0.503603
+    },
+    {
+      "file": "servizi-1280.jpg",
+      "score": 0.240222
+    },
+    {
+      "file": "centro-1280.jpg",
+      "score": 0.404028
+    },
+    {
+      "file": "footer-1280.jpg",
+      "score": 0.132654
+    }
+  ],
+  "min": 0.132654,
+  "soglia": 0.262223,
+  "calibrazioneAffidabile": false,
+  "esito": "warning"
+}

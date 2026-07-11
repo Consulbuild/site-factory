@@ -40,11 +40,10 @@
       "modello": "grottesca-geometrica",
       "pesi": [
         500,
-        700,
-        800
+        700
       ],
       "corpoTesto": false,
-      "nota": "display di nova"
+      "nota": "display di nova; il range variabile finisce a 700 (niente 800)"
     },
     "JetBrains Mono": {
       "modello": "mono",

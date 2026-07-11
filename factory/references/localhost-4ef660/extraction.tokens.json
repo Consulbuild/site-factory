@@ -1,0 +1,595 @@
+{
+  "fonte": "http://localhost:8082/",
+  "estrattoIl": "2026-07-11T08:05:21.714Z",
+  "strumento": "dembrandt@0.23.1",
+  "dtcg": {
+    "$extensions": {
+      "com.dembrandt": {
+        "schemaVersion": "1.2.0",
+        "toolVersion": "0.23.1",
+        "specVersion": "2025.10",
+        "generator": "dembrandt",
+        "source": {
+          "url": "http://localhost:8082/",
+          "domain": "localhost"
+        },
+        "extractedAt": "2026-07-11T08:05:18.441Z"
+      }
+    },
+    "color": {
+      "semantic": {
+        "background": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.98,
+              0.965,
+              0.941
+            ],
+            "hex": "#faf6f0"
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.169,
+              0.129,
+              0.094
+            ],
+            "hex": "#2b2118"
+          }
+        },
+        "primary": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.604,
+              0.231,
+              0.122
+            ],
+            "hex": "#9a3b1f"
+          }
+        }
+      },
+      "palette": {
+        "palette-1": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.604,
+              0.231,
+              0.122
+            ],
+            "hex": "#9a3b1f"
+          },
+          "$description": "Count: 7, Confidence: medium"
+        }
+      }
+    },
+    "typography": {
+      "font-family": {
+        "georgia": {
+          "$type": "fontFamily",
+          "$value": "Georgia"
+        },
+        "arial": {
+          "$type": "fontFamily",
+          "$value": "Arial"
+        }
+      },
+      "style": {
+        "text-display": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{typography.font-family.georgia}",
+            "fontSize": {
+              "value": 60.8,
+              "unit": "px"
+            },
+            "fontWeight": 400,
+            "lineHeight": 1.7,
+            "letterSpacing": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        },
+        "text-heading-2": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{typography.font-family.georgia}",
+            "fontSize": {
+              "value": 32,
+              "unit": "px"
+            },
+            "fontWeight": 400,
+            "lineHeight": 1.7,
+            "letterSpacing": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        },
+        "text-body": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{typography.font-family.georgia}",
+            "fontSize": {
+              "value": 15.2,
+              "unit": "px"
+            },
+            "fontWeight": 400,
+            "lineHeight": 1.7,
+            "letterSpacing": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        },
+        "text-ui": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{typography.font-family.arial}",
+            "fontSize": {
+              "value": 13.6,
+              "unit": "px"
+            },
+            "fontWeight": 400,
+            "lineHeight": 1.7,
+            "letterSpacing": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "spacing": {
+      "spacing-1": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12.8,
+          "unit": "px"
+        }
+      },
+      "spacing-2": {
+        "$type": "dimension",
+        "$value": {
+          "value": 15.2,
+          "unit": "px"
+        }
+      },
+      "spacing-3": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "spacing-4": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "spacing-5": {
+        "$type": "dimension",
+        "$value": {
+          "value": 26.56,
+          "unit": "px"
+        }
+      },
+      "spacing-6": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "spacing-7": {
+        "$type": "dimension",
+        "$value": {
+          "value": 40,
+          "unit": "px"
+        }
+      },
+      "spacing-8": {
+        "$type": "dimension",
+        "$value": {
+          "value": 48,
+          "unit": "px"
+        }
+      },
+      "spacing-9": {
+        "$type": "dimension",
+        "$value": {
+          "value": 80,
+          "unit": "px"
+        }
+      },
+      "spacing-10": {
+        "$type": "dimension",
+        "$value": {
+          "value": 96,
+          "unit": "px"
+        }
+      }
+    }
+  },
+  "raw": {
+    "url": "http://localhost:8082/",
+    "extractedAt": "2026-07-11T08:05:21.676Z",
+    "meta": {
+      "dembrandtVersion": "0.23.1",
+      "schemaVersion": "1.2.0",
+      "flags": {}
+    },
+    "siteName": "Forma Atelier",
+    "logo": null,
+    "logoInstances": [],
+    "favicons": [
+      {
+        "type": "favicon.ico",
+        "url": "http://localhost:8082/favicon.ico",
+        "sizes": null
+      }
+    ],
+    "colors": {
+      "semantic": {
+        "background": "rgb(250, 246, 240)",
+        "text": "rgb(43, 33, 24)",
+        "primary": "rgb(154, 59, 31)"
+      },
+      "palette": [
+        {
+          "color": "rgb(154, 59, 31)",
+          "normalized": "#9a3b1f",
+          "count": 7,
+          "confidence": "medium",
+          "sources": [
+            "btn"
+          ],
+          "lch": "lch(38.02% 52.96 43.85)",
+          "oklch": "oklch(48.01% 0.134 36.77)",
+          "role": "accent",
+          "onColor": "#ffffff",
+          "hover": "#b94725",
+          "variantOf": "primary"
+        },
+        {
+          "color": "rgb(111, 97, 83)",
+          "normalized": "#6f6153",
+          "count": 4,
+          "confidence": "low",
+          "sources": [],
+          "lch": "lch(42.08% 10.54 72.47)",
+          "oklch": "oklch(50.19% 0.028 67.11)",
+          "role": "supporting",
+          "onColor": "#ffffff",
+          "hover": "#857464",
+          "variantOf": "primary"
+        }
+      ],
+      "cssVariables": {},
+      "detected": [
+        {
+          "color": "rgb(43, 33, 24)",
+          "normalized": "#2b2118",
+          "count": 16,
+          "usageFrac": 0.5,
+          "confidence": "high",
+          "sources": [],
+          "isToken": false
+        },
+        {
+          "color": "rgb(154, 59, 31)",
+          "normalized": "#9a3b1f",
+          "count": 7,
+          "usageFrac": 0.21875,
+          "confidence": "medium",
+          "sources": [
+            "btn"
+          ],
+          "isToken": false
+        },
+        {
+          "color": "rgb(111, 97, 83)",
+          "normalized": "#6f6153",
+          "count": 4,
+          "usageFrac": 0.125,
+          "confidence": "low",
+          "sources": [],
+          "isToken": false
+        },
+        {
+          "color": "rgb(0, 0, 0)",
+          "normalized": "#000000",
+          "count": 2,
+          "usageFrac": 0.0625,
+          "confidence": "low",
+          "sources": [],
+          "isToken": false
+        },
+        {
+          "color": "rgb(241, 233, 221)",
+          "normalized": "#f1e9dd",
+          "count": 2,
+          "usageFrac": 0.0625,
+          "confidence": "low",
+          "sources": [],
+          "isToken": false
+        },
+        {
+          "color": "rgb(250, 246, 240)",
+          "normalized": "#faf6f0",
+          "count": 1,
+          "usageFrac": 0.03125,
+          "confidence": "low",
+          "sources": [],
+          "isToken": false
+        }
+      ],
+      "_raw": [
+        {
+          "color": "rgb(43, 33, 24)",
+          "normalized": "#2b2118",
+          "count": 16
+        },
+        {
+          "color": "rgb(154, 59, 31)",
+          "normalized": "#9a3b1f",
+          "count": 7
+        },
+        {
+          "color": "rgb(111, 97, 83)",
+          "normalized": "#6f6153",
+          "count": 4
+        }
+      ]
+    },
+    "typography": {
+      "styles": [
+        {
+          "context": "display",
+          "family": "Georgia",
+          "fallbacks": "Times New Roman",
+          "size": "60.8px (3.80rem)",
+          "weight": 400,
+          "lineHeight": "1.70",
+          "spacing": null,
+          "transform": null
+        },
+        {
+          "context": "heading-2",
+          "family": "Georgia",
+          "fallbacks": "Times New Roman",
+          "size": "32px (2.00rem)",
+          "weight": 400,
+          "lineHeight": "1.70",
+          "spacing": null,
+          "transform": null
+        },
+        {
+          "context": "body",
+          "family": "Georgia",
+          "fallbacks": "Times New Roman",
+          "size": "16px (1.00rem)",
+          "weight": 400,
+          "lineHeight": "1.70",
+          "spacing": null,
+          "transform": null
+        },
+        {
+          "context": "body",
+          "family": "Georgia",
+          "fallbacks": "Times New Roman",
+          "size": "15.2px (0.95rem)",
+          "weight": 400,
+          "lineHeight": "1.70",
+          "spacing": null,
+          "transform": null
+        },
+        {
+          "context": "ui",
+          "family": "Arial",
+          "fallbacks": null,
+          "size": "13.6px (0.85rem)",
+          "weight": 400,
+          "lineHeight": "1.70",
+          "spacing": "1.904px",
+          "transform": "uppercase"
+        }
+      ],
+      "sources": {
+        "googleFonts": [],
+        "adobeFonts": false,
+        "variableFonts": false,
+        "selfHostedFonts": [],
+        "customFonts": []
+      }
+    },
+    "spacing": {
+      "scaleType": "8px",
+      "commonValues": [
+        {
+          "px": "12.8px",
+          "display": "12.8px",
+          "rem": "0.80rem",
+          "count": 2,
+          "numericValue": 12.8
+        },
+        {
+          "px": "15.2px",
+          "display": "15.2px",
+          "rem": "0.95rem",
+          "count": 4,
+          "numericValue": 15.2
+        },
+        {
+          "px": "16px",
+          "display": "16px",
+          "rem": "1.00rem",
+          "count": 2,
+          "numericValue": 16
+        },
+        {
+          "px": "24px",
+          "display": "24px",
+          "rem": "1.50rem",
+          "count": 2,
+          "numericValue": 24
+        },
+        {
+          "px": "26.56px",
+          "display": "26.56px",
+          "rem": "1.66rem",
+          "count": 4,
+          "numericValue": 26.56
+        },
+        {
+          "px": "32px",
+          "display": "32px",
+          "rem": "2.00rem",
+          "count": 1,
+          "numericValue": 32
+        },
+        {
+          "px": "40px",
+          "display": "40px",
+          "rem": "2.50rem",
+          "count": 4,
+          "numericValue": 40
+        },
+        {
+          "px": "48px",
+          "display": "48px",
+          "rem": "3.00rem",
+          "count": 5,
+          "numericValue": 48
+        },
+        {
+          "px": "80px",
+          "display": "80px",
+          "rem": "5.00rem",
+          "count": 1,
+          "numericValue": 80
+        },
+        {
+          "px": "96px",
+          "display": "96px",
+          "rem": "6.00rem",
+          "count": 2,
+          "numericValue": 96
+        }
+      ]
+    },
+    "borderRadius": {
+      "values": []
+    },
+    "borders": {
+      "combinations": [
+        {
+          "width": "1px",
+          "style": "solid",
+          "color": "rgb(154, 59, 31)",
+          "count": 1,
+          "elements": [
+            "button"
+          ],
+          "confidence": "low"
+        }
+      ]
+    },
+    "shadows": [],
+    "gradients": [],
+    "motion": {
+      "durations": [
+        {
+          "value": "0.001s",
+          "ms": 1,
+          "count": 14
+        }
+      ],
+      "easings": [
+        {
+          "value": "ease",
+          "type": "ease",
+          "count": 14
+        }
+      ],
+      "animations": [],
+      "contexts": {
+        "button": {
+          "count": 1,
+          "durations": [
+            "0.001s"
+          ],
+          "easing": "ease",
+          "easingType": "ease",
+          "props": []
+        }
+      },
+      "interactiveDeltas": []
+    },
+    "components": {
+      "buttons": [
+        {
+          "states": {
+            "default": {
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "color": "rgb(154, 59, 31)",
+              "padding": "12.8px 32px",
+              "borderRadius": "0px",
+              "border": "1px solid rgb(154, 59, 31)",
+              "fontSize": "13.6px",
+              "fontWeight": "400"
+            }
+          },
+          "fontWeight": "400",
+          "fontSize": "13.6px",
+          "text": "Il nostro metodo",
+          "confidence": "medium"
+        }
+      ],
+      "inputs": {
+        "text": [],
+        "checkbox": [],
+        "radio": [],
+        "select": []
+      },
+      "links": [
+        {
+          "color": "rgb(154, 59, 31)",
+          "textDecoration": "none",
+          "fontWeight": "400",
+          "states": {
+            "default": {
+              "color": "rgb(154, 59, 31)",
+              "textDecoration": "none"
+            },
+            "hover": null
+          }
+        }
+      ],
+      "badges": {
+        "all": [],
+        "byVariant": {
+          "error": [],
+          "warning": [],
+          "success": [],
+          "info": [],
+          "neutral": []
+        }
+      }
+    },
+    "breakpoints": [],
+    "iconSystem": [],
+    "frameworks": []
+  }
+}

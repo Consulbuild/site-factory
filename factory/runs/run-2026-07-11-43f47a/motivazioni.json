@@ -1,0 +1,300 @@
+{
+  "posizionamento": {
+    "corsia": "«ferro» — preset LIGHT freddo-industriale: neutri slate-navy, spigoli architettonici, elevazione quasi piatta (bordo > ombra), eyebrow monospace tecnico e accent verde-patina; l'estetica di uno studio d'ingegneria/impianti serio, non caldo né neon.",
+    "aaker": {
+      "sincerity": 1,
+      "excitement": 0,
+      "competence": 2,
+      "sophistication": 0,
+      "ruggedness": 2,
+      "primaria": "competence"
+    },
+    "percheNuovo": "Nessuno dei 6 preset occupa la corsia «competence+ruggedness fredda su fondo CHIARO». meridian è competence CALDO-morbido (ink #1b1a17, surface crema, ombre a strati); atelier è competence+sophistication ACROMATICO (grigio puro, zero colore nei neutri) e privo di durezza. L'idioma tecnico (grotesk geometrica + eyebrow monospace) esiste già in libreria SOLO su nova, ma nova è SCURO/neon/excitement (bg #0a0a0f, Space Grotesk+Inter su fondo nero): stessa voce tipografica, mondo opposto. Qui quell'idioma tecnico atterra su un mondo LIGHT, freddo e chromatic-slate con accent verde-patina — una combinazione (Aaker primaria competence, neutri slate-blu, elevazione piatta bordo-driven) che nessun preset presidia. Il gate lo conferma: min tokenDiff vs libreria 0.348 (guidato dai colori verso nova, dai font verso meridian/atelier).",
+    "settoriConsigliati": [
+      "impianti-industriali",
+      "energia-rinnovabili",
+      "ingegneria",
+      "metalmeccanica",
+      "sicurezza-sul-lavoro",
+      "infrastrutture",
+      "edilizia-strutturale"
+    ],
+    "sintesiFonti": "Corpo chiaro dai neutri freddi di localhost-6b79a1 (navy/slate, superficie dominante); banda scura del ritmo scuro/chiaro dai neutri esatti di localhost-00d161 (dark slate + testo freddo + verde); disciplina di forma (spigoli netti, ombra minima color-inchiostro, label maiuscole tracciate) corroborata da tutte e tre (0px+no-shadow di localhost-4ef660, whisper ink-shadow di localhost-6b79a1, mono uppercase di localhost-00d161). L'impressione generale — sito CHIARO slate professionale con accenti verdi ed eyebrow mono — non coincide con nessuna singola fonte (00d161 è scuro/mono-terminal, 4ef660 caldo/serif, 6b79a1 corporate ambra con heading Helvetica Neue)."
+  },
+  "brand-bg": {
+    "evidenza": [
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "#ffffff"
+      }
+    ],
+    "derivazione": "bianco di 6b79a1 raffreddato ~2% verso brand-ink (slate) per coerenza della famiglia fredda",
+    "motivo": "fondo quasi-bianco ma freddo: separa dalla famiglia calda di meridian/canon senza scurire lo sfondo di lavoro."
+  },
+  "brand-ink": {
+    "evidenza": [
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "#16232e"
+      },
+      {
+        "ref": "localhost-00d161",
+        "valoreOsservato": "#10151b"
+      }
+    ],
+    "motivo": "navy-slate dominante di 6b79a1 (count 13, testo+card) preso verbatim: inchiostro freddo a 15:1 sul bg, in famiglia con la banda scura di 00d161."
+  },
+  "brand-surface": {
+    "evidenza": [
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "#ffffff"
+      },
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "#dbe4ec"
+      }
+    ],
+    "derivazione": "blend del bg #ffffff e della superficie/bordo card fredda #dbe4ec di 6b79a1",
+    "motivo": "superficie card fredda chiara, un gradino sotto il bg, coerente con lo slate."
+  },
+  "brand-surface-2": {
+    "evidenza": [
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "#dbe4ec"
+      }
+    ],
+    "motivo": "il blu-grigio chiaro delle card di 6b79a1 (verbatim) come secondo gradino di superficie e base bordo: chiude la scala fredda bg→surface→surface-2."
+  },
+  "brand-muted": {
+    "evidenza": [
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "#5a6b7a"
+      },
+      {
+        "ref": "localhost-00d161",
+        "valoreOsservato": "#8fa1b3"
+      }
+    ],
+    "derivazione": "slate muted di 6b79a1 scurito in HCT (hue ~245) fino a ≥4.5:1 su bg, surface e surface-2",
+    "motivo": "entrambe le fonti fredde convergono su un muted slate-blu; scurito per reggere il testo secondario su tutte e tre le superfici (min 4.98:1 su surface-2)."
+  },
+  "brand-inverse-bg": {
+    "evidenza": [
+      {
+        "ref": "localhost-00d161",
+        "valoreOsservato": "#10151b"
+      }
+    ],
+    "motivo": "la banda scura del ritmo scuro/chiaro È il mondo di 00d161: sfondo dark-slate preso verbatim (era il suo bg)."
+  },
+  "brand-inverse-bg-2": {
+    "evidenza": [
+      {
+        "ref": "localhost-00d161",
+        "valoreOsservato": "#0c1116"
+      }
+    ],
+    "motivo": "gradino più profondo della banda scura, verbatim da 00d161 (count 2, high): coerente con inverse-bg."
+  },
+  "brand-inverse-ink": {
+    "evidenza": [
+      {
+        "ref": "localhost-00d161",
+        "valoreOsservato": "#e8edf2"
+      }
+    ],
+    "motivo": "testo freddo chiaro di 00d161 (count 15, dominante) verbatim: 15.6:1 sulla banda scura, stessa temperatura fredda dei neutri chiari."
+  },
+  "brand-primary": {
+    "evidenza": [
+      {
+        "ref": "localhost-00d161",
+        "valoreOsservato": "#3fb27f"
+      }
+    ],
+    "derivazione": "verde di 00d161 (hue oklch ~160) scurito in HCT fino a ≥4.5:1 con testo bianco su bottone (5.3:1)",
+    "motivo": "unico hue accent non occupato da alcun preset e presente verbatim in una fonte; verde-patina che sull'acciaio/slate racconta energia/rinnovabili. Default del preset: il cliente lo sovrascrive a runtime."
+  },
+  "brand-accent": {
+    "evidenza": [
+      {
+        "ref": "localhost-00d161",
+        "valoreOsservato": "#3fb27f"
+      }
+    ],
+    "derivazione": "identico a brand-primary (verde 00d161 scurito per AA)",
+    "motivo": "l'accent guida eyebrow-marker e parola-accent dell'H2; i guardrail brand-accent-strong/-on-inverse/-word-inverse restano color-mix su var (ereditati), così l'accent finale del cliente resta AA-by-construction."
+  },
+  "brand-secondary": {
+    "derivazioneDa": "brand-primary",
+    "derivazione": "brand-primary abbassato di luminanza mantenendo hue verde",
+    "motivo": "tono verde più profondo per hover/superfici secondarie: evita che il secondary caldo di meridian trapeli nella palette fredda."
+  },
+  "brand-font-heading": {
+    "correzioneRound": 1,
+    "evidenza": [
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "heading Helvetica Neue, weight 700, tracking -0.512px (grottesca neutra decisa)"
+      },
+      {
+        "ref": "localhost-00d161",
+        "valoreOsservato": "heading tecnici maiuscoli tracciati, weight 700, mondo monospace/terminal"
+      }
+    ],
+    "motivo": "Correzione gate-novelty: Archivo (il display di meridian) coincideva con la testata dello standard e teneva la distanza font vs meridian a 0.3 → min tokenDiff 0.198 < p5. Space Grotesk (whitelist, grottesca-geometrica) traduce la grotesca bold-neutra di 6b79a1 dando la durezza da scheda-tecnica del mondo 00d161; sblocca font-diff 0.8 sia vs meridian sia vs atelier (min tokenDiff sale a 0.348 > p5 0.320). Condivide la famiglia con nova ma nova la impagina con Inter su fondo NERO/neon (excitement); qui è su fondo chiaro-freddo con body umanista Karla → mondo opposto (tokenDiff vs nova resta 0.55, guidato dai colori). Vincolo pesi: Space Grotesk in whitelist ha solo [500, 700] → tutti i pesi heading (w-display/-heading/-strong) sono cappati a 700 (vedi voci relative)."
+  },
+  "brand-font-body": {
+    "correzioneRound": 1,
+    "evidenza": [
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "body Helvetica Neue, corpo 16px, lineHeight 1.6 (grottesca neutra da lettura)"
+      }
+    ],
+    "motivo": "Correzione gate-novelty: Inter (il body di atelier) teneva la distanza font vs atelier a 0.5 → tokenDiff atelier 0.262 < p5. Karla (whitelist, grottesca-umanista, corpoTesto=true, pesi 400–700) traduce la grotesca da lettura di 6b79a1 e dà un contrasto di natura reale con lo Space Grotesk geometrico della testata (grotesca umanista vs geometrica, mai due sans quasi uguali). Body-diff 0.6 vs meridian e vs atelier → li porta entrambi ≥ p5; nessun peso >700 richiesto sul body (compatibile con Karla, max 700)."
+  },
+  "brand-font-eyebrow": {
+    "correzioneRound": 1,
+    "evidenza": [
+      {
+        "ref": "localhost-00d161",
+        "valoreOsservato": "SF Mono — label/heading monospace maiuscole tracciate"
+      }
+    ],
+    "motivo": "JetBrains Mono (whitelist) come eyebrow è la voce tecnica del preset: traduce il monospace di 00d161 in un accento da scheda-tecnica. Nota di coerenza post-correzione: nova usa lo stesso mono come accento e ora la testata è anch'essa Space Grotesk — l'idioma tipografico coincide con nova, ma il preset se ne distingue per il mondo (LIGHT freddo/competence vs DARK neon/excitement) e per la palette slate+verde; l'eyebrow non entra nel punteggio font del gate (misura solo heading+body)."
+  },
+  "brand-radius-card": {
+    "evidenza": [
+      {
+        "ref": "localhost-00d161",
+        "valoreOsservato": "3px"
+      },
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "6px"
+      },
+      {
+        "ref": "localhost-4ef660",
+        "valoreOsservato": "0px"
+      }
+    ],
+    "derivazione": "scelto 4px dentro la banda osservata 0–6px",
+    "motivo": "tutte e tre le fonti hanno spigoli netti; 4px = spigolo architettonico condiviso, distinto dai 12px morbidi di meridian. Non è il raggio uniforme ~16px anti-slop: qui è piccolo e differenziato (card 4 / input 3 / pill 6)."
+  },
+  "brand-radius-input": {
+    "evidenza": [
+      {
+        "ref": "localhost-00d161",
+        "valoreOsservato": "3px"
+      }
+    ],
+    "motivo": "campi più netti (3px, verbatim 00d161): sistema di spigoli deliberato e variato, non uniforme."
+  },
+  "brand-radius-pill": {
+    "evidenza": [
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "6px"
+      }
+    ],
+    "motivo": "bottoni/pill un filo più morbidi (6px, verbatim 6b79a1) per il tap-target, restando comunque spigolosi."
+  },
+  "brand-shadow-card": {
+    "evidenza": [
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "rgba(22,35,46,0.08) 0px 1px 3px 0px"
+      }
+    ],
+    "motivo": "ombra card presa verbatim da 6b79a1: singolo layer, colore = brand-ink slate (non nero), a bassissima opacità. Elevazione quasi piatta corroborata dalle altre due fonti (nessuna ombra)."
+  },
+  "brand-shadow-cta": {
+    "evidenza": [
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "ombra color-inchiostro 0.08"
+      }
+    ],
+    "derivazione": "generalizzata dallo shadow-card di 6b79a1: stessa hue slate, opacità 0.12, blur 5px",
+    "motivo": "CTA con elevazione minima color-inchiostro, coerente col sistema piatto; sostituisce l'ombra nera/più marcata di meridian."
+  },
+  "brand-shadow-hover": {
+    "derivazioneDa": "brand-shadow-cta",
+    "derivazione": "stesso colore slate, blur allargato a 8px, nessun lift a strati",
+    "motivo": "hover appena percepibile: mantiene l'identità piatta anche in interazione (contro il lift 18/44px di meridian)."
+  },
+  "brand-shadow-float": {
+    "derivazioneDa": "brand-shadow-card",
+    "derivazione": "stesso colore slate, 8px/24px opacità 0.16",
+    "motivo": "elementi flottanti (nav sticky/overlay) elevati ma sobri e color-inchiostro; molto più piatti del float nero 24/56px 0.22 di meridian."
+  },
+  "heading-case": {
+    "evidenza": [
+      {
+        "ref": "localhost-00d161",
+        "valoreOsservato": "titoli transform: uppercase"
+      }
+    ],
+    "motivo": "maiuscolo sui titoli: rinforza l'identità blueprint/scheda-tecnica ed è coerente con la grammatica dello standard; min di step-display tenuto a 1.75rem per «RISTRUTTURAZIONE» a 390px."
+  },
+  "heading-tracking": {
+    "evidenza": [
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "-0.512px su heading (~-0.017em)"
+      }
+    ],
+    "motivo": "tracking leggermente negativo (-0.015em) sui titoli grotesk uppercase, dalla misura osservata in 6b79a1: compatta i titoli senza perdere leggibilità."
+  },
+  "eyebrow-tracking": {
+    "evidenza": [
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "1.536px / 12.8px UI (~0.12em)"
+      },
+      {
+        "ref": "localhost-4ef660",
+        "valoreOsservato": "1.904px / 13.6px UI (~0.14em)"
+      }
+    ],
+    "derivazione": "0.12em (misura di 6b79a1), un filo sotto lo standard 0.14em perché l'eyebrow è monospace (avanzamento già ampio)",
+    "motivo": "spaziatura label calibrata sul mono per non risultare sparsa."
+  },
+  "step-display": {
+    "evidenza": [
+      {
+        "ref": "localhost-6b79a1",
+        "valoreOsservato": "51.2px display (3.2rem)"
+      },
+      {
+        "ref": "localhost-4ef660",
+        "valoreOsservato": "60.8px display (3.8rem)"
+      }
+    ],
+    "derivazione": "clamp(1.75rem, 1.1rem + 3.4vw, 3.6rem): max 3.6rem tra i 3.2 e 3.8rem osservati; min 1.75rem tarato su parole lunghe uppercase a 390px",
+    "motivo": "display contenuto e ingegneristico, più sobrio dei 4.5rem di meridian: la serietà tecnica preferisce misura al gigantismo."
+  },
+  "w-display": {
+    "correzioneRound": 2,
+    "derivazioneDa": "brand-font-heading",
+    "derivazione": "Space Grotesk (whitelist) ha pesi [500, 700]: display cappato al peso massimo reale 700 (l'800 di meridian è orfano su questa famiglia)",
+    "motivo": "il display resta il peso più pesante disponibile della famiglia; già corretto in escalation umana e ora confermato nel sistema pesi coerente heading.",
+    "correzioneUmana": true
+  },
+  "w-heading": {
+    "correzioneRound": 2,
+    "derivazioneDa": "brand-font-heading",
+    "derivazione": "come w-display: default meridian 800 non esiste in Space Grotesk (pesi [500,700]) → cappato a 700",
+    "motivo": "Correzione gate-L1: .t-h1/.t-h2 usano var(--w-heading) sulla testata Space Grotesk; l'ereditato 800 di meridian produceva il peso orfano «Space Grotesk 800» segnalato dal gate. 700 è il massimo reale della famiglia — la stessa correzione già applicata a w-display, estesa al suo token gemello mancante."
+  },
+  "w-strong": {
+    "correzioneRound": 2,
+    "derivazioneDa": "brand-font-heading",
+    "derivazione": "default meridian 800 → 700, massimo reale sia di Space Grotesk [500,700] sia di Karla [400..700]",
+    "motivo": "Correzione gate-L1 (root cause completo): .font-strong (parola-accent dell'H2, resa da renderAccent dentro un titolo Space Grotesk) ereditava w-strong 800 → concorreva all'orfano «Space Grotesk 800». 700 è sicuro in entrambi i contesti d'uso del token (heading Space Grotesk e body Karla, entrambi max 700), così non riemergono orfani su nessuna famiglia."
+  }
+}

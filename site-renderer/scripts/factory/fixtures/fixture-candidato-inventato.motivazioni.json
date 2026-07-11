@@ -1,0 +1,62 @@
+{
+  "brand-primary": {
+    "evidenza": [
+      {
+        "ref": "rif-test",
+        "valoreOsservato": "#1f6f54"
+      }
+    ],
+    "motivo": "colore dominante di bottoni e link del riferimento"
+  },
+  "brand-primary-hover": {
+    "derivazioneDa": "brand-primary",
+    "derivazione": "scurito del 14% in oklab per lo stato hover",
+    "motivo": "hover coerente col primary, stessa formula dello standard"
+  },
+  "brand-bg": {
+    "evidenza": [
+      {
+        "ref": "rif-test",
+        "valoreOsservato": "#ffffff"
+      }
+    ],
+    "motivo": "fondo pagina del riferimento"
+  },
+  "brand-ink": {
+    "evidenza": [
+      {
+        "ref": "rif-test",
+        "valoreOsservato": "#1b1a17"
+      }
+    ],
+    "motivo": "colore del testo corrente del riferimento"
+  },
+  "brand-surface": {
+    "evidenza": [
+      {
+        "ref": "rif-test",
+        "valoreOsservato": "#f7f6f2"
+      }
+    ],
+    "derivazione": "neutralizzato verso il grigio caldo dello standard per coerenza delle card",
+    "motivo": "superficie card derivata dal fondo card osservato"
+  },
+  "brand-muted": {
+    "derivazioneDa": "brand-ink",
+    "derivazione": "schiarito per il testo secondario mantenendo AA su fondo chiaro",
+    "motivo": "grigio secondario coerente con l'ink"
+  },
+  "brand-inverse-bg": {
+    "evidenza": [
+      {
+        "ref": "rif-test",
+        "valoreOsservato": "#191919"
+      }
+    ],
+    "motivo": "fondo scuro del footer del riferimento"
+  },
+  "brand-inverse-ink": {
+    "derivazioneDa": "brand-surface",
+    "motivo": "testo su fondo scuro = superficie chiara del candidato, come nello standard"
+  }
+}

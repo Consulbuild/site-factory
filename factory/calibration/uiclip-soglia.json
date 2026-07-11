@@ -1,0 +1,136 @@
+{
+  "soglia": 0.262223,
+  "calibratoIl": "2026-07-11T07:56:32.638Z",
+  "separazione": {
+    "minPassa": 0.231094,
+    "maxBoccia": 0.36827,
+    "itemSbagliati": [
+      {
+        "id": "passa-cliente-cavaliere",
+        "label": "passa",
+        "min": 0.24231
+      },
+      {
+        "id": "passa-cliente-costruzioni",
+        "label": "passa",
+        "min": 0.231094
+      },
+      {
+        "id": "boccia-spacing-0",
+        "label": "boccia",
+        "min": 0.262929
+      },
+      {
+        "id": "boccia-spacing-1",
+        "label": "boccia",
+        "min": 0.294626
+      },
+      {
+        "id": "boccia-spacing-2",
+        "label": "boccia",
+        "min": 0.36827
+      },
+      {
+        "id": "boccia-spacing-4",
+        "label": "boccia",
+        "min": 0.289675
+      },
+      {
+        "id": "boccia-contrasto-0",
+        "label": "boccia",
+        "min": 0.262929
+      },
+      {
+        "id": "boccia-contrasto-1",
+        "label": "boccia",
+        "min": 0.294626
+      },
+      {
+        "id": "boccia-contrasto-2",
+        "label": "boccia",
+        "min": 0.36827
+      },
+      {
+        "id": "boccia-contrasto-4",
+        "label": "boccia",
+        "min": 0.289675
+      },
+      {
+        "id": "boccia-gerarchia-1",
+        "label": "boccia",
+        "min": 0.294626
+      },
+      {
+        "id": "boccia-gerarchia-2",
+        "label": "boccia",
+        "min": 0.312613
+      },
+      {
+        "id": "boccia-gerarchia-4",
+        "label": "boccia",
+        "min": 0.289675
+      },
+      {
+        "id": "boccia-palette-0",
+        "label": "boccia",
+        "min": 0.262929
+      },
+      {
+        "id": "boccia-palette-1",
+        "label": "boccia",
+        "min": 0.294626
+      },
+      {
+        "id": "boccia-palette-2",
+        "label": "boccia",
+        "min": 0.36827
+      },
+      {
+        "id": "boccia-palette-4",
+        "label": "boccia",
+        "min": 0.289675
+      },
+      {
+        "id": "boccia-slop-0",
+        "label": "boccia",
+        "min": 0.267771
+      },
+      {
+        "id": "boccia-slop-1",
+        "label": "boccia",
+        "min": 0.294626
+      },
+      {
+        "id": "boccia-slop-2",
+        "label": "boccia",
+        "min": 0.364802
+      },
+      {
+        "id": "boccia-slop-3",
+        "label": "boccia",
+        "min": 0.285884
+      },
+      {
+        "id": "boccia-slop-4",
+        "label": "boccia",
+        "min": 0.289675
+      },
+      {
+        "id": "boccia-overflow-1",
+        "label": "boccia",
+        "min": 0.294626
+      },
+      {
+        "id": "boccia-overflow-2",
+        "label": "boccia",
+        "min": 0.311346
+      },
+      {
+        "id": "boccia-overflow-4",
+        "label": "boccia",
+        "min": 0.278081
+      }
+    ],
+    "itemTotali": 40
+  }
+}

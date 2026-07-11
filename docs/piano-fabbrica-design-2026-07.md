@@ -107,7 +107,29 @@ trattamento foto), mai da generazione libera.
       /fabbrica/riferimenti, /fabbrica/run/[runId] (studio UX impeccable
       prima della UI, vocabolario editor esistente), nav header. Screenshot
       di terzi gitignorati. tsc+build verdi; dati di test rimossi.
-- [ ] M6 — fabbrica: preset-designer + gate L1–L4 (pipeline completa)
+- [x] 2026-07-11 M6 — fabbrica: preset-designer + gate L1–L4, pipeline
+      completa. Accettazione osservata (le 5 del piano): (1) re-colour di
+      meridian → BOCCIATO L2 «clone strutturale (dHash 0 ≤2 E csd 0.0052 <
+      p10)» + tokenDiff sotto p5; (2) candidato quasi-identico a un
+      riferimento → BOCCIATO sull'asse fonte con motivazione in linguaggio
+      legale; (3) i 6 preset come pseudo-candidati passano L2 (sanity, vita
+      con warning ΔVS); (4) run E2E VERA con 3 fixture eterogenee: il
+      designer ha sintetizzato la corsia «ferro» (light freddo-industriale,
+      Space Grotesk+Karla+mono, slate-navy) → attraversa L1–L3 → critico
+      PASS round 1 (D6 distinzione=2) → stato **da_audire** (run
+      run-2026-07-11-43f47a in factory/runs/, con tutti i report); (5) ogni
+      fase fallita lascia il report col motivo e la run RIPARTE dalla fase
+      fallita — esercitato 3 volte per davvero (bug validator posizionamento
+      → fix → resume; L2 tokenDiff 0.198<p5 «troppo vicino a meridian» →
+      correzione designer automatica; L1 peso orfano «Space Grotesk 800» →
+      escalation umana + staleness reset che rifà build+gates). Deliverable:
+      build-presets --extra (candidato = 7° contesto nello stesso Terrazzo),
+      make-goldset --candidato, skill+agente preset-designer (zero-invenzioni,
+      ereditarietà sparsa documentata), validate-candidate.mjs (5 fixture),
+      novelty.mjs+calibrate-novelty.mjs (baseline 22 coppie), l1-candidato.mjs,
+      l3-uiclip.mjs (declassato a warning: calibrazione debole misurata),
+      lib/factory/fasi.ts (orchestrazione riprendibile, correzione unica per
+      gate, loop critico max 3 round), route run NDJSON + RunRunner UI.
 - [ ] M7 — pilota end-to-end: primo preset nuovo pubblicato
 - [ ] M8 — assegnazione deterministica cliente→design + anti-collisione
 - [ ] M9 — varianti di sezione, layout per-preset, trattamento foto, fotografia per-preset
@@ -242,8 +264,54 @@ trattamento foto), mai da generazione libera.
   dalle fixture: TDMRep è **origin-scoped** (/.well-known alla radice del
   dominio) — una riserva su un path non esiste.
 
+- 2026-07-11 (M6) — **Il dHash non discrimina tra preset legittimi**: tutti i
+  render condividono il layout del golden sample, 4 coppie di preset veri
+  hanno Hamming 0. Il "clone strutturale vs libreria" è quindi una
+  CONGIUNZIONE (dHash ≤2 E csd < p10); verso i RIFERIMENTI esterni (layout
+  diversi per natura) dHash ≤2 resta bocciante da solo. E i percentili della
+  baseline sono nearest-rank: con l'interpolazione p5 > minimo osservato e
+  meridian/atelier sarebbero bocciati per costruzione al sanity test.
+- 2026-07-11 (M6) — **CSD e tokenDiff separano nettamente** (quasi-uguali
+  csd ≤0.023 vs diverse ≥0.073, zero sovrapposizione; tokenDiff 0.028 vs
+  0.32): sono i segnali portanti di L2. Sanity: i 6 preset come
+  pseudo-candidati passano tutti (vita con warning ΔVS≤0, non bloccante);
+  il re-colour di meridian è bocciato come clone strutturale; un candidato
+  quasi-identico a un riferimento è bocciato sull'asse fonte con motivazione
+  in linguaggio legale.
+- 2026-07-11 (M6, run E2E) — **La difesa in profondità ha pagato tre volte
+  nella stessa run**: (a) il validator aveva un bug (bocciava il blocco
+  «posizionamento» come token senza motivo) scoperto solo dall'E2E — le
+  fixture non lo esercitavano; (b) la font-whitelist MENTIVA (Space Grotesk
+  «800» ereditato da un mio errore M3 mai corretto lì): il validator ha
+  approvato contro dati falsi e L1 l'ha preso al render («peso orfano»);
+  (c) l'ereditarietà sparsa del candidato (i token non scritti ereditano
+  meridian, inclusi i pesi) ha prodotto un secondo peso orfano — ora
+  documentata nella skill come trappola esplicita. E il designer in
+  correzione ha RETTIFICATO di sua iniziativa un'affermazione imprecisa
+  delle proprie motivazioni (Helvetica Neue ≠ narrow grotesk): il contratto
+  «evidenza tracciabile» spinge all'onestà anche nei round successivi.
+- 2026-07-11 (M6) — **UIClip separa MALE sul nostro gold set** (25/40 item
+  sbagliati, direzione a tratti invertita: canon pulito scora più di meridian
+  pulito). Cause misurate: per 3 classi di difetto gli shot hero/servizi-1280
+  sono BYTE-IDENTICI alla base pulita (hero = testo su foto, la banda scura
+  si ricolora da sola: l'iniezione non li tocca) e lo score varia più per
+  base estetica che per difetto. → Fallback dichiarato di M0c applicato:
+  **L3 declassato a warning** (non blocca; decide L4). Eventuale ricalibro
+  futuro: score sugli shot 390 e sulle sezioni dove i difetti vivono.
+
 ## Decision Log [viva]
 
+- 2026-07-11 (M6) — **Il candidato è un 7° contesto nello STESSO toolchain
+  Terrazzo** (`build-presets --extra`, contesto temporaneo nel resolver, la
+  lista del config deriva dal resolver): mai un serializzatore parallelo —
+  è la classe di bug M2. In modalità candidato si emettono SOLO css+gen.ts;
+  manifest/editor/skill restano quelli committati (il candidato non è MAI
+  offerto alla pipeline cliente). I generati restano sporchi durante la run
+  e la fase build li ripristina alla fine.
+- 2026-07-11 (M6) — **L3 (UIClip) resta nel flusso ma come warning-only**
+  finché la calibrazione non separa (criterio: ≤20% item sbagliati sul gold
+  set, verificato dal gate a ogni run leggendo uiclip-soglia.json). La
+  pipeline perde un pre-filtro, non si blocca; L4 è il giudice.
 - 2026-07-11 (M5) — Il gate opt-out è **fail-closed**: pagina o robots.txt
   non raggiungibili = esito «errore», riferimento non selezionabile finché la
   verifica non riesce. UA trasparente
