@@ -25,6 +25,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="it" className={`h-full antialiased ${inter.variable}`} suppressHydrationWarning>
       <head>
+        {/* Nota: in dev l'overlay Next segnala questo script ai re-render
+            client del layout — è cosmetico: lo script gira dall'HTML iniziale
+            e in produzione non c'è overlay. Pattern standard per il no-flash. */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-full">

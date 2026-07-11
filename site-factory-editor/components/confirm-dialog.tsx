@@ -1,7 +1,9 @@
 "use client";
 
 // Dialog di conferma in-app (non window.confirm: migliore UX e non blocca
-// l'automazione browser). Overlay fisso, Esc annulla, focus sul bottone primario.
+// l'automazione browser). Overlay fisso, Esc annulla, focus sul bottone
+// primario. `children` ospita contenuto extra (es. l'input «digita il nome»
+// delle eliminazioni forti) e `confirmDisabled` ne vincola la conferma.
 
 import { useEffect, useRef } from "react";
 import { btnPrimary, btnSecondary } from "./ui";
@@ -13,6 +15,8 @@ export interface ConfirmProps {
   confirmLabel: string;
   cancelLabel?: string;
   tone?: "danger" | "brand";
+  confirmDisabled?: boolean;
+  children?: React.ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -24,6 +28,8 @@ export function ConfirmDialog({
   confirmLabel,
   cancelLabel = "Annulla",
   tone = "brand",
+  confirmDisabled = false,
+  children,
   onConfirm,
   onCancel,
 }: ConfirmProps) {
@@ -31,19 +37,20 @@ export function ConfirmDialog({
 
   useEffect(() => {
     if (!open) return;
-    confirmRef.current?.focus();
+    // Con contenuto interattivo (input) il focus va lì, non sul bottone.
+    if (!children) confirmRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onCancel();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onCancel]);
+  }, [open, onCancel, children]);
 
   if (!open) return null;
 
   const confirmClass =
     tone === "danger"
-      ? "inline-flex items-center gap-2 rounded-ctl bg-err px-3.5 py-1.5 text-sm font-semibold text-white transition-opacity duration-150 hover:opacity-90"
+      ? "inline-flex items-center gap-2 rounded-full bg-err px-4 py-1.5 text-sm font-semibold text-white transition-opacity duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
       : btnPrimary;
 
   return (
@@ -54,17 +61,15 @@ export function ConfirmDialog({
       aria-label={title}
       onClick={onCancel}
     >
-      <div
-        className="w-full max-w-md rounded-xl border border-line bg-surface p-5 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="card w-full max-w-md p-5 shadow-overlay" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-base font-semibold">{title}</h2>
         <div className="mt-2 text-sm text-muted">{message}</div>
+        {children}
         <div className="mt-5 flex justify-end gap-3">
           <button className={btnSecondary} onClick={onCancel}>
             {cancelLabel}
           </button>
-          <button ref={confirmRef} className={confirmClass} onClick={onConfirm}>
+          <button ref={confirmRef} className={confirmClass} onClick={onConfirm} disabled={confirmDisabled}>
             {confirmLabel}
           </button>
         </div>
