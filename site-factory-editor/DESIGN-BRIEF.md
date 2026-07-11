@@ -1,3 +1,8 @@
+> **Refactoring 2026-07**: lo studio UX/UI completo del refactoring (gap per pagina,
+> sistema di coerenza, status bar agenti, piano Fase 2) è in
+> **`DESIGN-REFACTOR-2026-07.md`** — leggerlo PRIMA di toccare la UI dell'editor.
+> Gli shape storici qui sotto restano il riferimento delle singole schede.
+
 # Design brief — site-factory-editor, parte 1 (shape /impeccable)
 
 Register: **product** (da PRODUCT.md). Fedeltà: production-ready. Ampiezza: 4 schermate + stati. Interattività: shipped-quality.
