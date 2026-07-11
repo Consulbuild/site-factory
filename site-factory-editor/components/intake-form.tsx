@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { pivaValida } from "@/lib/piva";
 import { btnPrimary, btnGhost } from "./ui";
 import { useUnsavedGuard } from "./use-unsaved-guard";
+import { useSaveShortcut } from "./use-save-shortcut";
 import { BackBar } from "./back-bar";
 import { LogoField } from "./logo-field";
 
@@ -112,6 +113,9 @@ export function IntakeForm({
   const [busy, setBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
   const { navigate, dialog } = useUnsavedGuard(dirty);
+  useSaveShortcut(() => {
+    if (!busy) salva();
+  });
 
   const flags = (brief._da_verificare ?? []) as string[];
   const social = (brief.social ?? {}) as Record<string, string>;

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Breadcrumb, btnSecondary } from "@/components/ui";
 import { notFound } from "next/navigation";
 import { readClientBundle } from "@/lib/clients";
 import { driftLabels } from "@/lib/contesto-sync";
@@ -30,21 +31,11 @@ export default async function ContestoPage({ params }: { params: Promise<{ slug:
   // In assenza di contesto → runner (nessuna modifica non salvata, nav semplice).
   return (
     <div>
-      <nav className="flex items-center justify-between gap-4 text-sm text-muted">
-        <span className="truncate">
-          <Link href="/" className="hover:text-ink">
-            Clienti
-          </Link>{" "}
-          /{" "}
-          <Link href={`/clienti/${slug}`} className="hover:text-ink">
-            {businessName}
-          </Link>{" "}
-          / <span className="text-ink">Contesto</span>
-        </span>
-        <Link
-          href={`/clienti/${slug}`}
-          className="shrink-0 rounded-ctl border border-line bg-surface px-3.5 py-1.5 font-medium text-ink transition-colors duration-150 hover:border-line2 hover:bg-raise"
-        >
+      <nav className="flex items-center justify-between gap-4">
+        <Breadcrumb
+          items={[{ label: "Clienti", href: "/" }, { label: businessName, href: `/clienti/${slug}` }, { label: "Contesto" }]}
+        />
+        <Link href={`/clienti/${slug}`} className={`${btnSecondary} shrink-0`}>
           ← Torna al cliente
         </Link>
       </nav>

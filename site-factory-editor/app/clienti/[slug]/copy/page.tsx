@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Breadcrumb, btnSecondary } from "@/components/ui";
 import { notFound } from "next/navigation";
 import { readClientBundle } from "@/lib/clients";
 import { STEPS } from "@/lib/steps";
@@ -25,7 +26,7 @@ export default async function CopyPage({ params }: { params: Promise<{ slug: str
 
   // Col copy su disco → editor (guardia navigazione propria).
   if (bundle.copy) {
-    const stale = staleFiles(slug, STEPS.copy.upstream, bundle.client.steps.copy.upstream).length > 0;
+    const stale = staleFiles(slug, STEPS.copy.upstream, bundle.client.steps.copy.upstream);
     return (
       <CopyEditor
         slug={slug}
@@ -45,21 +46,11 @@ export default async function CopyPage({ params }: { params: Promise<{ slug: str
   // In assenza di copy → runner (nessuna modifica non salvata, nav semplice).
   return (
     <div>
-      <nav className="flex items-center justify-between gap-4 text-sm text-muted">
-        <span className="truncate">
-          <Link href="/" className="hover:text-ink">
-            Clienti
-          </Link>{" "}
-          /{" "}
-          <Link href={`/clienti/${slug}`} className="hover:text-ink">
-            {businessName}
-          </Link>{" "}
-          / <span className="text-ink">Copy</span>
-        </span>
-        <Link
-          href={`/clienti/${slug}`}
-          className="shrink-0 rounded-ctl border border-line bg-surface px-3.5 py-1.5 font-medium text-ink transition-colors duration-150 hover:border-line2 hover:bg-raise"
-        >
+      <nav className="flex items-center justify-between gap-4">
+        <Breadcrumb
+          items={[{ label: "Clienti", href: "/" }, { label: businessName, href: `/clienti/${slug}` }, { label: "Copy" }]}
+        />
+        <Link href={`/clienti/${slug}`} className={`${btnSecondary} shrink-0`}>
           ← Torna al cliente
         </Link>
       </nav>

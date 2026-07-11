@@ -11,6 +11,7 @@ import type { PaletteArtifact } from "@/lib/schemas";
 import { contrastRatio, fixUntilPass, isHex6, versoCorrezione } from "@/lib/wcag";
 import { btnPrimary, btnSecondary, btnGhost } from "./ui";
 import { useUnsavedGuard } from "./use-unsaved-guard";
+import { useSaveShortcut } from "./use-save-shortcut";
 import { useStepRun, RunLog } from "./use-step-run";
 import { BackBar } from "./back-bar";
 import { ConfirmDialog } from "./confirm-dialog";
@@ -27,14 +28,18 @@ export function PaletteEditor({
   businessName,
   initial,
   contestoRef,
-  stale,
+  stale = [],
+  presetAssegnato = null,
   verificato: verificatoIniziale,
 }: {
   slug: string;
   businessName: string;
   initial: PaletteArtifact;
   contestoRef: ContestoRef | null;
-  stale: boolean;
+  /** File a monte cambiati dopo la generazione (vuoto = fresco). */
+  stale?: string[];
+  /** Preset dell'assegnazione deterministica (design.json), per la nota override. */
+  presetAssegnato?: string | null;
   verificato: boolean;
 }) {
   const router = useRouter();
@@ -50,6 +55,9 @@ export function PaletteEditor({
   const [chiediRigenera, setChiediRigenera] = useState(false);
   const { navigate, dialog } = useUnsavedGuard(dirty);
   const runner = useStepRun(slug, "palette");
+  useSaveShortcut(() => {
+    if (!busy && !runner.running) salva();
+  });
 
   const p = PRESETS[preset];
   const accentEff = sameAccent ? primary : accent;
@@ -87,6 +95,16 @@ export function PaletteEditor({
     });
     setBusy(false);
     if (res.ok) {
+      // Una sola fonte di verità: un preset diverso dall'assegnazione viene
+      // registrato come override umano in design.json (stesso endpoint del
+      // pannello Assegnazione) — palette.json e design.json non divergono più.
+      if (presetAssegnato && preset !== presetAssegnato) {
+        await fetch(`/api/clients/${slug}/design`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ preset }),
+        }).catch(() => {});
+      }
       setDirty(false);
       setMsg({ tone: "ok", text: "Salvata ✓" });
       return true;
@@ -164,9 +182,10 @@ export function PaletteEditor({
           <RunLog log={runner.log} logRef={runner.logRef} />
         </div>
       ) : (
-        stale && (
+        stale.length > 0 && (
           <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
-            <p className="font-medium text-warn">⚠ Il contesto è cambiato dopo la generazione della palette</p>
+            <p className="font-medium text-warn">⚠ Cambiato a monte dopo la generazione della palette</p>
+            <p className="mono mt-1 text-warn/90">{stale.join(" · ")}</p>
             <p className="mt-1 text-warn/90">
               Settore, tono o colori del cliente potrebbero essere diversi: controlla che preset e colori siano ancora
               coerenti.
@@ -223,6 +242,12 @@ export function PaletteEditor({
                 ))}
               </span>
               neutri del preset · font: {p.fontLabel}
+              {presetAssegnato && preset !== presetAssegnato && (
+                <span className="mt-1 block text-warn">
+                  Diverso dall'assegnazione deterministica ({presetAssegnato}): al salvataggio viene registrato come
+                  override umano.
+                </span>
+              )}
             </p>
           </div>
 

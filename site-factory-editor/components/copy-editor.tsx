@@ -22,6 +22,7 @@ import {
 import type { CopyReview, CopyCoverage } from "@/lib/schemas";
 import { Badge, btnPrimary, btnSecondary, btnGhost } from "./ui";
 import { useUnsavedGuard } from "./use-unsaved-guard";
+import { useSaveShortcut } from "./use-save-shortcut";
 import { useStepRun, RunLog } from "./use-step-run";
 import { BackBar } from "./back-bar";
 import { ConfirmDialog } from "./confirm-dialog";
@@ -162,7 +163,7 @@ export function CopyEditor({
   coverage,
   contestoServizi,
   accent,
-  stale,
+  stale = [],
   verificato: verificatoIniziale,
 }: {
   slug: string;
@@ -173,7 +174,8 @@ export function CopyEditor({
   coverage: CopyCoverage | null;
   contestoServizi: string[];
   accent: string | null;
-  stale: boolean;
+  /** File a monte cambiati dopo la generazione (vuoto = fresco). */
+  stale?: string[];
   verificato: boolean;
 }) {
   const router = useRouter();
@@ -186,9 +188,30 @@ export function CopyEditor({
   const [chiediRigenera, setChiediRigenera] = useState(false);
   const { navigate, dialog } = useUnsavedGuard(dirty);
   const runner = useStepRun(slug, "copy");
+  useSaveShortcut(() => {
+    if (!busy && !runner.running) salva();
+  });
 
   const verificato = verificatoIniziale && !dirty;
   const erroriClient = useMemo(() => clientErrors(slots, copy), [slots, copy]);
+
+  // Stato per gruppo per il rail indice: err (contratto violato) > warn (finding del critico) > ok.
+  const statoGruppo = useMemo(() => {
+    const m = new Map<string, "err" | "warn" | "ok">();
+    for (const g of groups) {
+      const paths = [...g.scalars.map((x) => x.path), ...g.arrays.flatMap((a) => a.slots.map((x) => x.path))];
+      let stato: "err" | "warn" | "ok" = "ok";
+      for (const pth of paths) {
+        if (erroriClient.some((e) => e.startsWith(`${pth}:`))) {
+          stato = "err";
+          break;
+        }
+        if ((review?.findings ?? []).some((f) => normalizePath(f.slot) === pth)) stato = "warn";
+      }
+      m.set(g.key, stato);
+    }
+    return m;
+  }, [groups, erroriClient, review]);
 
   const findingsBySlot = useMemo(() => {
     const m = new Map<string, CopyReview["findings"]>();
@@ -330,9 +353,10 @@ export function CopyEditor({
         </div>
       ) : (
         <>
-          {stale && (
+          {stale.length > 0 && (
             <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
-              <p className="font-medium text-warn">⚠ Il contesto è cambiato dopo la generazione del copy</p>
+              <p className="font-medium text-warn">⚠ Cambiato a monte dopo la generazione del copy</p>
+              <p className="mono mt-1 text-warn/90">{stale.join(" · ")}</p>
               <p className="mt-1 text-warn/90">
                 Macro-categorie, promesse o identità potrebbero essere diverse: i testi derivati potrebbero non
                 riflettere le correzioni.
@@ -392,9 +416,32 @@ export function CopyEditor({
         <p className="mt-4 rounded-ctl bg-ok-bg px-4 py-2 text-sm text-ok">✓ Copy confermato. Puoi ancora modificarlo.</p>
       )}
 
-      <div className="mx-auto max-w-3xl">
+      <div className="relative mx-auto max-w-3xl">
+        {/* Rail indice sticky (≥xl): la pagina è lunga ~9000px, il rail è la mappa. */}
+        <nav className="absolute top-0 bottom-0 -left-48 hidden w-40 xl:block" aria-label="Sezioni del copy">
+          <ol className="sticky top-20 space-y-0.5 text-xs">
+            {groups.map((g) => {
+              const st = statoGruppo.get(g.key) ?? "ok";
+              return (
+                <li key={g.key}>
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById(`gruppo-${g.key}`)?.scrollIntoView({ behavior: "smooth" })}
+                    className="flex w-full items-center gap-2 rounded-ctl px-2 py-1 text-left text-muted transition-colors duration-150 hover:bg-raise hover:text-ink"
+                  >
+                    <span
+                      aria-hidden
+                      className={`size-1.5 shrink-0 rounded-full ${st === "err" ? "bg-err" : st === "warn" ? "bg-warn" : "bg-line2"}`}
+                    />
+                    <span className="truncate">{g.key === "meta" ? g.label : `${g.key.slice(1)} · ${g.label}`}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
         {groups.map((g) => (
-          <section key={g.key} className="border-t border-line py-6 first:border-t-0">
+          <section key={g.key} id={`gruppo-${g.key}`} className="scroll-mt-20 border-t border-line py-6 first:border-t-0">
             <h2 className="mb-3 text-xs font-semibold tracking-wide text-faint uppercase">
               {g.key === "meta" ? g.label : `${g.key.slice(1)} · ${g.label}`}
             </h2>
@@ -444,7 +491,7 @@ export function CopyEditor({
 
       {/* ACTION BAR */}
       <div className="fixed inset-x-0 bottom-(--statusbar-offset) border-t border-line bg-bg/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-5xl items-center justify-end gap-4 px-6 py-3">
+        <div className="mx-auto flex max-w-3xl items-center justify-end gap-4 px-6 py-3">
           {msg && <span className={`text-sm ${msg.tone === "ok" ? "text-ok" : "text-err"}`}>{msg.text}</span>}
           {erroriClient.length > 0 && (
             <span className="text-sm text-err">

@@ -3,14 +3,16 @@
 // Editor del contesto: identità, tabella servizi atomizzati con assegnazione a
 // macro-categorie (modello interno a ID, robusto ai rename), punti di forza con
 // chip fonte, promesse (tag list), promessa martello, tono/materiali/note.
-// [Salva bozza] = PUT · [Conferma] = POST con gate copertura deterministico.
+// [Salva] = PUT · [Conferma] = POST con gate copertura deterministico.
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Contesto } from "@/lib/schemas";
 import { btnPrimary, btnSecondary, btnGhost } from "./ui";
 import { useUnsavedGuard } from "./use-unsaved-guard";
+import { useSaveShortcut } from "./use-save-shortcut";
 import { BackBar } from "./back-bar";
+import { ConfirmDialog } from "./confirm-dialog";
 import { useStepRun, RunLog } from "./use-step-run";
 
 type Servizio = { servizio: string; fonte: string; macroId: string | null };
@@ -65,8 +67,12 @@ export function ContestoEditor({
   const [msg, setMsg] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [confermaRigenera, setConfermaRigenera] = useState(false);
   const touch = () => setDirty(true);
   const { navigate, dialog } = useUnsavedGuard(dirty);
+  useSaveShortcut(() => {
+    if (!busy && !runner.running) salvaBozza();
+  });
 
   const scoperti = servizi.filter((s) => s.macroId === null);
   const verificato = initial.verificato && !dirty;
@@ -104,7 +110,7 @@ export function ContestoEditor({
     });
     setBusy(false);
     if (res.ok) {
-      setMsg({ tone: "ok", text: "Bozza salvata ✓" });
+      setMsg({ tone: "ok", text: "Salvato ✓" });
       setDirty(false);
     } else {
       const d = await res.json().catch(() => ({}));
@@ -179,10 +185,31 @@ export function ContestoEditor({
     <div className="pb-24">
       {dialog}
       <BackBar slug={slug} businessName={businessName} step="Contesto" onNavigate={navigate} />
-      <h1 className="mt-4 text-xl font-semibold">Contesto per gli agenti</h1>
-      <p className="mt-1 max-w-2xl text-sm text-muted">
-        Rivedi i fatti distillati dal form prima di passarli agli agenti: qui la qualità decide la qualità del sito.
-      </p>
+      <div className="mt-4 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold">Contesto per gli agenti</h1>
+          <p className="mt-1 max-w-2xl text-sm text-muted">
+            Rivedi i fatti distillati dal form prima di passarli agli agenti: qui la qualità decide la qualità del sito.
+          </p>
+        </div>
+        {!runner.running && (
+          <button className={`${btnGhost} shrink-0`} onClick={() => setConfermaRigenera(true)}>
+            ⟳ Rigenera con l&apos;AI
+          </button>
+        )}
+      </div>
+      <ConfirmDialog
+        open={confermaRigenera}
+        title="Rigenerare il contesto da zero?"
+        message="L'enricher rilegge il form e riscrive tutto il contesto: le modifiche fatte a mano andranno perse."
+        confirmLabel="Rigenera da zero"
+        tone="danger"
+        onConfirm={() => {
+          setConfermaRigenera(false);
+          runner.run("generate", "Rigenerazione da zero del contesto…");
+        }}
+        onCancel={() => setConfermaRigenera(false)}
+      />
 
       {runner.running || runner.log.length > 0 ? (
         <div className="mt-4">
@@ -207,13 +234,13 @@ export function ContestoEditor({
               </button>
               <button
                 className={btnSecondary}
-                onClick={() => runner.run("generate", "Rigenerazione da zero del contesto…")}
+                onClick={() => setConfermaRigenera(true)}
                 title="Rigenera tutto il contesto dai dati correnti (perdi le modifiche fatte a mano)"
               >
                 Rigenera da zero
               </button>
-              <button className={btnGhost} onClick={sistematoAMano}>
-                Ho sistemato a mano
+              <button className={btnGhost} onClick={sistematoAMano} title="Ho già sistemato a mano: nascondi l'avviso">
+                Va bene così
               </button>
             </div>
           </div>
@@ -411,7 +438,7 @@ export function ContestoEditor({
           {msg && <span className={`text-sm ${msg.tone === "ok" ? "text-ok" : "text-err"}`}>{msg.text}</span>}
           {scoperti.length > 0 && <span className="text-sm text-warn">{scoperti.length} servizi da assegnare</span>}
           <button type="button" className={btnSecondary} onClick={salvaBozza} disabled={busy}>
-            {busy ? "…" : "Salva bozza"}
+            {busy ? "…" : "Salva"}
           </button>
           <button type="button" className={btnPrimary} onClick={conferma} disabled={busy || scoperti.length > 0}>
             Conferma contesto

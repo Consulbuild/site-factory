@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import type { ImagesTrace, ImageReview } from "@/lib/schemas";
 import { Badge, btnPrimary, btnSecondary, btnGhost } from "./ui";
 import { useUnsavedGuard } from "./use-unsaved-guard";
+import { useSaveShortcut } from "./use-save-shortcut";
 import { useStepRun, RunLog } from "./use-step-run";
 import { BackBar } from "./back-bar";
 import { ConfirmDialog } from "./confirm-dialog";
@@ -23,14 +24,15 @@ export function ImagesEditor({
   businessName,
   trace,
   review,
-  stale,
+  stale = [],
   verificato,
 }: {
   slug: string;
   businessName: string;
   trace: ImagesTrace;
   review: ImageReview | null;
-  stale: boolean;
+  /** File a monte cambiati dopo la generazione (vuoto = fresco). */
+  stale?: string[];
   verificato: boolean;
 }) {
   const router = useRouter();
@@ -64,6 +66,9 @@ export function ImagesEditor({
   const [chiediRegenSel, setChiediRegenSel] = useState(false);
 
   const { navigate, dialog } = useUnsavedGuard(dirty);
+  useSaveShortcut(() => {
+    if (!busy && dirty) salva();
+  });
 
   const setAlt = (file: string, v: string) => {
     setAlts((prev) => ({ ...prev, [file]: v }));
@@ -113,13 +118,14 @@ export function ImagesEditor({
     const res = await fetch(`/api/clients/${slug}/images`, { method: "POST" });
     setBusy(false);
     if (res.ok) {
-      setMsg({ tone: "ok", text: "Immagini confermate: images.json derivato per la build." });
+      setDirty(false);
+      router.push(`/clienti/${slug}`);
       router.refresh();
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setServerErrors(Array.isArray(data.errors) ? data.errors : [data.error ?? `errore ${res.status}`]);
-      setMsg({ tone: "err", text: "Set non conforme al manifest." });
+      return;
     }
+    const data = await res.json().catch(() => ({}));
+    setServerErrors(Array.isArray(data.errors) ? data.errors : [data.error ?? `errore ${res.status}`]);
+    setMsg({ tone: "err", text: "Set non conforme al manifest." });
   }
 
   async function vaBeneCosi() {
@@ -174,7 +180,7 @@ export function ImagesEditor({
           </p>
         </div>
         <button className={`${btnGhost} shrink-0`} onClick={() => setChiediRigenera(true)} disabled={runner.running}>
-          ⟳ Rigenera tutto
+          ⟳ Rigenera con l&apos;AI
         </button>
       </div>
 
@@ -185,9 +191,10 @@ export function ImagesEditor({
         </div>
       ) : (
         <>
-          {stale && (
+          {stale.length > 0 && (
             <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
-              <p className="font-medium text-warn">⚠ Contesto, copy o palette sono cambiati dopo la generazione</p>
+              <p className="font-medium text-warn">⚠ Cambiato a monte dopo la generazione delle immagini</p>
+            <p className="mono mt-1 text-warn/90">{stale.join(" · ")}</p>
               <p className="mt-1 text-warn/90">
                 Soggetti delle card, colori dello style bible o identità potrebbero non riflettere le correzioni.
               </p>
@@ -343,7 +350,7 @@ function CriticSummary({
       ) : (
         <span className="text-muted">Il critico visivo non è ancora passato su questo set.</span>
       )}
-      <button className={`${btnGhost} ml-auto shrink-0`} onClick={onRecheck} disabled={busy}>
+      <button className={`${btnSecondary} ml-auto shrink-0`} onClick={onRecheck} disabled={busy}>
         Ricontrolla col critico
       </button>
     </div>

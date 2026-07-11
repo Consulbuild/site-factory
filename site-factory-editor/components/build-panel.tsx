@@ -11,6 +11,8 @@ import type { ClientState } from "@/lib/schemas";
 import { Badge, StepBadge, btnPrimary, btnSecondary, btnGhost } from "./ui";
 import { useStepRun, RunLog } from "./use-step-run";
 import { BackBar } from "./back-bar";
+import { ConfirmDialog } from "./confirm-dialog";
+import { useUnsavedGuard } from "./use-unsaved-guard";
 import { KeySetup } from "./home";
 
 type BuildState = ClientState["steps"]["build"];
@@ -42,6 +44,10 @@ export function BuildPanel({
   const [errore, setErrore] = useState<string | null>(null);
   const [dominio, setDominio] = useState(build.dominio ?? "");
   const [dominioMsg, setDominioMsg] = useState<string | null>(null);
+  const [chiediPubblica, setChiediPubblica] = useState(false);
+  // Guardia sull'unico campo editabile della scheda: il dominio non salvato.
+  const dominioDirty = dominio !== (build.dominio ?? "");
+  const { navigate, dialog } = useUnsavedGuard(dominioDirty);
 
   const completa = build.stato !== "assente" && !build.partial;
   const daConfermare = build.stato === "da_verificare" && completa;
@@ -82,7 +88,10 @@ export function BuildPanel({
   async function salvaDominio() {
     setDominioMsg(null);
     const data = await azione({ action: "domain", dominio });
-    if (data) setDominioMsg(dominio ? "Dominio salvato: sarà usato alla prossima pubblicazione." : "Dominio rimosso.");
+    if (data) {
+      setDominioMsg(dominio ? "Dominio salvato: sarà usato alla prossima pubblicazione." : "Dominio rimosso.");
+      router.refresh(); // riallinea build.dominio (spegne la guardia unsaved)
+    }
   }
 
   async function pubblica() {
@@ -100,7 +109,8 @@ export function BuildPanel({
 
   return (
     <div className="pb-16">
-      <BackBar slug={slug} businessName={businessName} step="Build" onNavigate={(href) => router.push(href)} />
+      {dialog}
+      <BackBar slug={slug} businessName={businessName} step="Build" onNavigate={navigate} />
 
       <div className="mt-4">
         <h1 className="text-xl font-semibold">Build &amp; pubblicazione</h1>
@@ -109,6 +119,22 @@ export function BuildPanel({
           Rivedi l&apos;anteprima, conferma, pubblica su Cloudflare.
         </p>
       </div>
+
+      <ConfirmDialog
+        open={chiediPubblica}
+        title={build.deploy ? "Ripubblicare il sito?" : "Pubblicare il sito?"}
+        message={
+          build.deploy
+            ? "Il sito online su Cloudflare verrà sostituito con questa build. L'operazione può richiedere qualche minuto."
+            : "La build confermata va online su Cloudflare Workers. L'operazione può richiedere qualche minuto."
+        }
+        confirmLabel={build.deploy ? "Ripubblica" : "Pubblica"}
+        onConfirm={() => {
+          setChiediPubblica(false);
+          pubblica();
+        }}
+        onCancel={() => setChiediPubblica(false)}
+      />
 
       {staleFiles.length > 0 && !runner.running && (
         <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
@@ -263,7 +289,7 @@ export function BuildPanel({
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <button
                 className={momento === "pubblica" ? btnPrimary : btnSecondary}
-                onClick={pubblica}
+                onClick={() => setChiediPubblica(true)}
                 disabled={busy || runner.running || !verificata}
                 title={
                   !verificata
