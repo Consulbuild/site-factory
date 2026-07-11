@@ -1,0 +1,17 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- tile -->
+  <rect x="96" y="96" width="832" height="832" rx="188" fill="#0F172A"/>
+  <!-- pannello browser -->
+  <rect x="248" y="300" width="528" height="424" rx="44" fill="#F8FAFC"/>
+  <!-- pallini chrome -->
+  <circle cx="300" cy="356" r="15" fill="#94A3B8"/>
+  <circle cx="348" cy="356" r="15" fill="#94A3B8"/>
+  <circle cx="396" cy="356" r="15" fill="#94A3B8"/>
+  <!-- divisore -->
+  <rect x="248" y="392" width="528" height="2" fill="#E2E8F0"/>
+  <!-- hero (accent) -->
+  <rect x="288" y="430" width="448" height="170" rx="22" fill="#F59E0B"/>
+  <!-- righe di testo -->
+  <rect x="288" y="628" width="448" height="30" rx="15" fill="#CBD5E1"/>
+  <rect x="288" y="676" width="300" height="30" rx="15" fill="#CBD5E1"/>
+</svg>
