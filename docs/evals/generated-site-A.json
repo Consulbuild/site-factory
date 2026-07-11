@@ -1,4 +1,5 @@
 {
+  "_ATTENZIONE": "FIXTURE STORICA INVALIDA contro lo schema attuale (icone fuori enum, budget più stretti, ProblemAgitation senza componente) — NON usare come esempio del contratto site.json. La fonte degli artifact di test è il blueprint: site-renderer/blueprints/conversione-locale-v1/. Dettagli: docs/decisions/2026-07-verifiche-fase-b.md §Scoperte collaterali.",
   "meta": {
     "businessName": "RomaRistruttura S.r.l.",
     "industry": "Ristrutturazioni edili residenziali chiavi in mano",
@@ -29,13 +30,32 @@
       "variant": "solid",
       "props": {
         "nav": [
-          { "label": "Servizi", "href": "#servizi" },
-          { "label": "Lavori", "href": "#lavori" },
-          { "label": "Processo", "href": "#processo" },
-          { "label": "Domande", "href": "#faq" },
-          { "label": "Contatti", "href": "#contatti" }
+          {
+            "label": "Servizi",
+            "href": "#servizi"
+          },
+          {
+            "label": "Lavori",
+            "href": "#lavori"
+          },
+          {
+            "label": "Processo",
+            "href": "#processo"
+          },
+          {
+            "label": "Domande",
+            "href": "#faq"
+          },
+          {
+            "label": "Contatti",
+            "href": "#contatti"
+          }
         ],
-        "cta": { "label": "Preventivo gratuito", "href": "#contatti", "style": "primary" },
+        "cta": {
+          "label": "Preventivo gratuito",
+          "href": "#contatti",
+          "style": "primary"
+        },
         "showPhone": true
       }
     },
@@ -47,10 +67,22 @@
         "title": "La vostra casa ristrutturata, **chiavi in mano**",
         "subtitle": "Un unico referente segue tutto il cantiere, dal preventivo dettagliato alla consegna. 214 cantieri completati a Roma in 18 anni, 4,8/5 su Google e garanzia 5 anni sulle opere.",
         "ctas": [
-          { "label": "Richiedi il preventivo gratuito", "href": "#contatti", "style": "primary" },
-          { "label": "+39 06 1234567", "href": "tel:+39061234567", "style": "secondary" }
+          {
+            "label": "Richiedi il preventivo gratuito",
+            "href": "#contatti",
+            "style": "primary"
+          },
+          {
+            "label": "+39 06 1234567",
+            "href": "tel:+39061234567",
+            "style": "secondary"
+          }
         ],
-        "badges": ["Sopralluogo gratuito", "Referente unico di cantiere", "Garanzia 5 anni"],
+        "badges": [
+          "Sopralluogo gratuito",
+          "Referente unico di cantiere",
+          "Garanzia 5 anni"
+        ],
         "image": {
           "src": "https://picsum.photos/seed/ristrutturazione-appartamento-roma/1600/1200",
           "alt": "Soggiorno di un appartamento a Roma appena ristrutturato chiavi in mano"
@@ -61,10 +93,22 @@
       "type": "TrustBar",
       "props": {
         "items": [
-          { "value": "18 anni", "label": "di attività a Roma" },
-          { "value": "214", "label": "cantieri completati" },
-          { "value": "4,8/5", "label": "su 47 recensioni Google" },
-          { "value": "Garanzia 5 anni", "label": "su tutte le opere" }
+          {
+            "value": "18 anni",
+            "label": "di attività a Roma"
+          },
+          {
+            "value": "214",
+            "label": "cantieri completati"
+          },
+          {
+            "value": "4,8/5",
+            "label": "su 47 recensioni Google"
+          },
+          {
+            "value": "Garanzia 5 anni",
+            "label": "su tutte le opere"
+          }
         ]
       }
     },
@@ -173,7 +217,11 @@
             }
           }
         ],
-        "cta": { "label": "Richiedi il preventivo gratuito", "href": "#contatti", "style": "primary" }
+        "cta": {
+          "label": "Richiedi il preventivo gratuito",
+          "href": "#contatti",
+          "style": "primary"
+        }
       }
     },
     {
@@ -339,7 +387,11 @@
         "eyebrow": "",
         "title": "Iniziamo dal **sopralluogo gratuito**",
         "subtitle": "Un unico referente, un preventivo dettagliato e tempi concordati. Raccontateci il vostro progetto e ricevete un conto chiaro prima di iniziare.",
-        "cta": { "label": "Richiedi il preventivo gratuito", "href": "#contatti", "style": "primary" },
+        "cta": {
+          "label": "Richiedi il preventivo gratuito",
+          "href": "#contatti",
+          "style": "primary"
+        },
         "showPhone": true,
         "note": "Sopralluogo gratuito · Nessun impegno · Referente unico di cantiere"
       }
@@ -363,26 +415,56 @@
           {
             "title": "Servizi",
             "links": [
-              { "label": "Ristrutturazione completa", "href": "#servizi" },
-              { "label": "Bagni e cucine", "href": "#servizi" },
-              { "label": "Cappotto termico", "href": "#servizi" },
-              { "label": "Impianti a norma", "href": "#servizi" }
+              {
+                "label": "Ristrutturazione completa",
+                "href": "#servizi"
+              },
+              {
+                "label": "Bagni e cucine",
+                "href": "#servizi"
+              },
+              {
+                "label": "Cappotto termico",
+                "href": "#servizi"
+              },
+              {
+                "label": "Impianti a norma",
+                "href": "#servizi"
+              }
             ]
           },
           {
             "title": "Azienda",
             "links": [
-              { "label": "Lavori", "href": "#lavori" },
-              { "label": "Come funziona", "href": "#processo" },
-              { "label": "Domande frequenti", "href": "#faq" },
-              { "label": "Contatti", "href": "#contatti" }
+              {
+                "label": "Lavori",
+                "href": "#lavori"
+              },
+              {
+                "label": "Come funziona",
+                "href": "#processo"
+              },
+              {
+                "label": "Domande frequenti",
+                "href": "#faq"
+              },
+              {
+                "label": "Contatti",
+                "href": "#contatti"
+              }
             ]
           },
           {
             "title": "Legale",
             "links": [
-              { "label": "Privacy Policy", "href": "#" },
-              { "label": "Cookie Policy", "href": "#" }
+              {
+                "label": "Privacy Policy",
+                "href": "#"
+              },
+              {
+                "label": "Cookie Policy",
+                "href": "#"
+              }
             ]
           }
         ],

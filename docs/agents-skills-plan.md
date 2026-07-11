@@ -156,6 +156,14 @@ L'assembler (implementato e testato, vedi README blueprint per l'uso):
 
 ## 5. Pipeline, artifact e checkpoint
 
+> **NOTA 2026-07-11 (drift documentale):** dal 2026-07-06 la pipeline reale ha lo step
+> **contesto** tra intake e tutto il resto: `context-enricher` distilla il form in
+> `out/<slug>/contesto.json` (coverage gate deterministico + verifica umana), che è
+> l'**input primario** di palette, copy e immagini — il meccanismo di tracciabilità dei
+> claim (regola 5). Il diagramma sotto è lo schema originale e non lo mostra; lo stato
+> aggiornato vive in CLAUDE.md §Fase C e docs/handoff-fase-c.md. Inoltre da M8 il preset
+> non lo sceglie il Palette Designer: arriva dall'assegnazione deterministica.
+
 ```
 Tally webhook
    │

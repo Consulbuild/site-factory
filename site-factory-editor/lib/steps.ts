@@ -18,7 +18,7 @@ import { checkCoperturaCopy } from "./slots-shared";
 import { snapshotFonte, driftLabels } from "./contesto-sync";
 import { checkPalette } from "./contrast";
 import { computeUpstream, hashValue } from "./staleness";
-import { validateCopyArtifact } from "./slots";
+import { validateCopyArtifact, type CopyArtifact } from "./slots";
 import { checkSlop, type SlopReport, type SlopResult } from "./slop";
 import { expectedImages, probeBfl, validateImagesTrace } from "./images";
 import { buildRun } from "./build";
@@ -458,6 +458,33 @@ function runSlop(slug: string): SlopResult {
   return checkSlop(slug, consenti, contesto?.promessa_martello);
 }
 
+/** Timbra il review con l'hash dell'artifact giudicato: senza, una review può
+ *  sopravvivere a un artifact che nel frattempo è cambiato o non esiste più. */
+function stampReview(slug: string, reviewFile: string, artifact: string): void {
+  const p = path.join(OUT_DIR, slug, reviewFile);
+  try {
+    const r = JSON.parse(fs.readFileSync(p, "utf8"));
+    r.giudicatoSu = computeUpstream(slug, [artifact]);
+    fs.writeFileSync(p, JSON.stringify(r, null, 2) + "\n");
+  } catch {
+    // review mancante o invalida: lo segnala già il chiamante
+  }
+}
+
+/** Il prompt delle correzioni impone «tutti gli altri slot BYTE-IDENTICI»:
+ *  questo è il sensore che lo verifica davvero. `citati` sono gli slot dei
+ *  finding (eventualmente con indici appesi, es. "…bullets[*][3][4]"). */
+function verificaByteIdentici(prima: CopyArtifact | null, dopo: CopyArtifact | null, citati: string[]): string | null {
+  if (!prima || !dopo) return null; // artifact illeggibile: lo segnala il gate formato
+  const autorizzato = (k: string) => citati.some((c) => c.startsWith(k) || k.startsWith(c));
+  const toccati = Object.keys(prima).filter(
+    (k) => !autorizzato(k) && JSON.stringify(prima[k]) !== JSON.stringify(dopo[k]),
+  );
+  return toccati.length
+    ? `la correzione ha toccato slot non autorizzati (dovevano restare byte-identici): ${toccati.slice(0, 5).join(", ")}`
+    : null;
+}
+
 /**
  * Gate deterministico anti-slop (dopo il gate formato, prima del critico),
  * con UNA fase di correzione se serve — stesso pattern del gate formato.
@@ -467,6 +494,7 @@ async function* slopGate(slug: string, io: StepIO): AsyncGenerator<RunEvent, Pha
   let s = runSlop(slug);
   if (s.errore) return { ok: false, error: s.errore };
   if (s.ok) return { ok: true, report: s.report };
+  const primaDelFix = readCopy(slug);
   const r = yield* io.claude({
     phase: "correzioni anti-slop",
     prompt: promptSlopFix(slug, s.report!),
@@ -476,6 +504,9 @@ async function* slopGate(slug: string, io: StepIO): AsyncGenerator<RunEvent, Pha
   if (!r.ok) return r;
   const errs = validateCopyArtifact(readCopy(slug) ?? {});
   if (errs.length) return { ok: false, error: `formato non conforme dopo la correzione anti-slop: ${errs.slice(0, 5).join("; ")}` };
+  const citati = s.report!.bloccanti.flatMap((b) => b.slot.split(",").map((x) => x.trim()));
+  const fuoriSlot = verificaByteIdentici(primaDelFix, readCopy(slug), citati);
+  if (fuoriSlot) return { ok: false, error: fuoriSlot };
   s = runSlop(slug);
   if (s.errore) return { ok: false, error: s.errore };
   // ponytail: una sola correzione come il gate formato; se non basta lo step fallisce e decide l'umano.
@@ -507,6 +538,7 @@ async function* copyRun(slug: string, ctx: RunCtx, io: StepIO): AsyncGenerator<R
     });
     if (!r.ok) return r;
     if (!readCopyReview(slug)) return { ok: false, error: "copy-review.json non scritto o non valido" };
+    stampReview(slug, "copy-review.json", "copy.json");
     return { ok: true };
   }
 
@@ -535,9 +567,16 @@ async function* copyRun(slug: string, ctx: RunCtx, io: StepIO): AsyncGenerator<R
     if (!c.ok) return c;
     const review = readCopyReview(slug);
     if (!review) return { ok: false, error: "copy-review.json non scritto o non valido" };
+    stampReview(slug, "copy-review.json", "copy.json");
     if (review.verdict === "PASS") return { ok: true };
     // FAIL all'ultimo round: si consegna comunque — decide l'umano col review in scheda.
     if (round === MAX_ROUNDS) return { ok: true };
+
+    // Byte-check applicabile solo se TUTTI i finding citano slot reali: un
+    // finding globale (es. «globale (framing target)») autorizza modifiche larghe.
+    const citati = review.findings.map((f) => f.slot);
+    const vincolabile = citati.length > 0 && citati.every((c2) => /^(meta\.|sections\[)/.test(c2));
+    const primaDelFix = vincolabile ? readCopy(slug) : null;
 
     const f = yield* io.claude({
       phase: `correzioni (round ${round})`,
@@ -548,6 +587,10 @@ async function* copyRun(slug: string, ctx: RunCtx, io: StepIO): AsyncGenerator<R
       maxTurns: COPYWRITER_TURNS,
     });
     if (!f.ok) return f;
+    if (vincolabile) {
+      const fuoriSlot = verificaByteIdentici(primaDelFix, readCopy(slug), citati);
+      if (fuoriSlot) return { ok: false, error: fuoriSlot };
+    }
     g = yield* formatGate(slug, io);
     if (!g.ok) return g;
     s = yield* slopGate(slug, io);
@@ -691,6 +734,7 @@ async function* imagesRun(slug: string, ctx: RunCtx, io: StepIO): AsyncGenerator
     });
     if (!r.ok) return r;
     if (!readImageReview(slug)) return { ok: false, error: "image-review.json non scritto o non valido" };
+    stampReview(slug, "image-review.json", "images-trace.json");
     return { ok: true };
   }
 
@@ -737,6 +781,7 @@ async function* imagesRun(slug: string, ctx: RunCtx, io: StepIO): AsyncGenerator
     if (!c.ok) return c;
     const review = readImageReview(slug);
     if (!review) return { ok: false, error: "image-review.json non scritto o non valido" };
+    stampReview(slug, "image-review.json", "images-trace.json");
     if (review.verdict === "PASS") return { ok: true };
     // FAIL all'ultimo round: si consegna comunque — decide l'umano con gli scarti in scheda.
     if (round === round0 + MAX_ROUNDS) return { ok: true };
@@ -766,5 +811,16 @@ export function setStepState(slug: string, key: StepKey, stato: string, errore?:
     step.stato = stato as never;
     if (errore) step.errore = errore;
     else delete step.errore;
+  });
+}
+
+/** Registra le metriche minime dell'ultimo run (durata/mode/esito) in client.json. */
+export function patchStepMeta(
+  slug: string,
+  key: StepKey,
+  ultimaRun: { mode: string; durataMs: number; esito: "ok" | "errore"; quando: string },
+) {
+  patchClientState(slug, (s) => {
+    s.steps[key].ultimaRun = ultimaRun;
   });
 }

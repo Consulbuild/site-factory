@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { REPO_ROOT, CLAUDE_BIN, childEnv } from "./paths";
-import { STEPS, setStepState, type StepKey, type RunCtx } from "./steps";
+import { STEPS, setStepState, patchStepMeta, type StepKey, type RunCtx } from "./steps";
 
 // Runner degli step AI, multi-fase: ogni StepDef orchestra in TS una o più
 // fasi `claude -p` headless (login Max, nessuna ANTHROPIC_API_KEY) tramite
@@ -53,15 +53,18 @@ export interface StepIO {
 
 const DEFAULT_TIMEOUT_MS = 10 * 60 * 1000;
 
-async function* claudePhase(opts: {
-  phase: string;
-  prompt: string;
-  allowed: string[];
-  disallowed: string[];
-  timeoutMs?: number;
-  maxTurns?: number;
-  env?: Record<string, string>;
-}): AsyncGenerator<RunEvent, PhaseResult> {
+async function* claudePhase(
+  opts: {
+    phase: string;
+    prompt: string;
+    allowed: string[];
+    disallowed: string[];
+    timeoutMs?: number;
+    maxTurns?: number;
+    env?: Record<string, string>;
+  },
+  signal?: AbortSignal,
+): AsyncGenerator<RunEvent, PhaseResult> {
   yield { type: "phase", label: opts.phase };
 
   const args = [
@@ -87,6 +90,10 @@ async function* claudePhase(opts: {
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const timer = setTimeout(() => child.kill("SIGTERM"), timeoutMs);
   const killer = setTimeout(() => child.kill("SIGKILL"), timeoutMs + 10_000);
+  // Stream abbandonato (tab chiusa, reload): senza questo il child claude
+  // resterebbe orfano a consumare quota e lo step «in_corso» per sempre.
+  const onAbort = () => child.kill("SIGTERM");
+  signal?.addEventListener("abort", onAbort, { once: true });
 
   let buf = "";
   let resultError: string | null = null;
@@ -146,9 +153,11 @@ async function* claudePhase(opts: {
 
   clearTimeout(timer);
   clearTimeout(killer);
+  signal?.removeEventListener("abort", onAbort);
   const code = await closed;
 
   // Diagnosi errori tipici — SEMPRE come valore di ritorno, mai eventi.
+  if (signal?.aborted) return { ok: false, error: "run interrotto: connessione chiusa dal client" };
   if (spawnError) return { ok: false, error: spawnError };
   if (/logged out|not logged in|authentication|Invalid API key|OAuth/i.test(stderr)) {
     return { ok: false, error: "Sessione Claude non valida. Esegui `claude login` nel terminale e riprova." };
@@ -166,14 +175,17 @@ async function* claudePhase(opts: {
 const SCRIPT_TIMEOUT_MS = 2 * 60 * 1000;
 
 /** Fase deterministica: stesso scaffold streaming di claudePhase, senza parse JSON. */
-async function* scriptPhase(opts: {
-  phase: string;
-  bin: string;
-  args: string[];
-  cwd?: string;
-  env?: Record<string, string>;
-  timeoutMs?: number;
-}): AsyncGenerator<RunEvent, PhaseResult> {
+async function* scriptPhase(
+  opts: {
+    phase: string;
+    bin: string;
+    args: string[];
+    cwd?: string;
+    env?: Record<string, string>;
+    timeoutMs?: number;
+  },
+  signal?: AbortSignal,
+): AsyncGenerator<RunEvent, PhaseResult> {
   yield { type: "phase", label: opts.phase };
 
   // NO_COLOR: il log va nella UI, i codici ANSI sarebbero rumore.
@@ -182,6 +194,8 @@ async function* scriptPhase(opts: {
   const timeoutMs = opts.timeoutMs ?? SCRIPT_TIMEOUT_MS;
   const timer = setTimeout(() => child.kill("SIGTERM"), timeoutMs);
   const killer = setTimeout(() => child.kill("SIGKILL"), timeoutMs + 10_000);
+  const onAbort = () => child.kill("SIGTERM");
+  signal?.addEventListener("abort", onAbort, { once: true });
 
   let spawnError: string | null = null;
   let stderr = "";
@@ -238,8 +252,10 @@ async function* scriptPhase(opts: {
 
   clearTimeout(timer);
   clearTimeout(killer);
+  signal?.removeEventListener("abort", onAbort);
   const code = await closed;
 
+  if (signal?.aborted) return { ok: false, error: "run interrotto: connessione chiusa dal client" };
   if (spawnError) return { ok: false, error: spawnError };
   if (code !== 0) {
     return {
@@ -250,8 +266,14 @@ async function* scriptPhase(opts: {
   return { ok: true };
 }
 
+/** IO legato a un AbortSignal: la chiusura dello stream ammazza i child in corso. */
+const ioWithSignal = (signal?: AbortSignal): StepIO => ({
+  claude: (opts) => claudePhase(opts, signal),
+  script: (opts) => scriptPhase(opts, signal),
+});
+
 /** Il seam delle fasi, riusato dal runner della fabbrica (lib/factory/run.ts, D5). */
-export const IO: StepIO = { claude: claudePhase, script: scriptPhase };
+export const IO: StepIO = ioWithSignal();
 
 /**
  * Esegue uno step per un cliente e restituisce un async iterable di eventi.
@@ -266,12 +288,14 @@ export async function* runStep(
   slug: string,
   stepKey: StepKey,
   ctx: RunCtx = { mode: "generate" },
+  signal?: AbortSignal,
 ): AsyncGenerator<RunEvent> {
   const step = STEPS[stepKey];
   if (!step) {
     yield { type: "error", message: `step sconosciuto: ${stepKey}` };
     return;
   }
+  const io = ioWithSignal(signal);
 
   const flightKey = `${slug}:${stepKey}`;
   if (inFlight.has(flightKey)) {
@@ -279,19 +303,30 @@ export async function* runStep(
     return;
   }
   inFlight.add(flightKey);
+  const partenza = Date.now();
+  // Metriche minime del run (durata/mode/esito) in client.json: senza, né i
+  // costi né la convergenza dei loop critico-correzioni sono osservabili.
+  const registraRun = (esito: "ok" | "errore") =>
+    patchStepMeta(slug, step.stateKey, {
+      mode: ctx.mode,
+      durataMs: Date.now() - partenza,
+      esito,
+      quando: new Date().toISOString(),
+    });
   try {
     setStepState(slug, step.stateKey, "in_corso");
     yield { type: "start", step: stepKey };
 
     let res: PhaseResult;
     try {
-      res = yield* step.run(slug, ctx, IO);
+      res = yield* step.run(slug, ctx, io);
     } catch (e) {
       res = { ok: false, error: e instanceof Error ? e.message : String(e) };
     }
     if (!res.ok) {
       const msg = res.error ?? "step fallito";
       setStepState(slug, step.stateKey, "errore", msg);
+      registraRun("errore");
       yield { type: "error", message: msg };
       return;
     }
@@ -300,6 +335,7 @@ export async function* runStep(
     const v = step.validate(slug);
     if (!v.ok) {
       setStepState(slug, step.stateKey, "errore", v.errore);
+      registraRun("errore");
       yield { type: "error", message: v.errore ?? "artifact non valido" };
       return;
     }
@@ -308,6 +344,7 @@ export async function* runStep(
     // (ri)generato: un run di solo critico non tocca l'artifact e non deve
     // disarmare il sensore di staleness.
     if (ctx.mode !== "critic") step.afterSuccess?.(slug);
+    registraRun("ok");
     yield { type: "done", artifact: step.artifact };
   } finally {
     inFlight.delete(flightKey);

@@ -11,6 +11,12 @@ export const StatoStep = z.enum(["assente", "in_corso", "da_verificare", "verifi
 /** @deprecated alias storico: lo stesso enum vale per tutti gli step. */
 export const StatoContesto = StatoStep;
 
+// Metriche minime dell'ultimo run dello step (scritte da run-step.ts): durata,
+// modalità ed esito — il minimo per osservare costi e convergenza dei loop.
+const UltimaRun = z
+  .object({ mode: z.string(), durataMs: z.number(), esito: z.enum(["ok", "errore"]), quando: z.string() })
+  .optional();
+
 export const ClientStateSchema = z.object({
   version: z.literal(1),
   submissionId: z.string(),
@@ -27,6 +33,7 @@ export const ClientStateSchema = z.object({
       // Campi SEMANTICI del brief cambiati dopo l'allineamento: se non vuoto,
       // il contesto potrebbe non riflettere le correzioni → banner + riallinea.
       drift: z.array(z.string()).optional(),
+      ultimaRun: UltimaRun,
     }),
     // .default(): i client.json esistenti senza la chiave restano validi
     // (niente migrazione, la chiave nasce alla prima riscrittura).
@@ -37,6 +44,7 @@ export const ClientStateSchema = z.object({
         // Hash degli artifact a monte all'ultima generazione/conferma
         // (lib/staleness.ts): se divergono → banner "a monte è cambiato".
         upstream: z.record(z.string(), z.string()).optional(),
+        ultimaRun: UltimaRun,
       })
       .default({ stato: "assente" }),
     copy: z
@@ -47,6 +55,7 @@ export const ClientStateSchema = z.object({
         // Estratto per-campo del contesto all'ultimo allineamento (hash dei
         // campi chiave): permette all'update-mode di dire COSA è cambiato.
         fonte: z.record(z.string(), z.string()).optional(),
+        ultimaRun: UltimaRun,
       })
       .default({ stato: "assente" }),
     images: z
@@ -54,6 +63,7 @@ export const ClientStateSchema = z.object({
         stato: StatoStep,
         errore: z.string().optional(),
         upstream: z.record(z.string(), z.string()).optional(),
+        ultimaRun: UltimaRun,
       })
       .default({ stato: "assente" }),
     build: z
@@ -77,6 +87,7 @@ export const ClientStateSchema = z.object({
             dominio: z.string().optional(),
           })
           .optional(),
+        ultimaRun: UltimaRun,
       })
       .default({ stato: "assente" }),
   }),

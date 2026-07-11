@@ -203,6 +203,21 @@ if (conn.length) {
   }
 }
 
+// ---------- 6) Emoji (bloccante: mai emoji nel copy — le icone sono Lucide via componente) ----------
+for (const [key, text] of Object.entries(slots)) {
+  const em = [...String(text).matchAll(/\p{Extended_Pictographic}/gu)]
+    .map((m) => m[0])
+    .filter((c) => !'©®™'.includes(c)); // simboli tipografici legittimi, non emoji
+  if (em.length) {
+    bloccanti.push({
+      tipo: 'emoji',
+      slot: key,
+      frase: [...new Set(em)].join(' '),
+      dettaglio: 'emoji nel copy: vietate dal design system (niente emoji come icone)',
+    });
+  }
+}
+
 // ---------- Output ----------
 const esito = bloccanti.length ? 'fail' : 'pass';
 if (opt.json) {

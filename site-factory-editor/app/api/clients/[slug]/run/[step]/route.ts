@@ -40,15 +40,23 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const ev of runStep(slug, step as StepKey, { mode, files })) {
+        // req.signal: se il client abbandona lo stream (tab chiusa, reload),
+        // i child in corso vengono uccisi e lo step finisce in «errore» —
+        // mai più «in_corso» perpetuo con un claude orfano che consuma quota.
+        for await (const ev of runStep(slug, step as StepKey, { mode, files }, req.signal)) {
           controller.enqueue(encoder.encode(JSON.stringify(ev) + "\n"));
         }
       } catch (e) {
-        controller.enqueue(
-          encoder.encode(JSON.stringify({ type: "error", message: e instanceof Error ? e.message : String(e) }) + "\n"),
-        );
+        // enqueue può a sua volta fallire se lo stream è già stato annullato.
+        try {
+          controller.enqueue(
+            encoder.encode(JSON.stringify({ type: "error", message: e instanceof Error ? e.message : String(e) }) + "\n"),
+          );
+        } catch {}
       } finally {
-        controller.close();
+        try {
+          controller.close();
+        } catch {}
       }
     },
   });

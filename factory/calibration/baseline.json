@@ -41,6 +41,14 @@
       "tokenDiff": 0.4537
     },
     {
+      "a": "meridian",
+      "b": "ferro",
+      "tipo": "diverse",
+      "dHashHamming": 3,
+      "csdDist": 0.1646,
+      "tokenDiff": 0.3484
+    },
+    {
       "a": "atelier",
       "b": "nova",
       "tipo": "diverse",
@@ -73,6 +81,14 @@
       "tokenDiff": 0.3203
     },
     {
+      "a": "atelier",
+      "b": "ferro",
+      "tipo": "diverse",
+      "dHashHamming": 2,
+      "csdDist": 0.1077,
+      "tokenDiff": 0.3515
+    },
+    {
       "a": "nova",
       "b": "canon",
       "tipo": "diverse",
@@ -97,6 +113,14 @@
       "tokenDiff": 0.5238
     },
     {
+      "a": "nova",
+      "b": "ferro",
+      "tipo": "diverse",
+      "dHashHamming": 16,
+      "csdDist": 0.1972,
+      "tokenDiff": 0.548
+    },
+    {
       "a": "canon",
       "b": "terra",
       "tipo": "diverse",
@@ -113,12 +137,36 @@
       "tokenDiff": 0.4885
     },
     {
+      "a": "canon",
+      "b": "ferro",
+      "tipo": "diverse",
+      "dHashHamming": 2,
+      "csdDist": 0.2393,
+      "tokenDiff": 0.3928
+    },
+    {
       "a": "terra",
       "b": "vita",
       "tipo": "diverse",
       "dHashHamming": 5,
       "csdDist": 0.2405,
       "tokenDiff": 0.3499
+    },
+    {
+      "a": "terra",
+      "b": "ferro",
+      "tipo": "diverse",
+      "dHashHamming": 3,
+      "csdDist": 0.2581,
+      "tokenDiff": 0.3574
+    },
+    {
+      "a": "vita",
+      "b": "ferro",
+      "tipo": "diverse",
+      "dHashHamming": 2,
+      "csdDist": 0.1571,
+      "tokenDiff": 0.4719
     },
     {
       "a": "passa-golden-meridian",
@@ -179,9 +227,9 @@
   ],
   "percentili": {
     "csdDiverse": {
-      "p5": 0.0731,
-      "p10": 0.0765,
-      "p25": 0.1096,
+      "p5": 0.0765,
+      "p10": 0.1009,
+      "p25": 0.135,
       "p50": 0.1826
     },
     "csdQuasiUguali": {
@@ -189,9 +237,9 @@
       "p90": 0.0232
     },
     "tokenDiffDiverse": {
-      "p5": 0.3203,
-      "p10": 0.3441,
-      "p50": 0.438
+      "p5": 0.3441,
+      "p10": 0.3484,
+      "p50": 0.4236
     }
   }
 }

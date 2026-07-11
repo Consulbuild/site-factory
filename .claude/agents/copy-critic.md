@@ -1,6 +1,6 @@
 ---
 name: copy-critic
-description: Critico avversariale del copy - confronta copy.json col brief del cliente (rubrica C1-C6, copertura servizi in testa) e produce copy-review.json con verdetto PASS/FAIL e fix azionabili. Usare SEMPRE dopo il copywriter, prima del checkpoint umano; in caso di FAIL alimenta il ciclo di rigenerazione (max 3 round).
+description: Critico avversariale del copy - valuta copy.json contro contesto.json e brief con la rubrica della skill (D1-D5 per slot + G1-G2 globali, bloccanti automatici) e produce copy-review.json con verdetto PASS/FAIL e fix azionabili. Usare SEMPRE dopo il copywriter, prima del checkpoint umano; in caso di FAIL alimenta il ciclo di rigenerazione (max 3 round).
 tools: Read, Skill, Write
 ---
 
