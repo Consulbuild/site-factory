@@ -16,11 +16,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    le cortesie di norma di settore (preventivo/sopralluogo gratuito) sono consentite.
 6. **Anti-ripetitività**: la big idea si rifrange (verbatim ≤2×), nessuna sequenza di
    3+ parole in >2 slot — il copy ripetitivo suona robotico e il cliente lo nota.
-7. **Commit autonomi** (deciso da Mattia 2026-07-11, sostituisce «nulla si
-   committa senza chiedere»): quando l'implementazione è verificata e le
-   verifiche/gate passano, Claude committa da solo — commit per milestone o
-   per fetta coerente, messaggio che spiega il perché. Push solo se esiste
-   un remote configurato.
+7. **Commit + push + backup sempre aggiornati** (rafforzata da Mattia 2026-07-12;
+   estende il commit autonomo dell'11-07): a ogni fetta coerente **verificata**
+   (verifiche/gate passano) Claude committa da solo — per milestone o fetta
+   coerente, messaggio che spiega il perché — **e fa subito `git push`** su
+   `origin` (GitHub privato `Consulbuild/site-factory`, remote ora configurato).
+   Niente commit rumorosi per-file: si committa la fetta compiuta, non ogni Edit.
+   I dati clienti (`out/`) restano fuori da git e si tengono aggiornati via il
+   **sync nativo di Google Drive** (quando agganciato). Regola dura: **nessun
+   lavoro resta solo-locale.** Vedi la memoria `backup-strategia`.
 
 Stato lavori e prossimi passi: **`docs/handoff-fase-c.md`**.
 
