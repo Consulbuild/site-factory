@@ -6,7 +6,7 @@ import { btnPrimary } from "./ui";
 import { useStepRun, RunLog } from "./use-step-run";
 
 export function PaletteRunner({ slug, contestoOk, errore }: { slug: string; contestoOk: boolean; errore?: string }) {
-  const { run, running, log, failed, logRef } = useStepRun(slug, "palette");
+  const { run, running, log, failed } = useStepRun(slug, "palette");
   const err = failed ?? errore ?? null;
 
   return (
@@ -32,7 +32,7 @@ export function PaletteRunner({ slug, contestoOk, errore }: { slug: string; cont
       </button>
       <span className="ml-3 text-xs text-faint">claude -p · un paio di minuti</span>
 
-      <RunLog log={log} logRef={logRef} />
+      <RunLog log={log} />
     </div>
   );
 }

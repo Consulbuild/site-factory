@@ -4,7 +4,7 @@
 // update) e mostrare il log live. Usato dai runner iniziali e dai
 // riallineamenti/rigenerazioni negli editor delle schede.
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export type LogLine = { kind: "tool" | "text" | "info" | "err" | "phase"; text: string };
@@ -16,12 +16,9 @@ export function useStepRun(slug: string, step: string) {
   const [running, setRunning] = useState(false);
   const [log, setLog] = useState<LogLine[]>([]);
   const [failed, setFailed] = useState<string | null>(null);
-  const logRef = useRef<HTMLDivElement>(null);
 
-  const append = (l: LogLine) => {
-    setLog((prev) => [...prev, l]);
-    queueMicrotask(() => logRef.current?.scrollTo({ top: logRef.current.scrollHeight }));
-  };
+  // Lo scroll lo gestisce RunLog (sticky-bottom): qui solo accodare.
+  const append = (l: LogLine) => setLog((prev) => [...prev, l]);
 
   async function run(
     mode: "generate" | "update" | "critic" | "regen" | "partial",
@@ -79,24 +76,39 @@ export function useStepRun(slug: string, step: string) {
     setRunning(false);
   }
 
-  return { run, running, log, failed, logRef };
+  return { run, running, log, failed };
 }
 
-/** Pannello log stile terminale, condiviso. */
+/**
+ * Pannello log stile terminale, condiviso. Auto-scroll **sticky-bottom**: segue
+ * le righe nuove solo se sei già in fondo; se scrolli su per leggere i log
+ * vecchi ti lascia lì (niente più "yank" a ogni riga). Gestisce da sé lo scroll.
+ */
 export function RunLog({
   log,
-  logRef,
   className,
 }: {
   log: LogLine[];
-  logRef: React.RefObject<HTMLDivElement | null>;
   /** Override del dimensionamento (default: blocco da scheda, max-h-96). */
   className?: string;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const pinned = useRef(true); // true = ancorato al fondo
+
+  useEffect(() => {
+    const el = ref.current;
+    if (el && pinned.current) el.scrollTop = el.scrollHeight;
+  }, [log]);
+
   if (log.length === 0) return null;
   return (
     <div
-      ref={logRef}
+      ref={ref}
+      onScroll={(e) => {
+        const el = e.currentTarget;
+        // ancorato se entro ~48px dal fondo (tolleranza per l'ultima riga)
+        pinned.current = el.scrollHeight - el.scrollTop - el.clientHeight < 48;
+      }}
       className={`mono overflow-y-auto card p-4 text-xs leading-relaxed ${className ?? "mt-5 max-h-96"}`}
     >
       {log.map((l, i) =>

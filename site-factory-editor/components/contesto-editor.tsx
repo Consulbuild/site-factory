@@ -214,7 +214,7 @@ export function ContestoEditor({
       {runner.running || runner.log.length > 0 ? (
         <div className="mt-4">
           {runner.running && <p className="text-sm text-brand">Riallineamento in corso (claude -p)…</p>}
-          <RunLog log={runner.log} logRef={runner.logRef} />
+          <RunLog log={runner.log} />
         </div>
       ) : (
         drift.length > 0 && (

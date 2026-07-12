@@ -6,7 +6,7 @@ import { btnPrimary } from "./ui";
 import { useStepRun, RunLog } from "./use-step-run";
 
 export function ContestoRunner({ slug, intakeOk, errore }: { slug: string; intakeOk: boolean; errore?: string }) {
-  const { run, running, log, failed, logRef } = useStepRun(slug, "contesto");
+  const { run, running, log, failed } = useStepRun(slug, "contesto");
   const err = failed ?? errore ?? null;
 
   return (
@@ -32,7 +32,7 @@ export function ContestoRunner({ slug, intakeOk, errore }: { slug: string; intak
       </button>
       <span className="ml-3 text-xs text-faint">claude -p · può richiedere qualche minuto</span>
 
-      <RunLog log={log} logRef={logRef} />
+      <RunLog log={log} />
     </div>
   );
 }

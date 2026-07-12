@@ -9,7 +9,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence, useReducedMotion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { ChevronUp, Square, X, ArrowUpRight } from "lucide-react";
 import { useRuns } from "./run-provider";
 import { AgentOrb } from "./agent-orb";
@@ -102,9 +102,7 @@ export function StatusBar() {
 
   return (
     <>
-      <AnimatePresence>
-        {espanso && <PannelloRun key="pannello" focused={focused} onFocus={setFocusId} ridotto={ridotto} />}
-      </AnimatePresence>
+      {espanso && <PannelloRun focused={focused} onFocus={setFocusId} />}
 
       {/* Niente animazione d'ingresso al mount: con la tab in background il
           rAF è sospeso e la barra resterebbe parcheggiata fuori viewport. Il
@@ -222,22 +220,19 @@ export function StatusBar() {
 function PannelloRun({
   focused,
   onFocus,
-  ridotto,
 }: {
   focused: BusRunInfo;
   onFocus: (id: string) => void;
-  ridotto: boolean;
 }) {
   const { runs } = useRuns();
   const [log, setLog] = useState<LogLine[]>([]);
   const cursore = useRef(0);
-  const logRef = useRef<HTMLDivElement>(null);
   const runId = focused.id;
 
+  // Lo scroll (sticky-bottom) lo gestisce RunLog: qui solo accodare.
   const aggiungi = useCallback((nuovi: LogLine[]) => {
     if (nuovi.length === 0) return;
     setLog((prev) => [...prev, ...nuovi]);
-    queueMicrotask(() => logRef.current?.scrollTo({ top: logRef.current.scrollHeight }));
   }, []);
 
   // Tail del log del run selezionato (poll 1,2s finché vivo; una volta se finito).
@@ -280,13 +275,12 @@ function PannelloRun({
   }, [runId, aggiungi]);
 
   return (
-    <motion.div
-      className="fixed inset-x-0 bottom-14 z-30 border-t border-line bg-surface shadow-overlay"
-      initial={ridotto ? { opacity: 0 } : { y: 360 }}
-      animate={ridotto ? { opacity: 1 } : { y: 0 }}
-      exit={ridotto ? { opacity: 0 } : { y: 380 }}
-      transition={{ type: "spring", stiffness: 300, damping: 34 }}
-    >
+    // Entrata via CSS (classe `panel-in`), NON motion: sotto reduced-motion
+    // motion può congelare initial (opacity/transform) e lasciare il pannello
+    // invisibile o fuori schermo. Un'animazione CSS invece, quando la regola
+    // globale prefers-reduced-motion azzera la durata, salta allo stato FINALE
+    // (visibile, posizionato) — mai congelata a metà.
+    <div className="panel-in fixed inset-x-0 bottom-14 z-30 border-t border-line bg-surface shadow-overlay">
       <div className="mx-auto grid h-[340px] max-w-7xl grid-cols-[280px_1fr] gap-0 max-md:grid-cols-1">
         {/* Lista run */}
         <div className="overflow-y-auto border-r border-line py-2 max-md:hidden">
@@ -314,17 +308,18 @@ function PannelloRun({
           })}
         </div>
 
-        {/* Timeline fasi + log */}
-        <div className="flex min-w-0 flex-col gap-2 p-4">
+        {/* Timeline fasi + log. min-h-0 + overflow-hidden: senza, la cella grid
+            ha min-height:auto e cresce col contenuto invece di far scrollare il
+            log — è il motivo per cui il pannello finiva "tagliato" sotto. */}
+        <div className="flex min-h-0 min-w-0 flex-col gap-2 overflow-hidden p-4">
           <TimelineFasi r={focused} />
           <RunLog
             log={log.length ? log : [{ kind: "info", text: "In attesa di eventi…" }]}
-            logRef={logRef}
             className="min-h-0 flex-1"
           />
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 

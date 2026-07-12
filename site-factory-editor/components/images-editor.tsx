@@ -187,7 +187,7 @@ export function ImagesEditor({
       {runner.running || runner.log.length > 0 ? (
         <div className="mt-4">
           {runner.running && <p className="text-sm text-brand">Pipeline immagini in corso (claude -p + FLUX.2)…</p>}
-          <RunLog log={runner.log} logRef={runner.logRef} />
+          <RunLog log={runner.log} />
         </div>
       ) : (
         <>

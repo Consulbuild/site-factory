@@ -177,7 +177,7 @@ export function BuildPanel({
             </span>
           )}
         </div>
-        {(runner.running || runner.log.length > 0) && <RunLog log={runner.log} logRef={runner.logRef} />}
+        {(runner.running || runner.log.length > 0) && <RunLog log={runner.log} />}
         {runner.failed && <p className="mt-2 text-sm text-err whitespace-pre-wrap">{runner.failed}</p>}
       </section>
 

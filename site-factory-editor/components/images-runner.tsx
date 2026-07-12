@@ -19,7 +19,7 @@ export function ImagesRunner({
   bflOk: boolean;
   errore?: string;
 }) {
-  const { run, running, log, failed, logRef } = useStepRun(slug, "images");
+  const { run, running, log, failed } = useStepRun(slug, "images");
   const err = failed ?? errore ?? null;
 
   return (
@@ -52,7 +52,7 @@ export function ImagesRunner({
         </>
       )}
 
-      <RunLog log={log} logRef={logRef} />
+      <RunLog log={log} />
     </div>
   );
 }

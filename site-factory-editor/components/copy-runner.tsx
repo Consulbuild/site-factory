@@ -6,7 +6,7 @@ import { btnPrimary } from "./ui";
 import { useStepRun, RunLog } from "./use-step-run";
 
 export function CopyRunner({ slug, contestoOk, errore }: { slug: string; contestoOk: boolean; errore?: string }) {
-  const { run, running, log, failed, logRef } = useStepRun(slug, "copy");
+  const { run, running, log, failed } = useStepRun(slug, "copy");
   const err = failed ?? errore ?? null;
 
   return (
@@ -32,7 +32,7 @@ export function CopyRunner({ slug, contestoOk, errore }: { slug: string; contest
       </button>
       <span className="ml-3 text-xs text-faint">claude -p · più fasi, 10–30 minuti</span>
 
-      <RunLog log={log} logRef={logRef} />
+      <RunLog log={log} />
     </div>
   );
 }

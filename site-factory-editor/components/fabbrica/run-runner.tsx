@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { btnPrimary, btnDanger } from "@/components/ui";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -15,20 +15,13 @@ export function RunRunner({ runId, stato }: { runId: string; stato: string }) {
   const [log, setLog] = useState<LogLine[]>([]);
   const [errore, setErrore] = useState<string | null>(null);
   const [chiediStop, setChiediStop] = useState(false);
-  const logRef = useRef<HTMLDivElement | null>(null);
-
   async function ferma() {
     setChiediStop(false);
     await fetch(`/api/factory/runs/${runId}/run`, { method: "DELETE" }).catch(() => {});
     router.refresh();
   }
 
-  const append = (l: LogLine) =>
-    setLog((prev) => {
-      const next = [...prev, l];
-      queueMicrotask(() => logRef.current?.scrollTo({ top: logRef.current.scrollHeight }));
-      return next;
-    });
+  const append = (l: LogLine) => setLog((prev) => [...prev, l]); // scroll: sticky-bottom in RunLog
 
   async function esegui() {
     setRunning(true);
@@ -107,7 +100,7 @@ export function RunRunner({ runId, stato }: { runId: string; stato: string }) {
           {errore}
         </p>
       )}
-      {(running || log.length > 0) && <RunLog log={log} logRef={logRef} />}
+      {(running || log.length > 0) && <RunLog log={log} />}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReferenceSummary } from "@/lib/factory/schemas";
@@ -21,7 +21,6 @@ export function RiferimentiBrowser({ references }: { references: ReferenceSummar
   const [running, setRunning] = useState<string | null>(null); // id o "nuovo"
   const [log, setLog] = useState<LogLine[]>([]);
   const [errore, setErrore] = useState<string | null>(null);
-  const logRef = useRef<HTMLDivElement | null>(null);
   const [filtro, setFiltro] = useState<"tutti" | "usabili" | "bloccati">("tutti");
   const [daEliminare, setDaEliminare] = useState<{ id: string; url: string } | null>(null);
 
@@ -32,12 +31,7 @@ export function RiferimentiBrowser({ references }: { references: ReferenceSummar
     router.refresh();
   }
 
-  const append = (l: LogLine) =>
-    setLog((prev) => {
-      const next = [...prev, l];
-      queueMicrotask(() => logRef.current?.scrollTo({ top: logRef.current.scrollHeight }));
-      return next;
-    });
+  const append = (l: LogLine) => setLog((prev) => [...prev, l]); // scroll: sticky-bottom in RunLog
 
   async function consuma(res: Response) {
     if (!res.ok || !res.body) {
@@ -213,7 +207,7 @@ export function RiferimentiBrowser({ references }: { references: ReferenceSummar
           {errore}
         </p>
       )}
-      {(running || log.length > 0) && <RunLog log={log} logRef={logRef} />}
+      {(running || log.length > 0) && <RunLog log={log} />}
 
       {/* registro */}
       <section>

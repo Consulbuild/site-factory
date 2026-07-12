@@ -176,6 +176,23 @@ textarea::placeholder {
   color: var(--faint);
 }
 
+/* Entrata del pannello della status bar: SOLO transform, piccola (10px), e
+   opacity SEMPRE 1 (di base). Regola di robustezza: la visibilità del pannello
+   non deve mai dipendere dal completamento dell'animazione — se l'animazione
+   non parte, si blocca o è ridotta, il peggio è un pannello 10px più in basso,
+   sempre pienamente visibile e usabile (mai invisibile o fuori schermo). */
+@keyframes panel-in {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: none;
+  }
+}
+.panel-in {
+  animation: panel-in 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -349,7 +349,7 @@ export function CopyEditor({
       {runner.running || runner.log.length > 0 ? (
         <div className="mt-4">
           {runner.running && <p className="text-sm text-brand">Pipeline copy in corso (claude -p, più fasi)…</p>}
-          <RunLog log={runner.log} logRef={runner.logRef} />
+          <RunLog log={runner.log} />
         </div>
       ) : (
         <>

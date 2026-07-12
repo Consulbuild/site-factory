@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { btnPrimary, btnSecondary, btnGhost } from "@/components/ui";
 import { RunLog, type LogLine } from "@/components/use-step-run";
@@ -51,12 +51,7 @@ export function AuditEditor({
   const [inCorso, setInCorso] = useState(false);
   const [errore, setErrore] = useState<string | null>(null);
   const [log, setLog] = useState<LogLine[]>([]);
-  const logRef = useRef<HTMLDivElement | null>(null);
-  const append = (l: LogLine) =>
-    setLog((prev) => {
-      queueMicrotask(() => logRef.current?.scrollTo({ top: logRef.current.scrollHeight }));
-      return [...prev, l];
-    });
+  const append = (l: LogLine) => setLog((prev) => [...prev, l]); // scroll: sticky-bottom in RunLog
 
   const urlCandidato = (s: string) => `/api/factory/runs/${runId}/shots/${s}.jpg`;
   const urlEsistente = (s: string) => `/api/factory/presets-shots/${contro}/${s}.jpg`;
@@ -346,7 +341,7 @@ export function AuditEditor({
           {errore}
         </p>
       )}
-      {(inCorso || log.length > 0) && <RunLog log={log} logRef={logRef} />}
+      {(inCorso || log.length > 0) && <RunLog log={log} />}
 
       {!chiuso && (
         <div className="flex items-center justify-between">
