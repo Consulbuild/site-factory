@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ioWithSignal, type StepIO, type RunEvent, type PhaseResult } from "../run-step.ts";
+import type { RecordSink } from "../run-record.ts";
 import { NODE_BIN, SITE_RENDERER } from "../paths";
 import { runDir, referenceDir, PRESETS_DIR } from "./paths.ts";
 import { readRun, aggiornaFase, aggiornaRun } from "./state.ts";
@@ -300,8 +301,8 @@ const FASI: Record<string, (run: FactoryRun, io: StepIO) => AsyncGenerator<RunEv
 };
 
 /** Esegue le fasi dalla prima non conclusa; si ferma al primo fallimento. */
-export async function* eseguiRun(runId: string, signal?: AbortSignal): AsyncGenerator<RunEvent> {
-  const io = ioWithSignal(signal);
+export async function* eseguiRun(runId: string, signal?: AbortSignal, sink?: RecordSink): AsyncGenerator<RunEvent> {
+  const io = ioWithSignal(signal, sink);
   const run = readRun(runId);
   if (!run) {
     yield { type: "error", message: `run inesistente: ${runId}` };

@@ -15,5 +15,9 @@ site-renderer/presets/out/
 # screenshot di siti TERZI: uso interno, mai versionati/redistribuiti (TDM:
 # "solo il tempo necessario" — si eliminano a preset pubblicato)
 factory/references/*/screenshot-*.png
+# log verbosi delle run di fabbrica (eventi UI + record curato di debug): NON sono
+# provenienza — run.json / gates/*.json / candidate.tokens.json restano tracciati
+factory/runs/*/run.ndjson
+factory/runs/*/record.ndjson
 # scorie di dembrandt (extract-tokens salva già il suo artifact nel riferimento)
 site-renderer/output/

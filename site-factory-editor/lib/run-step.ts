@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { REPO_ROOT, CLAUDE_BIN, childEnv } from "./paths";
 import { STEPS, setStepState, patchStepMeta, type StepKey, type RunCtx } from "./steps";
+import { captureEvent, type PhaseRecord, type RecordSink, type ToolAction, type PhaseClasse } from "./run-record";
 
 // Runner degli step AI, multi-fase: ogni StepDef orchestra in TS una o più
 // fasi `claude -p` headless (login Max, nessuna ANTHROPIC_API_KEY) tramite
@@ -64,8 +65,12 @@ async function* claudePhase(
     env?: Record<string, string>;
   },
   signal?: AbortSignal,
+  sink?: RecordSink,
 ): AsyncGenerator<RunEvent, PhaseResult> {
   yield { type: "phase", label: opts.phase };
+
+  const rec: PhaseRecord = { phase: opts.phase, prompt: opts.prompt, actions: [], ok: false, startedAt: Date.now(), endedAt: 0 };
+  const byId = new Map<string, ToolAction>();
 
   const args = [
     "-p",
@@ -88,7 +93,11 @@ async function* claudePhase(
   const child = spawn(CLAUDE_BIN, args, { cwd: REPO_ROOT, env: childEnv(opts.env ?? {}) });
 
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const timer = setTimeout(() => child.kill("SIGTERM"), timeoutMs);
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    child.kill("SIGTERM");
+  }, timeoutMs);
   const killer = setTimeout(() => child.kill("SIGKILL"), timeoutMs + 10_000);
   // Stream abbandonato (tab chiusa, reload): senza questo il child claude
   // resterebbe orfano a consumare quota e lo step «in_corso» per sempre.
@@ -120,6 +129,7 @@ async function* claudePhase(
         continue;
       }
       handleEvent(e, push);
+      captureEvent(rec, e, byId);
       if (e.type === "result" && (e.subtype !== "success" || e.is_error)) {
         resultError = String((e.result as string) ?? e.subtype ?? "errore sconosciuto");
       }
@@ -156,20 +166,37 @@ async function* claudePhase(
   signal?.removeEventListener("abort", onAbort);
   const code = await closed;
 
+  // Chiude il record (canale laterale) e ritorna l'esito. Il messaggio è CORTO
+  // e identico a prima (lo consuma la UI); lo stderr INTEGRALE + code + classe
+  // vivono nel record, non nella stringa d'errore.
+  const finalize = (r: PhaseResult, classe?: PhaseClasse): PhaseResult => {
+    rec.endedAt = Date.now();
+    rec.ok = r.ok;
+    if (!r.ok) rec.error = { message: r.error ?? "errore", classe: classe ?? "exit", stderr: stderr || undefined, code };
+    sink?.(rec);
+    return r;
+  };
+
   // Diagnosi errori tipici — SEMPRE come valore di ritorno, mai eventi.
-  if (signal?.aborted) return { ok: false, error: "run interrotto" };
-  if (spawnError) return { ok: false, error: spawnError };
+  if (signal?.aborted) return finalize({ ok: false, error: "run interrotto" }, "abort");
+  if (spawnError) return finalize({ ok: false, error: spawnError }, "spawn");
   if (/logged out|not logged in|authentication|Invalid API key|OAuth/i.test(stderr)) {
-    return { ok: false, error: "Sessione Claude non valida. Esegui `claude login` nel terminale e riprova." };
+    return finalize(
+      { ok: false, error: "Sessione Claude non valida. Esegui `claude login` nel terminale e riprova." },
+      "auth",
+    );
   }
-  if (resultError) return { ok: false, error: resultError };
+  if (resultError) return finalize({ ok: false, error: resultError }, "result");
   if (code !== 0) {
-    return {
-      ok: false,
-      error: stderr.trim().split("\n").slice(-3).join(" ") || `claude -p uscito con codice ${code} (fase «${opts.phase}»)`,
-    };
+    return finalize(
+      {
+        ok: false,
+        error: stderr.trim().split("\n").slice(-3).join(" ") || `claude -p uscito con codice ${code} (fase «${opts.phase}»)`,
+      },
+      timedOut ? "timeout" : "exit",
+    );
   }
-  return { ok: true };
+  return finalize({ ok: true });
 }
 
 const SCRIPT_TIMEOUT_MS = 2 * 60 * 1000;
@@ -267,8 +294,8 @@ async function* scriptPhase(
 }
 
 /** IO legato a un AbortSignal: l'abort (stop esplicito dal bus) ammazza i child in corso. */
-export const ioWithSignal = (signal?: AbortSignal): StepIO => ({
-  claude: (opts) => claudePhase(opts, signal),
+export const ioWithSignal = (signal?: AbortSignal, sink?: RecordSink): StepIO => ({
+  claude: (opts) => claudePhase(opts, signal, sink),
   script: (opts) => scriptPhase(opts, signal),
 });
 
@@ -289,13 +316,14 @@ export async function* runStep(
   stepKey: StepKey,
   ctx: RunCtx = { mode: "generate" },
   signal?: AbortSignal,
+  sink?: RecordSink,
 ): AsyncGenerator<RunEvent> {
   const step = STEPS[stepKey];
   if (!step) {
     yield { type: "error", message: `step sconosciuto: ${stepKey}` };
     return;
   }
-  const io = ioWithSignal(signal);
+  const io = ioWithSignal(signal, sink);
 
   const flightKey = `${slug}:${stepKey}`;
   if (inFlight.has(flightKey)) {

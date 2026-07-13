@@ -7,6 +7,7 @@ import { eseguiRun } from "./factory/fasi";
 import { STEPS, setStepState, type StepKey, type RunCtx } from "./steps";
 import { listClients, readClientState } from "./clients";
 import { listRuns, aggiornaRun } from "./factory/state";
+import { makeSink, rollClientRecords } from "./run-record";
 
 // Bus dei run in background (DESIGN-REFACTOR §6.1): i run AI vivono nel
 // processo Next, NON nel ciclo di vita della richiesta HTTP — navigare o
@@ -140,7 +141,9 @@ export function startClientRun(
     { id, kind: "cliente", slug, step, label, tipicoMs },
     path.join(clientDir(slug), "logs", `run-${step}.ndjson`),
   );
-  avvia(run, runStep(slug, step, ctx, run.ac.signal), () =>
+  // Record curato con storia (cap 10): canale separato dall'ndjson eventi.
+  const sink = makeSink(rollClientRecords(path.join(clientDir(slug), "logs", step), 10));
+  avvia(run, runStep(slug, step, ctx, run.ac.signal, sink), () =>
     setStepState(slug, STEPS[step].stateKey, "errore", "Run interrotto manualmente"),
   );
   return { id };
@@ -152,7 +155,9 @@ export function startFactoryRun(runId: string): { id: string } | { error: string
   const esistente = BUS.runs.get(id);
   if (esistente && !esistente.done) return { error: "run già in esecuzione" };
   const run = nuovoRun({ id, kind: "fabbrica", runId, label: runId }, path.join(runDir(runId), "run.ndjson"));
-  avvia(run, eseguiRun(runId, run.ac.signal), () =>
+  // Record curato: unico file append-only per runId (accumula i resume del run).
+  const sink = makeSink(path.join(runDir(runId), "record.ndjson"));
+  avvia(run, eseguiRun(runId, run.ac.signal, sink), () =>
     aggiornaRun(runId, (r) => {
       r.stato = "fallita";
     }),

@@ -28,6 +28,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Stato lavori e prossimi passi: **`docs/handoff-fase-c.md`**.
 
+Debug di una run (prompt/azioni/metriche/errori reali di ogni fase `claude -p`, clienti e
+fabbrica): **`docs/DEBUG.md`** — la mappa «sintomo → file → cosa leggere».
+
 ## Comandi
 
 Node è installato in `~/.local` (niente Homebrew): ogni shell deve prima fare
