@@ -173,9 +173,11 @@ tassonomia sezioni). Regole operative nei componenti:
 - Copy e commenti nel codice in italiano; i siti generati sono per PMI italiane.
 - I numeri 01–04 si usano SOLO dove c'è una sequenza reale (processo); l'eyebrow
   con lineetta è un sistema di brand deliberato, non scaffolding da aggiungere altrove.
-- **Niente animazioni in-page** (sito statico, scelta 2026-07-03): no reveal, no
-  transizioni su hover. Unica animazione: il cross-fade tra pagine
-  (`@view-transition` in global.css). Non reintrodurre motion nei componenti.
+- **Motion (policy aggiornata 2026-07-14)**: AMMESSO il motion di *interazione*
+  (transizioni su hover/stato, navbar allo scroll) — tokenizzato, solo proprietà
+  compositor, azzerato da `prefers-reduced-motion`, mai gating della visibilità.
+  VIETATO il motion *decorativo* (reveal/entrance/parallax allo scroll). Resta il
+  cross-fade tra pagine (`@view-transition`). Vedi DESIGN.md §Motion.
 - Sample/fixture: foto Unsplash con ID VERIFICATI via curl (mai indovinati) e
   didascalie coerenti col contenuto reale; in produzione arrivano URL generati via API.
 

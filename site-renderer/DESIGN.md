@@ -56,11 +56,15 @@ immagini; la grammatica sotto non si tocca.
   3px + etichetta su fondo scuro traslucido, in basso a sinistra).
 
 ### Motion
-- **Sito completamente statico** (scelta 2026-07-03): nessuna animazione
-  in-page — niente reveal allo scroll, niente transizioni su hover (gli hover
-  sono cambi di stato istantanei). L'UNICA animazione è il cross-fade tra le
-  pagine (View Transitions cross-document, `@view-transition` in global.css),
-  disattivato sotto `prefers-reduced-motion`.
+- **Motion di interazione — AMMESSO** (policy aggiornata 2026-07-14): transizioni
+  su `:hover`/cambio di stato (bottoni, card) e navbar reattiva allo scroll.
+  Vincoli duri: tokenizzato (`--brand-dur-*`/`--brand-ease`), solo proprietà
+  compositor (transform/opacity/box-shadow/colore), **mai** gating della
+  visibilità del contenuto, azzerato sotto `prefers-reduced-motion`, AA preservato.
+- **Motion decorativo — VIETATO**: reveal/entrance/parallax allo scroll. I token
+  `--brand-reveal-*` restano non usati finché una decisione non li riabilita.
+- **Firma di brand**: il cross-fade tra pagine (View Transitions cross-document,
+  `@view-transition` in global.css), anch'esso disattivato sotto reduced-motion.
 
 ## Struttura canonica della pagina (ordine SSC, il golden path)
 

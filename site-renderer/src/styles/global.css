@@ -87,11 +87,14 @@
   }
 }
 
-/* UNICHE animazioni del sito (scelta 2026-07-03): la transizione tra pagine
-   e lo scorrimento delle ancore. View Transitions cross-document native, zero
-   JS; i browser che non le supportano navigano normalmente.
-   Regia (impeccable animate): l'uscita è più rapida dell'entrata (~75%),
-   l'entrata risale di 12px con ease-out-expo — decisa, mai elastica. */
+/* Motion (policy aggiornata 2026-07-14): AMMESSO il motion di INTERAZIONE
+   (transizioni su :hover/stato, navbar allo scroll) — tokenizzato, solo
+   proprietà compositor, azzerato da prefers-reduced-motion, mai gating della
+   visibilità del contenuto. VIETATO il motion decorativo (reveal/entrance/
+   parallax allo scroll). La transizione tra pagine resta la firma di brand:
+   View Transitions cross-document native, zero JS; chi non le supporta naviga
+   normalmente. Regia (impeccable animate): uscita più rapida dell'entrata
+   (~75%), entrata che risale di 12px con ease-out-expo — decisa, mai elastica. */
 @view-transition {
   navigation: auto;
 }
@@ -318,6 +321,13 @@
     border: var(--brand-border-w) solid transparent;
     cursor: pointer;
     text-decoration: none;
+    /* motion di interazione (2026-07-14): gli stati :hover animano invece di
+       scattare; solo proprietà a basso costo, azzerato da prefers-reduced-motion. */
+    transition:
+      background-color var(--brand-dur-fast) var(--brand-ease),
+      border-color var(--brand-dur-fast) var(--brand-ease),
+      color var(--brand-dur-fast) var(--brand-ease),
+      box-shadow var(--brand-dur-fast) var(--brand-ease);
   }
   .btn-primary {
     background: var(--color-primary);
@@ -400,6 +410,11 @@
     border: var(--brand-border-w) solid var(--color-line);
     border-radius: var(--radius-card);
     box-shadow: var(--brand-shadow-card);
+  }
+  .surface-card--hover {
+    transition:
+      box-shadow var(--brand-dur-base) var(--brand-ease),
+      border-color var(--brand-dur-base) var(--brand-ease);
   }
   .surface-card--hover:hover {
     box-shadow: var(--brand-shadow-hover);
