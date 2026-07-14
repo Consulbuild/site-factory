@@ -33,6 +33,17 @@ const overrideFonts = [brand.fonts.heading, brand.fonts.body, brand.fonts.mono].
 );
 const fontsHref = overrideFonts.length ? customFontsHref(overrideFonts) : null;
 
+// Kit di trattamenti (Asse 2): data-attr su <html>, accanto a data-preset, così
+// i selettori compat [data-preset][data-card] risolvono sullo stesso elemento.
+// Ciò che il kit non fissa resta il default del preset.
+const kit = site.kit ?? {};
+const kitAttrs: Record<string, string> = {};
+if (kit.navbar) kitAttrs["data-navbar"] = kit.navbar;
+if (kit.card) kitAttrs["data-card"] = kit.card;
+if (kit.button) kitAttrs["data-button"] = kit.button;
+if (kit.hero) kitAttrs["data-hero"] = kit.hero;
+if (kit.sectionHeader) kitAttrs["data-section-header"] = kit.sectionHeader;
+
 const title = pageTitle
   ? `${pageTitle} · ${meta.businessName}`
   : meta.seoTitle || `${meta.businessName}${meta.city ? " · " + meta.city : ""}`;
@@ -42,7 +53,7 @@ const description =
 ---
 
 <!doctype html>
-<html lang="it" data-preset={preset} style={brandStyle}>
+<html lang="it" data-preset={preset} style={brandStyle} {...kitAttrs}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

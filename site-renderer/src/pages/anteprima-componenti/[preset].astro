@@ -1,0 +1,65 @@
+---
+import Base from "@/layouts/Base.astro";
+import { parseSiteConfig } from "@/lib/schema";
+import { siteData } from "@/lib/loadSite";
+import { PRESETS } from "@/lib/presets";
+import { ctaClass } from "@/lib/ui";
+
+// Matrice di audit dei TRATTAMENTI di componente (Asse 2 — kit): una pagina per
+// preset e, in pagina, ogni componente col kit di default vs ogni variante del
+// catalogo. Il data-attr del trattamento sta sul WRAPPER <section> (non su
+// <html>), così più varianti convivono nella stessa pagina. È la superficie
+// dell'audit umano pairwise + il target VRT ({variante × preset × viewport}).
+export function getStaticPaths() {
+  return PRESETS.map((preset) => ({ params: { preset } }));
+}
+const { preset } = Astro.params;
+const site = parseSiteConfig({
+  ...(siteData as Record<string, unknown>),
+  brand: { ...(siteData as any).brand, preset },
+});
+
+// null = kit di default del preset (nessun data-attr).
+const cardVarianti = [null, "rialzata"] as const;
+const buttonVarianti = [null, "pallino"] as const;
+
+const cardDemo: [string, string][] = [
+  ["Ristrutturazioni chiavi in mano", "Un solo referente dal sopralluogo alla consegna, con tempi certi."],
+  ["Efficienza energetica", "Cappotto, infissi e impianti per tagliare le bollette in modo misurabile."],
+  ["Pratiche e incentivi", "Gestiamo permessi e detrazioni: tu segui l'avanzamento, senza pensieri."],
+];
+---
+
+<Base site={site}>
+  <main class="container-site section-pad" style="display:grid; gap:2.5rem;">
+    <p class="eyebrow">catalogo trattamenti — preset {preset}</p>
+
+    {
+      cardVarianti.map((v) => (
+        <section id={`card-${v ?? "default"}`} data-card={v ?? undefined} style="display:grid; gap:1rem;">
+          <h2 class="t-h4">Card · {v ?? "default (kit preset)"}</h2>
+          <div class="grid gap-4 sm:grid-cols-3">
+            {cardDemo.map(([t, d]) => (
+              <article class="surface-card surface-card--hover p-6">
+                <h3 class="t-h4">{t}</h3>
+                <p class="t-caption mt-2 text-muted">{d}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+
+    {
+      buttonVarianti.map((v) => (
+        <section id={`button-${v ?? "default"}`} data-button={v ?? undefined} style="display:grid; gap:1rem;">
+          <h2 class="t-h4">Bottone · {v ?? "default (kit preset)"}</h2>
+          <div class="flex flex-wrap items-center gap-3">
+            <a class={ctaClass("primary")} href="#">Preventivo gratuito</a>
+            <a class={ctaClass("secondary")} href="#">Chiama ora</a>
+          </div>
+        </section>
+      ))
+    }
+  </main>
+</Base>

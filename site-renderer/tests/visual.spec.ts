@@ -40,3 +40,20 @@ test("@visual anteprima: sezioni e pagina intera", async ({ page }, testInfo) =>
   await expect(page.locator("body > footer")).toHaveScreenshot("footer.png");
   await expect(page).toHaveScreenshot("full.png", { fullPage: true });
 });
+
+// VRT della matrice trattamenti (Asse 2): screenshot per cella {componente ×
+// variante}, agganciata all'id della sezione. Stesso set di project (preset ×
+// viewport) → copre l'intera matrice {trattamento × preset × viewport}.
+test("@visual anteprima-componenti: matrice trattamenti", async ({ page }, testInfo) => {
+  const preset = testInfo.project.name.replace(/-\d+$/, "");
+  await page.goto(`/anteprima-componenti/${preset}/`, { waitUntil: "networkidle" });
+  await page.evaluate(() => document.fonts.ready);
+
+  const celle = page.locator("main section[id]");
+  const totale = await celle.count();
+  for (let i = 0; i < totale; i++) {
+    const cella = celle.nth(i);
+    const id = await cella.getAttribute("id");
+    await expect(cella).toHaveScreenshot(`comp-${id}.png`);
+  }
+});

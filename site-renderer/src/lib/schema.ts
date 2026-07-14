@@ -573,11 +573,27 @@ export type SectionType = Section["type"];
 /* Documento radice                                                   */
 /* ------------------------------------------------------------------ */
 
+/** Kit di trattamenti di componente (Asse 2): id di variante per componente,
+ *  applicati come data-attr su <html> (runtime) e resi dal catalogo trattamenti
+ *  in global.css. Additivo/opzionale: assente = kit di default del preset.
+ *  I valori li fissa la fabbrica offline (catalogo curato), non l'AI a runtime. */
+export const KitSchema = z
+  .object({
+    navbar: z.string().min(1),
+    card: z.string().min(1),
+    button: z.string().min(1),
+    hero: z.string().min(1),
+    sectionHeader: z.string().min(1),
+  })
+  .partial();
+export type Kit = z.infer<typeof KitSchema>;
+
 export const SiteConfigSchema = z.object({
   meta: MetaSchema,
   brand: BrandSchema,
   contact: ContactSchema,
   sections: z.array(SectionSchema).min(1),
+  kit: KitSchema.optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfigSchema>;
 

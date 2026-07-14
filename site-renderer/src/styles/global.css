@@ -545,3 +545,36 @@
 /* Terra: hover lift morbido, bottoni non urlati */
 
 [data-preset="terra"] .btn { text-transform: none; letter-spacing: 0; font-size: 0.95rem; }
+
+/* ===========================================================================
+   CATALOGO TRATTAMENTI DI COMPONENTE (Asse 2 — kit)
+   Skin opzionali attivate da un data-* su <html> (runtime, da site.kit) o su un
+   wrapper (pagina anteprima-componenti). Non-layered come i re-skin qui sopra →
+   battono le utility Tailwind. Regola: colore SEMPRE da token (ricolora col
+   cliente); i valori estetici intenzionali del trattamento (raggi, lift) sono
+   ammessi qui — è il loro posto, non nel markup dei componenti.
+=========================================================================== */
+
+/* card "rialzata": card flottante senza bordo + lift morbido all'hover (motion
+   di interazione). Firma dei riferimenti SaaS/agency moderni; ombra da token. */
+[data-card="rialzata"] .surface-card {
+  border-color: transparent;
+  box-shadow: var(--brand-shadow-float);
+}
+[data-card="rialzata"] .surface-card--hover {
+  transition: transform var(--brand-dur-base) var(--brand-ease);
+}
+[data-card="rialzata"] .surface-card--hover:hover {
+  transform: translateY(-4px);
+}
+
+/* bottone "pallino": pallino-indicatore dopo la label, colore dal testo
+   (currentColor → sempre AA, ricolora col cliente). Nessun markup. */
+[data-button="pallino"] .btn::after {
+  content: "";
+  width: 0.5em;
+  height: 0.5em;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+}
