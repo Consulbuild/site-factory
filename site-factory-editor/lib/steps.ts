@@ -11,6 +11,7 @@ import {
   readCopyReview,
   readImagesTrace,
   readImageReview,
+  readLavori,
   patchClientState,
   type Brief,
 } from "./clients";
@@ -33,7 +34,9 @@ import type { RunEvent, PhaseResult, StepIO } from "./run-step";
 // (staleness) e la validazione post-run restano dichiarativi.
 
 export type StepKey = "contesto" | "palette" | "copy" | "images" | "build";
-export type RunMode = "generate" | "update" | "critic" | "regen" | "partial";
+// "lavori" = side-run dello step immagini: scrive alt/didascalia delle foto reali
+// (lavori.json) SENZA toccare lo stato verificato di hero/card (vedi runStep).
+export type RunMode = "generate" | "update" | "critic" | "regen" | "partial" | "lavori";
 export interface RunCtx {
   mode: RunMode;
   /** Solo mode "regen" (immagini): file da rigenerare, es. ["img/card-2.jpg"]. */
@@ -292,6 +295,8 @@ export const STEPS: Record<StepKey, StepDef> = {
     artifact: "images-trace.json",
     upstream: ["contesto.json", "copy.json", "palette.json"],
     gate(slug, mode) {
+      // Testi delle foto lavori: dipende solo dalle foto caricate (né copy/palette né BFL).
+      if (mode === "lavori") return readLavori(slug).length ? null : "Carica almeno una foto dei lavori prima di generare i testi.";
       const s = readClientState(slug).steps;
       if (s.copy.stato !== "verificato" || s.palette.stato !== "verificato")
         return "Prima verifica copy e palette: le immagini derivano da titoli card e colori curati.";
@@ -685,6 +690,26 @@ function promptImagesRegen(slug: string, files: string[], daReview: boolean): st
   );
 }
 
+const LAVORI_TIMEOUT = 15 * 60 * 1000; // Read multimodale su ≤12 foto + scrittura
+
+/** Fa scrivere all'AI alt+didascalia delle foto reali GUARDANDOLE (nessuna generazione). */
+function promptLavoriTesti(slug: string): string {
+  const p = IMAGES_PATHS(slug);
+  const file = `site-renderer/out/${slug}/lavori.json`;
+  return (
+    `Scrivi didascalia e alt in ITALIANO per ogni foto reale dei lavori del cliente «${slug}». ` +
+    `Il file ${file} è un array [{"file","alt","caption"}]; le foto sono in ${p.dir}/img/ (il nome è nel campo "file"). ` +
+    `GUARDA ogni foto con Read multimodale. Leggi ${p.contesto} per usare i termini giusti del mestiere (servizi reali, zona). ` +
+    `Per ogni voce:\n` +
+    `- "caption" ≤28 caratteri: il TIPO di lavoro mostrato, concreto (es. "Ristrutturazione bagno", "Cappotto termico"). Niente slogan, niente nome azienda.\n` +
+    `- "alt" ≤140 caratteri: descrizione FEDELE di ciò che è visibile (accessibilità + SEO), coerente col mestiere.\n` +
+    `Regole: descrivi SOLO ciò che si vede davvero; zero claim inventati (niente "migliore", premi, numeri non verificabili); nessuna emoji. ` +
+    `Se una foto non mostra un lavoro riconoscibile, usa didascalia/alt onesti e generici. ` +
+    `Riscrivi SOLO ${file} mantenendo ESATTAMENTE gli stessi "file" e lo stesso ORDINE (cambia solo "alt" e "caption"). ` +
+    `Nessun altro file, poi una riga di conferma.`
+  );
+}
+
 /** Gate deterministico sul trace, con UNA fase di correzione (pattern formatGate). */
 async function* imagesTraceGate(slug: string, io: StepIO): AsyncGenerator<RunEvent, PhaseResult> {
   let errs = validateImagesTrace(slug);
@@ -722,6 +747,25 @@ async function* imagesTraceGate(slug: string, io: StepIO): AsyncGenerator<RunEve
 }
 
 async function* imagesRun(slug: string, ctx: RunCtx, io: StepIO): AsyncGenerator<RunEvent, PhaseResult> {
+  // «Genera testi con l'AI»: side-run che riempie alt/didascalia delle foto lavori
+  // guardandole. Non chiama BFL e non tocca lo stato di hero/card (vedi runStep).
+  if (ctx.mode === "lavori") {
+    const before = readLavori(slug);
+    if (!before.length) return { ok: false, error: "nessuna foto lavori: caricane prima di generare i testi" };
+    const r = yield* io.claude({
+      phase: "testi lavori (l'AI guarda le foto)",
+      prompt: promptLavoriTesti(slug),
+      allowed: ["Read", "Write"],
+      disallowed: NO_NET_NO_BASH,
+      timeoutMs: LAVORI_TIMEOUT,
+    });
+    if (!r.ok) return r;
+    const after = readLavori(slug);
+    const sameFiles = after.length === before.length && before.every((b) => after.some((a) => a.file === b.file));
+    if (!sameFiles) return { ok: false, error: "lavori.json alterato (foto aggiunte/rimosse): riapri il pannello e riprova" };
+    return { ok: true };
+  }
+
   // «Ricontrolla col critico»: solo giudizio sulle immagini correnti.
   if (ctx.mode === "critic") {
     if (!readImagesTrace(slug)) return { ok: false, error: "nessun images-trace.json da ricontrollare" };

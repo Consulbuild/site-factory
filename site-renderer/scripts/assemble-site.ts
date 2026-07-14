@@ -15,6 +15,9 @@
 //   --foto-reali <n|dir>  quante foto reali ha fornito il cliente (numero, o cartella da
 //                    contare). Sotto 4 → drop POST-merge della Gallery (regola 6 del README:
 //                    la gallery non si genera MAI) + rimozione della voce nav collegata.
+//   --lavori <manifest.json>  manifest [{file,alt,caption}] delle foto reali caricate
+//                    dall'operatore: popola DIRETTAMENTE sections[4].props.images (src =
+//                    /media/<slug>/<file>) e ne usa il numero per il drop. Vince su --foto-reali.
 //
 // Formato artifact: { "<path-slot>": valore, ... } con i path ESATTI di slots.json.
 // Per i path con wildcard `[*]` il valore è un array (annidato per wildcard multiple:
@@ -23,7 +26,7 @@
 // ma tutti gli slot che toccano lo stesso array devono concordare sulla lunghezza.
 // Exit 0 se valido; 1 su violazione slot/constraint o Zod; 2 su errore d'uso.
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join, dirname, basename } from "node:path";
 import { parseSiteConfig } from "../src/lib/schema.ts";
 
 type Slot = {
@@ -48,7 +51,9 @@ const fotoReali: number | null =
       ? Number(args[fotoFlag + 1])
       : readdirSync(args[fotoFlag + 1]).filter((f) => /\.(jpe?g|png|webp|avif)$/i.test(f)).length
     : null;
-const consumed = new Set([outFlag + 1, fotoFlag >= 0 ? fotoFlag + 1 : -1]);
+const lavoriFlag = args.indexOf("--lavori");
+const lavoriPath = lavoriFlag >= 0 ? args[lavoriFlag + 1] : null;
+const consumed = new Set([outFlag + 1, fotoFlag >= 0 ? fotoFlag + 1 : -1, lavoriFlag >= 0 ? lavoriFlag + 1 : -1]);
 const positional = args.filter((a, i) => !a.startsWith("-") && !consumed.has(i));
 const [blueprintDir, artifactsDir] = positional;
 if (!blueprintDir || !artifactsDir) {
@@ -209,7 +214,38 @@ for (const s of slots) if (!filled.has(s.path)) warnings.push(`slot non riempito
 // (un'ancora morta in navbar è il primo segnale di "sito rotto" per il visitatore).
 const GALLERY_DROP = { index: 4, type: "Gallery", navHref: "#lavori", minFoto: 4 };
 
-if (fotoReali !== null && fotoReali < GALLERY_DROP.minFoto) {
+// --lavori: le foto reali del cliente popolano DIRETTAMENTE la Gallery. Non passa
+// dagli slot perché caption è dell'agente copy e src/alt dell'images: con N foto
+// variabili gli array andrebbero in conflitto di lunghezza. Qui si sovrascrive
+// sections[4].props.images e si usa il conteggio per il drop.
+let effectiveFoto: number | null = fotoReali;
+if (lavoriPath) {
+  const manifest = JSON.parse(readFileSync(lavoriPath, "utf8"));
+  if (!Array.isArray(manifest)) {
+    console.error(`--lavori: ${lavoriPath} non è un array [{file,alt,caption}]`);
+    process.exit(1);
+  }
+  const section = merged.sections?.[GALLERY_DROP.index];
+  if (section?.type !== GALLERY_DROP.type) {
+    console.error(`--lavori: sections[${GALLERY_DROP.index}] è "${section?.type}", atteso "${GALLERY_DROP.type}" — il blueprint è cambiato, aggiornare GALLERY_DROP`);
+    process.exit(1);
+  }
+  const slug = basename(artifactsDir);
+  for (const m of manifest as Array<{ file: string }>) {
+    if (!existsSync(join(artifactsDir, "img", m.file))) {
+      console.error(`--lavori: foto referenziata assente su disco: img/${m.file}`);
+      process.exit(1);
+    }
+  }
+  section.props.images = (manifest as Array<{ file: string; alt: string; caption?: string }>).map((m) => ({
+    src: `/media/${slug}/${m.file}`,
+    alt: m.alt,
+    ...(m.caption ? { caption: m.caption } : {}),
+  }));
+  effectiveFoto = manifest.length;
+}
+
+if (effectiveFoto !== null && effectiveFoto < GALLERY_DROP.minFoto) {
   const section = merged.sections?.[GALLERY_DROP.index];
   if (section?.type !== GALLERY_DROP.type) {
     console.error(`drop Gallery: sections[${GALLERY_DROP.index}] è "${section?.type}", atteso "${GALLERY_DROP.type}" — il blueprint è cambiato, aggiornare GALLERY_DROP`);
@@ -228,7 +264,7 @@ if (fotoReali !== null && fotoReali < GALLERY_DROP.minFoto) {
     }
   };
   pruneHref(merged.sections);
-  warnings.push(`Gallery rimossa (${fotoReali} foto reali < ${GALLERY_DROP.minFoto}) + link "${GALLERY_DROP.navHref}" tolti da nav e footer`);
+  warnings.push(`Gallery rimossa (${effectiveFoto} foto reali < ${GALLERY_DROP.minFoto}) + link "${GALLERY_DROP.navHref}" tolti da nav e footer`);
 }
 
 /* ---------------- guard fixture: il golden example non va MAI in una build completa ---------------- */

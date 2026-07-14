@@ -9,7 +9,7 @@ import { rispostaStreamRun } from "@/lib/run-stream";
 export const dynamic = "force-dynamic";
 export const maxDuration = 3600; // secondi: gli step multi-fase possono durare a lungo
 
-const MODES: RunMode[] = ["generate", "update", "critic", "regen", "partial"];
+const MODES: RunMode[] = ["generate", "update", "critic", "regen", "partial", "lavori"];
 
 /**
  * Avvia uno step AI IN BACKGROUND (bus dei run) e streamma gli eventi in

@@ -309,7 +309,8 @@ minimo intorno alle thumbnail. Fedeltà: production-ready, una pagina a due rami
    («Rigenera selezionate (n)», disabilitato a 0); gli scarti del critico partono
    pre-selezionati. Mode `regen` con lista file.
 3. **Hero grande, card in griglia auto-fit**: la gerarchia rispecchia il peso nel
-   sito. Niente gallery (solo foto reali, scheda futura) — nota informativa in fondo.
+   sito. In fondo il pannello «I nostri lavori» (foto reali del cliente → sezione
+   Gallery), vedi shape sotto.
 4. **Alt editabile per immagine** con contatore live n/140 (stessa definizione del
    validatore server), guardia unsaved, [Salva] = PUT alts.
 5. **Thumbnail via route** `/api/clients/<slug>/img/<file>?v=<hash trace>` per
@@ -321,6 +322,27 @@ minimo intorno alle thumbnail. Fedeltà: production-ready, una pagina a due rami
    stima 10–30 min, costo ~0,3 $/run).
 7. **Conferma immagini** (azione primaria unica) = POST che rivalida il manifest,
    DERIVA images.json e marca verificato; 422 puntuale mostrato in testa.
+
+## Pannello «I nostri lavori» (shape /impeccable — 2026-07-14)
+
+Terza sezione dell'editor, dopo Hero e Card servizi. Foto REALI del cliente →
+sezione Gallery del sito (NON generate dall'AI). Regola di prodotto resa visibile:
+**0 foto = sezione assente · 1–3 = non basta · ≥4 = compare** (soglia dell'assembler).
+
+1. **Badge soglia live** accanto al titolo: `idle` a 0 («non comparirà»), `warn`
+   a 1–3 («ne mancano N»), `ok` a ≥4 («comparirà sul sito»). È il contatore che
+   insegna la regola, non un errore.
+2. **Empty state** = dropzone tratteggiata (drag&drop + [Scegli file]) che elenca
+   i formati (JPG/PNG/WebP/HEIC iPhone, ≤12, ≤15 MB) e ripete la regola dei 4.
+3. **Tile foto** (griglia auto-fit, 4/3 come la Gallery): foto + `[↑][↓]` riordino
+   (il primo tile = «Foto principale», quello grande del masonry) + [✕] rimuovi;
+   sotto, **Didascalia** (≤28) e **Alt** (≤140) editabili con contatore live.
+4. **Testi via AI**: [Genera testi con l'AI] (side-run `lavori`) fa GUARDARE ogni
+   foto a `claude -p` e propone didascalia+alt in italiano, poi si rivedono. Non
+   tocca lo stato verificato di hero/card, non chiama BFL.
+5. **Persistenza**: upload immediato (server: sips → jpg, incl. HEIC); ordine/testi/
+   rimozioni bufferizzati nel dirty condiviso e salvati da [Salva] (PUT `/lavori`).
+   [Conferma immagini] si blocca se, con ≥4 foto, un alt manca o un testo sfora.
 
 # Scheda Build & Pubblica (shape /impeccable — 2026-07-08)
 

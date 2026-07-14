@@ -32,6 +32,7 @@ export default async function ImmaginiPage({ params }: { params: Promise<{ slug:
         businessName={businessName}
         trace={bundle.imagesTrace}
         review={bundle.imageReview}
+        lavori={bundle.lavori}
         stale={stale}
         verificato={steps.images.stato === "verificato"}
       />

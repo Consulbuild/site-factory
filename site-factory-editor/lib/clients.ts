@@ -9,6 +9,7 @@ import {
   CopyCoverageSchema,
   ImagesTraceSchema,
   ImageReviewSchema,
+  LavoriSchema,
   type ClientState,
   type Contesto,
   type PaletteArtifact,
@@ -16,6 +17,7 @@ import {
   type CopyCoverage,
   type ImagesTrace,
   type ImageReview,
+  type Lavori,
 } from "./schemas";
 import { validateCopyArtifact, type CopyArtifact } from "./slots";
 
@@ -169,6 +171,7 @@ export function readClientBundle(slug: string) {
     copyCoverage: readCopyCoverage(slug),
     imagesTrace: readImagesTrace(slug),
     imageReview: readImageReview(slug),
+    lavori: readLavori(slug),
     logoFile: logo,
   };
 }
@@ -217,6 +220,18 @@ export function readImageReview(slug: string): ImageReview | null {
   if (!raw) return null;
   const parsed = ImageReviewSchema.safeParse(raw);
   return parsed.success ? parsed.data : null;
+}
+
+/** Foto lavori reali del cliente (vuoto = nessuna → sezione Gallery assente). */
+export function readLavori(slug: string): Lavori {
+  const raw = readJson<unknown>(path.join(clientDir(slug), "lavori.json"));
+  if (!raw) return [];
+  const parsed = LavoriSchema.safeParse(raw);
+  return parsed.success ? parsed.data : [];
+}
+
+export function writeLavori(slug: string, lavori: Lavori): void {
+  writeJson(path.join(clientDir(slug), "lavori.json"), lavori);
 }
 
 export function readPalette(slug: string): PaletteArtifact | null {

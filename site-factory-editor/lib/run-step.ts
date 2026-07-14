@@ -332,6 +332,10 @@ export async function* runStep(
   }
   inFlight.add(flightKey);
   const partenza = Date.now();
+  // side-run (es. mode "lavori"): produce un artifact laterale (lavori.json) e
+  // NON deve toccare lo stato/validazione dello step ospite (hero+card restano
+  // «verificato»). Salta stato, validate, afterSuccess e metriche.
+  const sideRun = ctx.mode === "lavori";
   // Metriche minime del run (durata/mode/esito) in client.json: senza, né i
   // costi né la convergenza dei loop critico-correzioni sono osservabili.
   const registraRun = (esito: "ok" | "errore") =>
@@ -342,7 +346,7 @@ export async function* runStep(
       quando: new Date().toISOString(),
     });
   try {
-    setStepState(slug, step.stateKey, "in_corso");
+    if (!sideRun) setStepState(slug, step.stateKey, "in_corso");
     yield { type: "start", step: stepKey };
 
     let res: PhaseResult;
@@ -353,26 +357,30 @@ export async function* runStep(
     }
     if (!res.ok) {
       const msg = res.error ?? "step fallito";
-      setStepState(slug, step.stateKey, "errore", msg);
-      registraRun("errore");
+      if (!sideRun) {
+        setStepState(slug, step.stateKey, "errore", msg);
+        registraRun("errore");
+      }
       yield { type: "error", message: msg };
       return;
     }
 
-    // Validazione deterministica dell'artifact.
-    const v = step.validate(slug);
-    if (!v.ok) {
-      setStepState(slug, step.stateKey, "errore", v.errore);
-      registraRun("errore");
-      yield { type: "error", message: v.errore ?? "artifact non valido" };
-      return;
+    if (!sideRun) {
+      // Validazione deterministica dell'artifact.
+      const v = step.validate(slug);
+      if (!v.ok) {
+        setStepState(slug, step.stateKey, "errore", v.errore);
+        registraRun("errore");
+        yield { type: "error", message: v.errore ?? "artifact non valido" };
+        return;
+      }
+      setStepState(slug, step.stateKey, "da_verificare");
+      // Provenienza/upstream si ri-snapshottano SOLO quando l'artifact è stato
+      // (ri)generato: un run di solo critico non tocca l'artifact e non deve
+      // disarmare il sensore di staleness.
+      if (ctx.mode !== "critic") step.afterSuccess?.(slug);
+      registraRun("ok");
     }
-    setStepState(slug, step.stateKey, "da_verificare");
-    // Provenienza/upstream si ri-snapshottano SOLO quando l'artifact è stato
-    // (ri)generato: un run di solo critico non tocca l'artifact e non deve
-    // disarmare il sensore di staleness.
-    if (ctx.mode !== "critic") step.afterSuccess?.(slug);
-    registraRun("ok");
     yield { type: "done", artifact: step.artifact };
   } finally {
     inFlight.delete(flightKey);

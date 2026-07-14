@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { SITE_RENDERER, NODE_BIN, clientDir } from "./paths";
-import { readClientState, patchClientState, readCopy } from "./clients";
+import { readClientState, patchClientState, readCopy, readLavori } from "./clients";
 import { validateCopyArtifact } from "./slots";
 import type { RunEvent, PhaseResult, StepIO } from "./run-step";
 import type { RunCtx } from "./steps";
@@ -71,6 +71,16 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
     if (errs.length) {
       return { ok: false, error: `copy.json non rispetta più il contratto — riapri la scheda Copy e correggi:\n${errs.slice(0, 5).join("\n")}` };
     }
+    // La Gallery compare solo con ≥4 foto reali; se ci sono, ogni foto DEVE avere
+    // l'alt (accessibilità + vincolo Zod del renderer). Sotto le 4 la sezione non
+    // esce, quindi gli alt mancanti non bloccano.
+    const lavori = readLavori(slug);
+    if (lavori.length >= 4) {
+      const senzaAlt = lavori.filter((l) => !l.alt.trim()).length;
+      if (senzaAlt) {
+        return { ok: false, error: `${senzaAlt} foto lavori senza alt — riapri la scheda Immagini → «I nostri lavori» e completa gli alt (o usa «Genera testi con l'AI»).` };
+      }
+    }
   }
 
   // FASE media (deterministica): astro copia TUTTA public/ in dist — si pulisce
@@ -96,8 +106,11 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
       `out/${slug}`,
       "-o",
       `out/${slug}/site.json`,
-      "--foto-reali",
-      "0", // ponytail: hardcoded finché non esiste l'upload di foto reali (allora diventa parametro)
+      // Le foto reali del cliente popolano la Gallery via lavori.json (sotto 4 →
+      // sezione droppata). Senza il file: --foto-reali 0 (nessuna gallery).
+      ...(fs.existsSync(path.join(dir, "lavori.json"))
+        ? ["--lavori", `out/${slug}/lavori.json`]
+        : ["--foto-reali", "0"]),
       ...(partial ? ["--partial"] : []),
     ],
     cwd: SITE_RENDERER,

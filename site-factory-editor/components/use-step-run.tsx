@@ -21,7 +21,7 @@ export function useStepRun(slug: string, step: string) {
   const append = (l: LogLine) => setLog((prev) => [...prev, l]);
 
   async function run(
-    mode: "generate" | "update" | "critic" | "regen" | "partial",
+    mode: "generate" | "update" | "critic" | "regen" | "partial" | "lavori",
     startMsg: string,
     extra: Record<string, unknown> = {},
   ) {

@@ -181,6 +181,24 @@ export const ImageReviewSchema = z
 export type ImageReview = z.infer<typeof ImageReviewSchema>;
 
 // ---------------------------------------------------------------------------
+// lavori.json — foto REALI dei lavori del cliente (sezione Gallery del sito).
+// NON generate dall'AI: caricate dall'operatore, alt/didascalia bozzati dall'AI
+// (che GUARDA la foto) e rivisti a mano. L'assembler le legge direttamente
+// (flag --lavori): la gallery NON passa dagli slot copy/images. `alt` vuoto =
+// bozza ammessa (il gate build blocca solo se ≥4 foto con un alt mancante);
+// l'ordine dell'array = ordine in pagina (la prima foto è il tile grande).
+// ---------------------------------------------------------------------------
+
+export const LavoroSchema = z.object({
+  file: z.string(), // basename in img/, es. "lavoro-1.jpg"
+  alt: z.string().max(140),
+  caption: z.string().max(28),
+});
+export const LavoriSchema = z.array(LavoroSchema);
+export type Lavoro = z.infer<typeof LavoroSchema>;
+export type Lavori = z.infer<typeof LavoriSchema>;
+
+// ---------------------------------------------------------------------------
 // palette.json — artifact flat slot-path → valore (formato assembler), scritto
 // dal palette-designer e rivisto/confermato dall'umano nella scheda Palette.
 // Nessun meta: `verificato` vive in client.json.

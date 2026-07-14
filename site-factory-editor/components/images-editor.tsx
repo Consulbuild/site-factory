@@ -5,10 +5,11 @@
 // ogni thumbnail, rigenerazione selettiva via checkbox. Sotto-componenti a
 // module scope (regola anti-remount).
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { ImagesTrace, ImageReview } from "@/lib/schemas";
-import { Badge, btnPrimary, btnSecondary, btnGhost } from "./ui";
+import { ArrowDown, ArrowUp, ImagePlus, Sparkles, Upload, X } from "lucide-react";
+import type { ImagesTrace, ImageReview, Lavori } from "@/lib/schemas";
+import { Badge, btnPrimary, btnSecondary, btnGhost, btnDanger } from "./ui";
 import { useUnsavedGuard } from "./use-unsaved-guard";
 import { useSaveShortcut } from "./use-save-shortcut";
 import { useStepRun, RunLog } from "./use-step-run";
@@ -16,14 +17,19 @@ import { BackBar } from "./back-bar";
 import { ConfirmDialog } from "./confirm-dialog";
 
 const ALT_MAX = 140;
+const CAPTION_MAX = 28;
+const GALLERY_MIN = 4; // sotto 4 foto reali la sezione «Lavori» non compare (assembler)
+const LAVORI_MAX = 12;
 type TraceEntry = ImagesTrace["immagini"][number];
 type ReviewEntry = NonNullable<ImageReview>["immagini"][number];
+type Lavoro = Lavori[number];
 
 export function ImagesEditor({
   slug,
   businessName,
   trace,
   review,
+  lavori: lavoriInitial,
   stale = [],
   verificato,
 }: {
@@ -31,6 +37,8 @@ export function ImagesEditor({
   businessName: string;
   trace: ImagesTrace;
   review: ImageReview | null;
+  /** Foto reali dei lavori del cliente (vuoto = nessuna → sezione Gallery assente). */
+  lavori: Lavori;
   /** File a monte cambiati dopo la generazione (vuoto = fresco). */
   stale?: string[];
   verificato: boolean;
@@ -65,9 +73,23 @@ export function ImagesEditor({
   const [chiediRigenera, setChiediRigenera] = useState(false);
   const [chiediRegenSel, setChiediRegenSel] = useState(false);
 
-  const { navigate, dialog } = useUnsavedGuard(dirty);
+  // Foto lavori: stato locale editabile + dirty separato dagli alt AI. Upload e
+  // testi-AI passano dal disco (già persistiti); ordine/testi/rimozioni si
+  // bufferizzano e li salva l'action bar. Le mutazioni strutturali NON fanno
+  // refresh, così l'effetto sotto non le sovrascrive.
+  const [lavori, setLavori] = useState<Lavori>(lavoriInitial);
+  const [lavoriDirty, setLavoriDirty] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  // Ri-sincronizza dal server (dopo refresh: salva o «Genera testi con l'AI»),
+  // ma solo se non ci sono modifiche non salvate (che avrebbero la precedenza).
+  useEffect(() => {
+    if (!lavoriDirty) setLavori(lavoriInitial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lavoriInitial]);
+
+  const { navigate, dialog } = useUnsavedGuard(dirty || lavoriDirty);
   useSaveShortcut(() => {
-    if (!busy && dirty) salva();
+    if (!busy && (dirty || lavoriDirty)) salva();
   });
 
   const setAlt = (file: string, v: string) => {
@@ -88,26 +110,101 @@ export function ImagesEditor({
     return !a.trim() || a.length > ALT_MAX;
   }).length;
 
+  // Errori bloccanti dei lavori: testi oltre limite (schema Zod) sempre; alt
+  // mancante solo con ≥4 foto (sotto, la sezione non esce → non blocca).
+  const worksBlocking = lavori.filter(
+    (l) => l.caption.length > CAPTION_MAX || l.alt.length > ALT_MAX || (lavori.length >= GALLERY_MIN && !l.alt.trim()),
+  ).length;
+
+  function setLavoro(index: number, patch: Partial<Lavoro>) {
+    setLavori((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));
+    setLavoriDirty(true);
+    setMsg(null);
+  }
+  function moveLavoro(index: number, dir: -1 | 1) {
+    setLavori((prev) => {
+      const j = index + dir;
+      if (j < 0 || j >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[j]] = [next[j], next[index]];
+      return next;
+    });
+    setLavoriDirty(true);
+  }
+  function removeLavoro(index: number) {
+    setLavori((prev) => prev.filter((_, i) => i !== index));
+    setLavoriDirty(true);
+    setMsg(null);
+  }
+  async function uploadLavori(files: File[]) {
+    if (!files.length || uploading) return;
+    setUploading(true);
+    setMsg(null);
+    setServerErrors([]);
+    const fd = new FormData();
+    for (const f of files) fd.append("files", f);
+    const res = await fetch(`/api/clients/${slug}/lavori`, { method: "POST", body: fd });
+    const data = (await res.json().catch(() => ({}))) as { lavori?: Lavori; errors?: string[]; error?: string };
+    setUploading(false);
+    if (!res.ok) {
+      setServerErrors([data.error ?? `errore ${res.status}`]);
+      return;
+    }
+    // Le nuove foto sono già su disco + in lavori.json: le aggiungo in coda
+    // preservando ordine/modifiche correnti (niente refresh, niente dirty).
+    const server = data.lavori ?? [];
+    setLavori((prev) => {
+      const known = new Set(prev.map((l) => l.file));
+      const nuove = server.filter((l) => !known.has(l.file));
+      return nuove.length ? [...prev, ...nuove] : prev;
+    });
+    if (data.errors?.length) setServerErrors(data.errors);
+  }
+  function generaTestiLavori() {
+    // L'AI riscrive alt+didascalia guardando le foto: come la rigenerazione,
+    // scarta le modifiche non salvate e riparte dal disco.
+    setLavoriDirty(false);
+    runner.run("lavori", "L'AI guarda ogni foto dei lavori e scrive didascalia e alt…");
+  }
+
   async function salva(): Promise<boolean> {
     setBusy(true);
     setMsg(null);
     setServerErrors([]);
-    const res = await fetch(`/api/clients/${slug}/images`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ alts }),
-    });
-    setBusy(false);
-    if (res.ok) {
-      setDirty(false);
-      setMsg({ tone: "ok", text: "Salvato." });
-      router.refresh();
-      return true;
+    const errs: string[] = [];
+    if (dirty) {
+      const res = await fetch(`/api/clients/${slug}/images`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ alts }),
+      });
+      if (res.ok) setDirty(false);
+      else {
+        const d = await res.json().catch(() => ({}));
+        errs.push(...(Array.isArray(d.errors) ? d.errors : [d.error ?? `alt immagini: errore ${res.status}`]));
+      }
     }
-    const data = await res.json().catch(() => ({}));
-    setServerErrors(Array.isArray(data.errors) ? data.errors : [data.error ?? `errore ${res.status}`]);
-    setMsg({ tone: "err", text: "Alt non validi." });
-    return false;
+    if (lavoriDirty) {
+      const res = await fetch(`/api/clients/${slug}/lavori`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: lavori }),
+      });
+      if (res.ok) setLavoriDirty(false);
+      else {
+        const d = await res.json().catch(() => ({}));
+        errs.push(...(Array.isArray(d.errors) ? d.errors : [d.error ?? `foto lavori: errore ${res.status}`]));
+      }
+    }
+    setBusy(false);
+    if (errs.length) {
+      setServerErrors(errs);
+      setMsg({ tone: "err", text: "Salvataggio incompleto." });
+      return false;
+    }
+    setMsg({ tone: "ok", text: "Salvato." });
+    router.refresh();
+    return true;
   }
 
   async function conferma() {
@@ -278,38 +375,52 @@ export function ImagesEditor({
             />
           ))}
         </div>
-        <p className="mt-4 text-xs text-faint">
-          La galleria «I nostri lavori» usa solo foto reali del cliente (arriveranno da una scheda dedicata): senza foto
-          la build la esclude dal sito.
-        </p>
       </section>
+
+      <LavoriPanel
+        slug={slug}
+        lavori={lavori}
+        uploading={uploading}
+        running={runner.running}
+        onUpload={uploadLavori}
+        onField={setLavoro}
+        onMove={moveLavoro}
+        onRemove={removeLavoro}
+        onGenerate={generaTestiLavori}
+      />
 
       {/* ACTION BAR */}
       <div className="fixed inset-x-0 bottom-(--statusbar-offset) border-t border-line bg-bg/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-5xl items-center justify-end gap-4 px-6 py-3">
           {msg && <span className={`text-sm ${msg.tone === "ok" ? "text-ok" : "text-err"}`}>{msg.text}</span>}
-          {altErrors > 0 && (
+          {altErrors > 0 && <span className="text-sm text-err">{altErrors} alt da sistemare</span>}
+          {worksBlocking > 0 && (
             <span className="text-sm text-err">
-              {altErrors} {altErrors === 1 ? "alt da sistemare" : "alt da sistemare"}
+              {worksBlocking} {worksBlocking === 1 ? "foto lavori da completare" : "foto lavori da completare"}
             </span>
           )}
           <button
             type="button"
             className={btnSecondary}
             onClick={() => setChiediRegenSel(true)}
-            disabled={busy || runner.running || selected.size === 0}
+            disabled={busy || runner.running || uploading || selected.size === 0}
             title={selected.size === 0 ? "Seleziona le immagini da rifare con le checkbox" : undefined}
           >
             Rigenera selezionate{selected.size > 0 ? ` (${selected.size})` : ""}
           </button>
-          <button type="button" className={btnSecondary} onClick={salva} disabled={busy || runner.running || !dirty}>
+          <button
+            type="button"
+            className={btnSecondary}
+            onClick={salva}
+            disabled={busy || runner.running || uploading || (!dirty && !lavoriDirty)}
+          >
             {busy ? "…" : "Salva"}
           </button>
           <button
             type="button"
             className={btnPrimary}
             onClick={conferma}
-            disabled={busy || runner.running || altErrors > 0}
+            disabled={busy || runner.running || uploading || altErrors > 0 || worksBlocking > 0}
           >
             Conferma immagini
           </button>
@@ -428,6 +539,258 @@ function ImageTile({
             ⚠ {review?.motivo ?? "scartata dal critico"}
           </p>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Pannello «I nostri lavori»: foto reali del cliente (sezione Gallery).
+// 0 foto = sezione assente · ≥4 = visibile. Upload (incl. HEIC), testi AI,
+// riordino e rimozione. Le foto NON sono generate dall'AI.
+// ---------------------------------------------------------------------------
+
+function LavoriPanel({
+  slug,
+  lavori,
+  uploading,
+  running,
+  onUpload,
+  onField,
+  onMove,
+  onRemove,
+  onGenerate,
+}: {
+  slug: string;
+  lavori: Lavori;
+  uploading: boolean;
+  running: boolean;
+  onUpload: (files: File[]) => void;
+  onField: (index: number, patch: Partial<Lavoro>) => void;
+  onMove: (index: number, dir: -1 | 1) => void;
+  onRemove: (index: number) => void;
+  onGenerate: () => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [drag, setDrag] = useState(false);
+  const count = lavori.length;
+  const busy = uploading || running;
+  const full = count >= LAVORI_MAX;
+
+  const pick = () => fileRef.current?.click();
+  const takeFiles = (fl: FileList | null) => {
+    if (fl && fl.length) onUpload(Array.from(fl));
+    if (fileRef.current) fileRef.current.value = ""; // ricaricare lo stesso file dev'essere possibile
+  };
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDrag(false);
+    if (!busy && !full) takeFiles(e.dataTransfer.files);
+  };
+  const mancano = GALLERY_MIN - count;
+
+  return (
+    <section className="mt-10">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <h2 className="text-xs font-semibold tracking-wide text-faint uppercase">I nostri lavori</h2>
+        {count === 0 ? (
+          <Badge tone="idle">La sezione «Lavori» non comparirà nel sito</Badge>
+        ) : count < GALLERY_MIN ? (
+          <Badge tone="warn">
+            {count} foto — {mancano === 1 ? "ne manca 1" : `ne mancano ${mancano}`} perché la sezione compaia
+          </Badge>
+        ) : (
+          <Badge tone="ok">{count} foto — la sezione comparirà sul sito</Badge>
+        )}
+      </div>
+      <p className="mt-1 max-w-2xl text-sm text-muted">
+        Foto reali dei lavori del cliente — l&apos;unica sezione non generata dall&apos;AI: sono vere, e per questo
+        aumentano la fiducia. Servono almeno {GALLERY_MIN} foto perché la sezione compaia; senza foto non appare.
+      </p>
+
+      <input
+        ref={fileRef}
+        type="file"
+        multiple
+        accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif"
+        className="hidden"
+        onChange={(e) => takeFiles(e.target.files)}
+      />
+
+      {count === 0 ? (
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            if (!busy) setDrag(true);
+          }}
+          onDragLeave={() => setDrag(false)}
+          onDrop={onDrop}
+          className={`mt-4 flex flex-col items-center gap-2 rounded-ctl border border-dashed px-6 py-10 text-center transition-colors ${
+            drag ? "border-brand bg-brand-dim" : "border-line bg-surface"
+          }`}
+        >
+          <Upload aria-hidden className="size-6 text-faint" strokeWidth={1.75} />
+          <p className="text-sm font-medium text-muted">Trascina qui le foto dei lavori</p>
+          <p className="max-w-md text-sm text-faint">
+            JPG · PNG · WebP · HEIC (iPhone) · fino a {LAVORI_MAX} foto · max 15 MB l&apos;una
+          </p>
+          <button type="button" className={`${btnSecondary} mt-2`} onClick={pick} disabled={busy}>
+            {uploading ? "Caricamento…" : "Scegli file"}
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <button type="button" className={btnSecondary} onClick={pick} disabled={busy || full}>
+              <ImagePlus aria-hidden className="size-4" /> Aggiungi foto
+            </button>
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={onGenerate}
+              disabled={busy}
+              title="L'AI guarda ogni foto e propone didascalia e alt, poi li rivedi"
+            >
+              <Sparkles aria-hidden className="size-4" /> Genera testi con l&apos;AI
+            </button>
+            {uploading && <span className="text-sm text-muted">Caricamento…</span>}
+            {full && <span className="text-sm text-faint">Massimo {LAVORI_MAX} foto</span>}
+          </div>
+
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              if (!busy && !full) setDrag(true);
+            }}
+            onDragLeave={() => setDrag(false)}
+            onDrop={onDrop}
+            className={`mt-4 grid gap-4 rounded-ctl ${drag ? "ring-2 ring-brand ring-offset-2 ring-offset-bg" : ""}`}
+            style={{ gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))" }}
+          >
+            {lavori.map((l, i) => (
+              <LavoroTile
+                key={l.file}
+                slug={slug}
+                item={l}
+                index={i}
+                count={count}
+                disabled={busy}
+                onField={(patch) => onField(i, patch)}
+                onMove={(dir) => onMove(i, dir)}
+                onRemove={() => onRemove(i)}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+function LavoroTile({
+  slug,
+  item,
+  index,
+  count,
+  disabled,
+  onField,
+  onMove,
+  onRemove,
+}: {
+  slug: string;
+  item: Lavoro;
+  index: number;
+  count: number;
+  disabled: boolean;
+  onField: (patch: Partial<Lavoro>) => void;
+  onMove: (dir: -1 | 1) => void;
+  onRemove: () => void;
+}) {
+  const capLen = item.caption.length;
+  const altLen = item.alt.length;
+  const capTone = capLen > CAPTION_MAX ? "text-err" : capLen >= CAPTION_MAX * 0.9 ? "text-warn" : "text-faint";
+  const altEmptyBlock = count >= GALLERY_MIN && altLen === 0;
+  const altTone = altLen > ALT_MAX || altEmptyBlock ? "text-err" : altLen >= ALT_MAX * 0.9 ? "text-warn" : "text-faint";
+  const iconBtn = "rounded-full bg-bg/80 p-1 backdrop-blur-sm transition-opacity hover:opacity-100 disabled:opacity-30";
+
+  return (
+    <div className="overflow-hidden rounded-ctl border border-line bg-surface">
+      <div className="relative aspect-[4/3] bg-raise">
+        {/* eslint-disable-next-line @next/next/no-img-element -- route locale, niente ottimizzatore */}
+        <img
+          src={`/api/clients/${slug}/img/${item.file}`}
+          alt={item.alt}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        {index === 0 && (
+          <span className="absolute top-2 left-2">
+            <Badge tone="idle">Foto principale</Badge>
+          </span>
+        )}
+        <div className="absolute top-2 right-2 flex gap-1">
+          <button
+            type="button"
+            aria-label="Sposta prima"
+            className={`${iconBtn} text-ink`}
+            onClick={() => onMove(-1)}
+            disabled={disabled || index === 0}
+          >
+            <ArrowUp className="size-4" />
+          </button>
+          <button
+            type="button"
+            aria-label="Sposta dopo"
+            className={`${iconBtn} text-ink`}
+            onClick={() => onMove(1)}
+            disabled={disabled || index === count - 1}
+          >
+            <ArrowDown className="size-4" />
+          </button>
+          <button type="button" aria-label="Rimuovi foto" className={`${iconBtn} text-err`} onClick={onRemove} disabled={disabled}>
+            <X className="size-4" />
+          </button>
+        </div>
+      </div>
+      <div className="space-y-2 p-3">
+        <div>
+          <div className="flex items-baseline justify-between gap-2">
+            <label className="text-xs font-medium text-muted" htmlFor={`cap-${item.file}`}>
+              Didascalia
+            </label>
+            <span className={`mono shrink-0 text-xs ${capTone}`}>
+              {capLen}/{CAPTION_MAX}
+            </span>
+          </div>
+          <input
+            id={`cap-${item.file}`}
+            value={item.caption}
+            onChange={(e) => onField({ caption: e.target.value })}
+            placeholder="Es. Ristrutturazione bagno"
+            className="mt-1 w-full text-sm"
+            disabled={disabled}
+          />
+        </div>
+        <div>
+          <div className="flex items-baseline justify-between gap-2">
+            <label className="text-xs font-medium text-muted" htmlFor={`alt-${item.file}`}>
+              Alt
+            </label>
+            <span className={`mono shrink-0 text-xs ${altTone}`}>
+              {altLen}/{ALT_MAX}
+            </span>
+          </div>
+          <textarea
+            id={`alt-${item.file}`}
+            value={item.alt}
+            onChange={(e) => onField({ alt: e.target.value })}
+            rows={2}
+            placeholder="Cosa si vede nella foto (accessibilità e SEO)"
+            className="mt-1 w-full resize-none text-sm"
+            disabled={disabled}
+          />
+          {altEmptyBlock && <p className="mt-1 text-xs text-err">Alt richiesto per mostrare la foto sul sito.</p>}
+        </div>
       </div>
     </div>
   );
