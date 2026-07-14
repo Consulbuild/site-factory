@@ -7,6 +7,7 @@ import { staleFiles } from "@/lib/staleness";
 import { hasSecret } from "@/lib/secrets";
 import { ImagesRunner } from "@/components/images-runner";
 import { ImagesEditor } from "@/components/images-editor";
+import { LavoriSection } from "@/components/lavori-section";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +60,8 @@ export default async function ImmaginiPage({ params }: { params: Promise<{ slug:
       <p className="mt-1 max-w-2xl text-sm text-muted">
         L&apos;image-prompter genera hero e card servizi con FLUX.2 (soggetti dal contesto e dai titoli card, colori
         dalla palette), poi il critico visivo GUARDA ogni immagine e scarta slop e incoerenze — fino a 3 round. Alla
-        fine le rivedi qui, con alt editabili e rigenerazione selettiva. La gallery usa solo foto reali (scheda futura).
+        fine le rivedi qui, con alt editabili e rigenerazione selettiva. Le foto reali dei lavori del cliente si
+        caricano nella sezione qui sotto (anche prima di generare hero e card).
       </p>
       <ImagesRunner
         slug={slug}
@@ -67,6 +69,7 @@ export default async function ImmaginiPage({ params }: { params: Promise<{ slug:
         bflOk={hasSecret("BFL_API_KEY")}
         errore={steps.images.stato === "errore" ? steps.images.errore : undefined}
       />
+      <LavoriSection slug={slug} initial={bundle.lavori} />
     </div>
   );
 }
