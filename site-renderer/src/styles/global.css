@@ -578,3 +578,30 @@
   border-radius: 50%;
   background: currentColor;
 }
+
+/* navbar "flottante": barra staccata a pillola con ombra (desktop md+); su
+   mobile resta la barra sticky di default (i pill flottanti sono idioma
+   desktop, e la tendina mobile è full-width). Reattiva allo scroll via
+   data-scrolled (toggle in Header.astro): motion di interazione compositor-only
+   (transform+box-shadow, nessun reflow), azzerato da prefers-reduced-motion. */
+@media (min-width: 48rem) {
+  [data-navbar="flottante"] .site-header {
+    border-bottom: 0;
+    background: transparent;
+    padding-top: 0.85rem;
+  }
+  [data-navbar="flottante"] .site-header__bar {
+    background: var(--color-bg);
+    border: var(--brand-border-w) solid var(--color-line);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--brand-shadow-float);
+    padding-inline: clamp(1.1rem, 3vw, 1.9rem);
+    transition:
+      transform var(--brand-dur-base) var(--brand-ease),
+      box-shadow var(--brand-dur-base) var(--brand-ease);
+  }
+  [data-navbar="flottante"] .site-header[data-scrolled] .site-header__bar {
+    transform: translateY(-3px);
+    box-shadow: var(--brand-shadow-hover);
+  }
+}

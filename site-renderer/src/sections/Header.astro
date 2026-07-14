@@ -22,8 +22,8 @@ const { brand, meta, contact } = site;
 // deve restare sempre leggibile.
 ---
 
-<header class="sticky top-0 z-50 border-b-2 border-accent bg-bg">
-  <div class="container-site grid h-16 grid-cols-[1fr_auto] items-center gap-3 md:h-[4.5rem] md:grid-cols-[1fr_auto_1fr] md:gap-6">
+<header class="site-header sticky top-0 z-50 border-b-2 border-accent bg-bg">
+  <div class="site-header__bar container-site grid h-16 grid-cols-[1fr_auto] items-center gap-3 md:h-[4.5rem] md:grid-cols-[1fr_auto_1fr] md:gap-6">
     <a href="/#top" class="flex min-w-0 items-center gap-2.5" aria-label={meta.businessName}>
       {brand.logo ? (
         <img src={brand.logo.src} alt={brand.logo.alt} class="h-9 w-auto md:h-10" />
@@ -113,4 +113,14 @@ const { brand, meta, contact } = site;
       if (e.target instanceof Element && e.target.closest("a")) d.removeAttribute("open");
     });
   });
+
+  // Navbar reattiva allo scroll: toggla data-scrolled oltre soglia. Inerte se il
+  // kit non è "flottante" (nessun CSS stila data-scrolled sul default). Passive.
+  (() => {
+    const h = document.querySelector("header.site-header");
+    if (!h) return;
+    const onScroll = () => h.toggleAttribute("data-scrolled", window.scrollY > 24);
+    onScroll();
+    addEventListener("scroll", onScroll, { passive: true });
+  })();
 </script>

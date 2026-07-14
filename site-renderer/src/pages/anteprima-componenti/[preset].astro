@@ -4,6 +4,7 @@ import { parseSiteConfig } from "@/lib/schema";
 import { siteData } from "@/lib/loadSite";
 import { PRESETS } from "@/lib/presets";
 import { ctaClass } from "@/lib/ui";
+import { registry } from "@/lib/registry";
 
 // Matrice di audit dei TRATTAMENTI di componente (Asse 2 — kit): una pagina per
 // preset e, in pagina, ogni componente col kit di default vs ogni variante del
@@ -20,8 +21,12 @@ const site = parseSiteConfig({
 });
 
 // null = kit di default del preset (nessun data-attr).
+const navbarVarianti = [null, "flottante"] as const;
 const cardVarianti = [null, "rialzata"] as const;
 const buttonVarianti = [null, "pallino"] as const;
+
+const HeaderComp = registry["Header"];
+const headerSection = site.sections.find((s) => s.type === "Header") as any;
 
 const cardDemo: [string, string][] = [
   ["Ristrutturazioni chiavi in mano", "Un solo referente dal sopralluogo alla consegna, con tempi certi."],
@@ -33,6 +38,19 @@ const cardDemo: [string, string][] = [
 <Base site={site}>
   <main class="container-site section-pad" style="display:grid; gap:2.5rem;">
     <p class="eyebrow">catalogo trattamenti — preset {preset}</p>
+
+    {
+      navbarVarianti.map((v) => (
+        <section id={`navbar-${v ?? "default"}`} data-navbar={v ?? undefined} style="display:grid; gap:1rem;">
+          <h2 class="t-h4">Navbar · {v ?? "default (kit preset)"}</h2>
+          {/* transform crea un containing block: la barra sticky resta scoped
+              alla cella e non scavalca le altre sezioni della matrice */}
+          <div style="transform: translateZ(0);">
+            {headerSection && <HeaderComp data={headerSection.props} site={site} />}
+          </div>
+        </section>
+      ))
+    }
 
     {
       cardVarianti.map((v) => (
