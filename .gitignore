@@ -1,5 +1,8 @@
 node_modules/
 dist/
+# stato Claude Code per-macchina / per-task: mai versionato
+.claude/settings.local.json
+.claude/scope.json
 .astro/
 .next/
 .DS_Store

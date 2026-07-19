@@ -25,6 +25,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    I dati clienti (`out/`) restano fuori da git e si tengono aggiornati via il
    **sync nativo di Google Drive** (quando agganciato). Regola dura: **nessun
    lavoro resta solo-locale.** Vedi la memoria `backup-strategia`.
+8. **Perimetro di modifica (guardrail meccanico, proporzionato)**: per i task
+   pianificati (regola 3) il piano ELENCA i file da toccare; approvato il piano,
+   primo atto: scrivere `.claude/scope.json` =
+   `{"task":"…","perimetro":["path/esatto","cartella/**"]}` — da lì l'hook
+   `scope-guard` blocca ogni Edit/Write fuori perimetro (subagent inclusi) finché
+   a fine task il perimetro non viene svuotato, riepilogando i file toccati
+   rispetto al piano. I fix descrivibili in una frase non richiedono scope.json.
+   Serve un file non previsto? Fermarsi e chiedere, mai allargare in silenzio.
+   Sempre vietato: refactoring/riformattazioni non richiesti («già che c'ero»),
+   modificare file via shell (sed -i, redirect) invece di Edit/Write,
+   `git add -A` (si stagiano path espliciti).
 
 Stato lavori e prossimi passi: **`docs/handoff-fase-c.md`**.
 
@@ -54,8 +65,10 @@ Validare un site.json (o un blueprint) contro il contratto:
 node --experimental-strip-types scripts/validate-site.ts <path-al-site.json>
 ```
 
-Non c'è suite di test né linter: la verifica è `npm run build` verde + `npm run check`
-+ il validatore qui sopra.
+Niente linter. I test del renderer sono Playwright (`tests/visual.spec.ts` snapshot
+6 preset × 2 viewport, `tests/a11y.spec.ts` axe): la verifica è `npm run build` verde
++ `npm run check` + il validatore qui sopra, più `npm run test:visual` (ed eventuale
+`test:a11y`) quando si toccano componenti, layout o global.css.
 
 **Editor Fase C** (`site-factory-editor/`, Next.js 16 + React 19): il suo `CLAUDE.md`
 importa solo un warning su Next.js, quindi i comandi stanno qui.
