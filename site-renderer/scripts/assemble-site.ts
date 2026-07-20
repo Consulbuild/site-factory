@@ -18,6 +18,9 @@
 //   --lavori <manifest.json>  manifest [{file,alt,caption}] delle foto reali caricate
 //                    dall'operatore: popola DIRETTAMENTE sections[4].props.images (src =
 //                    /media/<slug>/<file>) e ne usa il numero per il drop. Vince su --foto-reali.
+//   --legale <legale.json>  documenti legali REALI del cliente (privacy/termini/formNotice,
+//                    Fase 3): diventa site.legal e le pagine /privacy e /termini rendono
+//                    il documento vero senza banner anteprima. Meccanico, non uno slot.
 //
 // Formato artifact: { "<path-slot>": valore, ... } con i path ESATTI di slots.json.
 // Per i path con wildcard `[*]` il valore è un array (annidato per wildcard multiple:
@@ -53,7 +56,14 @@ const fotoReali: number | null =
     : null;
 const lavoriFlag = args.indexOf("--lavori");
 const lavoriPath = lavoriFlag >= 0 ? args[lavoriFlag + 1] : null;
-const consumed = new Set([outFlag + 1, fotoFlag >= 0 ? fotoFlag + 1 : -1, lavoriFlag >= 0 ? lavoriFlag + 1 : -1]);
+const legaleFlag = args.indexOf("--legale");
+const legalePath = legaleFlag >= 0 ? args[legaleFlag + 1] : null;
+const consumed = new Set([
+  outFlag + 1,
+  fotoFlag >= 0 ? fotoFlag + 1 : -1,
+  lavoriFlag >= 0 ? lavoriFlag + 1 : -1,
+  legaleFlag >= 0 ? legaleFlag + 1 : -1,
+]);
 const positional = args.filter((a, i) => !a.startsWith("-") && !consumed.has(i));
 const [blueprintDir, artifactsDir] = positional;
 if (!blueprintDir || !artifactsDir) {
@@ -265,6 +275,14 @@ if (effectiveFoto !== null && effectiveFoto < GALLERY_DROP.minFoto) {
   };
   pruneHref(merged.sections);
   warnings.push(`Gallery rimossa (${effectiveFoto} foto reali < ${GALLERY_DROP.minFoto}) + link "${GALLERY_DROP.navHref}" tolti da nav e footer`);
+}
+
+/* ---------------- documenti legali reali (--legale): meccanici, non slot ---------------- */
+
+// I documenti legali del cliente (curati/verificati, mai del modello a runtime)
+// entrano in site.legal: la validazione di forma la fa parseSiteConfig in coda.
+if (legalePath) {
+  merged.legal = JSON.parse(readFileSync(legalePath, "utf8"));
 }
 
 /* ---------------- guard fixture: il golden example non va MAI in una build completa ---------------- */

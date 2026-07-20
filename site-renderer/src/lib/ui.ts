@@ -37,6 +37,20 @@ export function renderDotted(text: string): string {
     .join(' <span class="opacity-60" aria-hidden="true">·</span> ');
 }
 
+/**
+ * Inline dei documenti legali (site.legal): `**grassetto**` → <strong> e
+ * `[testo](url)` → <a> (con rel di sicurezza sugli URL esterni). Il testo
+ * viene prima escapato: sicuro per set:html dentro .legal-prose.
+ */
+export function renderLegalInline(text: string): string {
+  return escapeHtml(text)
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, label, url) => {
+      const esterno = /^https?:\/\//.test(url);
+      return `<a href="${url}"${esterno ? ' rel="noopener"' : ""}>${label}</a>`;
+    })
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
 function escapeHtml(text: string): string {
   return text
     .replaceAll("&", "&amp;")

@@ -2,13 +2,15 @@
 import SubPage from "@/layouts/SubPage.astro";
 import Icon from "@/components/Icon.astro";
 import { site } from "@/lib/loadSite";
+import { renderLegalInline } from "@/lib/ui";
 
-// DOCUMENTO DI ESEMPIO — struttura ex art. 13 GDPR con i dati del sito già
-// iniettati. La pipeline (Fase 3) sostituirà i contenuti con l'informativa
-// definitiva del cliente; il banner giallo sparisce in quel momento.
+// Con site.legal presente la pagina rende l'INFORMATIVA REALE del cliente
+// (blocchi strutturati da legale.json, Fase 3) senza banner. In sua assenza
+// resta il documento di esempio col banner "Anteprima" rivolto al lead.
 const { meta, contact } = site;
 const footer = site.sections.find((s) => s.type === "Footer");
 const legalNote = footer?.props.legalNote ?? meta.businessName;
+const doc = site.legal?.privacy ?? null;
 ---
 
 <SubPage pageTitle="Informativa privacy" noindex={true}>
@@ -17,14 +19,40 @@ const legalNote = footer?.props.legalNote ?? meta.businessName;
       <header class="max-w-3xl">
         <p class="eyebrow">Documento legale</p>
         <h1 class="t-h1 mt-4 text-balance">Informativa <span class="accent-word">privacy</span></h1>
-        <p class="t-lead mt-4">Ai sensi dell'art. 13 del Regolamento (UE) 2016/679 ("GDPR").</p>
+        <p class="t-lead mt-4">{doc?.intro || `Ai sensi dell'art. 13 del Regolamento (UE) 2016/679 ("GDPR").`}</p>
+        {doc && (
+          <p class="t-caption mt-3 font-bold uppercase tracking-[0.08em] text-muted">
+            Ultimo aggiornamento: {doc.updatedAt}
+          </p>
+        )}
       </header>
 
+      {doc && (
+        <article class="legal-prose mt-4">
+          {doc.blocks.map((b) =>
+            b.type === "h2" ? (
+              <h2>{b.text}</h2>
+            ) : b.type === "p" ? (
+              <p set:html={renderLegalInline(b.text)} />
+            ) : (
+              <ul>
+                {b.items.map((item) => (
+                  <li set:html={renderLegalInline(item)} />
+                ))}
+              </ul>
+            ),
+          )}
+        </article>
+      )}
+
+      {!doc && (
       <p class="mt-8 max-w-[70ch] rounded-input border border-accent-strong/40 bg-accent-soft px-5 py-4 t-caption font-medium">
         <strong>Anteprima</strong> — prima della messa online sostituiremo questo
         documento con l'informativa verificata e personalizzata per la tua attività.
       </p>
+      )}
 
+      {!doc && (
       <article class="legal-prose mt-4">
         <h2>1. Titolare del trattamento</h2>
         <p>
@@ -89,6 +117,7 @@ const legalNote = footer?.props.legalNote ?? meta.businessName;
           questa pagina è quella vigente.
         </p>
       </article>
+      )}
 
       {/* dopo la lettura sei in fondo: il ritorno serve anche qui */}
       <div class="mt-14 max-w-[70ch] border-t border-line pt-8">

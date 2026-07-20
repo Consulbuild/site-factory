@@ -3,7 +3,7 @@ import type { Cta, PropsOf, SiteConfig } from "@/lib/schema";
 import Button from "@/components/Button.astro";
 import Icon from "@/components/Icon.astro";
 import SectionHeader from "@/components/SectionHeader.astro";
-import { renderAccent, sectionPad, telHref, waHref } from "@/lib/ui";
+import { renderAccent, renderLegalInline, sectionPad, telHref, waHref } from "@/lib/ui";
 
 interface Props {
   data: PropsOf<"ContactCTA">;
@@ -190,11 +190,20 @@ if (!hasForm) {
 
               {data.formNote && <p class="t-caption text-center leading-relaxed text-muted">{data.formNote}</p>}
 
-              {/* Informativa art. 13: link obbligatorio; niente checkbox (art. 6.1.b) */}
-              <p class="t-caption text-center leading-relaxed text-muted">
-                Usiamo i tuoi dati solo per rispondere alla richiesta.{" "}
-                <a href={data.privacyHref} class="underline underline-offset-2 hover:text-ink">Informativa privacy</a>
-              </p>
+              {/* Informativa art. 13: link obbligatorio; niente checkbox (art. 6.1.b).
+                  Con site.legal presente si rende l'informativa BREVE di primo
+                  livello (modello multilivello: rinvia a /privacy). */}
+              {site.legal?.formNotice ? (
+                <p
+                  class="t-caption leading-relaxed text-muted [&_a]:font-semibold [&_a]:underline [&_a]:underline-offset-2"
+                  set:html={renderLegalInline(site.legal.formNotice)}
+                />
+              ) : (
+                <p class="t-caption text-center leading-relaxed text-muted">
+                  Usiamo i tuoi dati solo per rispondere alla richiesta.{" "}
+                  <a href={data.privacyHref} class="underline underline-offset-2 hover:text-ink">Informativa privacy</a>
+                </p>
+              )}
             </div>
           </div>
 

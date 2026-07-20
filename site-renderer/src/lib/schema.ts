@@ -592,12 +592,43 @@ export const KitSchema = z
   .partial();
 export type Kit = z.infer<typeof KitSchema>;
 
+/* ------------------------------------------------------------------ */
+/* Documenti legali reali (Fase 3)                                     */
+/* ------------------------------------------------------------------ */
+
+/** Blocchi dei documenti legali (/privacy, /termini): contenuto strutturato,
+ *  mai markup. Inline ammessi nel testo: `**grassetto**` e `[testo](url)`,
+ *  convertiti da renderLegalInline() in lib/ui.ts. Quando `legal` è presente
+ *  le pagine rendono il documento reale SENZA banner anteprima; assente =
+ *  contenuti d'esempio col banner (stato pre-Fase 3). */
+export const LegalBlockSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("h2"), text: z.string().min(1) }),
+  z.object({ type: z.literal("p"), text: z.string().min(1) }),
+  z.object({ type: z.literal("ul"), items: z.array(z.string().min(1)).min(1) }),
+]);
+export type LegalBlock = z.infer<typeof LegalBlockSchema>;
+
+export const LegalDocSchema = z.object({
+  intro: z.string().default(""), // lead sotto il titolo (es. "Ai sensi dell'art. 13...")
+  updatedAt: z.string().min(1), // "GG/MM/AAAA" — la versione vigente
+  blocks: z.array(LegalBlockSchema).min(1),
+});
+export type LegalDoc = z.infer<typeof LegalDocSchema>;
+
+export const LegalSchema = z.object({
+  privacy: LegalDocSchema,
+  termini: LegalDocSchema,
+  // informativa breve di primo livello sotto il form (rinvia a /privacy)
+  formNotice: z.string().min(1),
+});
+
 export const SiteConfigSchema = z.object({
   meta: MetaSchema,
   brand: BrandSchema,
   contact: ContactSchema,
   sections: z.array(SectionSchema).min(1),
   kit: KitSchema.optional(),
+  legal: LegalSchema.optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfigSchema>;
 

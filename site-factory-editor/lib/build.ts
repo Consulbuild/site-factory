@@ -111,6 +111,9 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
       ...(fs.existsSync(path.join(dir, "lavori.json"))
         ? ["--lavori", `out/${slug}/lavori.json`]
         : ["--foto-reali", "0"]),
+      // Documenti legali reali (Fase 3): se il workspace ha legale.json le
+      // pagine /privacy e /termini rendono il documento vero senza banner.
+      ...(fs.existsSync(path.join(dir, "legale.json")) ? ["--legale", `out/${slug}/legale.json`] : []),
       ...(partial ? ["--partial"] : []),
     ],
     cwd: SITE_RENDERER,
