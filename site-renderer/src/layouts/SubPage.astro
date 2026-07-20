@@ -4,6 +4,7 @@ import Footer from "@/sections/Footer.astro";
 import StickyCta from "@/sections/StickyCta.astro";
 import Icon from "@/components/Icon.astro";
 import { type PropsOf } from "@/lib/schema";
+import { brandLockup } from "@/lib/ui";
 import { site } from "@/lib/loadSite";
 
 /**
@@ -20,6 +21,9 @@ interface Props {
 const { pageTitle, noindex = true } = Astro.props;
 
 const { brand, meta } = site;
+// Nome senza suffisso societario, per il lockup col simbolo (vedi lib/ui.ts).
+const lockup = brandLockup(meta.businessName);
+const nomeLockup = [lockup.line1, lockup.line2].filter(Boolean).join(" ");
 const abs = (href: string) => (href.startsWith("#") ? `/${href}` : href);
 
 const footerSec = site.sections.find((s) => s.type === "Footer");
@@ -48,6 +52,11 @@ const stickySec = site.sections.find((s) => s.type === "StickyCta");
       <a href="/#top" class="flex min-w-0 items-center gap-2.5" aria-label={`${meta.businessName} — pagina principale`}>
         {brand.logo ? (
           <img src={brand.logo.src} alt={brand.logo.alt} class="h-8 w-auto" />
+        ) : brand.mark ? (
+          <>
+            <span class="hidden truncate font-heading text-[0.85rem] font-strong uppercase tracking-tight text-ink sm:block">{nomeLockup}</span>
+            <img src={brand.mark.src} alt="" class="h-8 w-auto shrink-0" />
+          </>
         ) : (
           <>
             <span class="hidden truncate font-heading text-[0.85rem] font-strong uppercase tracking-tight text-ink sm:block">{meta.businessName}</span>

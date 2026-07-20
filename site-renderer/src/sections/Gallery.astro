@@ -15,14 +15,54 @@ const { data, variant = "grid" } = Astro.props;
 // riferimento: prima fila più larga, dalla seconda foto più fitte.
 // Sotto lg: 2 colonne con la prima foto full-width — stesso ritmo "una forte
 // + le altre fitte" e metà scroll rispetto alla colonna singola (mobile-first).
+//
+// Le righe della griglia a 12 colonne sono SEMPRE piene (mai una foto orfana,
+// per qualunque conteggio 3–12): si compongono con righe da 3 foto (span 4,
+// "larga"), da 4 (span 3, "fitta") e di chiusura da 2 (span 6). Il greedy non
+// lascia mai resto 1; con 7 foto produce il [3,4] storico dei riferimenti.
+const n = data.images.length;
+const masonry = variant === "masonry";
+function righe(tot: number, apreConTre: boolean): number[] {
+  if (tot <= 4) return tot === 4 ? (apreConTre ? [4] : [2, 2]) : [tot];
+  const out: number[] = [];
+  let resto = tot;
+  if (apreConTre) {
+    out.push(3);
+    resto -= 3;
+  }
+  const passo = apreConTre ? 4 : 3; // ritmo delle righe dopo l'apertura
+  while (resto > 0) {
+    if (resto === passo || (resto > passo && resto - passo !== 1)) {
+      out.push(passo);
+      resto -= passo;
+    } else if (resto - 3 >= 0 && resto - 3 !== 1) {
+      out.push(3);
+      resto -= 3;
+    } else {
+      out.push(2);
+      resto -= 2;
+    }
+  }
+  return out;
+}
+const SPAN_LG: Record<number, string> = {
+  2: "lg:col-span-6",
+  3: "lg:col-span-4",
+  4: "lg:col-span-3",
+  1: "lg:col-span-12",
+};
+const spansLg = righe(n, masonry).flatMap((r) => Array.from({ length: r }, () => SPAN_LG[r]));
+
+// Sotto lg (2 colonne): la prima foto apre a tutta larghezza (solo masonry,
+// come lo storico); se le foto restanti sono dispari anche l'ultima chiude a
+// tutta larghezza — stessa cura anti-orfana del desktop.
+const primaFull = masonry && n > 4;
+const ultimaFull = (n - (primaFull ? 1 : 0)) % 2 === 1;
 const spanFor = (i: number) =>
-  variant === "masonry" && data.images.length > 4
-    ? i === 0
-      ? "col-span-2 lg:col-span-4"
-      : i < 3
-        ? "lg:col-span-4"
-        : "lg:col-span-3"
-    : "lg:col-span-4";
+  [
+    (i === 0 && primaFull) || (i === n - 1 && ultimaFull) ? "col-span-2" : "",
+    spansLg[i],
+  ].join(" ");
 ---
 
 <section class:list={[sectionPad, "section-dark"]} id="lavori" aria-labelledby="lavori-title">

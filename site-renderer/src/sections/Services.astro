@@ -16,6 +16,26 @@ const { data, variant = "grid" } = Astro.props;
 // con spunte accent — la prova concreta di cosa include il servizio.
 // variant "list": righe orizzontali foto+testo per servizi più discorsivi.
 const isList = variant === "list";
+
+// Griglia count-aware: mai card orfane. Con 5 card l'auto-fit farebbe 4+1 —
+// a xl stanno tutte su una riga (10 colonne, card da 2), a lg (dove 5 colonne
+// sarebbero troppo strette) ritmo 3+2 centrato via col-start sulla quarta.
+// Nel tratto a 2 colonne (sm→lg) un conteggio dispari centra l'ultima card
+// alla stessa larghezza delle altre (50% della riga meno mezzo gap-6).
+// Con 3–4 card le classi restano quelle storiche: resa invariata.
+const n = data.items.length;
+const five = n === 5;
+const gridCols = five
+  ? "sm:grid-cols-2 lg:grid-cols-6 xl:grid-cols-10"
+  : "sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(250px,1fr))]";
+const cardCols = (i: number) => [
+  five && "lg:col-span-2",
+  five && i === 3 && "lg:col-start-2 xl:col-start-auto",
+  n % 2 === 1 &&
+    i === n - 1 &&
+    "sm:col-span-2 sm:w-full sm:max-w-[calc(50%-0.75rem)] sm:justify-self-center lg:max-w-none lg:justify-self-auto",
+  n % 2 === 1 && i === n - 1 && !five && "lg:col-span-1",
+];
 ---
 
 <section class:list={[sectionPad, "bg-surface"]} id="servizi" aria-labelledby="servizi-title">
@@ -23,10 +43,10 @@ const isList = variant === "list";
     <SectionHeader id="servizi-title" eyebrow={data.eyebrow} title={data.title} sub={data.subtitle} />
 
     {!isList && (
-      <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
+      <ul class:list={["mt-12 grid gap-6", gridCols]}>
         {data.items.map((item, i) => (
           <li
-            class="surface-card surface-card--hover flex flex-col overflow-hidden"
+            class:list={["surface-card surface-card--hover flex flex-col overflow-hidden", ...cardCols(i)]}
           >
             {item.image && (
               <img

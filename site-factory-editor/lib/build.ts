@@ -118,23 +118,36 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
   });
   if (!a.ok) return a;
 
-  // FASE logo (patch deterministica): l'intake può referenziare "./logo.ext"
-  // relativo al workspace — sul sito deve diventare /media/<slug>/logo.ext.
+  // FASE logo (patch deterministica): gli artifact possono referenziare "./file"
+  // relativo al workspace (logo del cliente, kit mark/favicon del logo-designer)
+  // — sul sito deve diventare /media/<slug>/file.
   const site = JSON.parse(fs.readFileSync(siteJson, "utf8"));
-  const logoSrc: string | undefined = site?.brand?.logo?.src;
-  if (logoSrc?.startsWith("./")) {
-    const file = path.basename(logoSrc);
+  let sitePatched = false;
+  const patchMedia = (src: string): string | null => {
+    const file = path.basename(src);
     const abs = path.join(dir, file);
-    if (fs.existsSync(abs)) {
-      fs.mkdirSync(path.join(PUBLIC_MEDIA, slug), { recursive: true });
-      fs.copyFileSync(abs, path.join(PUBLIC_MEDIA, slug, file));
-      site.brand.logo.src = `/media/${slug}/${file}`;
-      fs.writeFileSync(siteJson, JSON.stringify(site, null, 2) + "\n");
-      yield { type: "text", text: `logo: ${file} → /media/${slug}/${file}` };
-    } else {
-      return { ok: false, error: `il brand.logo punta a ${logoSrc} ma il file non esiste nel workspace` };
+    if (!fs.existsSync(abs)) return null;
+    fs.mkdirSync(path.join(PUBLIC_MEDIA, slug), { recursive: true });
+    fs.copyFileSync(abs, path.join(PUBLIC_MEDIA, slug, file));
+    sitePatched = true;
+    return `/media/${slug}/${file}`;
+  };
+  for (const key of ["logo", "mark"] as const) {
+    const src: string | undefined = site?.brand?.[key]?.src;
+    if (src?.startsWith("./")) {
+      const patched = patchMedia(src);
+      if (!patched) return { ok: false, error: `il brand.${key} punta a ${src} ma il file non esiste nel workspace` };
+      site.brand[key].src = patched;
+      yield { type: "text", text: `${key}: ${path.basename(src)} → ${patched}` };
     }
   }
+  if (typeof site?.brand?.favicon === "string" && site.brand.favicon.startsWith("./")) {
+    const patched = patchMedia(site.brand.favicon);
+    if (!patched) return { ok: false, error: `il brand.favicon punta a ${site.brand.favicon} ma il file non esiste nel workspace` };
+    site.brand.favicon = patched;
+    yield { type: "text", text: `favicon → ${patched}` };
+  }
+  if (sitePatched) fs.writeFileSync(siteJson, JSON.stringify(site, null, 2) + "\n");
 
   // FASE validate (gate Zod del renderer, stesso script del CLI).
   const v = yield* io.script({

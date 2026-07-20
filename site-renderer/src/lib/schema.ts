@@ -119,6 +119,10 @@ export const BrandSchema = z.object({
     })
     .default({}),
   logo: ImageSchema.nullable().default(null),
+  // SOLO il simbolo del logo (kit logo-designer): l'Header compone il lockup
+  // mark + nome con la tipografia del preset. Ignorato se c'è brand.logo
+  // (logo completo fornito dal cliente, che resta la verità).
+  mark: ImageSchema.nullable().default(null),
   // path del favicon (di norma il mark del logo ottimizzato per la tab: /media/<slug>/favicon.svg)
   favicon: z.string().min(1).nullable().default(null),
   tone: z.string().default(""), // es. "professionale, rassicurante"

@@ -70,6 +70,16 @@
       "note": "null se il cliente non ha un logo"
     },
     {
+      "path": "brand.mark",
+      "agent": "intake",
+      "note": "SOLO il simbolo (kit logo-designer, './mark.svg' nel workspace): l'Header compone il lockup col nome. null se c'è brand.logo o nessun kit generato"
+    },
+    {
+      "path": "brand.favicon",
+      "agent": "intake",
+      "note": "'./favicon.svg' dal kit logo-designer; null se non generato"
+    },
+    {
       "path": "brand.tone",
       "agent": "intake",
       "note": "aggettivi dal form (es. 'pulito e minimal')"
