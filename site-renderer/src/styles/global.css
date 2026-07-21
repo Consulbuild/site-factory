@@ -370,13 +370,17 @@
   .btn-secondary:hover {
     border-color: color-mix(in srgb, var(--color-ink) 55%, transparent);
   }
-  /* su fondo scuro il secondario diventa outline chiaro, automaticamente */
+  /* Su fondo scuro il secondario diventa outline chiaro, automaticamente.
+     Bordo marcato + velo di riempimento chiaro (8%): al 35% di solo bordo il
+     bottone restava una sagoma scura sul fondo scuro (feedback 2026-07-22). */
   .section-dark .btn-secondary {
     color: var(--color-inverse-ink);
-    border-color: color-mix(in srgb, var(--color-inverse-ink) 35%, transparent);
+    background: color-mix(in srgb, var(--color-inverse-ink) 8%, transparent);
+    border-color: color-mix(in srgb, var(--color-inverse-ink) 60%, transparent);
   }
   .section-dark .btn-secondary:hover {
-    border-color: color-mix(in srgb, var(--color-inverse-ink) 75%, transparent);
+    background: color-mix(in srgb, var(--color-inverse-ink) 14%, transparent);
+    border-color: color-mix(in srgb, var(--color-inverse-ink) 90%, transparent);
   }
 
   .btn-ghost {
