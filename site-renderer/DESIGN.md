@@ -70,7 +70,7 @@ immagini; la grammatica sotto non si tocca.
 
 | # | Sezione | Fondo | Note |
 |---|---------|-------|------|
-| 1 | Header | chiaro, riga accent sotto | logo sx (monogramma se manca), nav centrata, tel + CTA dx |
+| 1 | Header | chiaro, riga accent sotto | logo sx (monogramma se manca), nav centrata, tel + CTA dx da md in su; su mobile solo marchio+menu (il tap-to-call è il FAB StickyCta) |
 | 2 | Hero | foto+overlay scuro | eyebrow bianca, display maiuscolo con accent, sub, CTA+telefono |
 | 3 | TrustBar | scuro (tono diverso dall'hero) | 3–4 voci titolo+sottotitolo, hairline verticali |
 | 4 | Services | chiaro | card foto+titolo+desc+checklist accent |

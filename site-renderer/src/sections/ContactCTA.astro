@@ -304,7 +304,9 @@ if (!hasForm) {
     <div class="container-site">
       <SectionHeader id="canali-title" eyebrow={data.eyebrow} title={data.headline} sub={data.subtitle} />
 
-      <ul class="mt-12 flex flex-wrap justify-center gap-x-14 gap-y-8">
+      {/* mobile: colonna allineata al bordo sinistro (icone in linea);
+          da sm: strip centrata come nei riferimenti */}
+      <ul class="mt-12 flex flex-col items-start gap-y-8 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-14">
         {channels.map((ch, i) => (
           <li class="flex items-center gap-3.5">
             <span class="grid h-11 w-11 shrink-0 place-items-center rounded-[10px] bg-accent-soft text-accent-strong">

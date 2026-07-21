@@ -35,9 +35,7 @@ const lockup = brandLockup(meta.businessName);
         <>
           {/* il link è già etichettato col nome: il simbolo è decorativo (alt vuoto) */}
           <img src={brand.mark.src} alt="" class="h-9 w-auto shrink-0 md:h-10" />
-          {/* sotto sm il cluster CTA+menu non lascia spazio leggibile al nome:
-              resta il solo simbolo (come il vecchio monogramma) */}
-          <span class="hidden min-w-0 flex-col gap-y-0.5 sm:flex">
+          <span class="flex min-w-0 flex-col gap-y-0.5">
             <span class="truncate font-heading text-[0.95rem] font-strong uppercase leading-none tracking-tight text-ink">{lockup.line1}</span>
             {lockup.line2 && (
               <span class="truncate font-heading text-[0.66rem] font-bold uppercase leading-none tracking-[0.24em] text-accent-strong">{lockup.line2}</span>
@@ -70,26 +68,20 @@ const lockup = brandLockup(meta.businessName);
     )}
 
     <div class="flex shrink-0 items-center justify-end gap-1.5 md:gap-3">
+      {/* Su mobile la navbar resta marchio+menu (scelta 2026-07-21): niente
+          cornetta né CTA — il tap-to-call vive nel FAB StickyCta, sempre a
+          portata di pollice. Telefono e CTA compaiono da md in su. */}
       {data.showPhone && contact.phone && (
-        <>
-          <a
-            href={telHref(contact.phone)}
-            class="grid h-11 w-11 place-items-center rounded-[8px] text-ink hover:bg-surface lg:hidden"
-            aria-label={`Chiama ${contact.phone}`}
-          >
-            <Icon name="phone" class="h-5 w-5" />
-          </a>
-          <a
-            href={telHref(contact.phone)}
-            class="hidden items-center gap-2 t-caption font-semibold text-muted hover:text-ink lg:inline-flex"
-          >
-            <Icon name="phone" class="h-4 w-4" />
-            {contact.phone}
-          </a>
-        </>
+        <a
+          href={telHref(contact.phone)}
+          class="hidden items-center gap-2 t-caption font-semibold text-muted hover:text-ink lg:inline-flex"
+        >
+          <Icon name="phone" class="h-4 w-4" />
+          {contact.phone}
+        </a>
       )}
       {data.cta && (
-        <a href={data.cta.href} class:list={[ctaClass(data.cta.style), "btn-sm"]}>
+        <a href={data.cta.href} class:list={[ctaClass(data.cta.style), "btn-sm", "hidden md:inline-flex"]}>
           {data.cta.label}
         </a>
       )}

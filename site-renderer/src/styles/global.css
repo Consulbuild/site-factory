@@ -184,6 +184,25 @@
   .brand-mark {
     color: var(--brand-accent-on-inverse, var(--color-accent));
   }
+  /* Guardrail contrasto CTA: sulle bande inverse il primario passa all'accent
+     (DESIGN.md: «primario = accent pieno»). Con le palette a un colore
+     (accent = primary, i siti consegnati) non cambia nulla; con un primary
+     scuro (es. nero+oro) evita il bottone scuro-su-scuro. Il testo resta
+     bianco: vale la stessa soglia AA del primario validata dal gate palette. */
+  .section-dark .btn-primary {
+    background: var(--color-accent);
+  }
+  .section-dark .btn-primary:hover {
+    background: color-mix(in srgb, var(--color-accent) 86%, #000);
+  }
+  /* ...ma dentro una superficie in tinta BASE (es. la card bianca del form)
+     il primario resta primario: lì il contrasto c'è già. */
+  .section-dark :is(.bg-bg, .bg-surface, .surface-card) .btn-primary {
+    background: var(--color-primary);
+  }
+  .section-dark :is(.bg-bg, .bg-surface, .surface-card) .btn-primary:hover {
+    background: var(--color-primary-hover);
+  }
 
   /* --- layout nei token (M9): aree nominate sulle sezioni split ---
      Il markup dichiara SOLO i nomi (.area-testo / .area-focale); la
