@@ -132,7 +132,9 @@ agenti copy/immagini: le fissa il blueprint o l'operatore (prospettiva: il
 campo `varianti` del registro assegnazioni M8). Attive: Hero `D` (big number —
 i badge che iniziano con un numero diventano statistiche grandi, SOLO numeri
 reali dal form), ContactCTA `B` (gradual reassurance: form in 2 passi,
-fallback no-JS = form intero).
+fallback no-JS = form intero), Services `compact` (card senza descrizione,
+foto+titolo+checklist — scelta operatore via slot `sections[3].variant`
+quando i bullet coprono già la desc; introdotta per Cavaliere Build 2026-07).
 
 **Layout nei token** — le sezioni split (contatti col form, hero B) dichiarano
 solo aree nominate (`.area-testo` / `.area-focale`); la disposizione la decide

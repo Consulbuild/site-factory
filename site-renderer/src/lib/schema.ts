@@ -217,7 +217,9 @@ export const ValuePropSection = z.object({
 export const ServicesSection = z.object({
   ...base,
   type: z.literal("Services"),
-  variant: z.enum(["grid", "list"]).default("grid"),
+  // "compact" = card senza descrizione (foto + titolo + checklist): scelta
+  // dell'operatore quando i bullet dicono già tutto e la desc è ridondante.
+  variant: z.enum(["grid", "list", "compact"]).default("grid"),
   props: z.object({
     eyebrow: shortText(40).default("I nostri servizi"),
     title: accentTitle(60),

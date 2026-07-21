@@ -80,6 +80,11 @@
       "note": "'./favicon.svg' dal kit logo-designer; null se non generato"
     },
     {
+      "path": "sections[3].variant",
+      "agent": "intake",
+      "note": "variante Servizi scelta dall'OPERATORE (M9): 'grid' default; 'compact' = card senza descrizione (foto+titolo+checklist) quando i bullet coprono già la desc"
+    },
+    {
       "path": "brand.tone",
       "agent": "intake",
       "note": "aggettivi dal form (es. 'pulito e minimal')"

@@ -15,7 +15,10 @@ const { data, variant = "grid" } = Astro.props;
 // Card servizio dello standard: foto in testa, titolo, descrizione e checklist
 // con spunte accent — la prova concreta di cosa include il servizio.
 // variant "list": righe orizzontali foto+testo per servizi più discorsivi.
+// variant "compact": come grid ma SENZA descrizione (foto+titolo+checklist),
+// per quando i bullet coprono già il contenuto della desc (scelta operatore).
 const isList = variant === "list";
+const showDesc = variant !== "compact";
 
 // Griglia count-aware: mai card orfane. Con 5 card l'auto-fit farebbe 4+1 —
 // a xl stanno tutte su una riga (10 colonne, card da 2), a lg (dove 5 colonne
@@ -58,7 +61,7 @@ const cardCols = (i: number) => [
             )}
             <div class="flex grow flex-col p-6">
               <h3 class="t-h4 font-bold">{item.title}</h3>
-              <p class="mt-2 text-muted">{item.desc}</p>
+              {showDesc && <p class="mt-2 text-muted">{item.desc}</p>}
               {item.bullets.length > 0 && (
                 <ul class="mt-5 space-y-2 border-t border-line pt-5">
                   {item.bullets.map((b) => (
