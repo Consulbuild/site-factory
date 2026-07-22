@@ -36,6 +36,10 @@ export async function deployClient(slug: string): Promise<DeployResult> {
     name: slug,
     compatibility_date: "2026-07-08",
     assets: { directory: "./dist" },
+    // workers.dev resta attivo anche col dominio custom (anteprima/failover):
+    // dichiarando `routes`, wrangler altrimenti lo SPEGNE di default — visto
+    // in produzione sul primo deploy con dominio (2026-07-22).
+    workers_dev: true,
     ...(dominio ? { routes: [{ pattern: dominio, custom_domain: true }] } : {}),
   });
 
