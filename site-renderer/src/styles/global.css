@@ -287,7 +287,9 @@
     font-size: var(--step-2);
     line-height: 1.25;
     /* stessa rete di display/h1/h2: nelle card strette (Servizi a 5 colonne)
-       "impermeabilizzazioni" (20 glifi) altrimenti sfonda e viene tagliata */
+       "impermeabilizzazioni" (20 glifi) altrimenti sfonda e viene tagliata.
+       NIENTE hyphens:auto: sillaba anche fuori emergenza ("PREVENTI-VO" nel
+       titolo del form a 390 — visto sui diff del 2026-07-22). */
     overflow-wrap: break-word;
   }
   .t-lead {

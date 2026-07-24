@@ -163,18 +163,25 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
   if (!v.ok) return v;
 
   // FASE astro build → out/<slug>/dist (path assoluti: fuori dal renderer).
+  // Col dominio pubblicato la build riceve SITE_URL: attiva canonical e og:*
+  // assoluti in Base.astro (consolidamento SEO apex/www/workers.dev).
+  const dominio = readClientState(slug).steps.build.dominio;
   const b = yield* io.script({
     phase: "astro build",
     bin: ASTRO_BIN,
     args: ["build", "--outDir", dist],
     cwd: SITE_RENDERER,
-    env: { SITE_JSON: siteJson },
+    env: { SITE_JSON: siteJson, ...(dominio ? { SITE_URL: `https://${dominio}` } : {}) },
     timeoutMs: 180_000,
   });
   if (!b.ok) return b;
 
-  // Post-build: /anteprima/[preset] sono pagine QA interne, non vanno al cliente.
-  fs.rmSync(path.join(dist, "anteprima"), { recursive: true, force: true });
+  // Post-build: le pagine QA interne non vanno MAI al cliente — /anteprima
+  // (preset) e /anteprima-componenti (matrice trattamenti della fabbrica,
+  // trovata pubblicata sul dominio al primo audit go-live 2026-07-22).
+  for (const qa of ["anteprima", "anteprima-componenti"]) {
+    fs.rmSync(path.join(dist, qa), { recursive: true, force: true });
+  }
   const { pages, sizeKb } = distStats(dist);
   patchClientState(slug, (s) => {
     s.steps.build.partial = partial;

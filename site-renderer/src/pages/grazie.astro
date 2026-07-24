@@ -4,8 +4,9 @@ import Icon from "@/components/Icon.astro";
 import { site } from "@/lib/loadSite";
 import { telHref } from "@/lib/ui";
 
-// Thank-you page: destinazione del form dopo l'invio. Conferma netta,
-// aspettative chiare (24h) e la chiamata come scorciatoia per chi ha fretta.
+// Thank-you page: destinazione del form dopo l'invio. Conferma netta e la
+// chiamata come scorciatoia per chi ha fretta. Niente promesse temporali
+// («entro 24 ore»): non sono concordate col cliente (audit go-live 2026-07-22).
 const { contact } = site;
 ---
 
@@ -19,8 +20,8 @@ const { contact } = site;
       <p class="eyebrow eyebrow--center mt-8">Fatto</p>
       <h1 class="t-h1 mt-4 text-balance">Richiesta <span class="accent-word">inviata</span>!</h1>
       <p class="t-lead mx-auto mt-5 max-w-[46ch] text-pretty">
-        Grazie per averci scritto: ti ricontattiamo entro 24 ore lavorative al
-        numero che hai indicato per fissare il sopralluogo gratuito.
+        Grazie per averci scritto: ti ricontattiamo al più presto al numero
+        che hai indicato per fissare il sopralluogo gratuito.
       </p>
 
       <div class="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
