@@ -8,6 +8,7 @@ import { Topbar } from "@/components/topbar";
 import { RunsProvider } from "@/components/run-provider";
 import { StatusBar } from "@/components/status-bar";
 import { AgentiCard } from "@/components/agenti-card";
+import { ClaudeAuthNotice } from "@/components/claude-auth";
 
 // Il carattere del riferimento visivo, self-hosted da next/font (nessuna
 // request esterna a runtime); esposto come var per il token --font-sans.
@@ -40,6 +41,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             </div>
           </div>
           <StatusBar />
+          {/* Avviso di stato trasversale: sessione CLI Claude scaduta → login. */}
+          <ClaudeAuthNotice />
         </RunsProvider>
       </body>
     </html>

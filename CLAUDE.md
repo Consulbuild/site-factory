@@ -216,7 +216,13 @@ tassonomia sezioni). Regole operative nei componenti:
     form in `out/<slug>/contesto.json` (identità, servizi atomizzati→macro, punti di forza
     tracciabili, promesse consentite/vietate). Skill `context-enricher` + agente omonimo;
     runner generico `lib/steps.ts` (seam per palette/copy/immagini). Gate di copertura
-    deterministico prima della conferma. Prerequisito: `claude login` attivo.
+    deterministico prima della conferma. Prerequisito: `claude login` attivo —
+    **sorvegliato dall'editor** (2026-08-03): `/api/claude-auth` interroga
+    `claude auth status` (cache 20s); a sessione scaduta compare un avviso di
+    stato globale (Banner flottante sopra la status bar) e un pannello in
+    Impostazioni, entrambi con «Apri il Terminale per il login» (osascript →
+    Terminal con `claude login`; l'OAuth resta nelle mani dell'operatore).
+    L'avviso sparisce da solo al login (poll 30s). `components/claude-auth.tsx`.
     **Riconciliazione intake→contesto** (`lib/contesto-sync.ts`): correggere l'intake dopo
     la generazione sincronizza automaticamente i campi meccanici (città, tono, colori…) e
     segnala il drift semantico (settore, descrizione…) con **riallineo AI in modalità

@@ -155,6 +155,16 @@ badge: ora sono tutti qui, un'unica fonte).
 - `<ConfirmDialog open title message confirmLabel tone? confirmDisabled? children? … />` — conferme; `children` per input (es. "digita il nome"), `tone="danger"` per distruttive.
 - `formatDate(iso)` — date in `it-IT`.
 
+### Avviso di stato globale (pattern trasversale)
+Per uno stato di sistema che blocca il lavoro ma non merita un modal (es.
+sessione CLI Claude scaduta): `Banner` dentro un wrapper
+`fixed right-6 bottom-(--statusbar-offset) z-[60] mb-4 max-w-md shadow-overlay`,
+montato UNA volta nella shell (`app/layout.tsx`). È legato allo STATO, non al
+tempo: sparisce quando lo stato si risolve (poll) o con «Nascondi»
+(sessionStorage). `role="status" aria-live="polite"`. Modello:
+`components/claude-auth.tsx` (`ClaudeAuthNotice` + `ClaudeAuthPanel` per
+Impostazioni).
+
 ### Menu azioni per riga (pattern `<details>`)
 Per il menu (…) su righe lista/testate: `<details>` + `<summary>` con
 `[&::-webkit-details-marker]:hidden`, il pannello è una `card absolute … shadow-raise`.

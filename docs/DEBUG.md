@@ -39,6 +39,7 @@ file col **nome numerico più alto** nella cartella `logs/<step>/`.
 | Sintomo | File | Cosa leggere nel record |
 |---|---|---|
 | Step cliente fallito (scheda rossa) | record più recente di `logs/<step>/`, **ultima riga** | `error.message` (= msg UI), `error.classe` (`auth`/`timeout`/`result`/`exit`/`spawn`/`abort`), **`error.stderr` integrale**, `error.code` |
+| Avviso «Sessione Claude scaduta» (o run falliti con classe `auth`) | `site-factory-editor/app/api/claude-auth/route.ts` (stato via `claude auth status`, cache 20s) + `components/claude-auth.tsx` (avviso globale + pannello Impostazioni) | il bottone apre il Terminale con `claude login` (osascript, solo macOS); l'avviso sparisce da solo al login (poll 30s). Se l'apertura fallisce: `dettaglio` nella risposta POST |
 | Migliorare un prompt / capire cosa ha fatto il modello | stesso file, la fase interessata | `prompt` (esatto), `actions` (sequenza tool), `testo` (conclusione del modello) |
 | Fase lenta / costosa / turni esauriti | stesso file | `metrics`: `hitMaxTurns` (loop!), `numTurns`, `durationMs`, `inputTokens`/`outputTokens`, `costUsd` |
 | Un tool fallisce (Read/Write/Bash/Skill) | stesso file | `actions[].error` (il tool_result d'errore, troncato) |
