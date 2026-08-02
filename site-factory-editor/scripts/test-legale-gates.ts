@@ -9,6 +9,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { SITE_RENDERER } from "../lib/paths.ts";
+import { agenteDaFase } from "../lib/agenti.ts";
 import {
   LegaleSchema,
   gateLegale,
@@ -249,6 +250,75 @@ console.log("\nByte-check per-documento e fonte per-area:");
   const b = legaleFonteDaBrief({ ...BRIEF, citta: "Sesto San Giovanni" });
   const cambiate = Object.keys(a).filter((k) => a[k] !== b[k]);
   caso("cambio città → cambia SOLO l'area «sede e foro»", cambiate.length === 1 && cambiate[0] === "sede e foro", cambiate.join(","));
+}
+
+/* ---------------- regressioni dalla review avversariale 2026-08-02 ---------------- */
+
+console.log("\nRegressioni review 2026-08-02 (converter):");
+{
+  const { blocks, errori } = mdToBlocks("## 1. X\ntesto.\n\n---\n");
+  caso("separatore --- del template scartato (mai in pagina)", errori.length === 0 && !blocks.some((b) => b.type === "p" && b.text === "---"));
+}
+{
+  const { blocks } = mdToBlocks("**Ultimo aggiornamento: 21/07/2026**\n\n## 1. X\ntesto.");
+  caso("riga «**Ultimo aggiornamento**» scartata (updatedAt lo timbra il TS)", !blocks.some((b) => b.type === "p" && /aggiornamento/i.test(b.text)));
+}
+{
+  const { blocks, note } = mdToBlocks("*Prova Edile S.r.l.s. — documento redatto\nsulla base della normativa (D.lgs. 70/2003).*");
+  caso("footer corsivo MULTI-riga → report, non in pagina", blocks.length === 0 && note.some((n) => /normativa/.test(n)));
+}
+{
+  const { blocks } = mdToBlocks("##" + " " + "1. Titolare");
+  caso("NBSP dopo ## normalizzato → h2", blocks[0]?.type === "h2" && blocks[0].text === "1. Titolare");
+}
+
+console.log("\nRegressioni review 2026-08-02 (gate):");
+{
+  const l = baseLegale();
+  (l.termini.blocks[4] as { text: string }).text =
+    "In via esclusiva è competente il Foro di Monza in deroga a ogni altro foro, per il **consumatore** resta il foro di residenza (art. 66-bis).";
+  caso("«Foro di Monza in via esclusiva…» (minuscole dopo la città) → passa", !gateLegale(l, BRIEF, FORO).some((e) => e.includes("Foro di")));
+}
+{
+  const l = baseLegale();
+  (l.termini.blocks[4] as { text: string }).text = "È competente il Foro di Monza (foro erariale escluso), salvo il **consumatore** (art. 66-bis).";
+  caso("«Foro di Monza (…)» → la città viene trovata, passa", !gateLegale(l, BRIEF, FORO).some((e) => e.includes("Foro di")));
+}
+{
+  const l = baseLegale();
+  (l.privacy.blocks[1] as { text: string }).text =
+    "Titolare: **Prova Edile S.r.l.s.**, P.IVA 12345678903. 20093 Cologno Monzese (MI). Contatti: [info@provaedile.example](mailto:info@provaedile.example) · [tel](tel:+390212345678).";
+  caso("«P.IVA …903. 20093» (CAP dopo il punto) → non ingloba il CAP, passa", !gateLegale(l, BRIEF, FORO).some((e) => e.startsWith("P.IVA")));
+}
+{
+  const l = baseLegale();
+  l.privacy.updatedAt = "99/99/2026";
+  caso("updatedAt «99/99/2026» → bocciata (data non reale)", contiene(gateLegale(l, BRIEF, FORO), "data reale"));
+}
+{
+  const l = baseLegale();
+  l.formNotice = l.formNotice.replace("art. 6, par. 1, lett. b) GDPR", "art. 66-bis del Codice del Consumo");
+  caso("formNotice con SOLO art. 66-bis → manca la base giuridica", contiene(gateLegale(l, BRIEF, FORO), "base giuridica"));
+}
+{
+  const l = baseLegale();
+  (l.privacy.blocks[5] as { text: string }).text += " Scrivi a altro@example.com per assistenza.";
+  caso("e-mail estranea IN CHIARO (senza mailto:) → bocciata", contiene(gateLegale(l, BRIEF, FORO), "altro@example.com"));
+}
+{
+  const l = baseLegale();
+  (l.privacy.blocks[5] as { text: string }).text += " Oppure scrivi a garante@gpdp.it.";
+  caso("recapito istituzionale del Garante in chiaro → ammesso", !contiene(gateLegale(l, BRIEF, FORO), "garante@gpdp.it"));
+}
+
+console.log("\nRegressioni review 2026-08-02 (identità agenti):");
+{
+  caso("«Assegnazione deterministica del design» NON è il giurista (chip script)", agenteDaFase("Assegnazione deterministica del design").key === "script");
+  caso("«termini e condizioni» → giurista", agenteDaFase("termini e condizioni").nome === "giurista");
+  caso("«privacy (informativa estesa)» → giurista", agenteDaFase("privacy (informativa estesa)").nome === "giurista");
+  caso("«informativa breve» → giurista", agenteDaFase("informativa breve").nome === "giurista");
+  caso("«lente anti-invenzione (round 1)» → critico", agenteDaFase("lente anti-invenzione (round 1)").key === "critico");
+  caso("«correzioni formato» resta del copywriter", agenteDaFase("correzioni formato").key === "copy");
 }
 
 /* ---------------- golden Cavaliere (solo se presente in out/) ---------------- */

@@ -261,20 +261,40 @@ export function mdToBlocks(docMd: string): ConversioneMd {
   let ul: string[] = [];
 
   const flushPar = () => {
-    if (par.length) blocks.push({ type: "p", text: par.join(" ").trim() });
+    const text = par.join(" ").trim();
     par = [];
+    if (!text) return;
+    // Il footer del template è un paragrafo corsivo MULTI-riga: ricomposto
+    // qui, va nel report come le righe corsive singole (review 2026-08-02).
+    if (/^\*[^*].*[^*]\*$/.test(text)) note.push(text.replace(/^\*|\*$/g, ""));
+    else blocks.push({ type: "p", text });
   };
   const flushUl = () => {
     if (ul.length) blocks.push({ type: "ul", items: ul });
     ul = [];
   };
 
-  for (const raw of docMd.split("\n")) {
+  // NBSP → spazio normale (i template incollati ne portano). ATTENZIONE: la
+  // regex contiene un NBSP LETTERALE (U+00A0), invisibile — non "riformattarlo";
+  // il banco di prova ha un caso che fallisce se viene normalizzato.
+  for (const raw of docMd.replace(/ /g, " ").split("\n")) {
     const line = raw.replace(/\s+$/, "");
     const t = line.trim();
     if (!t) {
       flushPar();
       flushUl();
+      continue;
+    }
+    // Separatore `---` del template (riga 118 di template_tc.md): mai in pagina.
+    if (/^[-_*]{3,}$/.test(t)) {
+      flushPar();
+      flushUl();
+      continue;
+    }
+    // «**Ultimo aggiornamento: …**» del template: updatedAt è timbrato dal TS
+    // e reso dalla pagina — pubblicarlo qui lo duplicherebbe.
+    if (/^\*\*ultimo aggiornamento/i.test(t)) {
+      flushPar();
       continue;
     }
     if (/^\|/.test(t)) return { blocks, note, errori: [...errori, "tabella markdown nel documento: fuori dal set ammesso (riformulare in paragrafi o elenco)"] };
@@ -386,7 +406,11 @@ function checkForo(termini: LegaleDoc, foro: Foro, errs: string[]): void {
     .slice(start, fine)
     .flatMap((b) => (b.type === "ul" ? b.items : [b.text]))
     .join(" ");
-  const fori = [...testo.matchAll(/Foro di\s+([A-ZÀ-Ú][\p{L}' -]*?)(?=[.,;)]|$)/gu)].map((m) => m[1].trim());
+  // Cattura SOLO parole maiuscole consecutive («Monza», «Monza Brianza»):
+  // «Foro di Monza in via esclusiva» non deve inglobare il seguito minuscolo
+  // e «Foro di Monza (foro erariale…)» deve comunque trovare la città
+  // (falsi positivi dimostrati dalla review 2026-08-02).
+  const fori = [...testo.matchAll(/Foro di\s+([A-ZÀ-Ú][\p{L}'’-]*(?:\s+[A-ZÀ-Ú][\p{L}'’-]*)*)/gu)].map((m) => m[1].trim());
   if (!fori.length) errs.push("«termini» sezione foro: manca «Foro di <città>»");
   for (const f of fori)
     if (normAlnum(f) !== normAlnum(foro.foro))
@@ -407,13 +431,18 @@ function checkIdentita(legale: Legale, b: BriefLegale, errs: string[]): void {
   const den = normAlnum(b.azienda);
   if (!normAlnum(tuttoTesto).includes(den)) errs.push(`denominazione «${b.azienda}» assente dai documenti (confronto normalizzato)`);
   const piva = soloCifre(b.partita_iva);
-  for (const m of tuttoTesto.matchAll(/(?:p\.?\s?iva|partita\s+iva)[:\s]*([\d .]{8,20})/gi)) {
+  // Un solo separatore tra i gruppi di cifre: «12345678903. 20093» (numero +
+  // CAP dopo il punto) si ferma al punto+spazio e non ingloba il CAP.
+  for (const m of tuttoTesto.matchAll(/(?:p\.?\s?iva|partita\s+iva)[:\s]*(\d+(?:[ .]\d+)*)/gi)) {
     const trovata = soloCifre(m[1]);
     if (trovata && trovata !== piva) errs.push(`P.IVA nei documenti «${trovata}» ≠ brief «${piva}»`);
   }
   if (!soloCifre(tuttoTesto).includes(piva)) errs.push(`P.IVA «${piva}» assente dai documenti`);
-  for (const m of tuttoTesto.matchAll(/mailto:([^)\s]+)/g)) {
-    if (m[1].toLowerCase() !== b.email.toLowerCase()) errs.push(`e-mail nei documenti «${m[1]}» ≠ brief «${b.email}»`);
+  // Ogni e-mail nel testo (anche in chiaro, non solo negli href mailto:) deve
+  // essere quella del brief o un recapito istituzionale del Garante.
+  const EMAIL_CONSENTITE = new Set([b.email.toLowerCase(), "garante@gpdp.it", "protocollo@pec.gpdp.it"]);
+  for (const m of tuttoTesto.matchAll(/(?:mailto:)?([\w.+-]+@[\w.-]+\.[a-z]{2,})/gi)) {
+    if (!EMAIL_CONSENTITE.has(m[1].toLowerCase())) errs.push(`e-mail nei documenti «${m[1]}» ≠ brief «${b.email}»`);
   }
   for (const m of tuttoTesto.matchAll(/tel:([+\d]+)/g)) {
     if (soloCifre(m[1]) !== soloCifre(b.telefono)) errs.push(`telefono (href) nei documenti «${m[1]}» ≠ brief «${b.telefono}»`);
@@ -424,19 +453,26 @@ function checkFormNotice(s: string, b: BriefLegale, errs: string[]): void {
   if (/\n/.test(s)) errs.push("«formNotice»: deve essere un solo paragrafo (niente a-capo)");
   if (s.length > 800) errs.push(`«formNotice»: ${s.length} caratteri > tetto 800`);
   if (!/\]\(\/privacy\)/.test(s)) errs.push("«formNotice»: manca il link all'informativa completa [..](/privacy)");
-  if (!/art\.?\s*6/i.test(s)) errs.push("«formNotice»: manca la base giuridica (art. 6)");
+  // (?![\d-]) esclude «art. 66-bis»: citarlo non è dichiarare la base giuridica.
+  if (!/art\.?\s*6(?![\d-])/i.test(s)) errs.push("«formNotice»: manca la base giuridica (art. 6)");
   if (!/garante/i.test(s)) errs.push("«formNotice»: manca il riferimento al reclamo al Garante");
   if (!normAlnum(s).includes(normAlnum(b.azienda))) errs.push("«formNotice»: manca la denominazione del titolare");
 }
 
 const RE_DATA = /^\d{2}\/\d{2}\/\d{4}$/;
+/** GG/MM/AAAA con valori reali («99/99/2026» non è una data). */
+function dataValida(s: string): boolean {
+  if (!RE_DATA.test(s)) return false;
+  const [g, m, a] = s.split("/").map(Number);
+  return g >= 1 && g <= 31 && m >= 1 && m <= 12 && a >= 2020 && a <= 2100;
+}
 
 /** Il gate unico: tutte le violazioni, con ancora «doc.blocks[i]» dove utile. */
 export function gateLegale(legale: Legale, brief: BriefLegale, foro: Foro | null): string[] {
   const errs: string[] = [];
   for (const key of ["privacy", "termini"] as const) {
     const doc = legale[key];
-    if (!RE_DATA.test(doc.updatedAt)) errs.push(`«${key}»: updatedAt «${doc.updatedAt}» non in formato GG/MM/AAAA`);
+    if (!dataValida(doc.updatedAt)) errs.push(`«${key}»: updatedAt «${doc.updatedAt}» non è una data reale GG/MM/AAAA`);
     doc.blocks.forEach((bl, i) => {
       const dove = `${key}.blocks[${i}]`;
       if (bl.type === "ul") bl.items.forEach((it) => checkInline(it, dove, errs));

@@ -45,6 +45,18 @@ di controllo È il progetto. Bar di qualità: l'output del flusso manuale Cavali
   workaround legittimo. Installazione skill invece COMPLETATA e verificata (le due
   skill compaiono nella lista skill di sessione). I probe si rilanciano appena
   l'auth torna, comunque PRIMA di M2 (criterio promozione/scarto invariato).
+- 2026-08-02 post-M1: **review avversariale indipendente sul nucleo M1** (agente
+  separato, findings con evidenza eseguita) — 3 classi di difetti reali, tutti
+  corretti in giornata: (a) il converter non gestiva costrutti del template
+  REALE di tc-sito-it (`---` riga 118, «**Ultimo aggiornamento**», footer
+  corsivo multi-riga ricomposto dal join dei paragrafi); (b) falsi positivi del
+  gate dimostrati (foro seguito da minuscole «in via esclusiva», città in
+  parentesi, capture P.IVA che inglobava il CAP dopo il punto) + check deboli
+  (updatedAt 99/99, art. 66-bis spacciabile per art. 6, e-mail estranee in
+  chiaro invisibili); (c) regressioni d'integrazione: /termini/ matchava
+  «Assegnazione deTERMINIstica» (giurista mostrato nella fase script della
+  palette, bug UI live) e la riga hub linkava una scheda inesistente (404).
+  Ogni finding è diventato un caso permanente del banco di prova: ora 59/59.
 
 ## Decision Log [viva]
 
@@ -65,6 +77,25 @@ di controllo È il progetto. Bar di qualità: l'output del flusso manuale Cavali
 - 2026-08-02 (M1): **fixture del banco di prova FITTIZIE** (Prova Edile S.r.l.s.):
   i dati reali dei clienti non entrano in git — il golden Cavaliere si legge da
   `out/` a runtime e i suoi check si saltano sulle macchine senza dati.
+- 2026-08-02 (post-review): **corsivo → report anche multi-riga; la frase di
+  base normativa che il golden PUBBLICA (termini.blocks[20]) non passa dal
+  corsivo**: in M2 la fase termini la scrive come paragrafo normale (scelta di
+  prompt) — il converter resta a regole chiuse, niente carve-out.
+- 2026-08-02 (post-review): **riga hub disabilitata fino a M4** (il link attivo
+  era un 404) e **gate dello step chiuso fino a M2** (un run partito ora
+  distruggerebbe lo stato `da_verificare` del legale manuale di Cavaliere).
+  Supera l'accettazione M1 «Apri legale»: lo stato/badge restano reali, il
+  bottone si riabilita con la scheda. M2 riapre il gate (intake verificato),
+  M4 riabilita la riga.
+- 2026-08-02 — **DECISIONE APERTA (Mattia): interlock stato-legale → deploy.**
+  Oggi la build monta `legale.json` a prescindere dallo stato dello step e il
+  deploy guarda solo `build.stato`: dopo M2, documenti `da_verificare` o con
+  catena FAIL sarebbero pubblicabili (finding della review, buco di piano —
+  M5 previsto copre solo la staleness). Proposta: DEPLOY bloccato se
+  `legale.json` esiste e `steps.legale.stato ≠ verificato` (la build resta
+  libera: serve all'anteprima). Tocca `app/api/clients/[slug]/deploy/route.ts`,
+  fuori perimetro attuale → si implementa in M5 previo ok e ampliamento
+  dichiarato dello scope.
 
 ## Contesto e orientamento
 

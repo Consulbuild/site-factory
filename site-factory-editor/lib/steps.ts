@@ -324,12 +324,11 @@ export const STEPS: Record<StepKey, StepDef> = {
     // Il legale deriva dal SOLO brief (identità/sede/recapiti verificati
     // all'intake); l'estratto fine per-area sta in steps.legale.fonte.
     upstream: ["brief.json"],
-    gate: (slug) =>
-      readClientState(slug).steps.intake.stato === "verificato"
-        ? null
-        : "Prima verifica i dati dell'intake: i documenti legali si scrivono sui soli dati verificati del cliente.",
-    // Le fasi (foro → 3 generazioni → gate → montaggio → catena) arrivano
-    // con M2/M3 del piano (docs/piano-scheda-legale.md).
+    // Gate chiuso finché M2 non porta le fasi vere: un run partito ora
+    // sovrascriverebbe con «errore» lo stato da_verificare del legale
+    // manuale di Cavaliere (review 2026-08-02). M2 lo sostituisce con:
+    // intake verificato → null.
+    gate: () => "Step legale in costruzione (M2 del piano docs/piano-scheda-legale.md): il run non è ancora disponibile.",
     run: async function* () {
       return { ok: false, error: "Step legale in costruzione: le fasi di generazione arrivano con la milestone M2 (docs/piano-scheda-legale.md)." };
     },

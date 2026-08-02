@@ -35,7 +35,9 @@ const REGOLE: Array<[RegExp, AgenteKey, string?]> = [
   [/image-prompter|rigenerazione scarti|correzioni manifest/i, "immagini", "image-prompter"],
   [/logo/i, "logo", "logo-designer"],
   // Fasi AI dello step legale (foro, generazioni, correzioni): il giurista.
-  [/^foro$|informativa|termini|correzioni (del gate )?legale/i, "legale", "giurista"],
+  // Ancoraggi stretti: /termini/ nudo matchava «Assegnazione deTERMINIstica»
+  // (fase script della palette) — regressione trovata dalla review 2026-08-02.
+  [/^foro$|informativa (estesa|breve)|^termini e condizioni|correzioni (del gate )?legale/i, "legale", "giurista"],
 ];
 
 /** Fallback quando la fase non è ancora nota: identità dallo step. */
