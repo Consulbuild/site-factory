@@ -114,9 +114,9 @@
       "path": "meta.seoTitle",
       "agent": "copy",
       "constraints": {
-        "maxChars": 70
+        "maxChars": 60
       },
-      "note": "Nome · servizio principale + città"
+      "note": "Pattern consigliato: «[servizio] a [città] · [Brand]» — oltre 60 char Google tronca in SERP"
     },
     {
       "path": "meta.seoDescription",

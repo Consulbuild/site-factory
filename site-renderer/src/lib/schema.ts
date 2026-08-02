@@ -150,7 +150,7 @@ export const MetaSchema = z.object({
   slug: z
     .string()
     .regex(/^[a-z0-9-]+$/, "slug minuscolo, solo lettere/numeri/trattini"),
-  seoTitle: optText(70),
+  seoTitle: optText(60),
   seoDescription: optText(160),
 });
 

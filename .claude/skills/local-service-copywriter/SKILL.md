@@ -56,6 +56,12 @@ Ogni sezione ha UN compito. Sezioni con job diversi non possono suonare uguali: 
 - Numeri in cifre quando sono argomenti (5 giorni, 48 ore, 2 minuti).
 - La lineetta lunga (—) è un tic da prosa AI: massimo un paio in tutto il sito.
 
+## Meta SEO
+`meta.seoTitle` (max 60 caratteri: oltre, Google tronca in SERP). Pattern consigliato:
+«[servizio] a [città] · [Brand]» — es. «Impresa edile a Cologno Monzese · Cavaliere Build» (49 char).
+Servizio + città sono la keyword locale: mai sacrificarli per lo slogan; se il brand è
+lungo, si accorcia il servizio, non si sfora.
+
 ## Auto-check finale (prima di consegnare, per ogni slot)
 1. **Test di intercambiabilità**: questa frase potrebbe stare identica sul sito di un'altra azienda? Se sì, riscrivi finché è vera solo per questo cliente.
 2. **Test delle tre fonti**: ogni affermazione fattuale è fonte 1 o cortesia? Nessuna fonte 3?
