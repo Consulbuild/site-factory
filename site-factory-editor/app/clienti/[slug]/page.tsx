@@ -9,7 +9,7 @@ import { StepRunLive } from "@/components/step-run-live";
 
 export const dynamic = "force-dynamic";
 
-// Cabina del cliente (DESIGN-REFACTOR §5.2): sequenza a 6 step dove IL
+// Cabina del cliente (DESIGN-REFACTOR §5.2): sequenza a 7 step dove IL
 // PROSSIMO PASSO ha l'unica azione primaria della pagina; meta per step
 // (ultima run), errori inline, fase live se un run è in corso, azioni
 // cliente in testata (contatti, reimporta, elimina).
@@ -124,6 +124,21 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
     },
     {
       n: 6,
+      key: "legale",
+      nome: "Legale",
+      href: `/clienti/${slug}/legale`,
+      stato: client.steps.legale.stato,
+      errore: client.steps.legale.errore,
+      ultimaRun: client.steps.legale.ultimaRun,
+      stale: stale("legale"),
+      fail: client.steps.legale.stato !== "assente" && bundle.legaleReview?.verdict === "FAIL",
+      abilitato: intakeOk,
+      motivoGate: "Prima verifica l'intake: i documenti legali si scrivono sui soli dati verificati del cliente.",
+      labelGenera: "Genera documenti legali",
+      labelApri: "Apri legale",
+    },
+    {
+      n: 7,
       key: "build",
       nome: "Build & Pubblica",
       href: `/clienti/${slug}/build`,

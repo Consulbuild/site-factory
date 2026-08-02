@@ -66,6 +66,17 @@ export const ClientStateSchema = z.object({
         ultimaRun: UltimaRun,
       })
       .default({ stato: "assente" }),
+    legale: z
+      .object({
+        stato: StatoStep,
+        errore: z.string().optional(),
+        upstream: z.record(z.string(), z.string()).optional(),
+        // Estratto per-area del brief (identità / sede e foro / recapiti):
+        // l'update-mode rigenera SOLO i documenti delle aree cambiate.
+        fonte: z.record(z.string(), z.string()).optional(),
+        ultimaRun: UltimaRun,
+      })
+      .default({ stato: "assente" }),
     build: z
       .object({
         stato: StatoStep,

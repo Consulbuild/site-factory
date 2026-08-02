@@ -20,6 +20,7 @@ import {
   type Lavori,
 } from "./schemas";
 import { validateCopyArtifact, type CopyArtifact } from "./slots";
+import { readLegale, readForo, readLegaleReview } from "./legale";
 
 export type Brief = Record<string, unknown> & { _da_verificare?: string[] };
 export type Intake = Record<string, unknown>;
@@ -76,6 +77,7 @@ export function readClientState(slug: string): ClientState {
       palette: { stato: "assente" },
       copy: { stato: "assente" },
       images: { stato: "assente" },
+      legale: { stato: "assente" },
       build: { stato: "assente" },
     },
   });
@@ -96,6 +98,11 @@ function fillLazySteps(slug: string, state: ClientState): ClientState {
   }
   if (state.steps.images.stato === "assente" && readImagesTrace(slug)) {
     state.steps.images.stato = "da_verificare";
+  }
+  // Documenti legali prodotti fuori GUI (flusso manuale Cavaliere, 21/07):
+  // conformi al contratto → la conferma umana avviene una volta in scheda.
+  if (state.steps.legale.stato === "assente" && readLegale(slug)) {
+    state.steps.legale.stato = "da_verificare";
   }
   return state;
 }
@@ -172,6 +179,9 @@ export function readClientBundle(slug: string) {
     imagesTrace: readImagesTrace(slug),
     imageReview: readImageReview(slug),
     lavori: readLavori(slug),
+    legale: readLegale(slug),
+    foro: readForo(slug),
+    legaleReview: readLegaleReview(slug),
     logoFile: logo,
   };
 }

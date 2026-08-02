@@ -24,6 +24,7 @@ import { checkSlop, type SlopReport, type SlopResult } from "./slop";
 import { expectedImages, probeBfl, validateImagesTrace } from "./images";
 import { buildRun } from "./build";
 import { getSecret } from "./secrets";
+import { readLegale, readForo, gateLegale, briefLegale, legaleFonteDaBrief } from "./legale";
 import { assignDesign, writeDesign, readDesign, registraAssegnazione, hueBucket } from "./assign-design.ts";
 import type { RunEvent, PhaseResult, StepIO } from "./run-step";
 
@@ -33,7 +34,7 @@ import type { RunEvent, PhaseResult, StepIO } from "./run-step";
 // entry qui, NON nuove route. Il gate d'ingresso, l'artifact a monte
 // (staleness) e la validazione post-run restano dichiarativi.
 
-export type StepKey = "contesto" | "palette" | "copy" | "images" | "build";
+export type StepKey = "contesto" | "palette" | "copy" | "images" | "legale" | "build";
 // "lavori" = side-run dello step immagini: scrive alt/didascalia delle foto reali
 // (lavori.json) SENZA toccare lo stato verificato di hero/card (vedi runStep).
 export type RunMode = "generate" | "update" | "critic" | "regen" | "partial" | "lavori";
@@ -316,7 +317,45 @@ export const STEPS: Record<StepKey, StepDef> = {
       });
     },
   },
+
+  legale: {
+    stateKey: "legale",
+    artifact: "legale.json",
+    // Il legale deriva dal SOLO brief (identità/sede/recapiti verificati
+    // all'intake); l'estratto fine per-area sta in steps.legale.fonte.
+    upstream: ["brief.json"],
+    gate: (slug) =>
+      readClientState(slug).steps.intake.stato === "verificato"
+        ? null
+        : "Prima verifica i dati dell'intake: i documenti legali si scrivono sui soli dati verificati del cliente.",
+    // Le fasi (foro → 3 generazioni → gate → montaggio → catena) arrivano
+    // con M2/M3 del piano (docs/piano-scheda-legale.md).
+    run: async function* () {
+      return { ok: false, error: "Step legale in costruzione: le fasi di generazione arrivano con la milestone M2 (docs/piano-scheda-legale.md)." };
+    },
+    validate(slug) {
+      const legale = readLegale(slug);
+      if (!legale) return { ok: false, errore: "legale.json non scritto o non conforme al contratto (privacy/termini/formNotice)" };
+      const b = briefLegale(readBrief(slug) ?? {});
+      if ("errore" in b) return { ok: false, errore: b.errore };
+      const errs = gateLegale(legale, b, readForo(slug));
+      if (errs.length) return { ok: false, errore: `gate legale: ${errs.slice(0, 5).join("; ")}` };
+      return { ok: true };
+    },
+    afterSuccess(slug) {
+      patchClientState(slug, (s) => {
+        s.steps.legale.upstream = computeUpstream(slug, ["brief.json"]);
+        s.steps.legale.fonte = legaleFonte(slug) ?? undefined;
+      });
+    },
+  },
 };
+
+/** Estratto per-area del brief per l'update-mode del legale (come copyFonte). */
+export function legaleFonte(slug: string): Record<string, string> | null {
+  const brief = readBrief(slug);
+  return brief ? legaleFonteDaBrief(brief) : null;
+}
 
 // ---------------------------------------------------------------------------
 // Step copy: orchestrazione multi-fase copywriter → critico → correzioni.

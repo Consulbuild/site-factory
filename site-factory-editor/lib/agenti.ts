@@ -11,6 +11,7 @@ export type AgenteKey =
   | "copy"
   | "immagini"
   | "logo"
+  | "legale"
   | "critico"
   | "script";
 
@@ -26,12 +27,15 @@ export type AgenteInfo = {
 // vincono su qualunque altra regola.
 const REGOLE: Array<[RegExp, AgenteKey, string?]> = [
   [/critic/i, "critico"],
+  [/^lente /i, "critico"], // le 3 lenti della catena avversariale legale
   [/context-enricher/i, "contesto", "context-enricher"],
   [/palette-designer/i, "palette", "palette-designer"],
   [/preset-designer/i, "preset", "preset-designer"],
   [/copywriter|correzioni \(round|correzioni formato|correzioni anti-slop/i, "copy", "copywriter"],
   [/image-prompter|rigenerazione scarti|correzioni manifest/i, "immagini", "image-prompter"],
   [/logo/i, "logo", "logo-designer"],
+  // Fasi AI dello step legale (foro, generazioni, correzioni): il giurista.
+  [/^foro$|informativa|termini|correzioni (del gate )?legale/i, "legale", "giurista"],
 ];
 
 /** Fallback quando la fase non è ancora nota: identità dallo step. */
@@ -40,6 +44,7 @@ const PER_STEP: Record<string, AgenteKey> = {
   palette: "palette",
   copy: "copy",
   images: "immagini",
+  legale: "legale",
   build: "script",
 };
 
@@ -69,6 +74,7 @@ export function nomeStep(r: { kind: string; step?: string }): string {
     palette: "Palette",
     copy: "Copy",
     images: "Immagini",
+    legale: "Legale",
     build: "Build",
   };
   return nomi[r.step ?? ""] ?? r.step ?? "";

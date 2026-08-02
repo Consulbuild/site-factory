@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { clientDir } from "@/lib/paths";
 import { patchClientState } from "@/lib/clients";
 import { computeUpstream } from "@/lib/staleness";
-import { STEPS, copyFonte, type StepKey } from "@/lib/steps";
+import { STEPS, copyFonte, legaleFonte, type StepKey } from "@/lib/steps";
 
 export const dynamic = "force-dynamic";
 
@@ -24,9 +24,10 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ slug: str
     return NextResponse.json({ error: `step senza staleness a monte: ${step}` }, { status: 400 });
   }
   patchClientState(slug, (s) => {
-    const key = def.stateKey as "palette" | "copy" | "images";
+    const key = def.stateKey as "palette" | "copy" | "images" | "legale";
     s.steps[key].upstream = computeUpstream(slug, def.upstream);
     if (key === "copy") s.steps.copy.fonte = copyFonte(slug) ?? undefined;
+    if (key === "legale") s.steps.legale.fonte = legaleFonte(slug) ?? undefined;
   });
   return NextResponse.json({ ok: true });
 }

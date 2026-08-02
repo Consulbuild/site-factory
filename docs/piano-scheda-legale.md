@@ -23,7 +23,12 @@ di controllo È il progetto. Bar di qualità: l'output del flusso manuale Cavali
 - [~] 2026-08-02 M0: PARZIALE — skill installate in ~/.claude/skills/ + voce in
   ~/.claude/CLAUDE.md (fatto, verificato: discoverable); probe headless BLOCCATI
   da OAuth scaduta (vedi Sorprese) → da rilanciare prima di M2
-- [ ] M1: contratti e nucleo deterministico (`lib/legale.ts`) + integrazioni meccaniche
+- [x] 2026-08-02 M1: contratti e nucleo deterministico + integrazioni meccaniche —
+  VERIFICATA: `tsc` 0 errori; `npm run build` verde; `test-legale-gates.ts`
+  42/42 (piantati bocciati col messaggio atteso, caso «Via Milano 89» non
+  scatta, roundtrip converter sul golden riproduce i blocchi, golden passa il
+  gate coi dati reali); hub live su :3311 → Cavaliere «Apri legale»
+  (da_verificare), altro cliente «Genera documenti legali» (assente)
 - [ ] M2: step `legale` generate end-to-end (senza catena)
 - [ ] M3: catena avversariale + correzioni mirate + review
 - [ ] M4: scheda UI (studio /impeccable → build → critique/polish)
@@ -49,6 +54,17 @@ di controllo È il progetto. Bar di qualità: l'output del flusso manuale Cavali
   (comportamento già validato su Cavaliere); il report mantiene la nota «Campi
   mancanti» per le società di capitali (costo zero, traccia onesta). Se la nicchia
   cambierà, si aggiungerà allora la raccolta.
+- 2026-08-02 (M1): **`lib/legale.ts` usa import con estensione `.ts` e definisce
+  localmente `hashValue` (stessa formula di staleness, 12 hex)** — regola di casa
+  documentata in slots.ts: i moduli usati dagli script girano via
+  `node --experimental-strip-types`, che richiede estensioni esplicite;
+  `staleness.ts` non è importabile fuori da Next (import senza estensione) ed è
+  fuori perimetro. Alternativa scartata: correggere staleness.ts (allargamento
+  silenzioso del perimetro, vietato dalla regola 8). Gli hash fonte restano
+  auto-consistenti (si confrontano solo tra loro).
+- 2026-08-02 (M1): **fixture del banco di prova FITTIZIE** (Prova Edile S.r.l.s.):
+  i dati reali dei clienti non entrano in git — il golden Cavaliere si legge da
+  `out/` a runtime e i suoi check si saltano sulle macchine senza dati.
 
 ## Contesto e orientamento
 
