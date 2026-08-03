@@ -29,14 +29,17 @@ export interface ContrastResult {
 
 /**
  * Le coppie obbligatorie della skill: primary/#fff ≥ 4.5 (testo bianco dei
- * bottoni) e accent/bg(preset) ≥ 3 (parola-accent, testo grande) — su nova
- * il bg è quello scuro.
+ * bottoni), accent/bg(preset) ≥ 3 (parola-accent, testo grande) — su nova
+ * il bg è quello scuro — e bianco/accent ≥ 4.5: sulle bande .section-dark
+ * il guardrail del renderer (global.css) passa le CTA primarie all'accent
+ * tenendo il testo bianco, quindi anche l'accent deve reggere il bianco.
  */
 export function pairsForPalette(preset: PresetKey, primary: string, accent: string) {
   const bg = PRESETS[preset].neutri.bg;
   return [
     { name: "primary / bianco (bottoni)", fg: primary, bg: "#ffffff" },
     { name: `accent / sfondo ${preset}`, fg: accent, bg, large: true },
+    { name: "bianco / accent (CTA su bande scure)", fg: "#ffffff", bg: accent },
   ];
 }
 

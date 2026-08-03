@@ -64,12 +64,16 @@ export function PaletteEditor({
   const hexOk = isHex6(primary) && isHex6(accentEff);
   const verificato = verificatoIniziale && !dirty;
 
-  // Le stesse 2 coppie del gate della skill, ricalcolate live per il display.
+  // Le stesse 3 coppie del gate della skill, ricalcolate live per il display.
+  // La terza copre il guardrail del renderer: sulle bande scure le CTA
+  // passano all'accent col testo bianco (il ratio è simmetrico, quindi
+  // fg=accent per mostrare la swatch giusta e correggere l'accent).
   const pairs = useMemo(() => {
     if (!hexOk) return [];
     return [
       { label: "Testo bianco sui bottoni", fg: primary, bg: "#ffffff", need: 4.5, set: setPrimary },
       { label: "Parola accent sui titoli", fg: accentEff, bg: p.neutri.bg, need: 3, set: sameAccent ? setPrimary : setAccent },
+      { label: "Testo bianco sulle CTA accent (bande scure)", fg: accentEff, bg: "#ffffff", need: 4.5, set: sameAccent ? setPrimary : setAccent },
     ].map((c) => {
       const ratio = contrastRatio(c.fg, c.bg);
       return { ...c, ratio, pass: ratio >= c.need };

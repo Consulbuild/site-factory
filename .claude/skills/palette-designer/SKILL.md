@@ -83,9 +83,18 @@ Non esiste un blocco `[data-preset="meridian"]`: **meridian = `:root`**.
 Coppie obbligatorie, contro i neutri del preset scelto:
 1. **primary / `#ffffff`** ≥ **4.5** — testo bianco dei bottoni (piccolo/bold). La più insidiosa: se fallisce, scurisci il primary.
 2. **accent / bg(preset)** ≥ **3** — parola-accent (testo grande). **Preferibile ≥4.5** così anche l'eyebrow piccolo è sicuro.
-3. Se fornisci neutri custom: **ink / bg** ≥ 4.5.
+3. **`#ffffff` / accent** ≥ **4.5** — testo bianco delle CTA sulle bande scure (vedi sotto). Con accent = primary coincide con la coppia 1; con due tinte è un vincolo in più sull'accent: se fallisce, scurisci l'accent.
+4. Se fornisci neutri custom: **ink / bg** ≥ 4.5.
 Su **nova** (scuro) usa bg `#0a0a0f` per la coppia accent (l'accent neon chiaro passa facile); primary/#fff resta il vincolo.
 `node check-contrast.mjs coppie.json` deve uscire con **codice 0**.
+
+**Perché la coppia 3 — CTA sulle bande scure.** Sulle bande `.section-dark` il renderer
+ha un guardrail (global.css): le CTA primarie passano dal primary all'**accent pieno,
+col testo che resta bianco** — con un primary scuro (es. nero+oro) evita il bottone
+scuro-su-scuro. Quindi l'accent non colora solo parole: **diventa lo sfondo dei bottoni
+sulle bande scure e deve reggere il testo bianco a 4.5**. Con le palette a un colore
+(lo standard) la coppia è ridondante ma va comunque nel gate; con primary scuro +
+accent chiaro è IL vincolo che decide la palette.
 
 ## ponytail
 `accent-strong` (colore dell'eyebrow piccolo = `color-mix(accent, ink 15%)`) è derivato dal renderer, non lo ricalcolo qui: il gate testa primary/#fff e accent/bg, e la regola "accent ≥4.5 vs bg" copre l'eyebrow in modo conservativo. Se serve precisione sull'eyebrow, aggiungere il color-mix al tool.
@@ -95,7 +104,8 @@ Su **nova** (scuro) usa bg `#0a0a0f` per la coppia accent (l'accent neon chiaro 
 ```json
 [
   { "name": "primary / white (btn)", "fg": "#b0561a", "bg": "#ffffff" },
-  { "name": "accent / bg meridian",  "fg": "#b0561a", "bg": "#ffffff", "large": true }
+  { "name": "accent / bg meridian",  "fg": "#b0561a", "bg": "#ffffff", "large": true },
+  { "name": "white / accent (CTA bande scure)", "fg": "#ffffff", "bg": "#b0561a" }
 ]
 ```
 output `brand`: `{ "preset": "meridian", "palette": { "primary": "#b0561a", "accent": "#b0561a" } }`
