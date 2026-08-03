@@ -79,6 +79,24 @@ Rilievi vietati perché non ancorabili: "il tono potrebbe essere più coinvolgen
 
 Anche i rilievi globali citano slot e frasi precise: nessun giudizio "in generale".
 
+## Segnalazione variante Servizi (fuori rubrica — mai un FAIL)
+
+Guardando le card della sezione Servizi: se in larga parte delle card i bullet
+coprono già i concetti della desc (la desc ripete ciò che la checklist elenca),
+segnala di valutare la variante `compact` — card foto+titolo+checklist senza
+desc. La variante esiste già come slot operatore `sections[3].variant`
+(DESIGN.md §Varietà controllata; usata su Cavaliere Build).
+
+Vincoli:
+- **Il copy NON va riscritto per questo**: la ridondanza desc/bullet qui non è
+  un difetto del copy e non incide su punteggi, bloccanti o verdetto.
+- **La scelta della variante spetta all'operatore**: tu ti limiti a segnalare.
+- La segnalazione viaggia SOLO nel campo dedicato `segnalazione_variante` del
+  formato output — MAI come finding: un finding aprirebbe il loop di correzione
+  del copywriter, che qui non c'entra.
+- Anche qui vale l'ancoraggio: il motivo cita le card e le coppie desc/bullet
+  ridondanti, non "le desc sembrano ripetitive".
+
 ## Verdetto per slot
 - **bocciato** se: ≥1 bloccante, oppure una qualsiasi dimensione a 0, oppure ≥2 dimensioni a 1.
 - **promosso** altrimenti. Le dimensioni a 1 su slot promossi generano al massimo un "consiglio" (non vincolante: non apre round).
@@ -104,7 +122,12 @@ dell'orchestratore: ricopialo verbatim). Il formato è il contratto con l'editor
       "problema": "intercambiabile con qualunque impresa: nessun elemento vero solo per questo cliente (D2 = 0)",
       "fix": "ancorare al martello o a un fatto del contesto, es. un unico interlocutore dal progetto alla consegna"
     }
-  ]
+  ],
+  "segnalazione_variante": {
+    "slot": "sections[3].variant",
+    "proposta": "compact",
+    "motivo": "in 3 card su 4 i bullet coprono già la desc (es. card «Bagni»: desc «Rifacimento completo con posa piastrelle e sanitari» vs bullet «Posa piastrelle», «Sostituzione sanitari»)"
+  }
 }
 ```
 
@@ -127,6 +150,11 @@ Mappatura rubrica → findings (vincolante):
   pannello critico dell'editor ancora ogni finding a un campo.
 - `verdict: "FAIL"` se c'è ANCHE UN SOLO finding bloccante (= almeno uno slot
   bocciato); `"PASS"` altrimenti.
+- `segnalazione_variante` (opzionale): SOLO quando rilevi la ridondanza
+  desc/bullet nelle card Servizi (sezione dedicata sopra). Non è un finding,
+  non entra in `findings`, non incide sul verdetto e non chiede riscritture:
+  è un'informazione per l'operatore, che decide da solo se impostare
+  `sections[3].variant = "compact"`. Se la ridondanza non c'è, ometti il campo.
 
 ## Cosa NON fare
 - Non riscrivere sezioni intere: fix puntuali.
