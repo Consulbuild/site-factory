@@ -8,7 +8,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ClientState } from "@/lib/schemas";
-import { Badge, StepBadge, btnPrimary, btnSecondary, btnGhost } from "./ui";
+import { Badge, Banner, StepBadge, btnPrimary, btnSecondary, btnGhost } from "./ui";
 import { useStepRun, RunLog } from "./use-step-run";
 import { BackBar } from "./back-bar";
 import { ConfirmDialog } from "./confirm-dialog";
@@ -54,10 +54,15 @@ export function BuildPanel({
   const verificata = build.stato === "verificato" && completa;
   const buildNonPubblicata =
     !!build.deploy && !!build.builtAt && build.builtAt > build.deploy.deployedAt;
+  // canonical e og: assoluti si fissano nell'HTML alla build (SITE_URL dal
+  // dominio): dominio cambiato dopo l'ultima build → il deploy rifiuta, qui
+  // si spiega e si riporta la primaria su «Builda».
+  const rebuildPerDominio =
+    completa && build.siteUrl !== (build.dominio ? `https://${build.dominio}` : undefined);
 
   // Una sola primaria contestuale: build → conferma → pubblica.
   const momento: "build" | "conferma" | "pubblica" =
-    staleFiles.length > 0 || !completa ? "build" : daConfermare ? "conferma" : "pubblica";
+    staleFiles.length > 0 || !completa || rebuildPerDominio ? "build" : daConfermare ? "conferma" : "pubblica";
 
   async function azione(body: Record<string, string>): Promise<Record<string, unknown> | null> {
     setBusy(true);
@@ -262,6 +267,31 @@ export function BuildPanel({
             </div>
             {dominioMsg && <p className="mt-2 text-sm text-ok">{dominioMsg}</p>}
 
+            {rebuildPerDominio && (
+              <div className="mt-4">
+                <Banner tone="warn" title="Ribuilda prima di pubblicare">
+                  {build.dominio ? (
+                    <>
+                      L&apos;ultima build è stata prodotta{" "}
+                      {build.siteUrl ? (
+                        <>con un altro dominio (<span className="mono">{build.siteUrl}</span>)</>
+                      ) : (
+                        "senza dominio"
+                      )}
+                      : canonical e og: assoluti si fissano nell&apos;HTML al momento della build. Ribuilda e
+                      riconferma per pubblicare con <span className="mono">https://{build.dominio}</span> nei metadati.
+                    </>
+                  ) : (
+                    <>
+                      L&apos;ultima build è stata prodotta col dominio ora rimosso (
+                      <span className="mono">{build.siteUrl}</span>): canonical e og: assoluti nell&apos;HTML puntano
+                      ancora lì. Ribuilda e riconferma prima di pubblicare.
+                    </>
+                  )}
+                </Banner>
+              </div>
+            )}
+
             <div className="mt-4 card px-4 py-3 text-sm">
               {build.deploy ? (
                 <div className="flex flex-wrap items-center gap-3">
@@ -290,11 +320,13 @@ export function BuildPanel({
               <button
                 className={momento === "pubblica" ? btnPrimary : btnSecondary}
                 onClick={() => setChiediPubblica(true)}
-                disabled={busy || runner.running || !verificata}
+                disabled={busy || runner.running || !verificata || rebuildPerDominio}
                 title={
-                  !verificata
-                    ? "Si pubblica solo una build completa, rivista e confermata."
-                    : undefined
+                  rebuildPerDominio
+                    ? "Il dominio è cambiato dopo l'ultima build: ribuilda e riconferma prima di pubblicare."
+                    : !verificata
+                      ? "Si pubblica solo una build completa, rivista e confermata."
+                      : undefined
                 }
               >
                 {busy ? "Pubblicazione in corso… (può richiedere qualche minuto)" : build.deploy ? "Ripubblica" : "Pubblica su Cloudflare"}

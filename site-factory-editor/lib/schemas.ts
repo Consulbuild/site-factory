@@ -89,6 +89,12 @@ export const ClientStateSchema = z.object({
         sizeKb: z.number().optional(),
         /** Dominio custom (input UI persistito); usato al prossimo deploy. */
         dominio: z.string().optional(),
+        /**
+         * SITE_URL con cui è stata prodotta l'ultima build (canonical e og:
+         * assoluti sono cotti nell'HTML). Assente = build senza dominio.
+         * Il deploy rifiuta se non coincide col dominio corrente.
+         */
+        siteUrl: z.string().optional(),
         // Il deploy non è uno step: è la storia dell'ultima pubblicazione.
         deploy: z
           .object({

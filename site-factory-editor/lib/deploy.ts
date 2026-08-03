@@ -29,9 +29,22 @@ export async function deployClient(slug: string): Promise<DeployResult> {
     throw new Error("nessuna build da pubblicare: builda prima il sito");
   }
 
+  const build = readClientState(slug).steps.build;
+  const dominio = build.dominio;
+  // canonical e og: assoluti sono cotti nell'HTML al momento della build
+  // (SITE_URL): se il dominio è cambiato dopo, pubblicare metterebbe online
+  // un sito senza (o con) il canonical sbagliato. Si richiede il rebuild.
+  const siteUrlAttesa = dominio ? `https://${dominio}` : undefined;
+  if (build.siteUrl !== siteUrlAttesa) {
+    throw new Error(
+      dominio
+        ? `la build è stata prodotta ${build.siteUrl ? `con SITE_URL ${build.siteUrl}` : "senza dominio"}: canonical e og: assoluti non corrispondono a https://${dominio}. Ribuilda, riconferma e poi pubblica.`
+        : `la build è stata prodotta col dominio ${build.siteUrl} ora rimosso: canonical e og: assoluti puntano ancora lì. Ribuilda, riconferma e poi pubblica.`,
+    );
+  }
+
   // ponytail: nome worker = slug (già [a-z0-9-]; il più lungo oggi è 47 char,
   // ben sotto il limite Workers — se mai servisse, qui si tronca).
-  const dominio = readClientState(slug).steps.build.dominio;
   writeJson(path.join(dir, "wrangler.jsonc"), {
     name: slug,
     compatibility_date: "2026-07-08",

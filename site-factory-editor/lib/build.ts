@@ -188,6 +188,10 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
     s.steps.build.builtAt = new Date().toISOString();
     s.steps.build.pages = pages;
     s.steps.build.sizeKb = sizeKb;
+    // Con quale SITE_URL è uscita QUESTA build: il deploy confronta col
+    // dominio corrente e richiede il rebuild se nel frattempo è cambiato.
+    if (dominio) s.steps.build.siteUrl = `https://${dominio}`;
+    else delete s.steps.build.siteUrl;
     // deploy NON si azzera: il sito online resta online; la UI segnala
     // «build più recente non pubblicata» confrontando builtAt/deployedAt.
   });
