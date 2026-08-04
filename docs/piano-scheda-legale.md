@@ -20,20 +20,57 @@ di controllo È il progetto. Bar di qualità: l'output del flusso manuale Cavali
 
 ## Progress [viva]
 
-- [~] 2026-08-02 M0: PARZIALE — skill installate in ~/.claude/skills/ + voce in
-  ~/.claude/CLAUDE.md (fatto, verificato: discoverable); probe headless BLOCCATI
-  da OAuth scaduta (vedi Sorprese) → da rilanciare prima di M2
+- [x] 2026-08-03 M0: COMPLETA — skill installate (02/08) + i 3 probe headless
+  passati dopo il login: (1) cerca_ufficio_giudiziario risolve Monza; (2)
+  genera_informativa_privacy restituisce testo regolare; (3) derivazione foro
+  Cologno Monzese → Monza via WebFetch con URL ufficiale
+  (tribunale-monza.giustizia.it/it/competenza_territoriale.page) ed evidenza
+  verbatim, confidenza alta. Criterio di promozione soddisfatto → M2 via.
+- 2026-08-03 E2E (primo run reale, zz-eval-cavaliere + zz-eval-ditta): pipeline
+  fluida fino alle lenti SENZA correzioni (conversione+gate+montaggio al primo
+  colpo; foro giusto per Cologno M. E Seregno con evidenza ufficiale). Poi DUE
+  bug veri trovati DALLA catena stessa: (a) la lente refusi ha beccato un
+  refuso nel template TS (`introTermini` appendeva «.» a «S.r.l.s.» → punto
+  doppio — il golden non ha il punto finale); (b) lo schema per-lente rifiutava
+  i finding TRASVERSALI legittimi (`"doc": "privacy/termini"`) facendo fallire
+  l'aggregazione dopo lenti tutte ok. Fix: intro senza doppio punto, doc come
+  stringa libera + `docCitati()` per estrarre i documenti del byte-check;
+  +3 casi di regressione (62/62). Recovery: mode critic sui due slug.
 - [x] 2026-08-02 M1: contratti e nucleo deterministico + integrazioni meccaniche —
   VERIFICATA: `tsc` 0 errori; `npm run build` verde; `test-legale-gates.ts`
   42/42 (piantati bocciati col messaggio atteso, caso «Via Milano 89» non
   scatta, roundtrip converter sul golden riproduce i blocchi, golden passa il
   gate coi dati reali); hub live su :3311 → Cavaliere «Apri legale»
   (da_verificare), altro cliente «Genera documenti legali» (assente)
-- [ ] M2: step `legale` generate end-to-end (senza catena)
-- [ ] M3: catena avversariale + correzioni mirate + review
-- [ ] M4: scheda UI (studio /impeccable → build → critique/polish)
-- [ ] M5: staleness fine + update-mode + build a valle
-- [ ] M6: eval E2E + documentazione + chiusura
+- [x] 2026-08-03 M2: generate end-to-end — VERIFICATA su 2 fixture reali
+  (zz-eval-cavaliere clone + zz-eval-ditta sintetica): foro derivato con
+  evidenza ufficiale per Cologno M. E Seregno → Monza (confidenza alta),
+  privacy con outline identico al golden, conversione+gate+montaggio superati
+  al primo colpo su ENTRAMBI i run, formNotice = 593 char del template.
+- [x] 2026-08-03 M3: catena avversariale — VERIFICATA: 3 lenti PASS su
+  entrambe le fixture (avvisi pertinenti non bloccanti, review timbrata,
+  round progressivi in mode critic); col foro piantato «Milano» → FAIL con
+  bloccanti da DUE lenti indipendenti (anti-invenzione: «in contraddizione
+  con foro.json che deriva Monza») E rifiuto del gate deterministico in
+  validate() — difesa in profondità dimostrata. La catena ha inoltre trovato
+  due bug REALI nel codice della pipeline al primo run (vedi Sorprese).
+- [x] 2026-08-03 M4: scheda UI — VERIFICATA nel browser su entrambi i temi:
+  runner, striscia profilo (Foro di Monza + badge confidenza + fonte
+  linkata), banner staleness live con le 3 azioni, editor a blocchi, action
+  bar, status bar con identità lenti/giurista; route PUT/POST con conferma
+  condizionata riverificata server-side (conferma 200 → verificato +
+  upstream + fonte). Detector impeccable: 0 findings. tsc + build verdi.
+- [x] 2026-08-03 M5: staleness + update-mode — VERIFICATA: modifica sede →
+  banner «brief.json cambiato»; run update (19 min): foro ri-derivato,
+  privacy+termini rigenerati con l'indirizzo nuovo, formNotice BYTE-IDENTICA
+  (stessa sha), catena PASS, report col mode update, stato da_verificare.
+  `legale.json` nell'upstream della build (il badge stale della build si
+  osserverà al primo cliente reale con build attiva: meccanismo generico già
+  provato sugli altri step).
+- [x] 2026-08-03 M6: eval E2E + documentazione — fixture create, usate per
+  tutte le accettazioni sopra e rimosse da out/; banco deterministico a 62
+  casi; docs aggiornati (CLAUDE.md §Fase C parte 4, DEBUG.md righe legale,
+  handoff, DESIGN-SYSTEM §avviso di stato globale).
 
 ## Sorprese & Scoperte [viva]
 
@@ -87,7 +124,33 @@ di controllo È il progetto. Bar di qualità: l'output del flusso manuale Cavali
   Supera l'accettazione M1 «Apri legale»: lo stato/badge restano reali, il
   bottone si riabilita con la scheda. M2 riapre il gate (intake verificato),
   M4 riabilita la riga.
-- 2026-08-02 — **DECISIONE APERTA (Mattia): interlock stato-legale → deploy.**
+- 2026-08-03 (M2): **formNotice = template TS deterministico** (denominazione ed
+  e-mail uniche variabili, testo = golden approvato) e **niente fase claude
+  «informativa breve»**: la review aveva dimostrato che il flattening AI non è
+  convertibile meccanicamente; ciò che è fisso per design non passa dall'AI (un
+  opus in meno per run, una classe di errori in meno). La skill
+  informativa-breve-form resta la reference normativa che la lente conformità
+  legge, e si userà per i casi fuori standard (newsletter, dati particolari).
+- 2026-08-03 (M2): **fase privacy vincolata all'outline del golden** (9 sezioni
+  come contratto nel prompt): la fase più libera diventa la più vincolata.
+- 2026-08-03 (M3): **lenti come prompt inline nel registry** (niente skill nuove:
+  rubriche brevi, un posto solo — le REGOLE di merito restano nelle skill
+  installate che la lente conformità legge via Read) e **review per-lente in
+  legale-src/review-<lente>.json aggregate dal TS** (niente merge AI su file
+  condiviso). Correzioni per-documento con byte-check; ri-verifica solo lenti
+  fallite; MAX 2 fix poi consegna col verdetto visibile.
+- 2026-08-03 (M2): **prova di montaggio = assemble --partial --legale su output
+  temporaneo**: il parseSiteConfig in coda all'assembler È il validatore reale
+  (niente parity script da mantenere); --partial la rende eseguibile anche per
+  clienti senza copy/palette.
+- 2026-08-03 (M2): **report sempre ri-renderizzato in TS dagli artifact correnti**
+  (code dei md in legale-src + foro.json + review + note del profilo): niente
+  report-fragments.json separato, niente sezioni appese a mano.
+- 2026-08-03 — **interlock stato-legale → deploy: NO (decisione Mattia).** Resta
+  il piano M5 originale: solo staleness (badge ⚠), la responsabilità è del
+  checkpoint umano della scheda. La proposta di blocco del deploy è stata
+  presentata e rifiutata; nessuna modifica alla route di deploy.
+- 2026-08-02 — **DECISIONE CHIUSA (vedi sopra): interlock stato-legale → deploy.**
   Oggi la build monta `legale.json` a prescindere dallo stato dello step e il
   deploy guarda solo `build.stato`: dopo M2, documenti `da_verificare` o con
   catena FAIL sarebbero pubblicabili (finding della review, buco di piano —
@@ -540,4 +603,35 @@ chiedere (regola 8).
 
 ## Retrospettiva [viva]
 
-(a fine lavoro)
+**Cosa ha funzionato.** (1) Il de-risk M0 ha pagato: il protocollo foro
+(tool → web con evidenza verbatim) ha derivato correttamente DUE comuni
+minori al primo colpo in produzione. (2) Vincolare la generazione (outline
+del golden nel prompt, template TS per il formNotice, profilo embeddato) ha
+prodotto conversione+gate puliti al primo colpo su entrambe le fixture: la
+qualità nei vincoli, non nella speranza. (3) La catena avversariale si è
+ripagata subito: oltre a bocciare il foro piantato con due lenti
+indipendenti, ha trovato due bug REALI del MIO codice (punto doppio del
+template intro, schema troppo rigido sui finding trasversali) — il critico
+che giudica l'artefatto reale trova ciò che i test unitari non immaginano.
+(4) Il pattern copy (seam, gate con una correzione, review timbrata,
+byte-check) si è riusato quasi intero.
+
+**Cosa non ha funzionato.** (1) Lo schema per-lente troppo stretto ha
+buttato 40 min di run per un enum: gli output dei critici vanno accolti
+tolleranti e normalizzati in TS, non pretesi perfetti. (2) L'errore di
+aggregazione TS non compare nel record per-fase (tutte le fasi ok, step
+errore): il debug è passato da client.json — una riga «aggregazione» nel
+record aiuterebbe (nota per harness-optimize). (3) Round di lenti da ~4-5
+min l'uno: il knob di parallelizzazione delle 3 fasi documento/lenti resta
+il primo candidato se la latenza diventa un problema.
+
+**Budget consuntivo.** Generate: 6 fasi claude, ~22 min (run pulito).
+Update: ~19 min. Critic: ~9-12 min. Correzioni mai servite nei run reali
+(0 round di fix sui contenuti veri; 2 round consumati solo nel test piantato,
+per design). Nessuna API a pagamento.
+
+**Prossimi (fuori scope, annotati).** Prima run su cliente REALE
+(cavaliere-build-srls ha già il legale manuale: la scheda lo mostra
+da_verificare — basta Riverifica + Conferma; il secondo cliente genera da
+zero). Calibrazione rubriche lenti dopo 3-4 clienti (harness-optimize).
+Record «aggregazione» nel run-record. Eventuale parallelizzazione fasi.

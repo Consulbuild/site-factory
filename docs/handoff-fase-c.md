@@ -31,6 +31,11 @@ l'architettura sono nel CLAUDE.md a root (letto automaticamente): qui solo stato
 
 Schede FATTE e verificate E2E: **Intake, Contesto, Palette, Copy** (+ ricerca clienti,
 import Tally, temi, staleness). Roadmap dettagliata nel CLAUDE.md (§Fase C).
+**Scheda Legale fatta (2026-08-03)**: step `legale` (foro dal circondario con
+evidenza → privacy/termini via skill + MCP → gate deterministici → montaggio →
+catena a 3 lenti → report), scheda con editor a blocchi e conferma condizionata,
+update-mode a 3 aree. Piano vivo e stato: `docs/piano-scheda-legale.md`.
+Avviso globale login CLI Claude (03/08): l'editor sorveglia `claude auth status`.
 Dev server: `cd site-factory-editor && npm run dev` → :3000 (spesso già attivo su :3311).
 
 **Clienti di test** (`site-renderer/out/`):

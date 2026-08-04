@@ -55,6 +55,35 @@ export const ForoSchema = z.object({
 });
 export type Foro = z.infer<typeof ForoSchema>;
 
+/** Review di UNA lente (legale-src/review-<lente>.json): il formato che ogni
+ *  fase-lente scrive; l'aggregazione in legale-review.json la fa il TS. */
+export const LenteReviewSchema = z
+  .object({
+    verdict: z.enum(["PASS", "FAIL"]),
+    findings: z.array(
+      z
+        .object({
+          // Stringa libera: i finding trasversali («privacy/termini») sono
+          // legittimi — il primo run E2E l'ha dimostrato. I documenti citati
+          // si estraggono con docCitati() per il byte-check.
+          doc: z.string(),
+          path: z.string().default(""),
+          gravita: z.enum(["bloccante", "avviso"]),
+          problema: z.string(),
+          fix: z.string().default(""),
+        })
+        .passthrough(),
+    ),
+  })
+  .passthrough();
+export type LenteReview = z.infer<typeof LenteReviewSchema>;
+
+/** Documenti citati da un finding (doc libero + path): per il byte-check. */
+export function docCitati(f: { doc: string; path?: string }): LegaleDocKey[] {
+  const testo = `${f.doc} ${f.path ?? ""}`;
+  return LEGALE_DOC_KEYS.filter((k) => testo.includes(k));
+}
+
 /** legale-review.json — verdetti delle 3 lenti + findings ancorabili in UI. */
 export const LegaleReviewSchema = z
   .object({
@@ -69,7 +98,7 @@ export const LegaleReviewSchema = z
       z
         .object({
           lente: z.enum(["antiInvenzione", "conformita", "refusi"]),
-          doc: z.enum(["privacy", "termini", "formNotice"]),
+          doc: z.string(),
           /** Ancora UI, es. "privacy.blocks[7]" — NON lo scope del byte-check. */
           path: z.string(),
           gravita: z.enum(["bloccante", "avviso"]),
@@ -115,7 +144,10 @@ export const COSTANTI_LEGALE = {
   campi_obbligatori_form: "nome e telefono",
   pubblico_b2c: true, // clausola consumatore sempre presente: dovuta per B2C, innocua per B2B
   intro_privacy: "Ai sensi dell'art. 13 del Regolamento (UE) 2016/679 («GDPR»).",
-  introTermini: (denominazione: string) => `Condizioni d'uso del sito web di ${denominazione}.`,
+  // Niente punto doppio se la denominazione finisce con un'abbreviazione
+  // («S.r.l.s.» + «.» = refuso — beccato dalla lente refusi sul primo run E2E).
+  introTermini: (denominazione: string) =>
+    `Condizioni d'uso del sito web di ${denominazione}${denominazione.endsWith(".") ? "" : "."}`,
 } as const;
 
 /* ------------------------------------------------------------------ */
@@ -492,6 +524,185 @@ export function gateLegale(legale: Legale, brief: BriefLegale, foro: Foro | null
 /** Harvest dei [DA VERIFICARE …] dalla coda md: vanno nel report, mai online. */
 export function harvestDaVerificare(codaMd: string): string[] {
   return [...codaMd.matchAll(/\[DA VERIFICARE[^\]]*\]/gi)].map((m) => m[0]);
+}
+
+/* ------------------------------------------------------------------ */
+/* formNotice: template deterministico (decisione 2026-08-03)          */
+/* ------------------------------------------------------------------ */
+
+/** L'informativa breve del form è il modello APPROVATO sul golden Cavaliere
+ *  (catena avversariale + umano + deploy reale): le uniche variabili sono
+ *  denominazione ed e-mail — ciò che è fisso per design non passa dall'AI.
+ *  Le regole di merito restano nella skill informativa-breve-form, che la
+ *  lente conformità legge per giudicare anche questa stringa. */
+export function formNoticeTemplate(denominazione: string, email: string): string {
+  return (
+    `**Informativa privacy (art. 13 GDPR)** — I dati inseriti nel modulo sono trattati da ` +
+    `**${denominazione}** ([${email}](mailto:${email})) al solo fine di dare riscontro alla tua ` +
+    `richiesta di preventivo o contatto; base giuridica: art. 6, par. 1, lett. b) GDPR ` +
+    `(misure precontrattuali), nessun consenso richiesto. Nome e telefono sono necessari per ` +
+    `risponderti; e-mail e città sono facoltative. Senza seguito, i dati sono cancellati entro ` +
+    `12 mesi. Puoi esercitare i diritti degli artt. 15–21 GDPR e proporre reclamo al Garante. ` +
+    `[Informativa completa](/privacy)`
+  );
+}
+
+/** Oggi in formato GG/MM/AAAA (timbro TS: mai dall'AI). */
+export function oggiGGMMAAAA(): string {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+}
+
+/* ------------------------------------------------------------------ */
+/* Conversione completa md → artifact (per il run e le correzioni gate) */
+/* ------------------------------------------------------------------ */
+
+export type EsitoConversione = {
+  legale: Legale | null;
+  /** Errori bloccanti (converter fuori-set + gate unico). */
+  errori: string[];
+  /** Note instradate al report (blockquote/corsivi dei md). */
+  noteReport: Record<string, string[]>;
+};
+
+/** Converte i sorgenti md (documenti impattati) + il template formNotice in un
+ *  artifact conforme, riusando l'esistente per i documenti non impattati.
+ *  Timbra intro/updatedAt e pretende il disclaimer nella CODA di ogni md. */
+export function convertiLegale(opts: {
+  privacyMd: string | null; // null = riusa esistente
+  terminiMd: string | null;
+  esistente: Legale | null;
+  brief: BriefLegale;
+  foro: Foro | null;
+}): EsitoConversione {
+  const den = formatDenominazione(opts.brief.azienda);
+  const errori: string[] = [];
+  const noteReport: Record<string, string[]> = {};
+  const oggi = oggiGGMMAAAA();
+
+  const daMd = (md: string, key: "privacy" | "termini"): LegaleDoc | null => {
+    const { docMd, codaMd } = splitDocCoda(md);
+    if (!/non costituisce consulenza legale/i.test(codaMd)) {
+      errori.push(`«${key}»: disclaimer «non costituisce consulenza legale» assente dalla coda del md (deve stare nel report)`);
+    }
+    const conv = mdToBlocks(docMd);
+    if (conv.note.length) noteReport[key] = conv.note;
+    if (conv.errori.length) {
+      errori.push(...conv.errori.map((e) => `«${key}» (md): ${e}`));
+      return null;
+    }
+    if (!conv.blocks.length) {
+      errori.push(`«${key}»: nessun blocco convertito dal md`);
+      return null;
+    }
+    return {
+      intro: key === "privacy" ? COSTANTI_LEGALE.intro_privacy : COSTANTI_LEGALE.introTermini(den),
+      updatedAt: oggi,
+      blocks: conv.blocks,
+    };
+  };
+
+  const privacy = opts.privacyMd !== null ? daMd(opts.privacyMd, "privacy") : opts.esistente?.privacy ?? null;
+  const termini = opts.terminiMd !== null ? daMd(opts.terminiMd, "termini") : opts.esistente?.termini ?? null;
+  if (opts.privacyMd === null && !opts.esistente?.privacy) errori.push("privacy non impattata ma legale.json esistente assente");
+  if (opts.terminiMd === null && !opts.esistente?.termini) errori.push("termini non impattati ma legale.json esistente assente");
+  if (!privacy || !termini) return { legale: null, errori, noteReport };
+
+  const legale: Legale = { privacy, termini, formNotice: formNoticeTemplate(den, opts.brief.email) };
+  errori.push(...gateLegale(legale, opts.brief, opts.foro));
+  return { legale: errori.length ? null : legale, errori, noteReport };
+}
+
+/* ------------------------------------------------------------------ */
+/* Report: legale-report.md renderizzato in TS dagli artifact           */
+/* ------------------------------------------------------------------ */
+
+/** Sezioni della coda di un md («## Titolo» → testo), per il report. */
+export function sezioniCoda(codaMd: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  const parti = codaMd.split(/^## +/m).slice(1);
+  for (const p of parti) {
+    const nl = p.indexOf("\n");
+    const titolo = (nl < 0 ? p : p.slice(0, nl)).trim();
+    out[titolo] = nl < 0 ? "" : p.slice(nl + 1).trim();
+  }
+  return out;
+}
+
+export function renderLegaleReport(opts: {
+  slug: string;
+  profilo: ReturnType<typeof buildProfilo>;
+  brief: BriefLegale;
+  foro: Foro | null;
+  codaPrivacy: string;
+  codaTermini: string;
+  noteConversione: Record<string, string[]>;
+  review: LegaleReview | null;
+  mode: string;
+  areeCambiate?: string[];
+}): string {
+  const oggi = oggiGGMMAAAA();
+  const sezPrivacy = sezioniCoda(opts.codaPrivacy);
+  const sezTermini = sezioniCoda(opts.codaTermini);
+  const sezione = (nome: string) =>
+    [sezTermini, sezPrivacy]
+      .map((s, i) => {
+        const chiave = Object.keys(s).find((k) => k.toLowerCase().startsWith(nome.toLowerCase()));
+        return chiave ? `**${i === 0 ? "Termini" : "Privacy"}:**\n${s[chiave]}` : null;
+      })
+      .filter(Boolean)
+      .join("\n\n");
+  const harvest = [...harvestDaVerificare(opts.codaPrivacy), ...harvestDaVerificare(opts.codaTermini)];
+  const note = Object.entries(opts.noteConversione).map(([doc, righe]) => `- (${doc}, instradato dal converter) ${righe.join(" · ")}`);
+  const r = opts.review;
+  const righeReview = r
+    ? [
+        `Verdetto: **${r.verdict}** (round ${r.round}) — anti-invenzione ${r.lenti.antiInvenzione} · conformità ${r.lenti.conformita} · refusi ${r.lenti.refusi}`,
+        ...r.findings.map((f) => `- [${f.gravita}] (${f.lente}) ${f.doc} · ${f.path}: ${f.problema} — fix: ${f.fix}`),
+      ]
+    : ["(catena non ancora eseguita su questa versione)"];
+
+  return [
+    `# Documenti legali ${opts.profilo.denominazione} — deliverable di generazione (${oggi})`,
+    ``,
+    `> Deliverable INTERNO all'agenzia: non va online. Run \`${opts.mode}\`${opts.areeCambiate?.length ? ` — aree cambiate: ${opts.areeCambiate.join(", ")}` : ""}.`,
+    ``,
+    `## Profilo cliente usato (fonte: brief.json / intake verificato)`,
+    ``,
+    `- Denominazione: ${opts.profilo.denominazione} (forma: ${opts.profilo.forma})`,
+    `- Sede: ${opts.brief.indirizzo} — ${opts.brief.citta}`,
+    `- P.IVA: ${opts.brief.partita_iva} · e-mail: ${opts.brief.email} · tel: ${opts.brief.telefono}`,
+    `- Sito: ${opts.profilo.tc.sito.url} · pubblico B2C: ${COSTANTI_LEGALE.pubblico_b2c ? "sì (clausola consumatore art. 66-bis)" : "no"}`,
+    ``,
+    `## Derivazione del foro`,
+    ``,
+    opts.foro
+      ? `- Foro: **${opts.foro.foro}** (confidenza: ${opts.foro.confidenza})\n- Fonte: ${opts.foro.fonte}${opts.foro.url ? ` — ${opts.foro.url}` : ""}\n- Evidenza: «${opts.foro.evidenza}»`
+      : `- foro.json assente`,
+    ``,
+    `## Riferimenti normativi citati`,
+    ``,
+    sezione("Riferimenti normativi") || "(nessuna coda estratta)",
+    ``,
+    `## Note e avvertenze`,
+    ``,
+    [...opts.profilo.note.map((n) => `- ${n}`), ...note, sezione("Note e avvertenze")].filter(Boolean).join("\n") || "(nessuna)",
+    ``,
+    `## Campi mancanti / da verificare`,
+    ``,
+    [sezione("Campi mancanti"), ...harvest.map((h) => `- ${h}`)].filter(Boolean).join("\n") || "(nessuno)",
+    ``,
+    `## Esito catena di verifica`,
+    ``,
+    righeReview.join("\n"),
+    ``,
+    `> Il presente materiale è un modello generato automaticamente sulla base dei dati`,
+    `> forniti dal cliente e non costituisce consulenza legale. Prima della messa online`,
+    `> di casi non standard è raccomandata una revisione legale.`,
+    ``,
+    `*Vigenza delle norme citate verificata alla data di generazione (${oggi}).*`,
+    ``,
+  ].join("\n");
 }
 
 /* ------------------------------------------------------------------ */

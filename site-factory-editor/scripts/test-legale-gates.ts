@@ -12,6 +12,9 @@ import { SITE_RENDERER } from "../lib/paths.ts";
 import { agenteDaFase } from "../lib/agenti.ts";
 import {
   LegaleSchema,
+  LenteReviewSchema,
+  docCitati,
+  COSTANTI_LEGALE,
   gateLegale,
   mdToBlocks,
   splitDocCoda,
@@ -310,6 +313,25 @@ console.log("\nRegressioni review 2026-08-02 (gate):");
   (l.privacy.blocks[5] as { text: string }).text += " Oppure scrivi a garante@gpdp.it.";
   caso("recapito istituzionale del Garante in chiaro → ammesso", !contiene(gateLegale(l, BRIEF, FORO), "garante@gpdp.it"));
 }
+
+console.log("\nRegressioni dal primo run E2E 2026-08-03:");
+{
+  const r = LenteReviewSchema.safeParse({
+    lente: "refusi",
+    verdict: "PASS",
+    findings: [{ doc: "privacy/termini", path: "privacy.blocks[1].text  vs  termini.blocks[3].items[3]", gravita: "avviso", problema: "x", fix: "y" }],
+  });
+  caso("review con finding trasversale «privacy/termini» → accettata", r.success);
+  caso(
+    "docCitati estrae entrambi i documenti dal finding trasversale",
+    JSON.stringify(docCitati({ doc: "privacy/termini", path: "" })) === JSON.stringify(["privacy", "termini"]),
+  );
+}
+caso(
+  "introTermini: niente punto doppio dopo «S.r.l.s.»",
+  COSTANTI_LEGALE.introTermini("Prova Edile S.r.l.s.") === "Condizioni d'uso del sito web di Prova Edile S.r.l.s." &&
+    COSTANTI_LEGALE.introTermini("Impresa Edile Rossi") === "Condizioni d'uso del sito web di Impresa Edile Rossi.",
+);
 
 console.log("\nRegressioni review 2026-08-02 (identità agenti):");
 {

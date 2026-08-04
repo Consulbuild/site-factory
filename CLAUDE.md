@@ -250,6 +250,27 @@ tassonomia sezioni). Regole operative nei componenti:
     anchor ai campi, contatori live, update-mode con estratto per-campo
     (`steps.copy.fonte`). Ack staleness generalizzato
     (`steps/[step]/ack-upstream`).
+  - **Parte 4 — scheda Legale fatta** (2026-08-03, piano vivo in
+    `docs/piano-scheda-legale.md`): step `legale` nel registry — profilo
+    deterministico dal brief (forma giuridica inferita; NIENTE raccolta
+    REA/PEC/capitale per decisione di nicchia), fase «foro» protocollata
+    (circondario del tribunale via MCP legal-it + fallback web con evidenza
+    verbatim e confidenza in `foro.json` — lezione Cavaliere istituzionalizzata),
+    privacy via `genera_informativa_privacy` riformattata sull'outline del
+    golden, termini via skill `tc-sito-it` (globali in ~/.claude/skills),
+    formNotice = template TS dal modello approvato, converter md→blocchi a
+    regole chiuse + gate unico deterministico (exact-match normalizzati sul
+    brief, foro verificato solo nella sezione giusta) + prova di montaggio con
+    l'assembler reale, catena avversariale a 3 lenti (anti-invenzione+
+    `verifica_citazioni`, conformità-skill, refusi) con correzioni per-documento
+    e byte-check (MAX 2 round), `legale-report.md` renderizzato in TS,
+    `legale-review.json` timbrata. Scheda con editor a blocchi, striscia
+    profilo (foro+evidenza), Conferma condizionata (review PASS corrente +
+    foro confidenza alta, override esplicito col dialog). Update-mode a 3 aree
+    (identità/sede e foro/recapiti → documenti impattati); `legale.json`
+    nell'upstream della build. Deploy: NESSUN interlock con lo stato legale
+    (decisione Mattia 2026-08-03) — solo staleness. Banco di prova:
+    `scripts/test-legale-gates.ts` (59 casi).
   - Parti successive: immagini (multi-fase prompter→critic, key BFL), build
     (deterministico: assemble → validate → `SITE_JSON=… astro build` + preview),
     poi deploy Workers.

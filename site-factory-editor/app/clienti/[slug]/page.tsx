@@ -132,10 +132,8 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
       ultimaRun: client.steps.legale.ultimaRun,
       stale: stale("legale"),
       fail: client.steps.legale.stato !== "assente" && bundle.legaleReview?.verdict === "FAIL",
-      // Disabilitata finché M4 non porta la scheda: il link attivo era un 404
-      // (review 2026-08-02). M4 la riabilita con: intakeOk.
-      abilitato: false,
-      motivoGate: "Scheda Legale in costruzione (M4 del piano): stato e badge sono già reali, il run arriva con M2.",
+      abilitato: intakeOk,
+      motivoGate: "Prima verifica l'intake: i documenti legali si scrivono sui soli dati verificati del cliente.",
       labelGenera: "Genera documenti legali",
       labelApri: "Apri legale",
     },

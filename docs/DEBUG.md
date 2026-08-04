@@ -27,8 +27,8 @@ nel seam `lib/run-step.ts` (`claudePhase`) e nel bus `lib/run-bus.ts`.
 | **Record curato** ⟵ leggi questo | 1 riga NDJSON **per fase** — il segnale qui sopra. **Con storia.** | `site-renderer/out/<slug>/logs/<step>/<timestamp>.ndjson` | `factory/runs/<runId>/record.ndjson` |
 | **Eventi live** | Stream distillato per la status bar (nome-tool + testo). **Ultimo tentativo, azzerato a ogni run.** | `site-renderer/out/<slug>/logs/run-<step>.ndjson` | `factory/runs/<runId>/run.ndjson` |
 
-`<step>` ∈ `contesto · palette · copy · images · build`. Il record cliente più recente è il
-file col **nome numerico più alto** nella cartella `logs/<step>/`.
+`<step>` ∈ `contesto · palette · copy · images · legale · build`. Il record cliente più
+recente è il file col **nome numerico più alto** nella cartella `logs/<step>/`.
 
 > I dati cliente (`out/`) sono fuori da git (sync Google Drive); i log di fabbrica sono
 > gitignorati. `run.json` e i `gates/*.json` della fabbrica restano invece tracciati: per un
@@ -45,6 +45,7 @@ file col **nome numerico più alto** nella cartella `logs/<step>/`.
 | Un tool fallisce (Read/Write/Bash/Skill) | stesso file | `actions[].error` (il tool_result d'errore, troncato) |
 | Una skill "non ha potuto" fare qualcosa | stesso file | `metrics.permessiNegati` (tool bloccati da `allowedTools`/`disallowedTools`) |
 | Loop critico↔correzioni che non converge (copy/immagini) | record: le fasi `critico (round N)` in sequenza + gli artifact `copy-review.json`/`image-review.json` | verdetti e `actions` round per round |
+| Documenti legali sbagliati / catena legale in FAIL | `out/<slug>/legale-review.json` (verdetti 3 lenti + findings con path dei blocchi) + `legale-src/review-*.json` (per-lente) + `foro.json` (derivazione con evidenza/URL) + `legale-report.md` | il gate deterministico vive in `site-factory-editor/lib/legale.ts` (`gateLegale`, converter a regole chiuse); banco di prova: `scripts/test-legale-gates.ts`. I md sorgente (write-once) in `legale-src/` |
 | Run di fabbrica fallita | `factory/runs/<runId>/record.ndjson` (ultima riga) **+** `gates/*.json`, `critic-review.json` | `error.*` nel record; il motivo strutturato di un gate nei `gates/*.json` |
 | Run sparita dalla status bar (>15 min) o dopo un riavvio | il record **persiste** su disco a prescindere dal TTL in memoria | leggi il record; se manca la riga terminale (`ok`/`error`) la run è stata **interrotta** a metà fase |
 

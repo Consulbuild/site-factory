@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { OUT_DIR } from "./paths";
+import os from "node:os";
+import { OUT_DIR, SITE_RENDERER, NODE_BIN } from "./paths";
 import { checkCopertura, type Contesto } from "./schemas";
 import {
   readContesto,
@@ -24,7 +25,26 @@ import { checkSlop, type SlopReport, type SlopResult } from "./slop";
 import { expectedImages, probeBfl, validateImagesTrace } from "./images";
 import { buildRun } from "./build";
 import { getSecret } from "./secrets";
-import { readLegale, readForo, gateLegale, briefLegale, legaleFonteDaBrief } from "./legale";
+import {
+  readLegale,
+  readForo,
+  readLegaleReview,
+  gateLegale,
+  briefLegale,
+  legaleFonteDaBrief,
+  buildProfilo,
+  convertiLegale,
+  renderLegaleReport,
+  byteCheckDocumenti,
+  splitDocCoda,
+  AREA_DOCS,
+  LEGALE_DOC_KEYS,
+  LenteReviewSchema,
+  docCitati,
+  type LegaleDocKey,
+  type LegaleReview,
+} from "./legale";
+import { writeJson } from "./clients";
 import { assignDesign, writeDesign, readDesign, registraAssegnazione, hueBucket } from "./assign-design.ts";
 import type { RunEvent, PhaseResult, StepIO } from "./run-step";
 
@@ -269,7 +289,8 @@ export const STEPS: Record<StepKey, StepDef> = {
     // L'artifact del run è la dist; site.json è un intermedio della stessa run.
     artifact: "dist/index.html",
     // Staleness sugli INPUT dell'assembler (site.json lo produce build stessa).
-    upstream: ["intake.json", "contesto.json", "palette.json", "copy.json", "images.json"],
+    // legale.json incluso (M5 piano legale): un legale aggiornato → build stale.
+    upstream: ["intake.json", "contesto.json", "palette.json", "copy.json", "images.json", "legale.json"],
     // Gate minimo comune (la route applica il gate PRIMA di leggere il mode):
     // il gate della build completa (images verificato) vive dentro buildRun.
     gate: (slug) =>
@@ -324,14 +345,13 @@ export const STEPS: Record<StepKey, StepDef> = {
     // Il legale deriva dal SOLO brief (identità/sede/recapiti verificati
     // all'intake); l'estratto fine per-area sta in steps.legale.fonte.
     upstream: ["brief.json"],
-    // Gate chiuso finché M2 non porta le fasi vere: un run partito ora
-    // sovrascriverebbe con «errore» lo stato da_verificare del legale
-    // manuale di Cavaliere (review 2026-08-02). M2 lo sostituisce con:
-    // intake verificato → null.
-    gate: () => "Step legale in costruzione (M2 del piano docs/piano-scheda-legale.md): il run non è ancora disponibile.",
-    run: async function* () {
-      return { ok: false, error: "Step legale in costruzione: le fasi di generazione arrivano con la milestone M2 (docs/piano-scheda-legale.md)." };
+    gate: (slug, mode) => {
+      if (mode === "critic") return readLegale(slug) ? null : "Nessun legale.json da ricontrollare: genera prima i documenti.";
+      return readClientState(slug).steps.intake.stato === "verificato"
+        ? null
+        : "Prima verifica i dati dell'intake: i documenti legali si scrivono sui soli dati verificati del cliente.";
     },
+    run: legaleRun,
     validate(slug) {
       const legale = readLegale(slug);
       if (!legale) return { ok: false, errore: "legale.json non scritto o non conforme al contratto (privacy/termini/formNotice)" };
@@ -905,4 +925,468 @@ export function patchStepMeta(
   patchClientState(slug, (s) => {
     s.steps[key].ultimaRun = ultimaRun;
   });
+}
+
+// ---------------------------------------------------------------------------
+// Step legale: profilo deterministico → foro → generazioni → conversione+gate
+// → montaggio → catena avversariale (3 lenti) → report (piano
+// docs/piano-scheda-legale.md, M2/M3). Il canonico post-conversione è
+// legale.json: correzioni, riverifiche ed edit UI operano sui blocchi.
+// ---------------------------------------------------------------------------
+
+const LEGALE_SRC = (slug: string) => path.join(OUT_DIR, slug, "legale-src");
+const LEGALE_BLUEPRINT = "blueprints/conversione-locale-v1";
+const LEGALE_GEN_TIMEOUT = 20 * 60 * 1000;
+const LEGALE_LENTE_TIMEOUT = 15 * 60 * 1000;
+/** Round di correzione della catena: il flusso manuale è convergito in 1. */
+const LEGALE_MAX_FIX = 2;
+
+const LENTI = ["antiInvenzione", "conformita", "refusi"] as const;
+type Lente = (typeof LENTI)[number];
+const LENTE_LABEL: Record<Lente, string> = {
+  antiInvenzione: "lente anti-invenzione",
+  conformita: "lente conformità-skill",
+  refusi: "lente refusi e coerenza",
+};
+
+/** Aree del brief cambiate rispetto all'ultimo allineamento (come copyFonteCambiati). */
+function areeCambiateLegale(slug: string): string[] {
+  const prev = readClientState(slug).steps.legale.fonte;
+  const cur = legaleFonte(slug);
+  if (!prev || !cur) return [];
+  return Object.keys(cur).filter((k) => prev[k] !== undefined && prev[k] !== cur[k]);
+}
+
+function readJsonLoose(file: string): unknown {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+type Profilo = ReturnType<typeof buildProfilo>;
+
+/* ---------------- prompt delle fasi ---------------- */
+
+function promptForo(slug: string, citta: string, indirizzo: string): string {
+  return (
+    `Sei il giurista della pipeline Site-factory. Determina il FORO COMPETENTE per il cliente «${slug}»: ` +
+    `il tribunale del cui CIRCONDARIO fa parte il comune della sede — MAI dedotto dalla provincia ` +
+    `(lezione Cavaliere: Cologno Monzese (MI) → Tribunale di MONZA, non Milano).\n` +
+    `Sede del cliente: ${indirizzo} — comune: ${citta}.\n` +
+    `PROTOCOLLO OBBLIGATORIO:\n` +
+    `1) chiama mcp__legal-it__cerca_ufficio_giudiziario con comune="${citta}"; se trovato=true quel tribunale è il foro (fonte = tool, confidenza "alta").\n` +
+    `2) se trovato=false: trova con WebSearch/WebFetch una pagina UFFICIALE (sito del tribunale su giustizia.it o portale ministeriale) ` +
+    `che elenca i comuni del circondario e verifica che «${citta}» sia nell'elenco; cita VERBATIM la riga/tabella che lo contiene e riporta l'URL. ` +
+    `Confidenza "alta" solo con evidenza ufficiale esplicita.\n` +
+    `3) fonti discordanti o evidenza debole → confidenza "bassa", con l'evidenza migliore trovata.\n` +
+    `Scrivi SOLO site-renderer/out/${slug}/foro.json in questo formato esatto:\n` +
+    `{"foro":"<città del tribunale>","fonte":"<nome della fonte>","url":"<url o stringa vuota>","evidenza":"<citazione verbatim che contiene il comune>","confidenza":"alta|bassa"}\n` +
+    `Nessun altro file, poi una riga di conferma.`
+  );
+}
+
+function promptPrivacy(slug: string, profilo: Profilo): string {
+  const t = profilo.tc.titolare;
+  return (
+    `Sei il giurista della pipeline Site-factory. Genera l'informativa privacy ESTESA del sito del cliente «${slug}».\n` +
+    `1) Chiama mcp__legal-it__genera_informativa_privacy con ESATTAMENTE questi parametri (non cambiarli):\n${JSON.stringify(profilo.mcp, null, 1)}\n` +
+    `2) Riscrivi il testo restituito nello standard di casa qui sotto. UNICA FONTE dei fatti (mai inventare):\n` +
+    `denominazione «${profilo.denominazione}» · sede «${t.sede}» · P.IVA ${t.partita_iva} · e-mail ${t.email} · ` +
+    `campi del form: nome e cognome + telefono (obbligatori), e-mail e città (facoltative), descrizione dei lavori richiesti.\n` +
+    `STRUTTURA OBBLIGATORIA (lo standard validato; rinumera 1..n senza buchi):\n` +
+    `## 1. Titolare del trattamento [denominazione in **bold**, sede, P.IVA, recapiti come [e-mail](mailto:…) e [telefono](tel:…)]\n` +
+    `## 2. Dati trattati e finalità [i campi del form; elenco puntato delle finalità; invito a non inserire dati particolari art. 9]\n` +
+    `## 3. Base giuridica e natura del conferimento [art. 6, par. 1, lett. b) GDPR — misure precontrattuali; niente consenso; obbligatori nome e telefono]\n` +
+    `## 4. Destinatari [autorizzati sotto l'autorità del Titolare + fornitori tecnici responsabili ex art. 28; trattamento nell'UE, clausola condizionale artt. 44 ss. per eventuali trasferimenti]\n` +
+    `## 5. Periodo di conservazione [gestione richiesta; senza seguito cancellazione entro 12 mesi; incarico → durata + termini di legge]\n` +
+    `## 6. Cookie e statistiche di navigazione [il sito NON usa cookie né strumenti di statistica: nessun banner, conformità Linee guida Garante 10 giugno 2021; aggiornamento in caso di future statistiche aggregate]\n` +
+    `## 7. Diritti dell'interessato [artt. 15–21 GDPR; richiesta al Titolare; risposta entro un mese, art. 12, par. 3]\n` +
+    `## 8. Reclamo al Garante [[garanteprivacy.it](https://www.garanteprivacy.it)]\n` +
+    `## 9. Aggiornamenti [versione vigente = data in testa alla pagina]\n` +
+    `FORMATO: solo \`## N. Titolo\`, paragrafi, elenchi \`- \`, **bold**, [testo](url) con url mailto:|tel:|/|https:// — VIETATI ###, tabelle, blockquote, corsivo, H1. ` +
+    `NON scrivere intro né riga «Ultimo aggiornamento» (li timbra il sistema).\n` +
+    `Dopo il documento, la CODA per il report interno (mai online):\n` +
+    `## Riferimenti normativi (citati nel documento) [elenco puntato, con data/vigenza]\n` +
+    `## Note e avvertenze [cosa verificare al deploy]\n` +
+    `## Campi mancanti [o «nessuno»]\n` +
+    `e in fondo la riga: *Il presente documento è un modello generato automaticamente e non costituisce consulenza legale.*\n` +
+    `Scrivi SOLO site-renderer/out/${slug}/legale-src/privacy.md, poi una riga di conferma.`
+  );
+}
+
+function promptTermini(slug: string, profilo: Profilo, foroCitta: string): string {
+  const clientProfile = { ...profilo.tc, foro: { citta: foroCitta } };
+  return (
+    `Usa la skill tc-sito-it per generare i Termini e Condizioni del sito del cliente «${slug}».\n` +
+    `client_profile (COMPLETO e già validato dal sistema — non chiedere campi, non inventarne):\n${JSON.stringify(clientProfile, null, 1)}\n` +
+    `Fedeltà al template della skill (blocchi condizionali, rinumerazione continua, clausola foro per pubblico_b2c=true con art. 66-bis). ` +
+    `Il sistema poi converte il md in blocchi e lo valida: niente tabelle; l'intro e «Ultimo aggiornamento» li timbra il sistema. ` +
+    `Includi le sezioni di coda previste dalla skill (## Riferimenti normativi (citati nel documento), ## Note e avvertenze, ## Campi mancanti, ` +
+    `disclaimer «non costituisce consulenza legale», checklist compilata).\n` +
+    `Scrivi SOLO site-renderer/out/${slug}/legale-src/termini.md, poi una riga di conferma.`
+  );
+}
+
+function promptGateFixMd(slug: string, errori: string[], impattati: LegaleDocKey[]): string {
+  const files = [
+    impattati.includes("privacy") ? `site-renderer/out/${slug}/legale-src/privacy.md` : null,
+    impattati.includes("termini") ? `site-renderer/out/${slug}/legale-src/termini.md` : null,
+  ].filter(Boolean);
+  return (
+    `Sei il giurista della pipeline. Il gate deterministico ha bocciato la conversione dei documenti legali del cliente «${slug}». ` +
+    `Violazioni (verbatim):\n- ${errori.join("\n- ")}\n` +
+    `Correggi SOLO questi problemi nei sorgenti md (${files.join(" e ")}), senza riscrivere altro: ` +
+    `il sistema riconvertirà da capo. Ricorda il set ammesso: ## N. Titolo rinumerati 1..n, paragrafi, elenchi \`- \`, ` +
+    `**bold**, [testo](url) con url mailto:|tel:|/|https://; il disclaimer sta nella coda, mai nel documento. ` +
+    `Nessun altro file, poi una riga di conferma.`
+  );
+}
+
+function promptGateFixBlocchi(slug: string, errori: string[]): string {
+  return (
+    `Sei il giurista della pipeline. Dopo una correzione, il gate deterministico segnala violazioni in ` +
+    `site-renderer/out/${slug}/legale.json:\n- ${errori.join("\n- ")}\n` +
+    `Correggi SOLO questi problemi direttamente nei blocchi del JSON (contratto: blocchi h2/p/ul, inline solo **bold** e ` +
+    `[testo](url) con url mailto:|tel:|/|https://, numerazione h2 «N. Titolo» continua 1..n). ` +
+    `Nessun altro file, poi una riga di conferma.`
+  );
+}
+
+function promptFixLegale(slug: string, bloccanti: LegaleReview["findings"], docsCitati: LegaleDocKey[]): string {
+  return (
+    `Sei il giurista della pipeline. La catena di verifica ha trovato bloccanti nei documenti legali del cliente «${slug}». ` +
+    `Findings (JSON):\n${JSON.stringify(bloccanti, null, 1)}\n` +
+    `Correggi in site-renderer/out/${slug}/legale.json SOLO i documenti citati (${docsCitati.join(", ")}) applicando i fix proposti: ` +
+    `i documenti NON citati devono restare IDENTICI al byte. Mantieni il contratto (blocchi h2/p/ul, inline solo **bold** e ` +
+    `[testo](url), numerazione h2 continua, fatti SOLO da brief/foro.json). Nessun altro file, poi una riga di conferma.`
+  );
+}
+
+const PROMPT_LENTE: Record<Lente, (slug: string, round: number) => string> = {
+  antiInvenzione: (slug) =>
+    `Sei la LENTE ANTI-INVENZIONE della catena di verifica legale del cliente «${slug}». Giudichi, non correggi.\n` +
+    `Imputato: site-renderer/out/${slug}/legale.json (privacy/termini a blocchi + formNotice). ` +
+    `Verità: site-renderer/out/${slug}/brief.json (fatti del cliente) + site-renderer/out/${slug}/foro.json (derivazione del foro).\n` +
+    `COMPITI OBBLIGATORI:\n` +
+    `1) FATTI: ogni fatto nei documenti (nomi, numeri, recapiti, indirizzi, qualifiche) deve essere tracciabile al brief, ` +
+    `al foro.json o essere una costante di legge/standard del modello. Fatto senza fonte = finding bloccante.\n` +
+    `2) CITAZIONI: raccogli TUTTE le norme citate nei 3 documenti e verificale con UNA chiamata a mcp__legal-it__verifica_citazioni ` +
+    `(elenco completo). Norma inesistente o con estremi incoerenti = bloccante. Includi l'esito del tool nel campo "citazioni".\n` +
+    `3) FORO: l'evidenza verbatim in foro.json contiene davvero il comune del cliente? La fonte/URL è ufficiale e plausibile? ` +
+    `Il foro nei termini coincide con foro.json? Se l'evidenza non regge puoi fare UNO spot-check WebFetch dell'URL. Incoerenza = bloccante.\n` +
+    `WHITELIST (non sono invenzioni): la rinumerazione delle sezioni; le formule standard dei template legali; ` +
+    `le cortesie di norma di settore (preventivo/sopralluogo gratuito).\n` +
+    `Scrivi SOLO site-renderer/out/${slug}/legale-src/review-antiInvenzione.json:\n` +
+    `{"lente":"antiInvenzione","verdict":"PASS|FAIL","citazioni":<esito compatto del tool>,"findings":[{"doc":"privacy|termini|formNotice",` +
+    `"path":"privacy.blocks[N] o formNotice","gravita":"bloccante|avviso","problema":"…","fix":"…"}]}\n` +
+    `verdict FAIL solo se c'è almeno un bloccante. Chiudi con una riga di verdetto.`,
+  conformita: (slug) =>
+    `Sei la LENTE CONFORMITÀ-SKILL della catena di verifica legale del cliente «${slug}». Giudichi, non correggi.\n` +
+    `Le regole di merito vivono nelle skill installate — leggile PRIMA di giudicare:\n` +
+    `/Users/mattia/.claude/skills/tc-sito-it/SKILL.md + /Users/mattia/.claude/skills/tc-sito-it/references/normativa.md\n` +
+    `/Users/mattia/.claude/skills/informativa-breve-form/SKILL.md + /Users/mattia/.claude/skills/informativa-breve-form/references/normativa.md\n` +
+    `Imputato: site-renderer/out/${slug}/legale.json. Contesto: il sito è una vetrina SENZA vendita online; form preventivo → base 6.1.b; pubblico_b2c=true.\n` +
+    `VERIFICA (bloccante ogni violazione):\n` +
+    `- clausola foro con salvezza del consumatore (art. 66-bis cod. consumo) presente nei termini;\n` +
+    `- limitazioni di responsabilità nei limiti dell'art. 1229 c.c. (mai esonero per dolo/colpa grave), formulate come delimitazione;\n` +
+    `- clausole 1341-1342 trattate come informativa, MAI doppia sottoscrizione simulata con checkbox;\n` +
+    `- numerazione continua senza buchi; blocchi condizionali coerenti (niente REA/PEC se non forniti, nessun placeholder);\n` +
+    `- formNotice: base 6.1.b dichiarata, NIENTE richiesta di consenso per la sola gestione della richiesta, rinvio all'informativa completa;\n` +
+    `- i divieti «DA NON FARE» delle due reference.\n` +
+    `Scrivi SOLO site-renderer/out/${slug}/legale-src/review-conformita.json:\n` +
+    `{"lente":"conformita","verdict":"PASS|FAIL","findings":[{"doc":"…","path":"…","gravita":"bloccante|avviso","problema":"…","fix":"…"}]}\n` +
+    `verdict FAIL solo con almeno un bloccante. Chiudi con una riga di verdetto.`,
+  refusi: (slug) =>
+    `Sei la LENTE REFUSI E COERENZA della catena di verifica legale del cliente «${slug}». Giudichi, non correggi.\n` +
+    `Imputato: site-renderer/out/${slug}/legale.json (leggi i testi nell'ordine in cui appariranno in pagina).\n` +
+    `CERCA: refusi, errori grammaticali e di punteggiatura, maiuscole incoerenti, spazi doppi, parole duplicate, ` +
+    `incoerenze terminologiche TRA i tre documenti (stesso concetto → stesso termine; denominazione scritta sempre uguale; ` +
+    `date e durate coerenti tra documenti e formNotice).\n` +
+    `NON è materia tua: il registro («tu» nell'informativa, impersonale nei T&C — scelta deliberata dei template), ` +
+    `le scelte giuridiche, la struttura delle sezioni.\n` +
+    `gravita "bloccante" SOLO per errori che un cliente noterebbe o che cambiano il senso; il resto "avviso".\n` +
+    `Scrivi SOLO site-renderer/out/${slug}/legale-src/review-refusi.json:\n` +
+    `{"lente":"refusi","verdict":"PASS|FAIL","findings":[{"doc":"…","path":"…","gravita":"bloccante|avviso","problema":"…","fix":"…"}]}\n` +
+    `verdict FAIL solo con almeno un bloccante. Chiudi con una riga di verdetto.`,
+};
+
+const LENTE_ALLOWED: Record<Lente, string[]> = {
+  antiInvenzione: ["Read", "Write", "mcp__legal-it__verifica_citazioni", "WebFetch"],
+  conformita: ["Read", "Write"],
+  refusi: ["Read", "Write"],
+};
+const LENTE_DISALLOWED: Record<Lente, string[]> = {
+  antiInvenzione: ["Bash", "Edit", "Task", "WebSearch"],
+  conformita: NO_NET_NO_BASH,
+  refusi: NO_NET_NO_BASH,
+};
+
+/* ---------------- fasi deterministiche ---------------- */
+
+function convertiDaDisco(slug: string, b: Exclude<ReturnType<typeof briefLegale>, { errore: string }>, impattati: LegaleDocKey[]) {
+  const leggi = (f: string): string | null => {
+    try {
+      return fs.readFileSync(path.join(LEGALE_SRC(slug), f), "utf8");
+    } catch {
+      return null;
+    }
+  };
+  const privacyMd = impattati.includes("privacy") ? leggi("privacy.md") : null;
+  const terminiMd = impattati.includes("termini") ? leggi("termini.md") : null;
+  const mancanti = [
+    impattati.includes("privacy") && privacyMd === null ? "legale-src/privacy.md" : null,
+    impattati.includes("termini") && terminiMd === null ? "legale-src/termini.md" : null,
+  ].filter(Boolean);
+  if (mancanti.length) {
+    return { legale: null, errori: [`sorgenti md non scritti dalle fasi di generazione: ${mancanti.join(", ")}`], noteReport: {} };
+  }
+  return convertiLegale({ privacyMd, terminiMd, esistente: readLegale(slug), brief: b, foro: readForo(slug) });
+}
+
+function scriviReportLegale(
+  slug: string,
+  profilo: Profilo,
+  b: Exclude<ReturnType<typeof briefLegale>, { errore: string }>,
+  mode: RunMode,
+  aree?: string[],
+  noteConversione: Record<string, string[]> = {},
+): void {
+  const leggi = (f: string): string => {
+    try {
+      return fs.readFileSync(path.join(LEGALE_SRC(slug), f), "utf8");
+    } catch {
+      return "";
+    }
+  };
+  const md = renderLegaleReport({
+    slug,
+    profilo,
+    brief: b,
+    foro: readForo(slug),
+    codaPrivacy: splitDocCoda(leggi("privacy.md")).codaMd,
+    codaTermini: splitDocCoda(leggi("termini.md")).codaMd,
+    noteConversione,
+    review: readLegaleReview(slug),
+    mode,
+    areeCambiate: aree,
+  });
+  fs.writeFileSync(path.join(OUT_DIR, slug, "legale-report.md"), md);
+}
+
+/** Ri-esegue il gate unico sui BLOCCHI correnti, con UNA correzione se serve
+ *  (pattern formatGate: dopo le correzioni della catena il canonico è legale.json). */
+async function* gateBlocchi(
+  slug: string,
+  io: StepIO,
+  b: Exclude<ReturnType<typeof briefLegale>, { errore: string }>,
+): AsyncGenerator<RunEvent, PhaseResult> {
+  const check = (): string[] => {
+    const l = readLegale(slug);
+    if (!l) return ["legale.json illeggibile o non conforme dopo la correzione"];
+    return gateLegale(l, b, readForo(slug));
+  };
+  let errs = check();
+  if (!errs.length) return { ok: true };
+  const r = yield* io.claude({
+    phase: "correzioni del gate legale",
+    prompt: promptGateFixBlocchi(slug, errs),
+    allowed: ["Read", "Write"],
+    disallowed: NO_NET_NO_BASH,
+  });
+  if (!r.ok) return r;
+  errs = check();
+  if (errs.length) return { ok: false, error: `gate legale non superato dopo la correzione: ${errs.slice(0, 5).join("; ")}` };
+  return { ok: true };
+}
+
+/** Le 3 lenti in sequenza + aggregazione + (se `correzioni`) fix mirati
+ *  per-documento con byte-check, MAX 2 round; poi si consegna comunque
+ *  col verdetto visibile — decide l'umano (pattern copy). */
+async function* catenaAvversariale(
+  slug: string,
+  io: StepIO,
+  b: Exclude<ReturnType<typeof briefLegale>, { errore: string }>,
+  opts: { correzioni: boolean; roundBase: number },
+): AsyncGenerator<RunEvent, PhaseResult> {
+  let daEseguire: Lente[] = [...LENTI];
+  const esiti = new Map<Lente, { verdict: "PASS" | "FAIL"; findings: LegaleReview["findings"] }>();
+  let fixFatti = 0;
+  for (let round = opts.roundBase; ; round++) {
+    for (const lente of daEseguire) {
+      const r = yield* io.claude({
+        phase: `${LENTE_LABEL[lente]} (round ${round})`,
+        prompt: PROMPT_LENTE[lente](slug, round),
+        allowed: LENTE_ALLOWED[lente],
+        disallowed: LENTE_DISALLOWED[lente],
+        timeoutMs: LEGALE_LENTE_TIMEOUT,
+      });
+      if (!r.ok) return r;
+      const raw = readJsonLoose(path.join(LEGALE_SRC(slug), `review-${lente}.json`));
+      const parsed = raw ? LenteReviewSchema.safeParse(raw) : null;
+      if (!parsed || !parsed.success) return { ok: false, error: `review della ${LENTE_LABEL[lente]} non scritta o non valida` };
+      esiti.set(lente, { verdict: parsed.data.verdict, findings: parsed.data.findings.map((f) => ({ ...f, lente })) });
+    }
+    const aggregata: LegaleReview = {
+      verdict: LENTI.every((l) => esiti.get(l)!.verdict === "PASS") ? "PASS" : "FAIL",
+      round,
+      lenti: {
+        antiInvenzione: esiti.get("antiInvenzione")!.verdict,
+        conformita: esiti.get("conformita")!.verdict,
+        refusi: esiti.get("refusi")!.verdict,
+      },
+      findings: LENTI.flatMap((l) => esiti.get(l)!.findings),
+    };
+    writeJson(path.join(OUT_DIR, slug, "legale-review.json"), aggregata);
+    stampReview(slug, "legale-review.json", "legale.json");
+    const bloccanti = aggregata.findings.filter((f) => f.gravita === "bloccante");
+    yield { type: "text", text: `Catena round ${round}: ${aggregata.verdict} (${bloccanti.length} bloccanti, ${aggregata.findings.length} findings)` };
+    if (aggregata.verdict === "PASS") return { ok: true };
+    // FAIL senza margine di correzione: si consegna comunque, decide l'umano in scheda.
+    if (!opts.correzioni || fixFatti >= LEGALE_MAX_FIX || bloccanti.length === 0) return { ok: true };
+
+    // doc è stringa libera (finding trasversali «privacy/termini»): i documenti
+    // autorizzati alla correzione si estraggono da doc+path.
+    const docsCitati: LegaleDocKey[] = [...new Set(bloccanti.flatMap((f) => docCitati(f)))];
+    if (!docsCitati.length) return { ok: true }; // bloccanti senza documento estraibile: decide l'umano
+    const prima = readLegale(slug);
+    const fx = yield* io.claude({
+      phase: `correzioni legale (round ${round})`,
+      prompt: promptFixLegale(slug, bloccanti, docsCitati),
+      allowed: ["Read", "Write"],
+      disallowed: NO_NET_NO_BASH,
+      timeoutMs: LEGALE_GEN_TIMEOUT,
+    });
+    if (!fx.ok) return fx;
+    fixFatti++;
+    const fuori = byteCheckDocumenti(prima, readLegale(slug), docsCitati);
+    if (fuori) return { ok: false, error: fuori };
+    const g = yield* gateBlocchi(slug, io, b);
+    if (!g.ok) return g;
+    daEseguire = LENTI.filter((l) => esiti.get(l)!.verdict === "FAIL");
+  }
+}
+
+async function* legaleRun(slug: string, ctx: RunCtx, io: StepIO): AsyncGenerator<RunEvent, PhaseResult> {
+  const b = briefLegale((readBrief(slug) ?? {}) as Record<string, unknown>);
+  if ("errore" in b) return { ok: false, error: b.errore };
+  const statoCliente = readClientState(slug);
+  const dominio = statoCliente.steps.build.deploy?.dominio ?? statoCliente.steps.build.dominio ?? null;
+  const profilo = buildProfilo(b, dominio);
+
+  // «Riverifica»: sole lenti sull'artifact corrente, niente rigenerazione.
+  if (ctx.mode === "critic") {
+    const roundBase = (readLegaleReview(slug)?.round ?? 0) + 1;
+    const esito = yield* catenaAvversariale(slug, io, b, { correzioni: false, roundBase });
+    if (!esito.ok) return esito;
+    scriviReportLegale(slug, profilo, b, ctx.mode);
+    return { ok: true };
+  }
+
+  // generate | update
+  const aree = ctx.mode === "update" ? areeCambiateLegale(slug) : null;
+  const impattati: LegaleDocKey[] =
+    ctx.mode === "update" ? [...new Set((aree ?? []).flatMap((a) => AREA_DOCS[a] ?? []))] : [...LEGALE_DOC_KEYS];
+
+  yield { type: "phase", label: "profilo legale (deterministico)" };
+  yield { type: "text", text: `Denominazione: ${profilo.denominazione} · forma: ${profilo.forma} · sede: ${b.citta}` };
+  for (const n of profilo.note) yield { type: "text", text: n };
+  if (ctx.mode === "update") {
+    if (!impattati.length) {
+      yield { type: "text", text: "Nessuna area legale impattata dalle modifiche a monte: documenti invariati." };
+      return { ok: true };
+    }
+    yield { type: "text", text: `Aree cambiate: ${(aree ?? []).join(", ")} → documenti da rigenerare: ${impattati.join(", ")}` };
+  }
+  fs.mkdirSync(LEGALE_SRC(slug), { recursive: true });
+
+  // Foro: sempre in generate; in update solo se la sede è cambiata o manca.
+  if (ctx.mode !== "update" || (aree ?? []).includes("sede e foro") || !readForo(slug)) {
+    const f = yield* io.claude({
+      phase: "foro",
+      prompt: promptForo(slug, b.citta, b.indirizzo),
+      allowed: ["Read", "Write", "mcp__legal-it__cerca_ufficio_giudiziario", "WebSearch", "WebFetch"],
+      disallowed: ["Bash", "Edit", "Task"],
+      timeoutMs: 10 * 60 * 1000,
+      maxTurns: 25,
+    });
+    if (!f.ok) return f;
+  }
+  const foro = readForo(slug);
+  if (!foro) return { ok: false, error: "foro.json non scritto o non valido dalla fase foro" };
+  yield { type: "text", text: `Foro: ${foro.foro} (confidenza ${foro.confidenza}) — ${foro.fonte}` };
+
+  if (impattati.includes("privacy")) {
+    const r = yield* io.claude({
+      phase: "privacy (informativa estesa)",
+      prompt: promptPrivacy(slug, profilo),
+      allowed: ["Read", "Write", "mcp__legal-it__genera_informativa_privacy"],
+      disallowed: NO_NET_NO_BASH,
+      timeoutMs: LEGALE_GEN_TIMEOUT,
+    });
+    if (!r.ok) return r;
+  }
+  if (impattati.includes("termini")) {
+    const r = yield* io.claude({
+      phase: "termini e condizioni",
+      prompt: promptTermini(slug, profilo, foro.foro),
+      allowed: READ_SKILL_WRITE,
+      disallowed: NO_NET_NO_BASH,
+      timeoutMs: LEGALE_GEN_TIMEOUT,
+    });
+    if (!r.ok) return r;
+  }
+
+  // Conversione md→blocchi + gate unico (deterministici), UNA correzione sui md.
+  yield { type: "phase", label: "conversione e gate legale (deterministico)" };
+  let conv = convertiDaDisco(slug, b, impattati);
+  if (conv.errori.length) {
+    yield { type: "text", text: `Gate: ${conv.errori.length} violazioni — una correzione mirata sui sorgenti` };
+    const fix = yield* io.claude({
+      phase: "correzioni del gate legale",
+      prompt: promptGateFixMd(slug, conv.errori, impattati),
+      allowed: ["Read", "Write"],
+      disallowed: NO_NET_NO_BASH,
+      timeoutMs: LEGALE_GEN_TIMEOUT,
+    });
+    if (!fix.ok) return fix;
+    conv = convertiDaDisco(slug, b, impattati);
+    if (conv.errori.length) {
+      return { ok: false, error: `gate legale non superato dopo la correzione: ${conv.errori.slice(0, 5).join("; ")}` };
+    }
+  }
+  writeJson(path.join(OUT_DIR, slug, "legale.json"), conv.legale);
+  yield { type: "text", text: "legale.json scritto (privacy + termini + formNotice dal modello approvato)" };
+
+  // Prova di montaggio: l'assemblatore REALE (parseSiteConfig in coda) su output temporaneo.
+  const tmpSite = path.join(os.tmpdir(), `legale-montaggio-${slug}-${Date.now()}.json`);
+  const lavoriArgs = fs.existsSync(path.join(OUT_DIR, slug, "lavori.json"))
+    ? ["--lavori", `out/${slug}/lavori.json`]
+    : ["--foto-reali", "0"];
+  const m = yield* io.script({
+    phase: "prova di montaggio (assemble + contratto renderer)",
+    bin: NODE_BIN,
+    args: [
+      "--experimental-strip-types",
+      "scripts/assemble-site.ts",
+      LEGALE_BLUEPRINT,
+      `out/${slug}`,
+      "-o",
+      tmpSite,
+      "--partial",
+      ...lavoriArgs,
+      "--legale",
+      `out/${slug}/legale.json`,
+    ],
+    cwd: SITE_RENDERER,
+    timeoutMs: 60_000,
+  });
+  fs.rmSync(tmpSite, { force: true });
+  if (!m.ok) return { ok: false, error: `prova di montaggio fallita: il legale.json non passa il contratto del renderer` };
+
+  const esito = yield* catenaAvversariale(slug, io, b, { correzioni: true, roundBase: 1 });
+  if (!esito.ok) return esito;
+  scriviReportLegale(slug, profilo, b, ctx.mode, aree ?? undefined, conv.noteReport);
+  return { ok: true };
 }
