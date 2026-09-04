@@ -6,6 +6,7 @@
 // deterministica (io.script): il RunLog mostra le fasi assemble/validate/astro.
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ClientState } from "@/lib/schemas";
 import { Badge, Banner, StepBadge, btnPrimary, btnSecondary, btnGhost } from "./ui";
@@ -28,6 +29,8 @@ export function BuildPanel({
   staleFiles,
   cfTokenOk,
   cfAccountOk,
+  vpsKeysOk,
+  umamiHost,
 }: {
   slug: string;
   businessName: string;
@@ -36,6 +39,9 @@ export function BuildPanel({
   staleFiles: string[];
   cfTokenOk: boolean;
   cfAccountOk: boolean;
+  /** Chiavi del VPS presenti (Umami, registro n8n): senza, la build col dominio si ferma. */
+  vpsKeysOk: { umami: boolean; n8n: boolean };
+  umamiHost: string;
 }) {
   const router = useRouter();
   const runner = useStepRun(slug, "build");
@@ -59,10 +65,20 @@ export function BuildPanel({
   // si spiega e si riporta la primaria su «Builda».
   const rebuildPerDominio =
     completa && build.siteUrl !== (build.dominio ? `https://${build.dominio}` : undefined);
+  // Specchio dell'interlock del deploy sulle integrazioni cotte nell'HTML
+  // (script Umami, action del modulo): col dominio devono esserci e puntare al
+  // sito Umami corrente; senza dominio non devono esserci.
+  const rebuildPerIntegrazioni =
+    completa &&
+    (build.dominio
+      ? !build.integrazioni || build.integrazioni.umamiWebsiteId !== build.umamiWebsiteId
+      : !!build.integrazioni);
+  const rebuild = rebuildPerDominio || rebuildPerIntegrazioni;
+  const vpsOk = vpsKeysOk.umami && vpsKeysOk.n8n;
 
   // Una sola primaria contestuale: build → conferma → pubblica.
   const momento: "build" | "conferma" | "pubblica" =
-    staleFiles.length > 0 || !completa || rebuildPerDominio ? "build" : daConfermare ? "conferma" : "pubblica";
+    staleFiles.length > 0 || !completa || rebuild ? "build" : daConfermare ? "conferma" : "pubblica";
 
   async function azione(body: Record<string, string>): Promise<Record<string, unknown> | null> {
     setBusy(true);
@@ -129,9 +145,10 @@ export function BuildPanel({
         open={chiediPubblica}
         title={build.deploy ? "Ripubblicare il sito?" : "Pubblicare il sito?"}
         message={
-          build.deploy
+          (build.deploy
             ? "Il sito online su Cloudflare verrà sostituito con questa build. L'operazione può richiedere qualche minuto."
-            : "La build confermata va online su Cloudflare Workers. L'operazione può richiedere qualche minuto."
+            : "La build confermata va online su Cloudflare Workers. L'operazione può richiedere qualche minuto.") +
+          (build.dominio ? " Col dominio: sito registrato su Umami e nel monitor, modulo reale attivo." : "")
         }
         confirmLabel={build.deploy ? "Ripubblica" : "Pubblica"}
         onConfirm={() => {
@@ -267,25 +284,53 @@ export function BuildPanel({
             </div>
             {dominioMsg && <p className="mt-2 text-sm text-ok">{dominioMsg}</p>}
 
-            {rebuildPerDominio && (
+            {build.dominio && !vpsOk && (
+              <div className="mt-4">
+                <Banner tone="warn" title="Chiavi del VPS mancanti">
+                  Col dominio la build registra il sito su Umami e il modulo sul registro n8n: servono{" "}
+                  {!vpsKeysOk.umami && <span className="mono">UMAMI_PASSWORD</span>}
+                  {!vpsKeysOk.umami && !vpsKeysOk.n8n && " e "}
+                  {!vpsKeysOk.n8n && <span className="mono">N8N_REGISTRA_KEY</span>} in{" "}
+                  <Link href="/impostazioni" className="text-brand hover:underline">
+                    Impostazioni → Chiavi API
+                  </Link>
+                  .
+                </Banner>
+              </div>
+            )}
+
+            {rebuild && (
               <div className="mt-4">
                 <Banner tone="warn" title="Ribuilda prima di pubblicare">
-                  {build.dominio ? (
+                  {rebuildPerDominio ? (
+                    build.dominio ? (
+                      <>
+                        L&apos;ultima build è stata prodotta{" "}
+                        {build.siteUrl ? (
+                          <>con un altro dominio (<span className="mono">{build.siteUrl}</span>)</>
+                        ) : (
+                          "senza dominio"
+                        )}
+                        : canonical e og: assoluti si fissano nell&apos;HTML al momento della build. Ribuilda e
+                        riconferma per pubblicare con <span className="mono">https://{build.dominio}</span> nei metadati.
+                      </>
+                    ) : (
+                      <>
+                        L&apos;ultima build è stata prodotta col dominio ora rimosso (
+                        <span className="mono">{build.siteUrl}</span>): canonical e og: assoluti nell&apos;HTML puntano
+                        ancora lì. Ribuilda e riconferma prima di pubblicare.
+                      </>
+                    )
+                  ) : build.dominio ? (
                     <>
-                      L&apos;ultima build è stata prodotta{" "}
-                      {build.siteUrl ? (
-                        <>con un altro dominio (<span className="mono">{build.siteUrl}</span>)</>
-                      ) : (
-                        "senza dominio"
-                      )}
-                      : canonical e og: assoluti si fissano nell&apos;HTML al momento della build. Ribuilda e
-                      riconferma per pubblicare con <span className="mono">https://{build.dominio}</span> nei metadati.
+                      L&apos;ultima build non contiene le integrazioni del dominio (statistiche Umami e modulo reale),
+                      o punta a un sito Umami diverso: si fissano nell&apos;HTML al momento della build. Ribuilda e
+                      riconferma prima di pubblicare.
                     </>
                   ) : (
                     <>
-                      L&apos;ultima build è stata prodotta col dominio ora rimosso (
-                      <span className="mono">{build.siteUrl}</span>): canonical e og: assoluti nell&apos;HTML puntano
-                      ancora lì. Ribuilda e riconferma prima di pubblicare.
+                      L&apos;ultima build contiene ancora le integrazioni del dominio ora rimosso (statistiche e
+                      modulo): un sito senza dominio deve restare demo. Ribuilda e riconferma prima di pubblicare.
                     </>
                   )}
                 </Banner>
@@ -314,16 +359,51 @@ export function BuildPanel({
               {buildNonPubblicata && (
                 <p className="mt-2 text-xs text-warn">⚠ La build più recente non è ancora pubblicata: ripubblica.</p>
               )}
+              {build.deploy?.dominio && (
+                <div className="mono mt-3 grid gap-1 border-t border-line pt-3 text-xs text-muted">
+                  <p>
+                    Statistiche ·{" "}
+                    {build.umamiWebsiteId ? (
+                      <a
+                        href={`${umamiHost}/websites/${build.umamiWebsiteId}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-brand hover:underline"
+                      >
+                        Umami {build.umamiWebsiteId}
+                      </a>
+                    ) : (
+                      "non registrate"
+                    )}
+                  </p>
+                  <p>Modulo · form-lead/{slug}</p>
+                  <p>
+                    Monitor e registro ·{" "}
+                    {build.infra
+                      ? `${build.infra.commit ? `commit ${build.infra.commit} · ` : ""}push ${build.infra.pushed ? "ok" : "non riuscito"} · registro n8n ${build.infra.n8nOk ? "ok" : "KO"} · ${dt(build.infra.at)}`
+                      : "non ancora sincronizzati"}
+                  </p>
+                </div>
+              )}
             </div>
+
+            {build.infra?.errore && (
+              <div className="mt-4">
+                <Banner tone="err" title="Integrazioni non sincronizzate">
+                  Il sito è online, ma monitor o registro del modulo non sono aggiornati:{" "}
+                  <span className="mono">{build.infra.errore}</span>. Ripubblica per riprovare.
+                </Banner>
+              </div>
+            )}
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <button
                 className={momento === "pubblica" ? btnPrimary : btnSecondary}
                 onClick={() => setChiediPubblica(true)}
-                disabled={busy || runner.running || !verificata || rebuildPerDominio}
+                disabled={busy || runner.running || !verificata || rebuild}
                 title={
-                  rebuildPerDominio
-                    ? "Il dominio è cambiato dopo l'ultima build: ribuilda e riconferma prima di pubblicare."
+                  rebuild
+                    ? "Il dominio o le integrazioni sono cambiati dopo l'ultima build: ribuilda e riconferma prima di pubblicare."
                     : !verificata
                       ? "Si pubblica solo una build completa, rivista e confermata."
                       : undefined

@@ -1,0 +1,53 @@
+# Configurazione base del monitor (Gatus). I segreti arrivano come variabili
+# d'ambiente della risorsa Coolify (${…} è sostituito da Gatus all'avvio):
+#   TELEGRAM_TOKEN, TELEGRAM_CHAT_ID, GATUS_PASSWORD_BCRYPT_BASE64
+# Gli endpoint dei clienti stanno in clienti/<slug>.yaml, generati dall'editor.
+
+storage:
+  type: sqlite
+  path: /data/data.db
+
+alerting:
+  telegram:
+    token: "${TELEGRAM_TOKEN}"
+    id: "${TELEGRAM_CHAT_ID}"
+    default-alert:
+      enabled: true
+      failure-threshold: 3
+      success-threshold: 2
+      send-on-resolved: true
+
+security:
+  basic:
+    username: "consulbuild"
+    password-bcrypt-base64: "${GATUS_PASSWORD_BCRYPT_BASE64}"
+
+ui:
+  title: "ConsulBuild · monitor"
+  header: "ConsulBuild · monitor siti e servizi"
+
+endpoints:
+  - name: coolify
+    group: vps
+    url: "https://coolify.consulbuild.com/api/health"
+    interval: 5m
+    conditions:
+      - "[STATUS] == 200"
+    alerts:
+      - type: telegram
+  - name: n8n
+    group: vps
+    url: "https://n8n.consulbuild.com/healthz"
+    interval: 5m
+    conditions:
+      - "[STATUS] == 200"
+    alerts:
+      - type: telegram
+  - name: umami
+    group: vps
+    url: "https://stats.consulbuild.com/api/heartbeat"
+    interval: 5m
+    conditions:
+      - "[STATUS] == 200"
+    alerts:
+      - type: telegram

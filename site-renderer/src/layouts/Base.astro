@@ -57,6 +57,15 @@ const description =
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : null;
 const heroSrc = site.sections.find((s) => s.type === "Hero")?.props.image?.src;
 const ogImage = Astro.site && heroSrc ? new URL(heroSrc, Astro.site).href : null;
+
+// Statistiche senza cookie (Umami self-hosted UE): solo nelle build del sito
+// pubblicato su dominio. Le env arrivano dall'editor come SITE_URL — sono
+// infrastruttura dell'agenzia, mai site.json. Assenti in dev, test e anteprime
+// (nessuno script), e data-domains ignora workers.dev/localhost anche se
+// l'HTML viene servito altrove.
+const umamiHost = process.env.UMAMI_HOST;
+const umamiId = process.env.UMAMI_WEBSITE_ID;
+const umamiDomains = Astro.site?.host;
 ---
 
 <!doctype html>
@@ -81,6 +90,11 @@ const ogImage = Astro.site && heroSrc ? new URL(heroSrc, Astro.site).href : null
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
           <link rel="stylesheet" href={fontsHref} />
         </>
+      )
+    }
+    {
+      umamiHost && umamiId && (
+        <script is:inline defer src={`${umamiHost}/script.js`} data-website-id={umamiId} data-domains={umamiDomains}></script>
       )
     }
   </head>

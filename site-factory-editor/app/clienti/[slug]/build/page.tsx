@@ -3,6 +3,7 @@ import { readClientBundle } from "@/lib/clients";
 import { STEPS } from "@/lib/steps";
 import { staleFiles } from "@/lib/staleness";
 import { hasSecret } from "@/lib/secrets";
+import { UMAMI_HOST } from "@/lib/integrazioni";
 import { BuildPanel } from "@/components/build-panel";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,8 @@ export default async function BuildPage({ params }: { params: Promise<{ slug: st
       staleFiles={stale}
       cfTokenOk={hasSecret("CLOUDFLARE_API_TOKEN")}
       cfAccountOk={hasSecret("CLOUDFLARE_ACCOUNT_ID")}
+      vpsKeysOk={{ umami: hasSecret("UMAMI_PASSWORD"), n8n: hasSecret("N8N_REGISTRA_KEY") }}
+      umamiHost={UMAMI_HOST}
     />
   );
 }

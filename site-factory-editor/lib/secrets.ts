@@ -17,6 +17,10 @@ export const KNOWN_KEYS = [
   "RECRAFT_API_KEY",
   "CLOUDFLARE_API_TOKEN",
   "CLOUDFLARE_ACCOUNT_ID",
+  // VPS sf-prod-01 (docs/vps-integrazioni-setup.md)
+  "UMAMI_PASSWORD",
+  "N8N_REGISTRA_KEY",
+  "N8N_API_KEY",
 ] as const;
 export type KeyName = (typeof KNOWN_KEYS)[number];
 
@@ -26,6 +30,9 @@ export const KEY_LABELS: Record<KeyName, string> = {
   RECRAFT_API_KEY: "Recraft (logo vettoriale)",
   CLOUDFLARE_API_TOKEN: "Cloudflare (token deploy Workers)",
   CLOUDFLARE_ACCOUNT_ID: "Cloudflare (account ID)",
+  UMAMI_PASSWORD: "Umami (password utente site-factory)",
+  N8N_REGISTRA_KEY: "n8n (segreto webhook registra-cliente)",
+  N8N_API_KEY: "n8n (API key, solo import workflow)",
 };
 
 function keychainRead(name: KeyName): string | null {

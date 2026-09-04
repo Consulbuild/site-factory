@@ -31,10 +31,13 @@ const isReassurance = variant === "B";
 //
 // Stati del form: loading / errore inline; il successo porta alla thank-you
 // page (/grazie, prop successHref).
-// In demo (data-demo="true") il submit simula l'invio; in Fase 3 basta
-// impostare action="<endpoint>" e data-demo="false" — la logica c'è già.
+// L'endpoint reale (webhook n8n, slug nel path) arriva dall'editor come env di
+// build FORM_ACTION solo per il sito pubblicato su dominio — infrastruttura
+// dell'agenzia, mai site.json. Senza env (dev, test, anteprime, demo) il form
+// resta simulato: data-demo="true" e action vuota, HTML identico a prima.
 const hasForm = data.showForm;
-const isDemo = true; // Fase 3: false + action reale
+const formAction = process.env.FORM_ACTION ?? "";
+const isDemo = !formAction;
 
 const phoneCta: Cta = {
   label: c.phone,
@@ -105,7 +108,7 @@ if (!hasForm) {
           class="rounded-card bg-bg p-6 text-ink shadow-float sm:p-8"
           name="contatti"
           method="post"
-          action=""
+          action={formAction}
           data-contact-form
           data-variant={isReassurance ? "B" : "A"}
           data-demo={isDemo ? "true" : "false"}
@@ -219,7 +222,8 @@ if (!hasForm) {
 {hasForm && (
   <script is:inline>
     // Stati del form: loading → thank-you page | errore (recuperabile).
-    // In demo simula l'invio; in produzione fa POST a form.action (Fase 3).
+    // In demo simula l'invio; col dominio fa POST multipart a form.action
+    // (webhook n8n: risposta 200 con CORS aperto, il gate è il registro clienti).
     document.querySelectorAll("[data-contact-form]").forEach((form) => {
       const submitBtn = form.querySelector("[data-form-submit]");
       const errorBox = form.querySelector("[data-form-error]");

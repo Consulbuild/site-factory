@@ -53,7 +53,8 @@ export function EliminaClienteDialog({
           {haSitoOnline && (
             <>
               {" "}
-              <strong className="text-warn">Il sito già pubblicato resta online finché non lo rimuovi da Cloudflare.</strong>
+              <strong className="text-warn">Il sito già pubblicato resta online finché non lo rimuovi da Cloudflare</strong>, ma
+              viene tolto da monitor, registro del modulo e statistiche: il suo form smetterà di funzionare.
             </>
           )}
           <span className="mt-3 block">

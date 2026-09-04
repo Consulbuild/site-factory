@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { KNOWN_KEYS, KEY_LABELS, type KeyName, getSecret, hasSecret, secretHint, setSecret } from "@/lib/secrets";
 import { listSubmissions } from "@/lib/tally";
+import { umamiLogin, n8nPing, registraCliente } from "@/lib/integrazioni";
 
 export const dynamic = "force-dynamic";
 
@@ -56,6 +57,12 @@ async function provaKey(name: KeyName, key: string): Promise<string | null> {
     if (r.status === 401 || r.status === 403) return "key rifiutata da BFL";
     return null;
   }
+  // VPS: prove reali contro i servizi (login Umami, ping del webhook, lista workflow).
+  if (name === "UMAMI_PASSWORD") return umamiLogin(key).then(() => null, (e: unknown) => (e instanceof Error ? e.message : String(e)));
+  if (name === "N8N_REGISTRA_KEY") {
+    return registraCliente({ slug: "ping", azione: "ping" }, key).then(() => null, (e: unknown) => (e instanceof Error ? e.message : String(e)));
+  }
+  if (name === "N8N_API_KEY") return n8nPing(key);
   return `nessuna prova definita per ${name}`;
 }
 

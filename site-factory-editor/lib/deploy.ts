@@ -4,11 +4,14 @@ import { spawn } from "node:child_process";
 import { SITE_RENDERER, childEnv, clientDir } from "./paths";
 import { readClientState, patchClientState, writeJson } from "./clients";
 import { getSecret } from "./secrets";
+import { syncInfra, type InfraEsito } from "./integrazioni";
 
 // Pubblicazione su Cloudflare Workers static assets (decisione 2026-07,
 // docs/decisions/2026-07-verifiche-fase-b.md §6): wrangler.jsonc per cliente
 // con la sola dist come assets, spawn di wrangler (devDependency pinnata del
 // renderer). Token/account dal Keychain, iniettati come env — mai in argv.
+// Dopo la pubblicazione il cliente viene proiettato sull'infra del VPS
+// (registro n8n del modulo, monitor Gatus): esito in steps.build.infra.
 
 const WRANGLER_BIN = path.join(SITE_RENDERER, "node_modules", ".bin", "wrangler");
 const DEPLOY_TIMEOUT_MS = 180_000;
@@ -16,6 +19,7 @@ const DEPLOY_TIMEOUT_MS = 180_000;
 export interface DeployResult {
   workerName: string;
   url: string;
+  infra: InfraEsito;
 }
 
 export async function deployClient(slug: string): Promise<DeployResult> {
@@ -40,6 +44,19 @@ export async function deployClient(slug: string): Promise<DeployResult> {
       dominio
         ? `la build è stata prodotta ${build.siteUrl ? `con SITE_URL ${build.siteUrl}` : "senza dominio"}: canonical e og: assoluti non corrispondono a https://${dominio}. Ribuilda, riconferma e poi pubblica.`
         : `la build è stata prodotta col dominio ${build.siteUrl} ora rimosso: canonical e og: assoluti puntano ancora lì. Ribuilda, riconferma e poi pubblica.`,
+    );
+  }
+  // Stessa regola per le integrazioni cotte nell'HTML (script Umami, action del
+  // modulo): col dominio devono esserci e puntare al sito Umami corrente; senza
+  // dominio non devono esserci (un sito demo non registra statistiche né lead).
+  const integrazioniAttese = dominio
+    ? !!build.integrazioni && build.integrazioni.umamiWebsiteId === build.umamiWebsiteId
+    : !build.integrazioni;
+  if (!integrazioniAttese) {
+    throw new Error(
+      dominio
+        ? "la build è stata prodotta senza le integrazioni del dominio (statistiche Umami e modulo reale) o con un sito Umami diverso. Ribuilda, riconferma e poi pubblica."
+        : "la build contiene ancora le integrazioni del dominio ora rimosso (statistiche e modulo). Ribuilda, riconferma e poi pubblica.",
     );
   }
 
@@ -99,5 +116,12 @@ export async function deployClient(slug: string): Promise<DeployResult> {
       ...(dominio ? { dominio } : {}),
     };
   });
-  return { workerName: slug, url };
+  // Proiezione sull'infra: SEMPRE (senza dominio rimuove un eventuale monitor
+  // di un dominio tolto). Non fa fallire il deploy: il sito è già online,
+  // l'esito (anche negativo) è nello stato e la scheda lo mostra.
+  const infra = await syncInfra(slug);
+  patchClientState(slug, (s) => {
+    s.steps.build.infra = infra;
+  });
+  return { workerName: slug, url, infra };
 }

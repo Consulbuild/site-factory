@@ -3,6 +3,7 @@ import path from "node:path";
 import { SITE_RENDERER, NODE_BIN, clientDir } from "./paths";
 import { readClientState, patchClientState, readCopy, readLavori } from "./clients";
 import { validateCopyArtifact } from "./slots";
+import { UMAMI_HOST, ensureUmamiWebsite, formAction } from "./integrazioni";
 import type { RunEvent, PhaseResult, StepIO } from "./run-step";
 import type { RunCtx } from "./steps";
 
@@ -162,16 +163,49 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
   });
   if (!v.ok) return v;
 
+  // FASE integrazioni (Umami, modulo): SOLO per la build completa con dominio.
+  // Il sito pubblicato riceve statistiche senza cookie e modulo reale come env
+  // di build (stesso meccanismo di SITE_URL): infrastruttura dell'agenzia, mai
+  // site.json. Senza dominio (demo, anteprime) il sito resta demo.
+  const dominio = readClientState(slug).steps.build.dominio;
+  let integrazioni: { umamiWebsiteId: string; formAction: string } | null = null;
+  if (dominio && !partial) {
+    yield { type: "phase", label: "integrazioni (Umami, modulo)" };
+    try {
+      const websiteId = await ensureUmamiWebsite(
+        dominio,
+        String(site?.meta?.businessName ?? slug),
+        readClientState(slug).steps.build.umamiWebsiteId,
+      );
+      patchClientState(slug, (s) => {
+        s.steps.build.umamiWebsiteId = websiteId;
+      });
+      integrazioni = { umamiWebsiteId: websiteId, formAction: formAction(slug) };
+      yield { type: "text", text: `Umami: sito ${websiteId} · modulo → ${integrazioni.formAction}` };
+    } catch (e) {
+      return {
+        ok: false,
+        error: `integrazioni non attivabili (${e instanceof Error ? e.message : String(e)}): il VPS o la chiave non rispondono — riprova, oppure rimuovi il dominio per una build senza integrazioni.`,
+      };
+    }
+  }
+
   // FASE astro build → out/<slug>/dist (path assoluti: fuori dal renderer).
   // Col dominio pubblicato la build riceve SITE_URL: attiva canonical e og:*
-  // assoluti in Base.astro (consolidamento SEO apex/www/workers.dev).
-  const dominio = readClientState(slug).steps.build.dominio;
+  // assoluti in Base.astro (consolidamento SEO apex/www/workers.dev); con le
+  // integrazioni anche script Umami e action del modulo.
   const b = yield* io.script({
     phase: "astro build",
     bin: ASTRO_BIN,
     args: ["build", "--outDir", dist],
     cwd: SITE_RENDERER,
-    env: { SITE_JSON: siteJson, ...(dominio ? { SITE_URL: `https://${dominio}` } : {}) },
+    env: {
+      SITE_JSON: siteJson,
+      ...(dominio ? { SITE_URL: `https://${dominio}` } : {}),
+      ...(integrazioni
+        ? { UMAMI_HOST, UMAMI_WEBSITE_ID: integrazioni.umamiWebsiteId, FORM_ACTION: integrazioni.formAction }
+        : {}),
+    },
     timeoutMs: 180_000,
   });
   if (!b.ok) return b;
@@ -192,9 +226,15 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
     // dominio corrente e richiede il rebuild se nel frattempo è cambiato.
     if (dominio) s.steps.build.siteUrl = `https://${dominio}`;
     else delete s.steps.build.siteUrl;
+    // Stessa logica per le integrazioni cotte nell'HTML (script Umami, action).
+    if (integrazioni) s.steps.build.integrazioni = integrazioni;
+    else delete s.steps.build.integrazioni;
     // deploy NON si azzera: il sito online resta online; la UI segnala
     // «build più recente non pubblicata» confrontando builtAt/deployedAt.
   });
-  yield { type: "text", text: `build ok — ${pages} pagine, ${sizeKb} KB${partial ? " (parziale)" : ""}` };
+  yield {
+    type: "text",
+    text: `build ok — ${pages} pagine, ${sizeKb} KB${partial ? " (parziale)" : ""}${integrazioni ? " · integrazioni attive" : ""}`,
+  };
   return { ok: true };
 }

@@ -95,6 +95,14 @@ export const ClientStateSchema = z.object({
          * Il deploy rifiuta se non coincide col dominio corrente.
          */
         siteUrl: z.string().optional(),
+        /** Sito registrato su Umami alla prima build con dominio; riusato dalle successive. */
+        umamiWebsiteId: z.string().optional(),
+        /**
+         * Integrazioni COTTE nell'HTML dell'ultima build (script Umami, action
+         * del modulo), accanto a siteUrl. Assente = build senza (nessun dominio).
+         * Il deploy rifiuta se non coincidono con lo stato corrente.
+         */
+        integrazioni: z.object({ umamiWebsiteId: z.string(), formAction: z.string() }).optional(),
         // Il deploy non è uno step: è la storia dell'ultima pubblicazione.
         deploy: z
           .object({
@@ -102,6 +110,16 @@ export const ClientStateSchema = z.object({
             url: z.string(),
             deployedAt: z.string(),
             dominio: z.string().optional(),
+          })
+          .optional(),
+        /** Esito dell'ultima proiezione sull'infra al deploy (registro n8n, monitor Gatus + git). */
+        infra: z
+          .object({
+            at: z.string(),
+            commit: z.string().optional(),
+            pushed: z.boolean(),
+            n8nOk: z.boolean(),
+            errore: z.string().optional(),
           })
           .optional(),
         ultimaRun: UltimaRun,
