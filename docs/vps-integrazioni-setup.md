@@ -76,9 +76,13 @@ Regola: il dominio principale spedisce solo ciò che nessuno segnalerebbe come s
 il ripetuto/promozionale va sul sottodominio `notifiche`, così un'eventuale
 segnalazione non tocca la reputazione della casella principale.
 
-Resta da fare: **SMTP & API → SMTP → SMTP key** (server `smtp-relay.brevo.com`, porta
-`587`, login = e-mail Brevo, password = la key). Bitwarden: `Brevo` (login + SMTP key +
-i tre mittenti).
+**SMTP e API → SMTP → Genera una nuova chiave SMTP** (nome `n8n-sf-prod-01`; la chiave
+si vede una sola volta). Parametri per n8n: server `smtp-relay.brevo.com`, porta `587`,
+**utente = l'«Accesso» mostrato da Brevo (`xxxxx@smtp-brevo.com`, NON la tua e-mail)**,
+password = la chiave, STARTTLS (SSL/TLS off). Bitwarden: `Brevo SMTP n8n` con questi
+campi, più nota `Brevo` con login e i tre mittenti. Il blocco degli IP non autorizzati
+si attiva solo dopo il primo invio riuscito, aggiungendo prima 2.28.5.8 in Sicurezza →
+IP autorizzati.
 
 ## 4. n8n: credenziali, registro clienti, due workflow
 
