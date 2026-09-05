@@ -62,13 +62,23 @@ Chi fa cosa a runtime:
 
 ## 3. Brevo (e-mail dei lead)
 
-1. Account su brevo.com con `info@consulbuild.com` (piano gratuito, 300 e-mail/giorno).
-2. **Senders & Domains → Domains → Add a domain → `consulbuild.com`** → Brevo mostra i
-   record DNS (DKIM, SPF/DMARC): crea i record su Google Domains e attendi la verifica.
-3. **Senders → Add sender**: `siti@consulbuild.com` (nome «Siti ConsulBuild»).
-4. **SMTP & API → SMTP**: crea una **SMTP key**. Server `smtp-relay.brevo.com`, porta
-   `587`, login = la tua e-mail Brevo, password = la SMTP key.
-5. Bitwarden: `Brevo` (login) + campo SMTP key.
+Stato reale (fatto il 2026-09-05): account `info@consulbuild.com`; domini autenticati
+`consulbuild.com` (branded subdomain dei link = `mail.consulbuild.com`, non spedisce)
+e `notifiche.consulbuild.com`; mittenti verificati:
+
+| Mittente | Uso |
+|---|---|
+| `Siti ConsulBuild <siti@consulbuild.com>` | notifiche dei lead ai clienti (workflow form-lead) |
+| `Report Consulbuild <report@notifiche.consulbuild.com>` | report al rinnovo (Piano 2) e ogni invio ripetuto |
+| `Consulbuild <info@consulbuild.com>` | solo posta personale (Google Workspace), mai automazioni |
+
+Regola: il dominio principale spedisce solo ciò che nessuno segnalerebbe come spam;
+il ripetuto/promozionale va sul sottodominio `notifiche`, così un'eventuale
+segnalazione non tocca la reputazione della casella principale.
+
+Resta da fare: **SMTP & API → SMTP → SMTP key** (server `smtp-relay.brevo.com`, porta
+`587`, login = e-mail Brevo, password = la key). Bitwarden: `Brevo` (login + SMTP key +
+i tre mittenti).
 
 ## 4. n8n: credenziali, registro clienti, due workflow
 
