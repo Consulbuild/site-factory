@@ -275,8 +275,10 @@ tassonomia sezioni). Regole operative nei componenti:
     (deterministico: assemble → validate → `SITE_JSON=… astro build` + preview),
     poi deploy Workers.
 
-Il form di `ContactCTA` è completo lato client (stati loading/errore, honeypot,
-riga informativa GDPR fissa, redirect a `/grazie` al successo) ma **simulato**:
-`data-demo="true"` e `action=""`. In Fase 3 basta impostare l'endpoint reale e
-`data-demo="false"` — la logica di POST c'è già, non riscriverla. Lo script Umami
-non è ancora in `Base.astro`: va aggiunto al deploy, quando esisterà l'istanza.
+**Integrazioni VPS (2026-09-05)**: il form di `ContactCTA` e lo script Umami in
+`Base.astro` si attivano SOLO nella build del sito con dominio, via env di build
+(`FORM_ACTION`, `UMAMI_HOST`, `UMAMI_WEBSITE_ID`) passate da `lib/build.ts` come
+`SITE_URL` — infrastruttura dell'agenzia, mai `site.json`. Senza env il form resta
+simulato (`data-demo="true"`, action vuota) e non c'è script: HTML identico a prima.
+Al deploy `lib/integrazioni.ts` registra il cliente in n8n e committa il monitor
+Gatus (`infra/gatus/`). Guida dei settaggi lato VPS: `docs/vps-integrazioni-setup.md`.

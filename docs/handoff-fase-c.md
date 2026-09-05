@@ -38,6 +38,20 @@ update-mode a 3 aree. Piano vivo e stato: `docs/piano-scheda-legale.md`.
 Avviso globale login CLI Claude (03/08): l'editor sorveglia `claude auth status`.
 Dev server: `cd site-factory-editor && npm run dev` → :3000 (spesso già attivo su :3311).
 
+**Integrazioni VPS al deploy — codice fatto (2026-09-05, piano
+`~/.claude/plans/ora-voglio-che-rifletti-zesty-swan.md`)**: con dominio, la build
+registra il sito su Umami e cuoce nell'HTML script statistiche + action del modulo
+(env `UMAMI_HOST`/`UMAMI_WEBSITE_ID`/`FORM_ACTION`, come `SITE_URL`); il deploy
+registra il cliente in n8n (webhook `registra-cliente` → Data table `clienti`) e
+committa il monitor Gatus in `infra/gatus/config/clienti/<slug>.yaml` (Coolify
+ricostruisce da GitHub). Stato in `steps.build.{umamiWebsiteId,integrazioni,infra}`,
+interlock «ribuilda» esteso, `lib/integrazioni.ts`. Fatti di stack nel legale (area
+`stack`). **Da fare a mano prima dell'E2E** (guida `docs/vps-integrazioni-setup.md`):
+bot Telegram, GitHub App + risorsa Gatus in Coolify, Brevo, credenziali/Data table/
+workflow n8n, utente Umami, 3 chiavi nell'editor. Poi: cliente `zz-test-integrazione`,
+riallineo legale di Cavaliere («fatti di stack» → Aggiorna con l'AI) e ripubblicazione.
+Piano 2 (report al rinnovo via Brevo/WhatsApp, data rinnovo) riusa la Data table.
+
 **Clienti di test** (`site-renderer/out/`):
 - `cavaliere-build-srls`: intake+contesto+palette verificati; **copy v2 appena rigenerato
   (skill anti-ripetizione), stato da_verificare, SENZA review** — il run del critico fu
