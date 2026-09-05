@@ -1,0 +1,12 @@
+# Generato dall'editor al deploy — non modificare a mano.
+endpoints:
+  - name: cavalierebuild.it
+    group: clienti
+    url: "https://cavalierebuild.it/"
+    interval: 5m
+    conditions:
+      - "[STATUS] == 200"
+      - "[RESPONSE_TIME] < 3000"
+      - "[CERTIFICATE_EXPIRATION] > 168h"
+    alerts:
+      - type: telegram
