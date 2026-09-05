@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { spawnSync } from "node:child_process";
-import { ENV_FILE } from "./paths";
+import { ENV_FILE } from "./paths.ts"; // .ts: importabile anche standalone (script strip-types)
 
 // Store delle API key della pipeline: macOS Keychain (cifrato a riposo dall'OS),
 // servizio "site-factory", account = nome della key. Il valore NON tocca mai

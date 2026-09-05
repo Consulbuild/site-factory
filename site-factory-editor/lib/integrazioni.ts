@@ -1,9 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { REPO_ROOT, childEnv, clientDir } from "./paths";
-import { getSecret } from "./secrets";
-import { readClientState } from "./clients";
+// Import con estensione .ts (come legale.ts): il modulo gira anche standalone
+// con `node --experimental-strip-types` (script di sync/test), non solo in Next.
+import { REPO_ROOT, childEnv, clientDir } from "./paths.ts";
+import { getSecret } from "./secrets.ts";
 
 // Integrazioni del VPS (sf-prod-01) nella pipeline: Umami (statistiche senza
 // cookie), n8n (modulo del sito + registro clienti), Gatus (monitor). Sono
@@ -177,9 +178,11 @@ function commitGatus(messaggio: string): { commit?: string; pushed: boolean; err
 
 export type InfraEsito = { at: string; commit?: string; pushed: boolean; n8nOk: boolean; errore?: string };
 
-function readBriefJson(slug: string): Record<string, unknown> {
+/** Lettura tollerante di un JSON del workspace (niente Zod qui: il modulo
+ *  resta importabile standalone senza trascinarsi clients.ts). */
+function readJsonLoose(slug: string, file: string): Record<string, unknown> {
   try {
-    return JSON.parse(fs.readFileSync(path.join(clientDir(slug), "brief.json"), "utf8"));
+    return JSON.parse(fs.readFileSync(path.join(clientDir(slug), file), "utf8"));
   } catch {
     return {};
   }
@@ -188,8 +191,9 @@ function readBriefJson(slug: string): Record<string, unknown> {
 /** Dopo un deploy: registro n8n + monitor Gatus (commit/push). Non lancia mai:
  *  il sito è già online, gli errori tornano nell'esito e la scheda li mostra. */
 export async function syncInfra(slug: string): Promise<InfraEsito> {
-  const dominio = readClientState(slug).steps.build.deploy?.dominio ?? null;
-  const brief = readBriefJson(slug);
+  const stato = readJsonLoose(slug, "client.json") as { steps?: { build?: { deploy?: { dominio?: string } } } };
+  const dominio = stato.steps?.build?.deploy?.dominio ?? null;
+  const brief = readJsonLoose(slug, "brief.json");
   return proietta(slug, { dominio, azienda: String(brief.azienda ?? slug), email: String(brief.email ?? "") });
 }
 
