@@ -46,11 +46,16 @@ registra il cliente in n8n (webhook `registra-cliente` → Data table `clienti`)
 committa il monitor Gatus in `infra/gatus/config/clienti/<slug>.yaml` (Coolify
 ricostruisce da GitHub). Stato in `steps.build.{umamiWebsiteId,integrazioni,infra}`,
 interlock «ribuilda» esteso, `lib/integrazioni.ts`. Fatti di stack nel legale (area
-`stack`). **Da fare a mano prima dell'E2E** (guida `docs/vps-integrazioni-setup.md`):
-bot Telegram, GitHub App + risorsa Gatus in Coolify, Brevo, credenziali/Data table/
-workflow n8n, utente Umami, 3 chiavi nell'editor. Poi: cliente `zz-test-integrazione`,
-riallineo legale di Cavaliere («fatti di stack» → Aggiorna con l'AI) e ripubblicazione.
-Piano 2 (report al rinnovo via Brevo/WhatsApp, data rinnovo) riusa la Data table.
+`stack`). **Lato VPS tutto configurato e verificato E2E il 2026-09-05** (guida
+`docs/vps-integrazioni-setup.md`; workflow n8n versionati in `infra/n8n/`, sync con
+`scripts/n8n-import.ts export|import`): cliente fittizio `zz-test-integrazione`
+build→deploy→delete verde, alert Telegram di Gatus ricevuto, e-mail lead via Brevo
+partita. Decisione: NIENTE notifiche lead all'agenzia (Telegram solo per servizi giù
+ed errori workflow). Legale di Cavaliere riallineato (update-mode, catena PASS) —
+**resta da fare**: Conferma umana nella scheda Legale, poi Build → Conferma →
+Pubblica di Cavaliere (primo sito con modulo reale + Umami) e lead di prova «TEST».
+Mattia: eliminare Uptime Kuma in Coolify. Piano 2 (report al rinnovo via Brevo
+`report@notifiche.consulbuild.com` + WhatsApp, data rinnovo) riusa la Data table.
 
 **Clienti di test** (`site-renderer/out/`):
 - `cavaliere-build-srls`: intake+contesto+palette verificati; **copy v2 appena rigenerato

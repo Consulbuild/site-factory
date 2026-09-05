@@ -181,13 +181,17 @@ Alert: Telegram bot "ConsulBuild Alert" (nota "Telegram bot alert")
 Uptime Kuma: eliminato il __/__/____
 ```
 
-## 8. Verifica finale (con Claude)
+## 8. Verifica finale (con Claude) — fatta il 2026-09-05
 
-1. Cliente fittizio `zz-test-integrazione` → dominio di prova → Build: nel log compare
+1. ✅ Cliente fittizio `zz-test-integrazione` → dominio di prova → Build: nel log compare
    «Umami: sito … · modulo → …»; l'HTML ha lo script e l'action.
-2. Registro e monitor provati da script: riga nella Data table, file yaml committato,
-   Gatus mostra il dominio.
-3. Un lead di prova dall'anteprima locale → e-mail a info@consulbuild.com + Telegram.
-4. Eliminazione del cliente → riga, sito Umami e file yaml spariscono.
-5. Cavaliere Build: Legale → «Aggiorna con l'AI» (fatti di stack) → Conferma → Build →
-   Pubblica → lead di prova «TEST» dal sito reale.
+2. ✅ Registro e monitor: riga nella Data table, file yaml committato e pushato,
+   Coolify ricostruisce Gatus, alert Telegram ricevuto.
+3. ✅ Lead di prova → e-mail a info@consulbuild.com via Brevo (nessun Telegram: per
+   scelta i lead non generano notifiche all'agenzia).
+4. ✅ Eliminazione del cliente → riga, sito Umami e file yaml spariscono.
+5. Cavaliere Build: Legale aggiornato con l'AI (catena PASS) → **Conferma** → Build →
+   Conferma → Pubblica → lead di prova «TEST» dal sito reale (avvisare il cliente).
+
+Se cambi un workflow in n8n: `node --experimental-strip-types scripts/n8n-import.ts export`
+da `site-factory-editor/` e commit di `infra/n8n/`.
