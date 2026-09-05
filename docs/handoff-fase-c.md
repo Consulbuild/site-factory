@@ -51,11 +51,12 @@ interlock «ribuilda» esteso, `lib/integrazioni.ts`. Fatti di stack nel legale 
 `scripts/n8n-import.ts export|import`): cliente fittizio `zz-test-integrazione`
 build→deploy→delete verde, alert Telegram di Gatus ricevuto, e-mail lead via Brevo
 partita. Decisione: NIENTE notifiche lead all'agenzia (Telegram solo per servizi giù
-ed errori workflow). Legale di Cavaliere riallineato (update-mode, catena PASS) —
-**resta da fare**: Conferma umana nella scheda Legale, poi Build → Conferma →
-Pubblica di Cavaliere (primo sito con modulo reale + Umami) e lead di prova «TEST».
-Mattia: eliminare Uptime Kuma in Coolify. Piano 2 (report al rinnovo via Brevo
-`report@notifiche.consulbuild.com` + WhatsApp, data rinnovo) riusa la Data table.
+ed errori workflow). **Cavaliere pubblicato in sera con modulo reale + Umami**
+(legale riallineato in update-mode, catena PASS; lead «TEST» dal sito reale ok);
+test di robustezza superati (sf-errori → Telegram, reboot del VPS → tutto riparte
+da solo); Uptime Kuma eliminato. **Resta**: Conferma umana del legale di Cavaliere
+nella scheda. Piano 2 (report al rinnovo via Brevo `report@notifiche.consulbuild.com`
++ WhatsApp, data rinnovo; Gatus su cert/disco del VPS) riusa la Data table.
 
 **Clienti di test** (`site-renderer/out/`):
 - `cavaliere-build-srls`: intake+contesto+palette verificati; **copy v2 appena rigenerato

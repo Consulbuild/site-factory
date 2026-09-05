@@ -178,7 +178,8 @@ Workflow n8n: sf-registra-cliente, sf-form-lead, sf-errori — copia in repo inf
 Config monitor: repo infra/gatus/ (Coolify ricostruisce a ogni push su main)
 Chiavi editor (Keychain): UMAMI_PASSWORD, N8N_REGISTRA_KEY, N8N_API_KEY
 Alert: Telegram bot "ConsulBuild Alert" (nota "Telegram bot alert")
-Uptime Kuma: eliminato il __/__/____
+Uptime Kuma: eliminato il 05/09/2026
+N8N_ENCRYPTION_KEY: non è una env di Coolify, sta in /home/node/.n8n/config del volume n8n → copia in Bitwarden
 ```
 
 ## 8. Verifica finale (con Claude) — fatta il 2026-09-05
@@ -190,8 +191,10 @@ Uptime Kuma: eliminato il __/__/____
 3. ✅ Lead di prova → e-mail a info@consulbuild.com via Brevo (nessun Telegram: per
    scelta i lead non generano notifiche all'agenzia).
 4. ✅ Eliminazione del cliente → riga, sito Umami e file yaml spariscono.
-5. Cavaliere Build: Legale aggiornato con l'AI (catena PASS) → **Conferma** → Build →
-   Conferma → Pubblica → lead di prova «TEST» dal sito reale (avvisare il cliente).
+5. ✅ Cavaliere Build pubblicato con modulo reale + Umami; lead «TEST» dal sito reale →
+   n8n success, e-mail al cliente, pageview /grazie. (Resta la Conferma umana del legale.)
+6. ✅ Robustezza: workflow in errore → sf-errori → Telegram; reboot del VPS → tutti i
+   container tornano da soli (~50 s), volumi n8n/Gatus intatti.
 
 Se cambi un workflow in n8n: `node --experimental-strip-types scripts/n8n-import.ts export`
 da `site-factory-editor/` e commit di `infra/n8n/`.
