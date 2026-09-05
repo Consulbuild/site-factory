@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { readClientBundle } from "@/lib/clients";
 import { clientDir } from "@/lib/paths";
-import { STEPS } from "@/lib/steps";
+import { STEPS, areeCambiateLegale } from "@/lib/steps";
 import { staleFiles, computeUpstream } from "@/lib/staleness";
 import { inferForma } from "@/lib/legale";
 import { Breadcrumb, btnSecondary } from "@/components/ui";
@@ -50,7 +50,12 @@ export default async function LegalePage({ params }: { params: Promise<{ slug: s
     );
   }
 
-  const stale = staleFiles(slug, STEPS.legale.upstream, statoLegale.upstream);
+  // Staleness = brief cambiato (upstream) + stack dell'agenzia cambiato dopo la
+  // generazione (statistiche/modulo): l'update-mode rigenera solo la privacy.
+  const stale = [
+    ...staleFiles(slug, STEPS.legale.upstream, statoLegale.upstream),
+    ...(areeCambiateLegale(slug).includes("stack") ? ["fatti di stack (statistiche Umami, modulo n8n)"] : []),
+  ];
   const reviewCorrente =
     !!bundle.legaleReview?.giudicatoSu &&
     JSON.stringify(bundle.legaleReview.giudicatoSu) === JSON.stringify(computeUpstream(slug, ["legale.json"]));

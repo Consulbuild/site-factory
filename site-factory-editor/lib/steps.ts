@@ -40,6 +40,7 @@ import {
   AREA_DOCS,
   LEGALE_DOC_KEYS,
   LenteReviewSchema,
+  areeCambiate,
   docCitati,
   type LegaleDocKey,
   type LegaleReview,
@@ -949,12 +950,11 @@ const LENTE_LABEL: Record<Lente, string> = {
   refusi: "lente refusi e coerenza",
 };
 
-/** Aree del brief cambiate rispetto all'ultimo allineamento (come copyFonteCambiati). */
-function areeCambiateLegale(slug: string): string[] {
-  const prev = readClientState(slug).steps.legale.fonte;
+/** Aree (brief + stack) cambiate rispetto all'ultimo allineamento (come copyFonteCambiati);
+ *  usata dall'update-mode e dalla scheda (staleness «fatti di stack»). */
+export function areeCambiateLegale(slug: string): string[] {
   const cur = legaleFonte(slug);
-  if (!prev || !cur) return [];
-  return Object.keys(cur).filter((k) => prev[k] !== undefined && prev[k] !== cur[k]);
+  return cur ? areeCambiate(readClientState(slug).steps.legale.fonte, cur) : [];
 }
 
 function readJsonLoose(file: string): unknown {
@@ -999,9 +999,9 @@ function promptPrivacy(slug: string, profilo: Profilo): string {
     `## 1. Titolare del trattamento [denominazione in **bold**, sede, P.IVA, recapiti come [e-mail](mailto:…) e [telefono](tel:…)]\n` +
     `## 2. Dati trattati e finalità [i campi del form; elenco puntato delle finalità; invito a non inserire dati particolari art. 9]\n` +
     `## 3. Base giuridica e natura del conferimento [art. 6, par. 1, lett. b) GDPR — misure precontrattuali; niente consenso; obbligatori nome e telefono]\n` +
-    `## 4. Destinatari [autorizzati sotto l'autorità del Titolare + fornitori tecnici responsabili ex art. 28; trattamento nell'UE, clausola condizionale artt. 44 ss. per eventuali trasferimenti]\n` +
+    `## 4. Destinatari [${profilo.mcp.destinatari.join("; ")}; trattamento nell'UE, clausola condizionale artt. 44 ss. per eventuali trasferimenti]\n` +
     `## 5. Periodo di conservazione [gestione richiesta; senza seguito cancellazione entro 12 mesi; incarico → durata + termini di legge]\n` +
-    `## 6. Cookie e statistiche di navigazione [il sito NON usa cookie né strumenti di statistica: nessun banner, conformità Linee guida Garante 10 giugno 2021; aggiornamento in caso di future statistiche aggregate]\n` +
+    `## 6. Cookie e statistiche di navigazione [il sito NON usa cookie; ${profilo.statistiche}]\n` +
     `## 7. Diritti dell'interessato [artt. 15–21 GDPR; richiesta al Titolare; risposta entro un mese, art. 12, par. 3]\n` +
     `## 8. Reclamo al Garante [[garanteprivacy.it](https://www.garanteprivacy.it)]\n` +
     `## 9. Aggiornamenti [versione vigente = data in testa alla pagina]\n` +
@@ -1077,7 +1077,8 @@ const PROMPT_LENTE: Record<Lente, (slug: string, round: number) => string> = {
     `3) FORO: l'evidenza verbatim in foro.json contiene davvero il comune del cliente? La fonte/URL è ufficiale e plausibile? ` +
     `Il foro nei termini coincide con foro.json? Se l'evidenza non regge puoi fare UNO spot-check WebFetch dell'URL. Incoerenza = bloccante.\n` +
     `WHITELIST (non sono invenzioni): la rinumerazione delle sezioni; le formule standard dei template legali; ` +
-    `le cortesie di norma di settore (preventivo/sopralluogo gratuito).\n` +
+    `le cortesie di norma di settore (preventivo/sopralluogo gratuito); i fatti di infrastruttura dell'agenzia, costanti del modello ` +
+    `(hosting Cloudflare; modulo inoltrato via n8n e Brevo su server UE; statistiche Umami senza cookie, IP non conservato, su server UE, nessun banner).\n` +
     `Scrivi SOLO site-renderer/out/${slug}/legale-src/review-antiInvenzione.json:\n` +
     `{"lente":"antiInvenzione","verdict":"PASS|FAIL","citazioni":<esito compatto del tool>,"findings":[{"doc":"privacy|termini|formNotice",` +
     `"path":"privacy.blocks[N] o formNotice","gravita":"bloccante|avviso","problema":"…","fix":"…"}]}\n` +
@@ -1087,7 +1088,8 @@ const PROMPT_LENTE: Record<Lente, (slug: string, round: number) => string> = {
     `Le regole di merito vivono nelle skill installate — leggile PRIMA di giudicare:\n` +
     `/Users/mattia/.claude/skills/tc-sito-it/SKILL.md + /Users/mattia/.claude/skills/tc-sito-it/references/normativa.md\n` +
     `/Users/mattia/.claude/skills/informativa-breve-form/SKILL.md + /Users/mattia/.claude/skills/informativa-breve-form/references/normativa.md\n` +
-    `Imputato: site-renderer/out/${slug}/legale.json. Contesto: il sito è una vetrina SENZA vendita online; form preventivo → base 6.1.b; pubblico_b2c=true.\n` +
+    `Imputato: site-renderer/out/${slug}/legale.json. Contesto: il sito è una vetrina SENZA vendita online; form preventivo → base 6.1.b; pubblico_b2c=true; ` +
+    `nessun cookie; statistiche Umami senza cookie né identificatori (nessun banner, Linee guida Garante 10/06/2021); modulo inoltrato via n8n e Brevo su server UE.\n` +
     `VERIFICA (bloccante ogni violazione):\n` +
     `- clausola foro con salvezza del consumatore (art. 66-bis cod. consumo) presente nei termini;\n` +
     `- limitazioni di responsabilità nei limiti dell'art. 1229 c.c. (mai esonero per dolo/colpa grave), formulate come delimitazione;\n` +

@@ -22,6 +22,8 @@ import {
   formatDenominazione,
   byteCheckDocumenti,
   legaleFonteDaBrief,
+  areeCambiate,
+  AREA_DOCS,
   harvestDaVerificare,
   pulisciFormNotice,
   type Legale,
@@ -253,6 +255,20 @@ console.log("\nByte-check per-documento e fonte per-area:");
   const b = legaleFonteDaBrief({ ...BRIEF, citta: "Sesto San Giovanni" });
   const cambiate = Object.keys(a).filter((k) => a[k] !== b[k]);
   caso("cambio città → cambia SOLO l'area «sede e foro»", cambiate.length === 1 && cambiate[0] === "sede e foro", cambiate.join(","));
+}
+
+/* ---------------- area «stack» (integrazioni VPS 2026-09) ---------------- */
+
+console.log("\nAree cambiate (brief + stack):");
+{
+  const cur = legaleFonteDaBrief({ ...BRIEF });
+  caso("senza provenienza (artifact pre-GUI) → solo «stack»", JSON.stringify(areeCambiate(undefined, cur)) === JSON.stringify(["stack"]));
+  const { stack: _s, ...senzaStack } = cur;
+  caso("provenienza legacy senza chiave stack → «stack»", JSON.stringify(areeCambiate(senzaStack, cur)) === JSON.stringify(["stack"]));
+  caso("provenienza identica → nessuna area", areeCambiate(cur, cur).length === 0);
+  const prevCitta = legaleFonteDaBrief({ ...BRIEF, citta: "Sesto San Giovanni" });
+  caso("brief cambiato con stack uguale → solo l'area del brief", JSON.stringify(areeCambiate(prevCitta, cur)) === JSON.stringify(["sede e foro"]));
+  caso("«stack» rigenera SOLO la privacy", JSON.stringify(AREA_DOCS.stack) === JSON.stringify(["privacy"]));
 }
 
 /* ---------------- regressioni dalla review avversariale 2026-08-02 ---------------- */

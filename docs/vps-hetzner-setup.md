@@ -14,6 +14,7 @@ Sul VPS girano solo i servizi h24 che servono i siti pubblicati dei clienti:
 | **Coolify** | pannello web che gestisce tutto il resto (Docker, SSL, backup) | script ufficiale |
 | **n8n** | automazioni: riceve il form dei siti, webhook Tally, notifiche email | one-click da Coolify |
 | **Umami** | analytics dei siti clienti, senza cookie (niente banner) | one-click da Coolify |
+| **Gatus** (dal 2026-09-04, al posto di Uptime Kuma) | monitor dei siti e dei servizi, alert Telegram | Dockerfile in `infra/gatus/`, Coolify lo ricostruisce da GitHub |
 
 NON gira sul VPS: la pipeline AI (`claude -p` sul Mac), l'editor Next.js (locale), i siti
 dei clienti (Cloudflare Workers). Il CX33 (4 vCPU / 8 GB) è sovradimensionato: consumo
@@ -158,9 +159,8 @@ Ci mette qualche minuto. Alla fine stampa un indirizzo `http://IP:8000`.
 In Coolify → Project → + New Resource → **Services**: `n8n` e `Umami` sono nel catalogo
 one-click (Coolify crea da solo i loro database Postgres). Per ciascuno: assegna il
 dominio (`n8n.consulbuild.com`, `stats.consulbuild.com`, record A su Cloudflare) e
-Deploy. Dettagli di configurazione (utente admin n8n, email transazionale via
-provider esterno e non dall'IP del VPS, script Umami in `Base.astro`) nella prossima
-guida: fuori scope di questa.
+Deploy. Il collegamento alla pipeline (form → n8n, script Umami, monitor Gatus,
+Brevo, Telegram, chiavi dell'editor) è in **`docs/vps-integrazioni-setup.md`**.
 
 ## 8. Scheda da salvare in Bitwarden (nota sicura `VPS sf-prod-01`)
 

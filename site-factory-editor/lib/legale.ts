@@ -116,9 +116,13 @@ export type LegaleReview = z.infer<typeof LegaleReviewSchema>;
 /* Costanti d'agenzia (lo standard validato sul golden Cavaliere)       */
 /* ------------------------------------------------------------------ */
 
-// I FATTI standard dei nostri siti vetrina (form preventivo, Umami assente,
-// hosting UE con clausola condizionale): validati una volta qui, mai
+// I FATTI standard dei nostri siti vetrina (form preventivo inoltrato via n8n e
+// Brevo su server UE, statistiche Umami senza cookie su server UE, hosting
+// Cloudflare con clausola condizionale): validati una volta qui, mai
 // re-inventati per cliente. I fatti PER-cliente arrivano solo dal brief.
+// Cambiare `destinatari`/`statistiche` = cambiare lo stack: la fonte per-area
+// «stack» (legaleFonteDaBrief) rende stale la privacy di ogni cliente, che si
+// riallinea con l'update-mode. Stack reale: docs/vps-integrazioni-setup.md.
 export const COSTANTI_LEGALE = {
   moduli: ["contatti"] as const,
   informativa_estesa_url: "/privacy",
@@ -137,8 +141,12 @@ export const COSTANTI_LEGALE = {
   ],
   destinatari: [
     "soggetti autorizzati che operano sotto l'autorità del Titolare",
-    "fornitori tecnici di hosting e infrastruttura, nominati responsabili ex art. 28 GDPR",
+    "fornitori tecnici nominati responsabili del trattamento ex art. 28 GDPR: hosting del sito (Cloudflare), inoltro del modulo e recapito e-mail al Titolare (n8n e Brevo, su server nell'Unione europea), statistiche di navigazione (Umami, installazione dell'agenzia su server nell'Unione europea)",
   ],
+  // Statistiche di navigazione: Umami self-hosted (Hetzner, Germania), attivo
+  // sul sito pubblicato con dominio (script iniettato alla build, Base.astro).
+  statistiche:
+    "il sito usa Umami, strumento di statistica installato dall'agenzia su server nell'Unione europea, che non usa cookie né identificatori memorizzati sul dispositivo, non conserva l'indirizzo IP e raccoglie dati in forma aggregata e anonima; per questo non è richiesto alcun banner di consenso (Linee guida cookie del Garante del 10 giugno 2021)",
   periodo_conservazione: "il tempo necessario a gestire la richiesta; in assenza di seguito, cancellazione entro 12 mesi",
   conservazione_contatto: "12 mesi in assenza di seguito",
   campi_obbligatori_form: "nome e telefono",
@@ -259,6 +267,8 @@ export function buildProfilo(b: BriefLegale, dominio?: string | null) {
       destinatari: [...COSTANTI_LEGALE.destinatari],
       periodo_conservazione: COSTANTI_LEGALE.periodo_conservazione,
     },
+    // Fatti di stack (costanti d'agenzia) per la sezione statistiche e per le lenti.
+    statistiche: COSTANTI_LEGALE.statistiche,
     note,
   };
 }
@@ -716,6 +726,9 @@ export function legaleFonteDaBrief(brief: Record<string, unknown>): Record<strin
     "identità": hashValue([brief.azienda, brief.partita_iva]),
     "sede e foro": hashValue([brief.indirizzo, brief.citta]),
     recapiti: hashValue([brief.email, brief.telefono]),
+    // Fatti di stack dell'agenzia (non del brief): cambiano quando cambia
+    // l'infrastruttura (statistiche, inoltro del modulo) → privacy da riallineare.
+    stack: hashValue([COSTANTI_LEGALE.destinatari, COSTANTI_LEGALE.statistiche]),
   };
 }
 
@@ -723,7 +736,16 @@ export const AREA_DOCS: Record<string, LegaleDocKey[]> = {
   "identità": ["privacy", "termini", "formNotice"],
   "sede e foro": ["privacy", "termini"], // indirizzo nei due doc + ri-derivazione foro; il formNotice non contiene la sede
   recapiti: ["privacy", "termini", "formNotice"],
+  stack: ["privacy"], // i termini restano veri (nessun cookie); il formNotice non parla di fornitori
 };
+
+/** Aree cambiate rispetto all'ultimo allineamento. Le aree del brief contano
+ *  solo se la provenienza precedente le conosceva (prudenza: fonte parziale ≠
+ *  cambiamento); l'area «stack» conta anche senza provenienza — un artifact
+ *  pre-GUI o generato prima delle integrazioni descrive uno stack che non c'è più. */
+export function areeCambiate(prev: Record<string, string> | undefined, cur: Record<string, string>): string[] {
+  return Object.keys(cur).filter((k) => (k === "stack" ? prev?.[k] !== cur[k] : prev?.[k] !== undefined && prev[k] !== cur[k]));
+}
 
 /** «I documenti non citati restano JSON-identici»: il sensore. La granularità
  *  è il DOCUMENTO (privacy/termini/formNotice): dentro un documento corretto

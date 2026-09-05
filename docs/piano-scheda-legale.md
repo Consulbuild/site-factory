@@ -97,6 +97,19 @@ di controllo È il progetto. Bar di qualità: l'output del flusso manuale Cavali
 
 ## Decision Log [viva]
 
+- 2026-09-04 — **fatti di stack nelle costanti d'agenzia** (integrazioni VPS, piano
+  `ora-voglio-che-rifletti-zesty-swan`): `COSTANTI_LEGALE.destinatari` nomina i
+  fornitori reali (Cloudflare; n8n + Brevo su server UE per il modulo; Umami
+  self-hosted UE per le statistiche) e `COSTANTI_LEGALE.statistiche` descrive Umami
+  senza cookie. La sezione 6 della privacy NON è più cablata nel prompt («non usa
+  strumenti di statistica»): deriva dalle costanti. Nuova area `stack` in
+  `legaleFonteDaBrief` (hash delle costanti) → `AREA_DOCS.stack = ["privacy"]`;
+  `areeCambiate` la considera cambiata anche SENZA provenienza (Cavaliere, artifact
+  pre-GUI), così la scheda mostra «fatti di stack» tra le cause di staleness e
+  l'update-mode rigenera la sola privacy. Decisione Mattia: i documenti devono
+  rispecchiare lo stack in uso, mai restare obsoleti. Le skill globali non cambiano
+  (nessun blocco condizionale analytics nei template): i fatti passano nei prompt.
+
 - 2026-08-02 (piano): **niente raccolta REA/PEC/capitale sociale** — decisione di
   Mattia: i clienti della nicchia sono piccole imprese per cui oggi non servono.
   Niente artifact né UI di dati societari; le skill omettono le righe condizionali
@@ -330,7 +343,8 @@ oltre 2-3 round (budget rigido); manomette il Markdown più del JSON (canonico =
   delle skill + parametri MCP) si calcola in TS e si EMBEDDA nei prompt; le
   costanti d'agenzia (finalità, categorie dati, destinatari, conservazione «12
   mesi senza seguito», campi form nome/telefono obbligatori, `informativa_estesa_url
-  = "/privacy"`, Umami cookieless prospettico, `sito.url` = dominio da
+  = "/privacy"`, fatti di stack «Umami cookieless su server UE + modulo via n8n/Brevo»
+  (area `stack`, dal 2026-09-04), `sito.url` = dominio da
   `steps.build` se noto altrimenti «il presente sito web») vivono come modulo
   costanti in `lib/legale.ts`, validate una volta qui — sono lo standard Cavaliere.
 
