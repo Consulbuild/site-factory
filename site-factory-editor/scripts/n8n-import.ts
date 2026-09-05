@@ -41,7 +41,18 @@ async function trovaId(nome: string): Promise<string | null> {
   return j.data.find((w) => w.name === nome)?.id ?? null;
 }
 
-const pulisci = (w: Workflow) => ({ name: w.name, nodes: w.nodes, connections: w.connections, settings: w.settings ?? {} });
+// L'API accetta in `settings` solo un sottoinsieme di chiavi (400 «must NOT have
+// additional properties» su binaryMode/availableInMCP/timeSavedMode, visto 2026-09-05).
+const SETTINGS_OK = new Set([
+  "executionOrder", "timezone", "errorWorkflow", "saveDataErrorExecution", "saveDataSuccessExecution",
+  "saveManualExecutions", "saveExecutionProgress", "executionTimeout", "callerPolicy",
+]);
+const pulisci = (w: Workflow) => ({
+  name: w.name,
+  nodes: w.nodes,
+  connections: w.connections,
+  settings: Object.fromEntries(Object.entries((w.settings ?? {}) as Record<string, unknown>).filter(([k]) => SETTINGS_OK.has(k))),
+});
 
 async function esporta(): Promise<void> {
   fs.mkdirSync(DIR, { recursive: true });

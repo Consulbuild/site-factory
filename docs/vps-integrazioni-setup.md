@@ -17,7 +17,7 @@ Chi fa cosa a runtime:
 
 | Evento | Percorso |
 |---|---|
-| visitatore compila il form | sito → `POST https://n8n.consulbuild.com/webhook/form-lead/<slug>` → n8n cerca lo slug nel registro → e-mail Brevo al cliente (+ copia a te) → avviso Telegram senza dati personali |
+| visitatore compila il form | sito → `POST https://n8n.consulbuild.com/webhook/form-lead?slug=<slug>` → n8n cerca lo slug nel registro → e-mail Brevo al cliente (Reply-To = il lead) |
 | pagina vista | script Umami → `stats.consulbuild.com` (nessun cookie) |
 | sito o servizio giù | Gatus (ogni 5 min) → Telegram |
 
@@ -108,10 +108,12 @@ Tabella `clienti`, colonne (tutte testo): `slug`, `azienda`, `dominio`, `email`.
 6. **Publish** (attiva).
 
 ### 4.4 Workflow `sf-form-lead` (chiamato dal form dei siti)
-1. **Webhook**: Method `POST`, Path `form-lead/:slug`, Authentication **None**,
-   Respond **Immediately**, Options → **Allowed Origins (CORS)** `*`.
+1. **Webhook**: Method `POST`, Path `form-lead` (fisso: con un parametro `:slug` n8n
+   antepone all'URL l'id interno del nodo, verificato 2026-09-05), Authentication
+   **None**, Respond **Immediately**, Options → **Allowed Origins (CORS)** `*`.
+   Il sito chiama `…/webhook/form-lead?slug=<slug>`.
 2. **Data table → Get row(s)** (tabella `clienti`): filtro `slug` equals
-   `{{ $json.params.slug }}`. Nessuna riga = slug sconosciuto → il flusso si ferma
+   `{{ $json.query.slug }}`. Nessuna riga = slug sconosciuto → il flusso si ferma
    (niente e-mail a nessuno: è l'anti-abuso).
 3. **If** (tutte vere): `{{ $('Webhook').item.json.body['sito-web'] }}` is empty
    (honeypot), `{{ $('Webhook').item.json.body.nome }}` is not empty,

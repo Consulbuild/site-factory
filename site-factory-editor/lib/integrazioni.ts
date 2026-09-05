@@ -21,8 +21,11 @@ const GATUS_CLIENTI = path.join(REPO_ROOT, GATUS_CLIENTI_REL);
 const HTTP_TIMEOUT_MS = 15_000;
 const GIT = "/usr/bin/git";
 
-/** Endpoint del modulo del sito: un solo webhook, lo slug nel path (n8n lo cerca nel registro). */
-export const formAction = (slug: string) => `${N8N_HOST}/webhook/form-lead/${slug}`;
+/** Endpoint del modulo del sito: un solo webhook a path fisso, lo slug in query
+ *  string (n8n lo cerca nel registro). Non un parametro di path (`:slug`): n8n
+ *  antepone a quei webhook l'id interno del nodo, che cambierebbe ricreando il
+ *  workflow — verificato 2026-09-05. */
+export const formAction = (slug: string) => `${N8N_HOST}/webhook/form-lead?slug=${slug}`;
 
 const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 

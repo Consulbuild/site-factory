@@ -1,0 +1,54 @@
+{
+  "name": "sf-errori",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "70ece488-8f65-49a6-8349-ce943efa47e7",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "chatId": "905276779",
+        "text": "=n8n: errore nel workflow \"{{ $json.workflow.name }}\" — {{ $json.execution.error.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "b093148f-30f8-4165-a1f7-71887da80d56",
+      "name": "Send a text message",
+      "webhookId": "9ee92265-b8d9-4f6b-b37a-34ebf884f5e6",
+      "credentials": {
+        "telegramApi": {
+          "id": "jlHkcxrBzFZ2Htxw",
+          "name": "Telegram ConsulBuild Alert"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
