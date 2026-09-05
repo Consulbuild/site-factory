@@ -1,0 +1,12 @@
+# PROVA TEMPORANEA dell'alert Telegram (da rimuovere subito dopo): host inesistente.
+endpoints:
+  - name: zz-alert-test
+    group: clienti
+    url: "https://questo-host-non-esiste.consulbuild.com/"
+    interval: 1m
+    conditions:
+      - "[STATUS] == 200"
+    alerts:
+      - type: telegram
+        failure-threshold: 1
+        description: "PROVA alert Telegram — se leggi questo, la catena funziona"
