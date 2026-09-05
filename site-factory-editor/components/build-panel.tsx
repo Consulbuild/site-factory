@@ -376,7 +376,7 @@ export function BuildPanel({
                       "non registrate"
                     )}
                   </p>
-                  <p>Modulo · form-lead/{slug}</p>
+                  <p>Modulo · {build.integrazioni?.formAction ?? `form-lead?slug=${slug}`}</p>
                   <p>
                     Monitor e registro ·{" "}
                     {build.infra
