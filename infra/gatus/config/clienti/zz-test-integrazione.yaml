@@ -1,0 +1,12 @@
+# Generato dall'editor al deploy — non modificare a mano.
+endpoints:
+  - name: zz-test.consulbuild.com
+    group: clienti
+    url: "https://zz-test.consulbuild.com/"
+    interval: 5m
+    conditions:
+      - "[STATUS] == 200"
+      - "[RESPONSE_TIME] < 3000"
+      - "[CERTIFICATE_EXPIRATION] > 168h"
+    alerts:
+      - type: telegram
