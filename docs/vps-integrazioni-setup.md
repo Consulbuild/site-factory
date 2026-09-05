@@ -116,8 +116,10 @@ Tabella `clienti`, colonne (tutte testo): `slug`, `azienda`, `dominio`, `email`.
 3. **If** (tutte vere): `{{ $('Webhook').item.json.body['sito-web'] }}` is empty
    (honeypot), `{{ $('Webhook').item.json.body.nome }}` is not empty,
    `{{ $('Webhook').item.json.body.telefono }}` is not empty.
-4. ramo true → **Send Email** (credenziale «Brevo»): From `siti@consulbuild.com`,
-   To `{{ $json.email }}`, BCC `info@consulbuild.com`,
+4. ramo true → **Send Email** (credenziale «Brevo SMTP»): From `siti@consulbuild.com`,
+   To `{{ $json.email }}`, **nessuna copia all'agenzia** (decisione Mattia 2026-09-05:
+   con decine di siti sarebbe rumore; i numeri dei lead si leggono dalle Executions
+   di n8n e dalle pagine `/grazie` in Umami, per il futuro pannello centralizzato),
    Reply-To `{{ $('Webhook').item.json.body.email }}`,
    Subject `Nuova richiesta dal sito {{ $json.dominio }}: {{ $('Webhook').item.json.body.nome }}`,
    Text:
@@ -132,9 +134,9 @@ Tabella `clienti`, colonne (tutte testo): `slug`, `azienda`, `dominio`, `email`.
 
    Ricevuta il {{ $now.format('dd/MM/yyyy HH:mm') }}. Rispondi a questa e-mail per contattare il cliente.
    ```
-5. poi **Telegram → Send message** (chat id): testo
-   `Nuovo lead dal sito {{ $json.dominio }} ({{ $now.format('dd/MM HH:mm') }}) — dettagli via e-mail.`
-   **Mai dati del lead su Telegram** (server extra-UE: l'informativa promette trattamento nell'UE).
+5. **Nessuna notifica Telegram per i lead** (stessa decisione): Telegram serve solo
+   per sito/servizio giù (Gatus) ed errori dei workflow (`sf-errori`). Se mai
+   servisse, mai dati del lead su Telegram (server extra-UE).
 6. **Publish**.
 
 ### 4.5 Error workflow
