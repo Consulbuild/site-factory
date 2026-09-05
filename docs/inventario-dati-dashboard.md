@@ -52,13 +52,17 @@ scrive una riga in una Data table **«Lead»** con SOLO `slug` + `quando` (nient
 telefono, e-mail): l'editor la legge da `/data-tables/{id}/rows`. Conteggio per cliente
 e per mese senza trattare dati del lead lato nostro.
 
-## Gatus (monitor) — da docs, serve la password basic auth nel Keychain (`GATUS_PASSWORD`)
+## Gatus (monitor) — forma della risposta verificata (curl di Mattia con basic auth)
 
-Verificato solo che `/api/v1/endpoints/statuses` risponde **401** senza credenziali.
-Da docs (twin.sh/gatus): `GET /api/v1/endpoints/statuses?page=1&pageSize=` → per endpoint
-`{name, group, key, results:[{success, duration, timestamp, conditionResults}], events}`;
-`GET /api/v1/endpoints/{key}/uptimes/{1h|24h|7d|30d}`; `…/response-times/{durata}`;
-`key` = `<group>_<name>` normalizzato. Da provare appena la password è nel Keychain.
+`GET /api/v1/endpoints/statuses?page=1&pageSize=` (basic auth `consulbuild`) → array di
+`{name, group, key, results:[{status, hostname, duration (ns), conditionResults:[{condition,
+success}], success, timestamp}]}`; `key` = `<group>_<name>` (gruppo vuoto → `_<name>`).
+Da docs, coerenti con la stessa API: `GET /api/v1/endpoints/{key}/uptimes/{1h|24h|7d|30d}`
+e `…/response-times/{durata}`. Per l'editor: password nel Keychain come `GATUS_PASSWORD`.
+Lezione 2026-09-05: l'immagine ufficiale porta `/config/config.yaml` di esempio: la
+nostra config sta in `/gatus-config` (Dockerfile), altrimenti si sommano 7 endpoint finti.
+Gatus ha anche un provider di alert `n8n` (oltre a telegram): utile se in futuro gli
+alert devono passare da un workflow.
 
 ## Stripe (abbonamenti) — da docs, serve l'accesso all'account
 
