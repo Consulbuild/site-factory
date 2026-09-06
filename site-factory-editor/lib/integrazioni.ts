@@ -104,10 +104,16 @@ export type RegistraCliente = {
   azienda?: string;
   dominio?: string;
   email?: string;
+  /** Referente del brief: secondo criterio (dopo l'e-mail) con cui il report al
+   *  rinnovo riconosce il cliente Stripe. */
+  referente?: string;
+  /** Sito Umami del cliente: il report al rinnovo legge da qui le statistiche. */
+  umamiWebsiteId?: string;
 };
 
-/** Registro clienti di n8n (Data table «clienti»): il workflow form-lead vi
- *  cerca lo slug del sito e recapita il lead all'e-mail del cliente. */
+/** Registro clienti di n8n (Data table «Clienti»): il workflow form-lead vi
+ *  cerca lo slug del sito e recapita il lead all'e-mail del cliente; il
+ *  workflow report-rinnovo vi trova e-mail, referente e sito Umami. */
 export async function registraCliente(p: RegistraCliente, key = getSecret("N8N_REGISTRA_KEY")): Promise<void> {
   if (!key) throw new Error("chiave N8N_REGISTRA_KEY mancante: configurala dal pannello «Chiavi API»");
   const r = await http(`${N8N_HOST}/webhook/registra-cliente`, {
@@ -194,10 +200,18 @@ function readJsonLoose(slug: string, file: string): Record<string, unknown> {
 /** Dopo un deploy: registro n8n + monitor Gatus (commit/push). Non lancia mai:
  *  il sito è già online, gli errori tornano nell'esito e la scheda li mostra. */
 export async function syncInfra(slug: string): Promise<InfraEsito> {
-  const stato = readJsonLoose(slug, "client.json") as { steps?: { build?: { deploy?: { dominio?: string } } } };
+  const stato = readJsonLoose(slug, "client.json") as {
+    steps?: { build?: { deploy?: { dominio?: string }; umamiWebsiteId?: string } };
+  };
   const dominio = stato.steps?.build?.deploy?.dominio ?? null;
   const brief = readJsonLoose(slug, "brief.json");
-  return proietta(slug, { dominio, azienda: String(brief.azienda ?? slug), email: String(brief.email ?? "") });
+  return proietta(slug, {
+    dominio,
+    azienda: String(brief.azienda ?? slug),
+    email: String(brief.email ?? ""),
+    referente: String(brief.referente ?? ""),
+    umamiWebsiteId: stato.steps?.build?.umamiWebsiteId,
+  });
 }
 
 /** Dopo l'eliminazione del cliente: via dal registro e dal monitor. */
@@ -205,13 +219,14 @@ export async function rimuoviInfra(slug: string): Promise<InfraEsito> {
   return proietta(slug, { dominio: null });
 }
 
-async function proietta(slug: string, c: { dominio: string | null; azienda?: string; email?: string }): Promise<InfraEsito> {
+type DatiRegistro = { dominio: string | null } & Pick<RegistraCliente, "azienda" | "email" | "referente" | "umamiWebsiteId">;
+
+async function proietta(slug: string, c: DatiRegistro): Promise<InfraEsito> {
   const errori: string[] = [];
   let n8nOk = false;
   try {
-    await registraCliente(
-      c.dominio ? { slug, azione: "upsert", azienda: c.azienda, dominio: c.dominio, email: c.email } : { slug, azione: "rimuovi" },
-    );
+    const { dominio, ...dati } = c;
+    await registraCliente(dominio ? { slug, azione: "upsert", dominio, ...dati } : { slug, azione: "rimuovi" });
     n8nOk = true;
   } catch (e) {
     errori.push(msg(e));

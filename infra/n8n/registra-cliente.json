@@ -139,7 +139,9 @@
             "slug": "={{ $json.body.slug }}",
             "azienda": "={{ $json.body.azienda }}",
             "dominio": "={{ $json.body.dominio }}",
-            "email": "={{ $json.body.email }}"
+            "email": "={{ $json.body.email }}",
+            "referente": "={{ $json.body.referente ?? '' }}",
+            "umami_id": "={{ $json.body.umamiWebsiteId ?? '' }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -182,6 +184,36 @@
               "type": "string",
               "readOnly": false,
               "removed": false
+            },
+            {
+              "id": "referente",
+              "displayName": "referente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "umami_id",
+              "displayName": "umami_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "stripe_customer",
+              "displayName": "stripe_customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
             }
           ],
           "attemptToConvertTypes": false,

@@ -127,6 +127,60 @@
           "name": "Brevo SMTP"
         }
       }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ypnZsKvZZva6fTpB",
+          "mode": "list",
+          "cachedResultName": "Lead",
+          "cachedResultUrl": "/projects/wxBPZhXg7Q5Enopr/datatables/ypnZsKvZZva6fTpB"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "slug": "={{ $json.slug }}",
+            "quando": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "slug",
+              "displayName": "slug",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "quando",
+              "displayName": "quando",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        96
+      ],
+      "id": "5d2a7c1e-9f3b-4b8e-a6d0-7e1c2f3a4b5c",
+      "name": "Registra lead",
+      "notes": "Conteggio durevole dei lead senza dati personali: solo slug e istante (n8n cancella le esecuzioni dopo 14 giorni). Letto dal report al rinnovo e dalla dashboard."
     }
   ],
   "connections": {
@@ -157,6 +211,11 @@
         [
           {
             "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Registra lead",
             "type": "main",
             "index": 0
           }
