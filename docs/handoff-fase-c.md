@@ -69,9 +69,14 @@ di risposta a 30 gg, API pubbliche) → e-mail HTML da `report@notifiche.consulb
 una richiesta recapitata). Renderer: `Base.astro` traccia i clic tel:/mailto:/wa.me
 come eventi Umami, di serie con lo script. Verificato su Cavaliere (dryRun, invio reale
 a info@, slug ignoto → Telegram, eventi visibili in Umami). **Niente WhatsApp** (deciso).
-**Resta**: simulazione in sandbox Stripe con test clock (cliente `ZZ Test Report`, riga
-`zz-test-report` nel registro da rimuovere dopo), passaggio della credenziale alla
-chiave live e riattivazione del workflow, pulizia riga `zz-test-lead` in Lead.
+**Chiuso il 2026-09-06 sera**: E2E in sandbox con test clock passato (evento → match
+per e-mail → id Stripe memorizzato → report; secondo evento fermato dalla dedupe),
+credenziale n8n sulla chiave live e webhook ricreato nell'account live, e-mail del lead
+al cliente rifatta con lo stesso impianto del report. Il primo report reale parte da
+solo al prossimo rinnovo di Cavaliere. **Resta a Mattia**: cancellare da UI n8n le
+righe di prova in `Lead` (zz-test-lead, zz-test-report) e in `Report` (tutte quelle
+del 6/9). Piano 3 possibile: eventi Chiama/WhatsApp nella dashboard, Brevo
+deliverability, Gatus cert/disco VPS.
 Altra chat: dashboard clienti nell'editor (legge Lead/Report/Clienti e Stripe).
 
 **Clienti di test** (`site-renderer/out/`):

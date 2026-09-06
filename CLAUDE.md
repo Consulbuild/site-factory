@@ -275,10 +275,26 @@ tassonomia sezioni). Regole operative nei componenti:
     (deterministico: assemble → validate → `SITE_JSON=… astro build` + preview),
     poi deploy Workers.
 
-**Integrazioni VPS (2026-09-05)**: il form di `ContactCTA` e lo script Umami in
-`Base.astro` si attivano SOLO nella build del sito con dominio, via env di build
-(`FORM_ACTION`, `UMAMI_HOST`, `UMAMI_WEBSITE_ID`) passate da `lib/build.ts` come
-`SITE_URL` — infrastruttura dell'agenzia, mai `site.json`. Senza env il form resta
-simulato (`data-demo="true"`, action vuota) e non c'è script: HTML identico a prima.
-Al deploy `lib/integrazioni.ts` registra il cliente in n8n e committa il monitor
-Gatus (`infra/gatus/`). Guida dei settaggi lato VPS: `docs/vps-integrazioni-setup.md`.
+## Servizi del VPS (n8n, Umami, Gatus, Brevo, Stripe) — dal 2026-09-05
+
+Il sito pubblicato con dominio è l'unico che "parla" con l'infrastruttura, e solo via
+env di build (`FORM_ACTION`, `UMAMI_HOST`, `UMAMI_WEBSITE_ID`, passate da `lib/build.ts`
+come `SITE_URL`): mai in `site.json`. Senza env il form resta simulato e non c'è
+script: HTML identico a prima. In `Base.astro`, con lo script Umami attivo, un listener
+delegato conta i clic su `tel:`/`mailto:`/`wa.me` come eventi `chiama`/`email`/
+`whatsapp` — di serie, mai attributi per-componente.
+
+Al deploy `lib/integrazioni.ts` registra il cliente nel registro n8n (Data table
+`Clienti`) e committa il monitor Gatus (`infra/gatus/`). I workflow n8n sono la
+logica lato server e stanno versionati in `infra/n8n/` (`scripts/n8n-import.ts
+export|import`; le credenziali restano nell'istanza): `sf-form-lead` (lead → e-mail
+Brevo al cliente → riga in `Lead`, senza dati personali: una riga = una richiesta
+recapitata), `sf-registra-cliente`, `sf-errori` (→ Telegram), `sf-report-rinnovo`
+(Stripe `invoice.upcoming` 3 giorni prima del rinnovo → report mensile al cliente da
+`report@notifiche.consulbuild.com` con dati Umami/Lead/Gatus; tabella `Report` per la
+deduplica; webhook `report-invia` per prove e reinvii). Decisioni: niente notifiche
+lead all'agenzia, niente WhatsApp, Stripe è l'unico orologio del rinnovo (1 abbonamento
+= 1 sito; collegamento per e-mail del brief → nome → `metadata.slug`). Le e-mail ai
+clienti (lead e report) condividono lo stesso impianto HTML, che vive nei nodi Code.
+Guida operativa e lezioni (due sandbox Stripe, chiavi, tabelle):
+`docs/vps-integrazioni-setup.md`; stato lavori in `docs/handoff-fase-c.md`.
