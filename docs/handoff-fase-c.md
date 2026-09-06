@@ -55,8 +55,24 @@ ed errori workflow). **Cavaliere pubblicato in sera con modulo reale + Umami**
 (legale riallineato in update-mode, catena PASS; lead «TEST» dal sito reale ok);
 test di robustezza superati (sf-errori → Telegram, reboot del VPS → tutto riparte
 da solo); Uptime Kuma eliminato. **Resta**: Conferma umana del legale di Cavaliere
-nella scheda. Piano 2 (report al rinnovo via Brevo `report@notifiche.consulbuild.com`
-+ WhatsApp, data rinnovo; Gatus su cert/disco del VPS) riusa la Data table.
+nella scheda.
+
+**Piano 2 — report mensile al rinnovo (2026-09-06, piano in
+`~/.claude/plans/…zesty-swan.md` §Piano 2)**: Stripe è l'orologio (`invoice.upcoming`
+3 giorni prima, Stripe Trigger in n8n) → `sf-report-rinnovo` riconosce il cliente nel
+registro (id Stripe memorizzato → slug nei metadati → e-mail → nome), dedupe su tabella
+Report, legge Umami (visitatori/visite con confronto, eventi Chiama/WhatsApp/e-mail,
+sezioni viste, dispositivi, totali dall'inizio) + tabella Lead + Gatus (uptime e tempo
+di risposta a 30 gg, API pubbliche) → e-mail HTML da `report@notifiche.consulbuild.com`
+(Reply-To info@). Webhook `report-invia` (header segreto) per rimandare/anteprima
+(`to`, `dryRun`). Tabella **Lead** scritta da `sf-form-lead` DOPO l'e-mail (una riga =
+una richiesta recapitata). Renderer: `Base.astro` traccia i clic tel:/mailto:/wa.me
+come eventi Umami, di serie con lo script. Verificato su Cavaliere (dryRun, invio reale
+a info@, slug ignoto → Telegram, eventi visibili in Umami). **Niente WhatsApp** (deciso).
+**Resta**: simulazione in sandbox Stripe con test clock (cliente `ZZ Test Report`, riga
+`zz-test-report` nel registro da rimuovere dopo), passaggio della credenziale alla
+chiave live e riattivazione del workflow, pulizia riga `zz-test-lead` in Lead.
+Altra chat: dashboard clienti nell'editor (legge Lead/Report/Clienti e Stripe).
 
 **Clienti di test** (`site-renderer/out/`):
 - `cavaliere-build-srls`: intake+contesto+palette verificati; **copy v2 appena rigenerato
