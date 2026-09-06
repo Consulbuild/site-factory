@@ -270,13 +270,23 @@ L'invio manuale non è soggetto alla deduplica (quello da Stripe sì: un report 
 `inviato` al cliente negli ultimi 20 giorni non si ripete). Un invio con `to` diverso
 dall'e-mail del cliente è registrato come `prova` e non blocca il report reale.
 
-### 9.4 Simulazione del rinnovo in sandbox (E2E)
-Riga `zz-test-report` nel registro (e-mail `info@consulbuild.com`, `umami_id` di
-Cavaliere) → Stripe sandbox: cliente `ZZ Test Report` con quella e-mail, abbonamento €1/mese
-con **orologio di simulazione** (test clock), carta `4242 4242 4242 4242` → **Avanza il
-tempo** di 28 giorni → `invoice.upcoming` → report a info@. Un secondo avanzamento nello
-stesso periodo non rimanda (dedupe). Alla fine: via la riga di test dal registro e il
-cliente dalla sandbox.
+### 9.4 Simulazione del rinnovo in sandbox (E2E) — fatta il 2026-09-06
+**Attenzione: l'account ha DUE sandbox** («Modalità di test» `acct_…PitzoJH9Tc` e
+«CONSULBUILD di Vecchiato Edoardo sandbox» `acct_…PcEz1G5LnH`). La chiave in n8n è della
+seconda: simulazioni, impostazione dei 3 giorni e webhook vanno guardati lì (menu account →
+Sandboxes). Un webhook «mancante» quasi sempre è nella sandbox sbagliata: l'id del webhook
+in n8n (`we_1…<hash account>…`) porta l'impronta dell'account, confrontala con l'`acct_`.
+Procedura: Billing → Abbonamenti → **Simulazioni → Crea simulazione** → «Aggiungi il primo
+cliente» (nome `ZZ Test Report`, e-mail `info@consulbuild.com`) → dalla scheda cliente crea
+l'abbonamento: nuovo prodotto «Sito web (test)» 1 €/mese, **spegni «Riscuoti le imposte
+automaticamente»** (altrimenti chiede un indirizzo), aggiungi la carta di test `4242…`
+(la digita Mattia: Claude non inserisce numeri di carta) → Crea. Riga `zz-test-report` nel
+registro (e-mail info@, `umami_id` di Cavaliere) → **Imposta una data/ora successiva** →
+«+1 settimana» ×4 → Manda avanti → entro un minuto n8n riceve `invoice.upcoming` e il
+report arriva a info@ (esito `inviato`, `stripe_customer` memorizzato nel registro). Un
+secondo avanzamento («+1 mese») produce un nuovo evento che si ferma a «Già inviato?».
+Alla fine: via la riga di test dal registro (`registraCliente rimuovi`) e la simulazione
+dalla sandbox (cancellandola spariscono anche cliente e abbonamento).
 
 ### 9.5 Contatti diretti tracciati di serie
 `site-renderer/src/layouts/Base.astro`: quando lo script Umami è attivo, un listener
