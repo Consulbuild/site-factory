@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { readClientBundle } from "@/lib/clients";
+import { readClientBundle, listClients } from "@/lib/clients";
 import { STEPS, type StepKey } from "@/lib/steps";
 import { staleFiles } from "@/lib/staleness";
+import { leggiStatoCliente } from "@/lib/portafoglio";
 import { Badge, StepBadge, formatDate, btnPrimary, btnSecondary, Breadcrumb } from "@/components/ui";
 import { ClienteAzioni } from "@/components/cliente-azioni";
+import { ClienteStato } from "@/components/cliente-stato";
 import { StepRunLive } from "@/components/step-run-live";
 
 export const dynamic = "force-dynamic";
@@ -48,6 +50,13 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
   const copyOk = client.steps.copy.stato === "verificato";
   const paletteOk = client.steps.palette.stato === "verificato";
   const deployUrl = client.steps.build.deploy?.url;
+  // Dashboard: abbonamento, monitor, lead e visite del cliente (cache condivisa con la home).
+  const dominio = client.steps.build.deploy?.dominio ?? null;
+  const stato = await leggiStatoCliente(
+    { slug, email: String(brief.email ?? ""), steps: client.steps },
+    listClients(),
+    client.steps.build.umamiWebsiteId,
+  );
 
   const stale = (k: StepKey) =>
     client.steps[k].stato !== "assente" &&
@@ -178,8 +187,16 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
           telefono={brief.telefono ? String(brief.telefono) : undefined}
           email={brief.email ? String(brief.email) : undefined}
           deployUrl={deployUrl}
+          sitoGiu={stato.sito?.su === false}
         />
       </header>
+
+      <ClienteStato
+        stato={stato}
+        dominio={dominio}
+        demo={deployUrl && !dominio ? { url: deployUrl, dal: client.steps.build.deploy?.deployedAt ?? client.updatedAt } : null}
+        umamiWebsiteId={client.steps.build.umamiWebsiteId}
+      />
 
       <ol className="card mt-8 divide-y divide-line">
         {righe.map((r) => {

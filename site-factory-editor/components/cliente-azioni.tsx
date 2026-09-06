@@ -9,7 +9,18 @@ import { MoreHorizontal, ExternalLink, RefreshCw, Trash2, Phone, Mail } from "lu
 import { ConfirmDialog } from "./confirm-dialog";
 import { EliminaClienteDialog } from "./elimina-cliente-dialog";
 
-function CopiaChip({ icona: Icona, valore, label }: { icona: typeof Phone; valore: string; label: string }) {
+function CopiaChip({
+  icona: Icona,
+  valore,
+  label,
+  urgente = false,
+}: {
+  icona: typeof Phone;
+  valore: string;
+  label: string;
+  /** Sito giù: il telefono diventa l'azione, in rosso (dashboard). */
+  urgente?: boolean;
+}) {
   const [copiato, setCopiato] = useState(false);
   return (
     <button
@@ -18,11 +29,15 @@ function CopiaChip({ icona: Icona, valore, label }: { icona: typeof Phone; valor
         setCopiato(true);
         setTimeout(() => setCopiato(false), 1200);
       }}
-      className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 text-xs text-muted transition-colors duration-150 hover:bg-raise hover:text-ink"
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors duration-150 ${
+        urgente
+          ? "border-transparent bg-err-bg font-semibold text-err hover:border-err"
+          : "border-line bg-surface text-muted hover:bg-raise hover:text-ink"
+      }`}
       title={`Copia ${label}`}
     >
       <Icona className="size-3.5" aria-hidden />
-      {copiato ? "Copiato ✓" : valore}
+      {copiato ? "Copiato ✓" : urgente ? `Chiama · ${valore}` : valore}
     </button>
   );
 }
@@ -34,6 +49,7 @@ export function ClienteAzioni({
   telefono,
   email,
   deployUrl,
+  sitoGiu = false,
 }: {
   slug: string;
   businessName: string;
@@ -41,6 +57,8 @@ export function ClienteAzioni({
   telefono?: string;
   email?: string;
   deployUrl?: string;
+  /** Dal monitor (dashboard): a sito giù l'azione è chiamare il referente. */
+  sitoGiu?: boolean;
 }) {
   const router = useRouter();
   const [eliminaAperto, setEliminaAperto] = useState(false);
@@ -67,7 +85,7 @@ export function ClienteAzioni({
   return (
     <div className="flex items-center gap-2">
       {msg && <span className="text-xs text-muted">{msg}</span>}
-      {telefono && <CopiaChip icona={Phone} valore={telefono} label="telefono" />}
+      {telefono && <CopiaChip icona={Phone} valore={telefono} label="telefono" urgente={sitoGiu} />}
       {email && <CopiaChip icona={Mail} valore={email} label="email" />}
       <details className="relative">
         <summary
