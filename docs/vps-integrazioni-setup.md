@@ -102,7 +102,8 @@ dal report al primo abbinamento con Stripe). Niente data di rinnovo a mano: l'or
 Altre due tabelle (Piano 2, 2026-09-06): **Lead** (`slug` String, `quando` Date) scritta
 da `sf-form-lead` dopo ogni e-mail recapitata; **Report** (`slug`, `quando` Date,
 `periodo_inizio` Date, `periodo_fine` Date, `visite` Number, `richieste` Number, `esito`
-String = inviato / dryRun) scritta da `sf-report-rinnovo`. Le righe non si cancellano
+String = `inviato` al cliente / `prova` reindirizzato con `to` / `dryRun`) scritta da
+`sf-report-rinnovo`; solo `inviato` conta per la deduplica. Le righe non si cancellano
 dall'API pubblica: solo dall'interfaccia.
 
 ### 4.3 Workflow `sf-registra-cliente` (chiamato dall'editor al deploy)
@@ -266,7 +267,8 @@ curl -s -X POST https://n8n.consulbuild.com/webhook/report-invia \
   -d '{"slug":"cavaliere-build-srls","to":"info@consulbuild.com"}'
 ```
 L'invio manuale non è soggetto alla deduplica (quello da Stripe sì: un report già
-`inviato` negli ultimi 20 giorni non si ripete).
+`inviato` al cliente negli ultimi 20 giorni non si ripete). Un invio con `to` diverso
+dall'e-mail del cliente è registrato come `prova` e non blocca il report reale.
 
 ### 9.4 Simulazione del rinnovo in sandbox (E2E)
 Riga `zz-test-report` nel registro (e-mail `info@consulbuild.com`, `umami_id` di
