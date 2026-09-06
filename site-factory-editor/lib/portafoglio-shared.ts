@@ -57,7 +57,7 @@ export type Portafoglio = {
   mrr: number; // centesimi al mese, solo `valuta`
   valuta: string;
   nAbbonamenti: number; // collegati e in corso
-  incassato: { anno: number; lordo: number; netto: number } | null; // null se Stripe non è ok
+  incassato: { anno: number; lordo: number; netto: number | null; erroreNetto?: string } | null; // null se Stripe non è ok; netto null senza «Balance read»
   siti: Record<string, StatoSito | null>; // per slug con dominio; null = non ancora nel monitor
   lead: Record<string, ConteggioLead>; // per slug
 };
@@ -73,9 +73,10 @@ export const dominioDi = (c: ClienteMin): string | null => c.steps?.build?.deplo
 /** Demo = pubblicato su workers.dev senza dominio: il cliente non si è ancora abbonato. */
 export const isDemo = (c: ClienteMin): boolean => !!c.steps?.build?.deploy?.url && !dominioDi(c);
 
-/** Da sviluppare = nessun abbonamento e nessun dominio (in lavorazione o demo).
- *  È un predicato locale: resta giusto anche a Stripe spento. */
-export const daSviluppare = (c: ClienteMin, p: Portafoglio | null): boolean => !p?.abbonamenti[c.slug] && !dominioDi(c);
+/** Da sviluppare = sito non ancora pubblicato con dominio (in lavorazione o demo),
+ *  a prescindere dal pagamento: un cliente che paga già e non ha il sito è il
+ *  primo da sviluppare. Predicato locale: resta giusto anche a Stripe spento. */
+export const daSviluppare = (c: ClienteMin): boolean => !dominioDi(c);
 
 /** Attivi = paganti in corso: attivo, in ritardo o in disdetta (paga fino alla fine). */
 export const attivo = (c: ClienteMin, p: Portafoglio | null): boolean => {

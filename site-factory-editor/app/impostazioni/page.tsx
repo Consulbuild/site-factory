@@ -1,9 +1,12 @@
 import { ApiKeysPanel } from "@/components/home";
 import { ClaudeAuthPanel } from "@/components/claude-auth";
+import { CollegamentiStripe } from "@/components/collegamenti-stripe";
+import { listClients } from "@/lib/clients";
 
 export const dynamic = "force-dynamic";
 
 export default function Impostazioni() {
+  const clienti = listClients().map(({ slug, businessName, citta }) => ({ slug, businessName, citta }));
   return (
     <div className="space-y-6">
       <div>
@@ -12,6 +15,7 @@ export default function Impostazioni() {
       </div>
       <ClaudeAuthPanel />
       <ApiKeysPanel aperto />
+      <CollegamentiStripe clienti={clienti} />
     </div>
   );
 }

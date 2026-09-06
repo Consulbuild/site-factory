@@ -67,17 +67,23 @@ export async function leggiAbbonamenti(): Promise<StripeSub[]> {
 }
 
 /** Incassato dell'anno: lordo = fatture pagate, netto = balance transactions al
- *  netto delle commissioni (addebiti e rimborsi; i payout verso la banca no). */
-export async function leggiIncassato(anno: number): Promise<{ lordo: number; netto: number }> {
+ *  netto delle commissioni (addebiti e rimborsi; i payout verso la banca no).
+ *  Il netto richiede il permesso «Balance read» sulla chiave ristretta: se manca,
+ *  resta null con il motivo, e il lordo si mostra comunque. */
+export async function leggiIncassato(anno: number): Promise<{ lordo: number; netto: number | null; erroreNetto?: string }> {
   const da = Math.floor(Date.UTC(anno, 0, 1) / 1000);
   const [fatture, movimenti] = await Promise.all([
     tutta<{ id: string; amount_paid: number }>(`/v1/invoices?status=paid&created[gte]=${da}`),
-    tutta<{ id: string; type: string; net: number }>(`/v1/balance_transactions?created[gte]=${da}`),
+    tutta<{ id: string; type: string; net: number }>(`/v1/balance_transactions?created[gte]=${da}`).then(
+      (m) => ({ ok: true as const, m }),
+      (e: unknown) => ({ ok: false as const, errore: e instanceof Error ? e.message : String(e) }),
+    ),
   ]);
   const TIPI = new Set(["charge", "payment", "refund", "payment_refund"]);
   return {
     lordo: fatture.reduce((s, f) => s + (f.amount_paid ?? 0), 0),
-    netto: movimenti.filter((m) => TIPI.has(m.type)).reduce((s, m) => s + (m.net ?? 0), 0),
+    netto: movimenti.ok ? movimenti.m.filter((m) => TIPI.has(m.type)).reduce((s, m) => s + (m.net ?? 0), 0) : null,
+    ...(movimenti.ok ? {} : { erroreNetto: movimenti.errore }),
   };
 }
 

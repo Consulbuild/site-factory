@@ -237,7 +237,7 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
 
   const perQuery = data.clients.filter((c) => match(q, c.businessName, c.referente, c.phone, c.citta));
   const PRED: Record<Exclude<Filtro, "tutti">, (c: ClientSummary) => boolean> = {
-    sviluppare: (c) => daSviluppare(c, p),
+    sviluppare: (c) => daSviluppare(c),
     attivi: (c) => attivo(c, p),
     giu: (c) => giu(c, p),
     ritardo: (c) => inRitardo(c, p),
@@ -276,7 +276,11 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
   const subSviluppare = () => {
     const lav = conteggi.sviluppare.filter((c) => !isDemo(c)).length;
     const demo = conteggi.sviluppare.length - lav;
-    return conteggi.sviluppare.length ? `${lav} in lavorazione · ${demo} demo ${demo === 1 ? "inviata" : "inviate"}` : "nessuno";
+    const paganti = conteggi.sviluppare.filter((c) => attivo(c, p)).length; // pagano già: i primi da fare
+    if (!conteggi.sviluppare.length) return "nessuno";
+    return [`${lav} in lavorazione`, `${demo} demo ${demo === 1 ? "inviata" : "inviate"}`, paganti ? `${paganti} già ${paganti === 1 ? "pagante" : "paganti"}` : ""]
+      .filter(Boolean)
+      .join(" · ");
   };
   const subAttivi = () => {
     if (!p) return null;
@@ -466,7 +470,13 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
             <>
               <span className="ml-1 text-sm text-muted">Incassato {p.incassato.anno}</span>
               <span className="font-semibold tabular-nums">{euro(p.incassato.lordo, p.valuta)}</span>
-              <span className="text-sm text-muted">netto {euro(p.incassato.netto, p.valuta)}</span>
+              {p.incassato.netto === null ? (
+                <span className="text-sm text-warn" title={p.incassato.erroreNetto}>
+                  netto — (alla chiave Stripe manca il permesso «Balance read»)
+                </span>
+              ) : (
+                <span className="text-sm text-muted">netto {euro(p.incassato.netto, p.valuta)}</span>
+              )}
             </>
           )}
           <span className="ml-auto flex items-center gap-2 text-xs text-muted">
@@ -596,7 +606,9 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
                     </div>
                     <div className="flex shrink-0 items-center gap-4">
                       <span className="flex w-40 items-baseline gap-1.5 text-xs text-muted">
-                        {!dominio ? (
+                        {abb ? (
+                          <AbbonamentoBadge a={abb} /> /* paga già, anche senza sito: si vede */
+                        ) : !dominio ? (
                           demo ? (
                             <>
                               <Badge tone="idle">Demo inviata</Badge>

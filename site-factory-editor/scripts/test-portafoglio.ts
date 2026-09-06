@@ -118,14 +118,17 @@ console.log("\nPredicati delle card:");
     siti: { att: { su: true, ms: 400, ultimoControllo: "x", key: "k" }, rit: { su: false, ms: 0, ultimoControllo: "x", key: "k2", da: "x" } },
     lead: {},
   };
-  const tutti = [lav, demo, att, rit, dis, fin, online];
+  const pagaSenzaSito = c("paga");
+  p.abbonamenti.paga = A("attivo");
+  const tutti = [lav, demo, att, rit, dis, fin, online, pagaSenzaSito];
   caso("isDemo: url senza dominio", isDemo(demo) && !isDemo(att) && !isDemo(lav));
-  caso("Da sviluppare = in lavorazione + demo", tutti.filter((x) => daSviluppare(x, p)).map((x) => x.slug).join() === "lav,demo");
-  caso("Attivi = attivo + ritardo + disdetto", tutti.filter((x) => attivo(x, p)).map((x) => x.slug).join() === "att,rit,dis");
+  caso("Da sviluppare = senza dominio (in lavorazione, demo, anche se già paga)", tutti.filter(daSviluppare).map((x) => x.slug).join() === "lav,demo,paga");
+  caso("Chi paga senza sito è anche tra gli attivi", attivo(pagaSenzaSito, p));
+  caso("Attivi = attivo + ritardo + disdetto", tutti.filter((x) => attivo(x, p)).map((x) => x.slug).join() === "att,rit,dis,paga");
   caso("Siti down", tutti.filter((x) => giu(x, p)).map((x) => x.slug).join() === "rit");
   caso("In ritardo", tutti.filter((x) => inRitardo(x, p)).map((x) => x.slug).join() === "rit");
   caso("Senza abbonamento = online con dominio ma senza sub (anche finito)", tutti.filter((x) => senzaAbbonamento(x, p)).map((x) => x.slug).join() === "online");
-  caso("Con portafoglio nullo conta solo Da sviluppare", tutti.filter((x) => daSviluppare(x, null)).length === 2 && !tutti.some((x) => attivo(x, null) || giu(x, null) || inRitardo(x, null)));
+  caso("Con portafoglio nullo conta solo Da sviluppare", tutti.filter(daSviluppare).length === 3 && !tutti.some((x) => attivo(x, null) || giu(x, null) || inRitardo(x, null)));
 }
 
 console.log("\nStato del sito (Gatus):");
