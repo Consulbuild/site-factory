@@ -141,7 +141,7 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "slug": "={{ $json.slug }}",
+            "slug": "={{ $('Get row(s)').item.json.slug }}",
             "quando": "={{ $now.toISO() }}"
           },
           "matchingColumns": [],
@@ -180,7 +180,7 @@
       ],
       "id": "5d2a7c1e-9f3b-4b8e-a6d0-7e1c2f3a4b5c",
       "name": "Registra lead",
-      "notes": "Conteggio durevole dei lead senza dati personali: solo slug e istante (n8n cancella le esecuzioni dopo 14 giorni). Letto dal report al rinnovo e dalla dashboard."
+      "notes": "Conteggio durevole dei lead senza dati personali: solo slug e istante (n8n cancella le esecuzioni dopo 14 giorni). Viene DOPO l'e-mail: una riga = una richiesta davvero recapitata al cliente. Letto dal report al rinnovo e dalla dashboard."
     }
   ],
   "connections": {
@@ -213,7 +213,13 @@
             "node": "Send an Email",
             "type": "main",
             "index": 0
-          },
+          }
+        ]
+      ]
+    },
+    "Send an Email": {
+      "main": [
+        [
           {
             "node": "Registra lead",
             "type": "main",

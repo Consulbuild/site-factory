@@ -94,7 +94,33 @@ const umamiDomains = Astro.site?.host;
     }
     {
       umamiHost && umamiId && (
-        <script is:inline defer src={`${umamiHost}/script.js`} data-website-id={umamiId} data-domains={umamiDomains}></script>
+        <>
+          <script is:inline defer src={`${umamiHost}/script.js`} data-website-id={umamiId} data-domains={umamiDomains}></script>
+          {/* Contatti diretti (Chiama / WhatsApp / E-mail) come eventi Umami «chiama»,
+              «whatsapp», «email»: un solo listener delegato copre ogni link tel:/mailto:/wa.me
+              di tutti i componenti, presenti e futuri — di serie per ogni sito, senza
+              attributi da ricordare. Conta il clic, nessun dato personale. Il report
+              mensile al cliente li legge da metrics?type=event. */}
+          <script is:inline>
+            document.addEventListener(
+              "click",
+              (e) => {
+                const a = e.target instanceof Element ? e.target.closest("a[href]") : null;
+                if (!a || !window.umami) return;
+                const h = a.getAttribute("href") || "";
+                const ev = h.startsWith("tel:")
+                  ? "chiama"
+                  : h.startsWith("mailto:")
+                    ? "email"
+                    : /^(https?:\/\/)?(wa\.me|api\.whatsapp\.com)\//.test(h)
+                      ? "whatsapp"
+                      : null;
+                if (ev) window.umami.track(ev);
+              },
+              { capture: true },
+            );
+          </script>
+        </>
       )
     }
   </head>
