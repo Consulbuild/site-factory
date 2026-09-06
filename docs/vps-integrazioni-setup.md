@@ -177,6 +177,15 @@ Editor → **Impostazioni → Chiavi API**: `UMAMI_PASSWORD` (§5), `N8N_REGISTR
 segreto del §4.1), `N8N_API_KEY` (§4.6). Ogni chiave viene provata davvero contro il
 VPS prima di essere salvata.
 
+Per la **dashboard clienti** (§10) altre due chiavi:
+- `GATUS_PASSWORD`: la password del monitor (§2, utente `consulbuild`). Solo ASCII
+  senza spazi (il Keychain dell'editor non accetta altro).
+- `STRIPE_API_KEY`: una chiave **ristretta** (Stripe → Sviluppatori → Chiavi API →
+  Crea chiave con restrizioni), permessi: **Customers read · Subscriptions write** (la
+  scrittura serve solo a «Collega», che aggiunge `metadata.slug`) · **Invoices read ·
+  Balance read** (senza, l'incassato netto resta vuoto e la home lo dice). Tutto il
+  resto «Nessuno». La chiave live si prova salvandola: l'editor elenca 1 abbonamento.
+
 ## 7. Nota Bitwarden `VPS sf-prod-01` (aggiungere)
 
 ```
@@ -184,7 +193,7 @@ Monitor: https://monitor.consulbuild.com (utente consulbuild, password in "Gatus
 Registro clienti: n8n → Data tables → clienti (slug, azienda, dominio, email)
 Workflow n8n: sf-registra-cliente, sf-form-lead, sf-errori — copia in repo infra/n8n/ (scripts/n8n-import.ts)
 Config monitor: repo infra/gatus/ (Coolify ricostruisce a ogni push su main)
-Chiavi editor (Keychain): UMAMI_PASSWORD, N8N_REGISTRA_KEY, N8N_API_KEY
+Chiavi editor (Keychain): UMAMI_PASSWORD, N8N_REGISTRA_KEY, N8N_API_KEY, STRIPE_API_KEY (ristretta "editor"), GATUS_PASSWORD
 Alert: Telegram bot "ConsulBuild Alert" (nota "Telegram bot alert")
 Uptime Kuma: eliminato il 05/09/2026
 N8N_ENCRYPTION_KEY: non è una env di Coolify, sta in /home/node/.n8n/config del volume n8n → copia in Bitwarden

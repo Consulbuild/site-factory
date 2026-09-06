@@ -49,7 +49,21 @@ sulle correzioni, verificato da Mattia il 2026-09-06. Dati disponibili:
 
 - 2026-09-06: piano approvato; precondizione rispettata (Piano 2 committato: tabella
   Lead e nodo «Registra lead» già in `sf-form-lead`, quindi `infra/n8n/form-lead.json`
-  è fuori perimetro). Stripe connesso da Mattia.
+  è fuori perimetro).
+- 2026-09-06, sera: **M1–M5 fatte e verificate** con le chiavi reali (commit d3d9fff,
+  94c6e1c, 5f987e2, e M5). Nucleo puro + cache (`lib/cache.ts`, `portafoglio-shared.ts`,
+  `stripe.ts`, `gatus.ts`, `portafoglio.ts`; 43 casi in `scripts/test-portafoglio.ts`),
+  `GET /api/portafoglio` e `POST /api/portafoglio/collega`, home, hub, Impostazioni.
+  Dati veri visti: Gatus (Cavaliere su, uptime 100 %), Umami (visitatori), lead n8n
+  (tabella vuota: conta da ora), Stripe live (3 abbonamenti attivi a 99 €/mese: 1
+  collegato via e-mail a un cliente in lavorazione, 2 «da collegare» perché quei
+  clienti non sono ancora nell'editor; lordo 2026 letto; **netto vuoto finché la
+  chiave non ha «Balance read»**).
+- Correzione emersa dai dati reali: **Da sviluppare = senza dominio** a prescindere dal
+  pagamento (chi paga già e non ha il sito è il primo da fare; la sottoriga dice «N già
+  paganti»); l'abbonamento si mostra in riga anche senza sito.
+- Non fatto dall'editor: la prova di «Collega» su un abbonamento live (scrive sui dati
+  Stripe di Mattia: la fa lui dalla UI quando quei clienti saranno nell'editor).
 
 ## Punti aperti
 

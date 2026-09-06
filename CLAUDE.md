@@ -271,6 +271,14 @@ tassonomia sezioni). Regole operative nei componenti:
     nell'upstream della build. Deploy: NESSUN interlock con lo stato legale
     (decisione Mattia 2026-08-03) — solo staleness. Banco di prova:
     `scripts/test-legale-gates.ts` (59 casi).
+  - **Parte 5 — dashboard clienti fatta** (2026-09-06, piano vivo in
+    `docs/piano-dashboard-clienti.md`): home con card-filtro Da sviluppare / Attivi /
+    Siti down / In ritardo, entrate, riga essenziale; hub con card Sito · Abbonamento ·
+    Lead · Visite; Impostazioni con chiavi Stripe/Gatus e «Collegamenti Stripe».
+    Letture da Stripe, Gatus, n8n (Lead, Clienti) e Umami in `lib/portafoglio.ts` con
+    cache in memoria (`lib/cache.ts`) e stato per fonte (mai uno «0» a fonte giù);
+    banco di prova `scripts/test-portafoglio.ts`. Niente avvisi flottanti: la card
+    rossa col nome è l'avviso.
   - Parti successive: immagini (multi-fase prompter→critic, key BFL), build
     (deterministico: assemble → validate → `SITE_JSON=… astro build` + preview),
     poi deploy Workers.

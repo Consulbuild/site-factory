@@ -77,7 +77,22 @@ solo al prossimo rinnovo di Cavaliere. **Resta a Mattia**: cancellare da UI n8n 
 righe di prova in `Lead` (zz-test-lead, zz-test-report) e in `Report` (tutte quelle
 del 6/9). Piano 3 possibile: eventi Chiama/WhatsApp nella dashboard, Brevo
 deliverability, Gatus cert/disco VPS.
-Altra chat: dashboard clienti nell'editor (legge Lead/Report/Clienti e Stripe).
+**Parte 5 — Dashboard clienti nell'editor (2026-09-06, piano vivo in
+`docs/piano-dashboard-clienti.md`)**: home con card-filtro **Da sviluppare · Attivi ·
+Siti down · In ritardo** (sottoriga = chi o composizione; «—» con la causa a fonte non
+configurata/non raggiungibile), riga Entrate (MRR, incassato lordo/netto, «Aggiorna»),
+banner di pagina (mai flottanti), riga cliente essenziale (abbonamento · sito su/giù ·
+lead 30 gg · 7 tacche con Legale, dominio cliccabile); hub con card Sito · Abbonamento
+· Lead · Visite (3 fatti e link Gatus/Stripe/Umami per colonna, chip telefono rosso a
+sito giù); Impostazioni con `STRIPE_API_KEY`/`GATUS_PASSWORD` e «Collegamenti Stripe»
+(«Collega…» con conferma scrive `metadata.slug`). Letture con cache in memoria
+(`lib/cache.ts`: live 2 min, orario 1 h) in `lib/portafoglio.ts` (Stripe `lib/stripe.ts`,
+Gatus `lib/gatus.ts`, lead/registro/Umami in `lib/integrazioni.ts`), 43 casi in
+`scripts/test-portafoglio.ts`. Verificato con le chiavi reali. **Resta a Mattia**: dare
+alla chiave ristretta il permesso «Balance read» (netto), collegare i 2 abbonamenti
+live «Futur Service» e «Design project» quando quei clienti entrano nell'editor,
+provare «Collega» dalla UI. Idee dopo: «ignora» per abbonamenti estranei, eventi
+Chiama/WhatsApp nell'hub.
 
 **Clienti di test** (`site-renderer/out/`):
 - `cavaliere-build-srls`: intake+contesto+palette verificati; **copy v2 appena rigenerato
