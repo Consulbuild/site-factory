@@ -1,0 +1,892 @@
+{
+  "name": "sf-report-rinnovo",
+  "nodes": [
+    {
+      "parameters": {
+        "events": [
+          "invoice.upcoming"
+        ]
+      },
+      "type": "n8n-nodes-base.stripeTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c01",
+      "name": "Stripe: rinnovo in arrivo",
+      "webhookId": "c4b7e8d1-2f3a-4b5c-8d9e-1f2a3b4c5d01",
+      "credentials": {
+        "stripeApi": {
+          "id": "daukmi9syB1V45SP",
+          "name": "Stripe Consulbuild"
+        }
+      },
+      "notes": "Parte 3 giorni prima del rinnovo (Stripe → Settings → Billing → Automatic → Upcoming renewal events). Credenziale «Stripe ConsulBuild» selezionata a mano dopo l'import; il nodo crea da solo il webhook su Stripe all'attivazione."
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "report-invia",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        112
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c02",
+      "name": "Webhook report-invia",
+      "webhookId": "c4b7e8d1-2f3a-4b5c-8d9e-1f2a3b4c5d02",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GNxAY36CwcnGQcQG",
+          "name": "Site-factory registra"
+        }
+      },
+      "notes": "Invio o anteprima a mano: body {slug, to?, dryRun?}. Stesso header X-Site-Factory-Key del registro. `to` reindirizza l'e-mail (prove), `dryRun` calcola senza spedire (riga Report con esito dryRun)."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Un solo formato per i due ingressi: evento Stripe o chiamata manuale.\nconst out = [];\nfor (const it of $input.all()) {\n  const j = it.json;\n  if (j.type === 'invoice.upcoming' && j.data && j.data.object) {\n    const o = j.data.object;\n    const sd = o.subscription_details || (o.parent && o.parent.subscription_details) || {};\n    const isSub = !!(o.subscription || (o.parent && o.parent.subscription_details) || o.billing_reason === 'upcoming' || o.billing_reason === 'subscription_cycle');\n    if (!isSub) continue; // fattura non da abbonamento: nessun report\n    out.push({ json: {\n      origine: 'stripe',\n      stripe_customer: o.customer || '',\n      email: String(o.customer_email || '').trim(),\n      nome: String(o.customer_name || '').trim(),\n      metaSlug: (sd.metadata && sd.metadata.slug) || (o.metadata && o.metadata.slug) || '',\n      slug: '', to: '', dryRun: false,\n    } });\n  } else {\n    const b = j.body || {};\n    if (!b.slug) throw new Error('report-invia: manca slug nel body');\n    out.push({ json: { origine: 'manuale', stripe_customer: '', email: '', nome: '', metaSlug: '', slug: String(b.slug), to: b.to ? String(b.to) : '', dryRun: !!b.dryRun } });\n  }\n}\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c03",
+      "name": "Normalizza"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "66CQL3bGk3MOXDKY",
+          "mode": "list",
+          "cachedResultName": "Clienti",
+          "cachedResultUrl": "/projects/wxBPZhXg7Q5Enopr/datatables/66CQL3bGk3MOXDKY"
+        },
+        "filters": {
+          "conditions": []
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c04",
+      "name": "Clienti",
+      "notes": "Tutto il registro (poche decine di righe): l'abbinamento si fa nel nodo dopo."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Riconosce il cliente del registro. Ordine: id Stripe già memorizzato → slug nei metadati\n// dell'abbonamento → e-mail → nome (referente o azienda). Mai un invio se il match è ambiguo.\nconst n = $('Normalizza').first().json;\nconst rows = $input.all().map(i => i.json).filter(r => r && r.slug);\nconst norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/\\([^)]*\\)/g, '').replace(/[^a-z0-9 ]+/g, ' ').replace(/\\s+/g, ' ').trim();\nconst ok = (c, nuovoLink, via) => [{ json: { ...n, trovato: true, nuovoLink, via, cliente: c, slug: c.slug, to: n.to || c.email, nomeSaluto: String(c.referente || '').replace(/\\([^)]*\\)/g, '').trim() || c.azienda } }];\nconst ko = motivo => [{ json: { ...n, trovato: false, motivo } }];\nif (n.origine === 'manuale') {\n  const c = rows.find(r => r.slug === n.slug);\n  return c ? ok(c, false, 'slug') : ko('slug sconosciuto nel registro: ' + n.slug);\n}\nif (n.stripe_customer) {\n  const c = rows.filter(r => r.stripe_customer === n.stripe_customer);\n  if (c.length === 1) return ok(c[0], false, 'stripe_customer');\n  if (c.length > 1) return ko('lo stesso stripe_customer è su più clienti');\n}\nif (n.metaSlug) {\n  const c = rows.find(r => r.slug === n.metaSlug);\n  if (c) return ok(c, true, 'metadata.slug');\n}\nif (n.email) {\n  const e = n.email.toLowerCase();\n  const c = rows.filter(r => String(r.email || '').toLowerCase() === e);\n  if (c.length === 1) return ok(c[0], true, 'email');\n  if (c.length > 1) return ko('e-mail ' + n.email + ' presente su più clienti');\n}\nif (n.nome) {\n  const nn = norm(n.nome);\n  const c = rows.filter(r => { const a = norm(r.referente), b = norm(r.azienda); return !!nn && (nn === a || nn === b || (!!a && (a.includes(nn) || nn.includes(a))) || (!!b && (b.includes(nn) || nn.includes(b)))); });\n  if (c.length === 1) return ok(c[0], true, 'nome');\n  if (c.length > 1) return ko('il nome ' + n.nome + ' combacia con più clienti');\n}\nreturn ko('nessun cliente con e-mail ' + (n.email || '?') + ' o nome ' + (n.nome || '?'));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c05",
+      "name": "Abbina"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b0000000-0000-4000-8000-000000000001",
+              "leftValue": "={{ $json.trovato }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        0
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c06",
+      "name": "Cliente trovato?"
+    },
+    {
+      "parameters": {
+        "chatId": "905276779",
+        "text": "=Report al rinnovo NON inviato — {{ $json.motivo }}.\nStripe: {{ $json.nome || '?' }} <{{ $json.email || '?' }}> {{ $json.stripe_customer }}\nPer collegarlo: e-mail del brief uguale a quella di Stripe, oppure metadati slug=<slug> sull'abbonamento. Poi rimanda con report-invia.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        160
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c07",
+      "name": "Telegram: non collegato",
+      "webhookId": "c4b7e8d1-2f3a-4b5c-8d9e-1f2a3b4c5d07",
+      "credentials": {
+        "telegramApi": {
+          "id": "jlHkcxrBzFZ2Htxw",
+          "name": "Telegram ConsulBuild Alert"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b0000000-0000-4000-8000-000000000002",
+              "leftValue": "={{ $json.nuovoLink }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c08",
+      "name": "Primo abbinamento?"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "66CQL3bGk3MOXDKY",
+          "mode": "list",
+          "cachedResultName": "Clienti",
+          "cachedResultUrl": "/projects/wxBPZhXg7Q5Enopr/datatables/66CQL3bGk3MOXDKY"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.slug }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "stripe_customer": "={{ $json.stripe_customer }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "stripe_customer",
+              "displayName": "stripe_customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        -192
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c09",
+      "name": "Memorizza id Stripe",
+      "notes": "Dal secondo rinnovo il cliente si riconosce dall'id Stripe, anche se cambia e-mail."
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dEMU4oVoyYAt1ucY",
+          "mode": "list",
+          "cachedResultName": "Report",
+          "cachedResultUrl": "/projects/wxBPZhXg7Q5Enopr/datatables/dEMU4oVoyYAt1ucY"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $('Abbina').first().json.slug }}"
+            },
+            {
+              "keyName": "esito",
+              "keyValue": "inviato"
+            },
+            {
+              "keyName": "quando",
+              "condition": "gte",
+              "keyValue": "={{ $now.minus({ days: 20 }).toISO() }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        -96
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c10",
+      "name": "Report recenti",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "notes": "Stripe ritenta i webhook: un report già inviato negli ultimi 20 giorni non si rimanda (solo per l'ingresso Stripe; l'invio manuale passa sempre)."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b0000000-0000-4000-8000-000000000003",
+              "leftValue": "={{ $('Abbina').first().json.origine }}",
+              "rightValue": "stripe",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "b0000000-0000-4000-8000-000000000004",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1792,
+        -96
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c11",
+      "name": "Già inviato?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://stats.consulbuild.com/api/auth/login",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2016,
+        0
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c12",
+      "name": "Umami login",
+      "executeOnce": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "bOmD17OEuMV8lSww",
+          "name": "Umami site-factory"
+        }
+      },
+      "notes": "Utente site-factory (ruolo user): username e password stanno nella credenziale Custom Auth, che li inietta nel body."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Periodo: ultimi 30 giorni fino ad ora (Umami aggiunge da solo il confronto coi 30 precedenti).\n// Una riga per ogni interrogazione: il nodo HTTP le esegue tutte con un solo nodo.\nconst a = $('Abbina').first().json;\nconst id = a.cliente.umami_id;\nif (!id) throw new Error('cliente ' + a.slug + ' senza umami_id nel registro: ripubblica il sito dall\\'editor');\nconst end = Date.now(); const start = end - 30 * 864e5; const prev = start - 30 * 864e5;\nconst base = 'https://stats.consulbuild.com/api/websites/' + id;\nconst q = 'startAt=' + start + '&endAt=' + end + '&timezone=Europe%2FRome';\nconst riga = (tipo, url) => ({ json: { tipo, url, start, end, prev } });\nreturn [\n  riga('stats', base + '/stats?' + q),\n  riga('referrer', base + '/metrics?type=referrer&limit=20&' + q),\n  riga('device', base + '/metrics?type=device&limit=10&' + q),\n  riga('city', base + '/metrics?type=city&limit=10&' + q),\n  riga('path', base + '/metrics?type=path&limit=20&' + q),\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2240,
+        0
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c13",
+      "name": "Interrogazioni"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Umami login').first().json.token }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2464,
+        0
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c14",
+      "name": "Umami dati",
+      "notes": "fullResponse: le risposte-array restano una per riga (altrimenti n8n le spezzerebbe in più item e si perderebbe l'ordine)."
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ypnZsKvZZva6fTpB",
+          "mode": "list",
+          "cachedResultName": "Lead",
+          "cachedResultUrl": "/projects/wxBPZhXg7Q5Enopr/datatables/ypnZsKvZZva6fTpB"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $('Abbina').first().json.slug }}"
+            },
+            {
+              "keyName": "quando",
+              "condition": "gte",
+              "keyValue": "={{ new Date($('Interrogazioni').first().json.start).toISOString() }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2688,
+        0
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c15",
+      "name": "Lead periodo",
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ypnZsKvZZva6fTpB",
+          "mode": "list",
+          "cachedResultName": "Lead",
+          "cachedResultUrl": "/projects/wxBPZhXg7Q5Enopr/datatables/ypnZsKvZZva6fTpB"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $('Abbina').first().json.slug }}"
+            },
+            {
+              "keyName": "quando",
+              "condition": "gte",
+              "keyValue": "={{ new Date($('Interrogazioni').first().json.prev).toISOString() }}"
+            },
+            {
+              "keyName": "quando",
+              "condition": "lt",
+              "keyValue": "={{ new Date($('Interrogazioni').first().json.start).toISOString() }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2912,
+        0
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c16",
+      "name": "Lead precedente",
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Compone oggetto, HTML e testo del report. Solo numeri misurati: le sezioni senza dati si omettono.\nconst a = $('Abbina').first().json; const c = a.cliente;\nconst qs = $('Interrogazioni').all().map(i => i.json);\nconst ds = $('Umami dati').all().map(i => i.json.body);\nconst dato = t => { const k = qs.findIndex(q => q.tipo === t); return k >= 0 ? ds[k] : null; };\nconst st = dato('stats') || {}; const cmp = st.comparison || {};\nconst conta = nodo => $(nodo).all().map(i => i.json).filter(r => r && r.id).length;\nconst richieste = conta('Lead periodo'), richiestePrec = conta('Lead precedente');\nconst inizio = new Date(qs[0].start), fine = new Date(qs[0].end);\nconst LEAD_DAL = new Date('2026-09-06T00:00:00+02:00');\nconst fmt = d => d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Rome' });\nconst num = v => new Intl.NumberFormat('it-IT').format(v || 0);\nconst plur = (v, s, p) => num(v) + ' ' + (v === 1 ? s : p);\nconst esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst delta = (cur, prev) => {\n  cur = cur || 0; prev = prev || 0;\n  if (!prev) return { t: cur ? 'nei 30 giorni precedenti non c\\'erano dati' : 'come nei 30 giorni precedenti', col: '#6b6b66' };\n  const p = Math.round((cur - prev) / prev * 100);\n  if (p > 0) return { t: '\\u25B2 +' + p + '% sui 30 giorni precedenti', col: '#1f7a3a' };\n  if (p < 0) return { t: '\\u25BC ' + p + '% sui 30 giorni precedenti', col: '#b3261e' };\n  return { t: '= come nei 30 giorni precedenti', col: '#6b6b66' };\n};\nconst visite = st.visits || 0, visitatori = st.visitors || 0;\n// Da dove arrivano (per visitatori con provenienza nota; il resto è diretto/link)\nconst cat = { 'Google': 0, 'Altri motori di ricerca': 0, 'Social (Facebook, Instagram\\u2026)': 0, 'Altri siti': 0 };\nfor (const r of (dato('referrer') || [])) {\n  const d = String(r.x || '').toLowerCase(); const y = r.y || 0; if (!d) continue;\n  if (/google\\./.test(d)) cat['Google'] += y;\n  else if (/bing|duckduckgo|yahoo|ecosia|qwant/.test(d)) cat['Altri motori di ricerca'] += y;\n  else if (/facebook|instagram|fb\\.|linkedin|tiktok|whatsapp|t\\.co|twitter|x\\.com|youtube/.test(d)) cat['Social (Facebook, Instagram\\u2026)'] += y;\n  else cat['Altri siti'] += y;\n}\nconst conRef = Object.values(cat).reduce((s, v) => s + v, 0);\nconst diretto = Math.max(visitatori - conRef, 0); const totRef = conRef + diretto;\nconst pct = v => Math.round(v / totRef * 100) + '%';\nconst provenienza = totRef ? [['Diretti o da un link (WhatsApp, biglietto, passaparola)', diretto], ...Object.entries(cat)].filter(([, v]) => v > 0).map(([k, v]) => [k, pct(v)]) : [];\n// Smartphone o computer\nlet mob = 0, pc = 0;\nfor (const d of (dato('device') || [])) { if (/mobile|tablet/i.test(d.x)) mob += d.y || 0; else pc += d.y || 0; }\nconst totDev = mob + pc;\nconst dispositivi = totDev ? [['Smartphone e tablet', Math.round(mob / totDev * 100) + '%'], ['Computer', Math.round(pc / totDev * 100) + '%']] : [];\n// Città\nconst citta = (dato('city') || []).filter(x => x.x).slice(0, 3).map(x => [x.x + (x.country && x.country !== 'IT' ? ' (' + x.country + ')' : ''), plur(x.y, 'visitatore', 'visitatori')]);\n// Sezioni del sito guardate\nconst ET = { '/': 'Home', '/#servizi': 'Servizi', '/#lavori': 'Lavori realizzati', '/#processo': 'Come lavoriamo', '/#faq': 'Domande frequenti', '/#contatti': 'Modulo preventivo', '/#canali': 'Contatti' };\nconst sezioni = (dato('path') || []).filter(p => ET[p.x]).slice(0, 3).map(p => [ET[p.x], plur(p.y, 'visualizzazione', 'visualizzazioni')]);\n\nconst dVisite = delta(visite, cmp.visits), dVisitatori = delta(visitatori, cmp.visitors), dRich = delta(richieste, richiestePrec);\nconst notaLead = inizio < LEAD_DAL ? 'Il conteggio delle richieste dal modulo \\u00e8 attivo dal 6 settembre 2026: quelle arrivate prima non compaiono qui.' : '';\nconst periodo = 'dal ' + fmt(inizio) + ' al ' + fmt(fine);\nconst subject = 'Il tuo sito nell\\'ultimo mese: ' + plur(visite, 'visita', 'visite') + ' e ' + plur(richieste, 'richiesta di preventivo', 'richieste di preventivo');\n\n// ---- HTML (tabelle e stili inline: funziona in Gmail, Outlook, Apple Mail) ----\nconst F = 'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;';\nconst kpi = (n, l, d) => '<td width=\\'33%\\' valign=\\'top\\' style=\\'padding:0 6px;\\'><div style=\\'' + F + 'font-size:34px;line-height:1.1;font-weight:700;color:#1c1c1a;\\'>' + num(n) + '</div><div style=\\'' + F + 'font-size:13px;color:#1c1c1a;margin-top:4px;\\'>' + l + '</div><div style=\\'' + F + 'font-size:12px;color:' + d.col + ';margin-top:4px;\\'>' + esc(d.t) + '</div></td>';\nconst blocco = (titolo, righe) => !righe.length ? '' : '<tr><td style=\\'padding:28px 0 0;\\'><div style=\\'' + F + 'font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6b6b66;padding-bottom:8px;border-bottom:1px solid #e5e5e0;\\'>' + titolo + '</div><table width=\\'100%\\' cellpadding=\\'0\\' cellspacing=\\'0\\' role=\\'presentation\\'>' + righe.map(([k, v]) => '<tr><td style=\\'' + F + 'font-size:15px;color:#1c1c1a;padding:10px 0;border-bottom:1px dotted #e5e5e0;\\'>' + esc(k) + '</td><td align=\\'right\\' style=\\'' + F + 'font-size:15px;color:#1c1c1a;padding:10px 0;border-bottom:1px dotted #e5e5e0;white-space:nowrap;\\'>' + esc(v) + '</td></tr>').join('') + '</table></td></tr>';\nconst html = '<!DOCTYPE html><html lang=\\'it\\'><head><meta charset=\\'utf-8\\'><meta name=\\'viewport\\' content=\\'width=device-width\\'><title>' + esc(subject) + '</title></head>'\n  + '<body style=\\'margin:0;padding:0;background:#f4f4f2;\\'>'\n  + '<table width=\\'100%\\' cellpadding=\\'0\\' cellspacing=\\'0\\' role=\\'presentation\\' style=\\'background:#f4f4f2;\\'><tr><td align=\\'center\\' style=\\'padding:32px 12px;\\'>'\n  + '<table width=\\'560\\' cellpadding=\\'0\\' cellspacing=\\'0\\' role=\\'presentation\\' style=\\'max-width:560px;width:100%;background:#ffffff;border:1px solid #e5e5e0;\\'><tr><td style=\\'padding:32px 32px 36px;\\'>'\n  + '<table width=\\'100%\\' cellpadding=\\'0\\' cellspacing=\\'0\\' role=\\'presentation\\'>'\n  + '<tr><td style=\\'' + F + 'font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#1c1c1a;font-weight:700;padding-bottom:20px;border-bottom:2px solid #1c1c1a;\\'>ConsulBuild</td></tr>'\n  + '<tr><td style=\\'padding-top:24px;\\'><div style=\\'' + F + 'font-size:24px;line-height:1.25;font-weight:700;color:#1c1c1a;\\'>Il tuo sito nell\\u2019ultimo mese</div><div style=\\'' + F + 'font-size:13px;color:#6b6b66;margin-top:6px;\\'>' + esc(c.dominio || '') + ' \\u00b7 ' + esc(periodo) + '</div></td></tr>'\n  + '<tr><td style=\\'padding-top:20px;\\'><div style=\\'' + F + 'font-size:15px;line-height:1.5;color:#1c1c1a;\\'>Buongiorno ' + esc(a.nomeSaluto) + ',<br>ecco cosa ha fatto il sito di ' + esc(c.azienda) + ' negli ultimi 30 giorni. Sono i dati reali raccolti dal sito, in forma anonima.</div></td></tr>'\n  + '<tr><td style=\\'padding-top:28px;\\'><table width=\\'100%\\' cellpadding=\\'0\\' cellspacing=\\'0\\' role=\\'presentation\\'><tr>' + kpi(visite, 'visite', dVisite) + kpi(visitatori, 'persone diverse', dVisitatori) + kpi(richieste, richieste === 1 ? 'richiesta di preventivo' : 'richieste di preventivo', dRich) + '</tr></table>' + (notaLead ? '<div style=\\'' + F + 'font-size:12px;color:#6b6b66;margin-top:12px;\\'>' + esc(notaLead) + '</div>' : '') + '</td></tr>'\n  + blocco('Da dove arrivano', provenienza) + blocco('Smartphone o computer', dispositivi) + blocco('Da quali citt\\u00e0', citta) + blocco('Cosa hanno guardato', sezioni)\n  + '<tr><td style=\\'padding-top:28px;\\'><div style=\\'' + F + 'font-size:12px;line-height:1.5;color:#6b6b66;\\'>Le statistiche sono raccolte senza cookie e senza banner, nel rispetto della privacy dei visitatori: chi blocca gli script non viene contato, quindi i numeri sono prudenti. Una \\u00abvisita\\u00bb \\u00e8 una sessione di navigazione; le richieste sono i moduli di preventivo compilati sul sito.</div></td></tr>'\n  + '<tr><td style=\\'padding-top:24px;border-top:1px solid #e5e5e0;margin-top:24px;\\'><div style=\\'' + F + 'font-size:14px;line-height:1.5;color:#1c1c1a;padding-top:20px;\\'>Vuoi parlarne o hai un\\u2019idea per il sito? Rispondi a questa e-mail: arriva direttamente a noi.<br><strong>ConsulBuild</strong> \\u00b7 info@consulbuild.com</div></td></tr>'\n  + '</table></td></tr></table></td></tr></table></body></html>';\n\nconst righeTxt = (t, r) => r.length ? '\\n' + t.toUpperCase() + '\\n' + r.map(([k, v]) => '- ' + k + ': ' + v).join('\\n') + '\\n' : '';\nconst text = 'CONSULBUILD \\u2014 Il tuo sito nell\\'ultimo mese\\n' + (c.dominio || '') + ' \\u00b7 ' + periodo + '\\n\\nBuongiorno ' + a.nomeSaluto + ',\\necco cosa ha fatto il sito di ' + c.azienda + ' negli ultimi 30 giorni.\\n\\n'\n  + plur(visite, 'visita', 'visite') + ' (' + dVisite.t + ')\\n' + plur(visitatori, 'persona diversa', 'persone diverse') + ' (' + dVisitatori.t + ')\\n' + plur(richieste, 'richiesta di preventivo', 'richieste di preventivo') + ' (' + dRich.t + ')\\n' + (notaLead ? notaLead + '\\n' : '')\n  + righeTxt('Da dove arrivano', provenienza) + righeTxt('Smartphone o computer', dispositivi) + righeTxt('Da quali citt\\u00e0', citta) + righeTxt('Cosa hanno guardato', sezioni)\n  + '\\nLe statistiche sono raccolte senza cookie e senza banner: chi blocca gli script non viene contato, quindi i numeri sono prudenti.\\n\\nVuoi parlarne? Rispondi a questa e-mail.\\nConsulBuild \\u00b7 info@consulbuild.com\\n';\n\nreturn [{ json: { slug: a.slug, azienda: c.azienda, to: a.to, subject, html, text, visite, visitatori, richieste, periodo_inizio: inizio.toISOString(), periodo_fine: fine.toISOString(), dryRun: !!a.dryRun, via: a.via } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3136,
+        0
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c17",
+      "name": "Componi"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b0000000-0000-4000-8000-000000000005",
+              "leftValue": "={{ $json.dryRun }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3360,
+        0
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c18",
+      "name": "Solo prova?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "Report ConsulBuild <report@notifiche.consulbuild.com>",
+        "toEmail": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "both",
+        "text": "={{ $json.text }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "replyTo": "info@consulbuild.com"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        3584,
+        96
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c19",
+      "name": "Invia report",
+      "webhookId": "c4b7e8d1-2f3a-4b5c-8d9e-1f2a3b4c5d19",
+      "credentials": {
+        "smtp": {
+          "id": "nlP2TeA88dPAgTl8",
+          "name": "Brevo SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "dEMU4oVoyYAt1ucY",
+          "mode": "list",
+          "cachedResultName": "Report",
+          "cachedResultUrl": "/projects/wxBPZhXg7Q5Enopr/datatables/dEMU4oVoyYAt1ucY"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "slug": "={{ $('Componi').first().json.slug }}",
+            "quando": "={{ $now.toISO() }}",
+            "periodo_inizio": "={{ $('Componi').first().json.periodo_inizio }}",
+            "periodo_fine": "={{ $('Componi').first().json.periodo_fine }}",
+            "visite": "={{ $('Componi').first().json.visite }}",
+            "richieste": "={{ $('Componi').first().json.richieste }}",
+            "esito": "={{ $('Componi').first().json.dryRun ? 'dryRun' : 'inviato' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "slug",
+              "displayName": "slug",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "quando",
+              "displayName": "quando",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "periodo_inizio",
+              "displayName": "periodo_inizio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "periodo_fine",
+              "displayName": "periodo_fine",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "visite",
+              "displayName": "visite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "richieste",
+              "displayName": "richieste",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "esito",
+              "displayName": "esito",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": true,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        3808,
+        0
+      ],
+      "id": "a1f0c9d2-5b7e-4c3a-9e21-0d4f6b8a1c20",
+      "name": "Registra report",
+      "executeOnce": true,
+      "notes": "Traccia di ogni report (anche le prove): serve alla deduplica e alla dashboard."
+    }
+  ],
+  "connections": {
+    "Stripe: rinnovo in arrivo": {
+      "main": [
+        [
+          {
+            "node": "Normalizza",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook report-invia": {
+      "main": [
+        [
+          {
+            "node": "Normalizza",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizza": {
+      "main": [
+        [
+          {
+            "node": "Clienti",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clienti": {
+      "main": [
+        [
+          {
+            "node": "Abbina",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abbina": {
+      "main": [
+        [
+          {
+            "node": "Cliente trovato?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cliente trovato?": {
+      "main": [
+        [
+          {
+            "node": "Primo abbinamento?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram: non collegato",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Primo abbinamento?": {
+      "main": [
+        [
+          {
+            "node": "Memorizza id Stripe",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Report recenti",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memorizza id Stripe": {
+      "main": [
+        [
+          {
+            "node": "Report recenti",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report recenti": {
+      "main": [
+        [
+          {
+            "node": "Già inviato?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Già inviato?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Umami login",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Umami login": {
+      "main": [
+        [
+          {
+            "node": "Interrogazioni",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Interrogazioni": {
+      "main": [
+        [
+          {
+            "node": "Umami dati",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Umami dati": {
+      "main": [
+        [
+          {
+            "node": "Lead periodo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead periodo": {
+      "main": [
+        [
+          {
+            "node": "Lead precedente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead precedente": {
+      "main": [
+        [
+          {
+            "node": "Componi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Componi": {
+      "main": [
+        [
+          {
+            "node": "Solo prova?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Solo prova?": {
+      "main": [
+        [
+          {
+            "node": "Registra report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Invia report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invia report": {
+      "main": [
+        [
+          {
+            "node": "Registra report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Rome",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Nmtq10XO2pWwXwnE"
+  }
+}

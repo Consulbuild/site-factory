@@ -16,7 +16,7 @@ import { getSecret } from "../lib/secrets.ts";
 import { N8N_HOST } from "../lib/integrazioni.ts";
 
 const DIR = path.join(REPO_ROOT, "infra", "n8n");
-const WORKFLOWS = ["registra-cliente", "form-lead", "errori"];
+const WORKFLOWS = ["registra-cliente", "form-lead", "errori", "report-rinnovo"];
 const nomeN8n = (file: string) => `sf-${file}`;
 
 type Workflow = { id?: string; name: string; nodes: unknown[]; connections: unknown; settings?: unknown };
