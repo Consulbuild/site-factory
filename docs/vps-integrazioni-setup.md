@@ -128,24 +128,16 @@ dall'API pubblica: solo dall'interfaccia.
 3. **If** (tutte vere): `{{ $('Webhook').item.json.body['sito-web'] }}` is empty
    (honeypot), `{{ $('Webhook').item.json.body.nome }}` is not empty,
    `{{ $('Webhook').item.json.body.telefono }}` is not empty.
-4. ramo true → **Send Email** (credenziale «Brevo SMTP»): From `siti@consulbuild.com`,
-   To `{{ $json.email }}`, **nessuna copia all'agenzia** (decisione Mattia 2026-09-05:
-   con decine di siti sarebbe rumore; i numeri dei lead si leggono dalle Executions
-   di n8n e dalle pagine `/grazie` in Umami, per il futuro pannello centralizzato),
-   Reply-To `{{ $('Webhook').item.json.body.email }}`,
-   Subject `Nuova richiesta dal sito {{ $json.dominio }}: {{ $('Webhook').item.json.body.nome }}`,
-   Text:
-   ```
-   Nuova richiesta di preventivo dal sito {{ $json.dominio }}
-
-   Nome: {{ $('Webhook').item.json.body.nome }}
-   Telefono: {{ $('Webhook').item.json.body.telefono }}
-   E-mail: {{ $('Webhook').item.json.body.email }}
-   Città: {{ $('Webhook').item.json.body.citta }}
-   Messaggio: {{ $('Webhook').item.json.body.messaggio }}
-
-   Ricevuta il {{ $now.format('dd/MM/yyyy HH:mm') }}. Rispondi a questa e-mail per contattare il cliente.
-   ```
+4. ramo true → **Code «Componi e-mail»** (dal 2026-09-06: stesso impianto grafico del
+   report mensile — testata ConsulBuild, nome del lead come titolo, scheda Nome/Telefono/
+   E-mail/Città con link `tel:` e `mailto:`, messaggio in evidenza, pulsanti «Chiama» e
+   «Scrivi un'e-mail», piede sobrio; l'HTML vive nel nodo, versionato in
+   `infra/n8n/form-lead.json`) → **Send Email** (credenziale «Brevo SMTP»): From
+   `Sito web ConsulBuild <siti@consulbuild.com>`, To `{{ $json.email }}`, formato
+   HTML+testo, Reply-To = e-mail del lead (o info@ se assente), Subject «Nuova richiesta
+   di preventivo da <nome> (<città>)», **attribuzione n8n disattivata**, **nessuna copia
+   all'agenzia** (decisione Mattia 2026-09-05: con decine di siti sarebbe rumore; i
+   numeri si leggono dalla tabella Lead).
 5. dopo **Send Email** → **Data table → Insert** (tabella `Lead`): `slug` =
    `{{ $('Get row(s)').item.json.slug }}`, `quando` = `{{ $now.toISO() }}`. Viene DOPO
    l'e-mail di proposito: una riga = una richiesta davvero recapitata al cliente, così il

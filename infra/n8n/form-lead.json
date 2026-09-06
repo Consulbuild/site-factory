@@ -103,19 +103,34 @@
     },
     {
       "parameters": {
-        "fromEmail": "siti@consulbuild.com",
+        "jsCode": "// E-mail del lead al cliente: stesso impianto del report mensile (tabelle e stili inline, apici singoli).\nconst b = $('Webhook').item.json.body || {};\nconst c = $json; // riga del registro Clienti\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst pulisci = s => String(s ?? '').trim();\nconst nome = pulisci(b.nome), telefono = pulisci(b.telefono), email = pulisci(b.email), citta = pulisci(b.citta), messaggio = pulisci(b.messaggio);\nconst telHref = 'tel:' + telefono.replace(/[^+\\d]/g, '');\nconst quando = $now.setZone('Europe/Rome');\nconst data = quando.setLocale('it').toFormat('d MMMM yyyy') + ' alle ' + quando.toFormat('HH:mm');\nconst saluto = pulisci(c.referente).replace(/\\([^)]*\\)/g, '').trim() || pulisci(c.azienda);\nconst F = 'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;';\nconst INK = '#1c1c1a', MUTED = '#6b6b66', LINE = '#e5e5e0';\nconst riga = (k, v, href) => '<tr><td width=\\'120\\' valign=\\'top\\' style=\\'' + F + 'font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:' + MUTED + ';padding:12px 12px 12px 0;border-bottom:1px solid ' + LINE + ';\\'>' + k + '</td><td valign=\\'top\\' style=\\'' + F + 'font-size:16px;color:' + INK + ';padding:12px 0;border-bottom:1px solid ' + LINE + ';\\'>' + (href ? '<a href=\\'' + esc(href) + '\\' style=\\'color:' + INK + ';text-decoration:underline;\\'>' + esc(v) + '</a>' : esc(v)) + '</td></tr>';\nconst righe = riga('Nome', nome) + riga('Telefono', telefono, telHref) + (email ? riga('E-mail', email, 'mailto:' + email) : '') + (citta ? riga('Citt\\u00e0', citta) : '');\nconst subject = 'Nuova richiesta di preventivo da ' + nome + (citta ? ' (' + citta + ')' : '');\nconst html = '<!DOCTYPE html><html lang=\\'it\\'><head><meta charset=\\'utf-8\\'><meta name=\\'viewport\\' content=\\'width=device-width\\'><title>' + esc(subject) + '</title></head>'\n  + '<body style=\\'margin:0;padding:0;background:#efefec;\\'><table width=\\'100%\\' cellpadding=\\'0\\' cellspacing=\\'0\\' role=\\'presentation\\' style=\\'background:#efefec;\\'><tr><td align=\\'center\\' style=\\'padding:32px 12px;\\'>'\n  + '<table width=\\'600\\' cellpadding=\\'0\\' cellspacing=\\'0\\' role=\\'presentation\\' style=\\'max-width:600px;width:100%;background:#ffffff;\\'>'\n  + '<tr><td style=\\'padding:22px 36px;background:' + INK + ';\\'><table width=\\'100%\\' cellpadding=\\'0\\' cellspacing=\\'0\\' role=\\'presentation\\'><tr><td style=\\'' + F + 'font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#ffffff;\\'>ConsulBuild</td><td align=\\'right\\' style=\\'' + F + 'font-size:12px;color:#c9c9c4;\\'>Nuova richiesta dal tuo sito</td></tr></table></td></tr>'\n  + '<tr><td style=\\'padding:32px 36px 40px;\\'><table width=\\'100%\\' cellpadding=\\'0\\' cellspacing=\\'0\\' role=\\'presentation\\'>'\n  + '<tr><td><div style=\\'' + F + 'font-size:26px;line-height:1.2;font-weight:700;color:' + INK + ';\\'>' + esc(nome) + '</div><div style=\\'' + F + 'font-size:14px;color:' + MUTED + ';margin-top:6px;\\'>' + esc(c.dominio || '') + ' \\u00b7 ' + esc(data) + '</div></td></tr>'\n  + '<tr><td style=\\'padding-top:22px;\\'><div style=\\'' + F + 'font-size:15px;line-height:1.55;color:' + INK + ';\\'>Buongiorno ' + esc(saluto) + ',<br>una persona ha compilato il modulo di preventivo sul tuo sito. Ecco i suoi recapiti: pi\\u00f9 in fretta rispondi, pi\\u00f9 \\u00e8 probabile che il lavoro sia tuo.</div></td></tr>'\n  + '<tr><td style=\\'padding-top:24px;\\'><table width=\\'100%\\' cellpadding=\\'0\\' cellspacing=\\'0\\' role=\\'presentation\\'>' + righe + '</table></td></tr>'\n  + (messaggio ? '<tr><td style=\\'padding-top:28px;\\'><div style=\\'' + F + 'font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:' + MUTED + ';padding-bottom:10px;\\'>Il suo messaggio</div><div style=\\'' + F + 'font-size:16px;line-height:1.55;color:' + INK + ';padding:18px 20px;background:#f7f7f5;border-left:3px solid ' + INK + ';white-space:pre-wrap;\\'>' + esc(messaggio) + '</div></td></tr>' : '')\n  + '<tr><td style=\\'padding-top:28px;\\'><table cellpadding=\\'0\\' cellspacing=\\'0\\' role=\\'presentation\\'><tr><td style=\\'background:' + INK + ';\\'><a href=\\'' + esc(telHref) + '\\' style=\\'' + F + 'display:inline-block;padding:14px 22px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;\\'>Chiama ' + esc(nome.split(' ')[0]) + '</a></td><td style=\\'width:12px;\\'></td>' + (email ? '<td style=\\'border:1px solid ' + INK + ';\\'><a href=\\'mailto:' + esc(email) + '\\' style=\\'' + F + 'display:inline-block;padding:13px 22px;font-size:15px;font-weight:600;color:' + INK + ';text-decoration:none;\\'>Scrivi un\\u2019e-mail</a></td>' : '') + '</tr></table>' + (email ? '<div style=\\'' + F + 'font-size:13px;color:' + MUTED + ';margin-top:12px;\\'>Puoi anche rispondere direttamente a questa e-mail: arriva a ' + esc(nome) + '.</div>' : '') + '</td></tr>'\n  + '</table></td></tr>'\n  + '<tr><td style=\\'padding:20px 36px 24px;border-top:1px solid ' + LINE + ';\\'><div style=\\'' + F + 'font-size:12px;line-height:1.6;color:' + MUTED + ';\\'>Richiesta ricevuta dal modulo di ' + esc(c.dominio || '') + ' e recapitata da <strong style=\\'color:' + INK + ';\\'>ConsulBuild</strong> \\u00b7 info@consulbuild.com<br>I dati del richiedente sono stati inviati solo a te.</div></td></tr>'\n  + '</table></td></tr></table></body></html>';\nconst text = 'CONSULBUILD \\u2014 Nuova richiesta dal tuo sito\\n' + (c.dominio || '') + ' \\u00b7 ' + data + '\\n\\nBuongiorno ' + saluto + ',\\nuna persona ha compilato il modulo di preventivo sul tuo sito.\\n\\nNome: ' + nome + '\\nTelefono: ' + telefono + (email ? '\\nE-mail: ' + email : '') + (citta ? '\\nCitt\\u00e0: ' + citta : '') + (messaggio ? '\\n\\nIl suo messaggio:\\n' + messaggio : '') + '\\n\\n' + (email ? 'Rispondi a questa e-mail per scrivere direttamente a ' + nome + '.\\n\\n' : '') + 'Richiesta recapitata da ConsulBuild \\u00b7 info@consulbuild.com\\n';\nreturn [{ json: { ...c, subject, html, text, replyTo: email || 'info@consulbuild.com' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "5d2a7c1e-9f3b-4b8e-a6d0-7e1c2f3a4b5d",
+      "name": "Componi e-mail"
+    },
+    {
+      "parameters": {
+        "fromEmail": "Sito web ConsulBuild <siti@consulbuild.com>",
         "toEmail": "={{ $json.email }}",
-        "subject": "=Nuova richiesta dal sito {{ $json.dominio }}: {{ $('Webhook').item.json.body.nome }}",
-        "emailFormat": "text",
-        "text": "=Nuova richiesta di preventivo dal sito {{ $json.dominio }}\n\nNome: {{ $('Webhook').item.json.body.nome }}\nTelefono: {{ $('Webhook').item.json.body.telefono }}\nE-mail: {{ $('Webhook').item.json.body.email }}\nCittà: {{ $('Webhook').item.json.body.citta }}\nMessaggio: {{ $('Webhook').item.json.body.messaggio }}\n\nRicevuta il {{ $now.format('dd/MM/yyyy HH:mm') }}.",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "both",
+        "html": "={{ $json.html }}",
+        "text": "={{ $json.text }}",
         "options": {
-          "replyTo": "={{ $('Webhook').item.json.body.email }}"
+          "appendAttribution": false,
+          "replyTo": "={{ $json.replyTo }}"
         }
       },
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        624,
+        832,
         -96
       ],
       "id": "8be4b988-546e-4519-94ea-6eadf79a2a36",
@@ -175,8 +190,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        624,
-        96
+        1040,
+        -96
       ],
       "id": "5d2a7c1e-9f3b-4b8e-a6d0-7e1c2f3a4b5c",
       "name": "Registra lead",
@@ -207,6 +222,17 @@
       ]
     },
     "If": {
+      "main": [
+        [
+          {
+            "node": "Componi e-mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Componi e-mail": {
       "main": [
         [
           {
