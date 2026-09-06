@@ -21,6 +21,9 @@ export const KNOWN_KEYS = [
   "UMAMI_PASSWORD",
   "N8N_REGISTRA_KEY",
   "N8N_API_KEY",
+  // Dashboard clienti (docs/piano-dashboard-clienti.md)
+  "STRIPE_API_KEY",
+  "GATUS_PASSWORD",
 ] as const;
 export type KeyName = (typeof KNOWN_KEYS)[number];
 
@@ -32,7 +35,9 @@ export const KEY_LABELS: Record<KeyName, string> = {
   CLOUDFLARE_ACCOUNT_ID: "Cloudflare (account ID)",
   UMAMI_PASSWORD: "Umami (password utente site-factory)",
   N8N_REGISTRA_KEY: "n8n (segreto webhook registra-cliente)",
-  N8N_API_KEY: "n8n (API key, solo import workflow)",
+  N8N_API_KEY: "n8n (API key: import workflow e lettura lead)",
+  STRIPE_API_KEY: "Stripe (chiave ristretta: abbonamenti ed entrate)",
+  GATUS_PASSWORD: "Gatus (password del monitor, per «Siti down»)",
 };
 
 function keychainRead(name: KeyName): string | null {

@@ -29,8 +29,10 @@ export const formAction = (slug: string) => `${N8N_HOST}/webhook/form-lead?slug=
 
 const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
-async function http(url: string, init: RequestInit = {}): Promise<Response> {
-  return fetch(url, { ...init, signal: AbortSignal.timeout(HTTP_TIMEOUT_MS) });
+/** fetch con timeout. Le letture della dashboard passano un timeout più corto
+ *  (una fonte giù non deve tenere in attesa l'hub per 15 s). */
+export async function http(url: string, init: RequestInit = {}, timeoutMs = HTTP_TIMEOUT_MS): Promise<Response> {
+  return fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
 }
 
 /* ---------------- Umami ---------------- */
@@ -50,7 +52,7 @@ export async function umamiLogin(password = getSecret("UMAMI_PASSWORD")): Promis
 
 type UmamiWebsite = { id: string; name: string; domain: string };
 
-function umami(token: string, pathname: string, init: RequestInit = {}): Promise<Response> {
+export function umami(token: string, pathname: string, init: RequestInit = {}): Promise<Response> {
   return http(`${UMAMI_HOST}/api${pathname}`, {
     ...init,
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -251,4 +253,62 @@ async function proietta(slug: string, c: DatiRegistro): Promise<InfraEsito> {
     n8nOk,
     ...(errori.length ? { errore: errori.join(" · ") } : {}),
   };
+}
+
+/* ---------------- letture per la dashboard (docs/piano-dashboard-clienti.md) ---------------- */
+
+/** Timeout delle letture della dashboard: una fonte giù non blocca la pagina a lungo. */
+export const DASHBOARD_TIMEOUT_MS = 8_000;
+
+async function n8nGet<T>(pathname: string, apiKey: string | null): Promise<T> {
+  if (!apiKey) throw new Error("chiave N8N_API_KEY mancante: configurala dal pannello «Chiavi API»");
+  const r = await http(`${N8N_HOST}/api/v1${pathname}`, { headers: { "X-N8N-API-KEY": apiKey } }, DASHBOARD_TIMEOUT_MS);
+  if (!r.ok) throw new Error(`n8n ha risposto ${r.status} su ${pathname}`);
+  return (await r.json()) as T;
+}
+
+/** Tutte le righe di una Data table n8n, risolta per NOME (l'id non si cabla:
+ *  cambia se la tabella viene ricreata). Pagina con `cursor`, unico parametro
+ *  accettato insieme a `limit` (max 100: verificato 2026-09-06). */
+export async function n8nDataTable(nome: string, apiKey = getSecret("N8N_API_KEY")): Promise<Record<string, unknown>[]> {
+  const tabelle = await n8nGet<{ data: Array<{ id: string; name: string }> }>("/data-tables", apiKey);
+  const t = tabelle.data.find((x) => x.name === nome);
+  if (!t) throw new Error(`Data table «${nome}» non trovata in n8n`);
+  const righe: Record<string, unknown>[] = [];
+  let cursor: string | null = null;
+  do {
+    const pagina: { data: Record<string, unknown>[]; nextCursor: string | null } = await n8nGet(
+      `/data-tables/${t.id}/rows?limit=100${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`,
+      apiKey,
+    );
+    righe.push(...pagina.data);
+    cursor = pagina.nextCursor;
+  } while (cursor);
+  return righe;
+}
+
+/** Lead ricevuti (tabella «Lead», scritta da sf-form-lead dopo l'e-mail): solo slug e data. */
+export async function leggiLead(): Promise<Array<{ slug: string; quando: string }>> {
+  const righe = await n8nDataTable("Lead");
+  return righe.map((r) => ({ slug: String(r.slug ?? ""), quando: String(r.quando ?? "") }));
+}
+
+/** Registro «Clienti» di n8n: serve `stripe_customer`, scritto dal report al
+ *  rinnovo al primo abbinamento, come secondo criterio di collegamento. */
+export async function leggiRegistroClienti(): Promise<Array<{ slug: string; stripeCustomer: string | null }>> {
+  const righe = await n8nDataTable("Clienti");
+  return righe.map((r) => ({ slug: String(r.slug ?? ""), stripeCustomer: r.stripe_customer ? String(r.stripe_customer) : null }));
+}
+
+export type UmamiRiepilogo = { visitatori30: number; visitatori30Prec: number };
+
+/** Visitatori degli ultimi 30 giorni e dei 30 precedenti (`stats` con `comparison`,
+ *  forma vista sull'istanza il 2026-09-05: valori piatti). */
+export async function umamiRiepilogo(websiteId: string, ora = Date.now()): Promise<UmamiRiepilogo> {
+  const token = await umamiLogin();
+  const start = ora - 30 * 86_400_000;
+  const r = await umami(token, `/websites/${websiteId}/stats?startAt=${start}&endAt=${ora}`);
+  if (!r.ok) throw new Error(`Umami: statistiche non lette (${r.status})`);
+  const j = (await r.json()) as { visitors?: number; comparison?: { visitors?: number } };
+  return { visitatori30: Number(j.visitors ?? 0), visitatori30Prec: Number(j.comparison?.visitors ?? 0) };
 }

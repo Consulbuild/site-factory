@@ -125,6 +125,7 @@ export interface ClientSummary {
   citta: string;
   referente: string;
   phone: string;
+  email: string; // e-mail del brief: collegamento con l'abbonamento Stripe (dashboard)
   submissionId: string;
   importedAt: string;
   updatedAt: string;
@@ -149,6 +150,7 @@ export function listClients(): ClientSummary[] {
       citta: String(intake["meta.city"] ?? ""),
       referente: String(brief?.referente ?? ""),
       phone: String(intake["contact.phone"] ?? brief?.telefono ?? ""),
+      email: String(brief?.email ?? intake["contact.email"] ?? ""),
       submissionId: state.submissionId,
       importedAt: state.importedAt,
       updatedAt: state.updatedAt,
