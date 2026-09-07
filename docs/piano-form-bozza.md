@@ -64,7 +64,13 @@ architettura e comandi, `PRODUCT.md` per il design).
   risolti, 1 parziale (card «Fatto» stirata a ≥1024 dallo stretch della scena) e una
   regressione (righe della griglia disuguali a 390) → corretti con `align-self` sulla
   card finale e `grid-auto-rows: 1fr` con spazi compensati sotto i 430 px; secondo
-  verdict pass sui due punti.
+  verdict pass sui due punti: **ship** (copre i fix punteggiati), nessuna regressione.
+- **Scheda chiusa il 2026-09-07.** File toccati rispetto al piano: tutto dentro
+  `site-intake/**` (come previsto), `docs/piano-form-bozza.md`, `docs/handoff-fase-c.md`;
+  nessun file fuori perimetro. Fuori scheda, come da piano: webhook n8n e Drive
+  (scheda B), import nell'editor (scheda C), deploy su `bozza.consulbuild.com` (solo su ok
+  di Mattia), test su iPhone reale dentro Instagram, Lighthouse (non eseguito: il gate del
+  budget copre i pesi; da lanciare sul sito pubblicato).
 
 ## Rilievi del detector accettati (2026-09-07)
 
