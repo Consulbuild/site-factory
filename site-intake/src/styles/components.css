@@ -108,6 +108,28 @@
   gap: var(--s-4);
 }
 
+/* Incoraggiamento al cambio di sezione (solo alle sezioni 4 e 6): una riga verde, poi sparisce dalla memoria. */
+.passo__brindisi {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  align-self: flex-start;
+  padding: var(--s-1) var(--s-3) var(--s-1) var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--ok-soft);
+  color: var(--ok);
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+.passo__brindisi .icona {
+  stroke-width: 3;
+}
+
+/* Spazio per avvisi ed errori sotto il campo. */
+.passo__esito:empty {
+  display: none;
+}
+
 /* Nome della sezione sopra la domanda (eyebrow con lineetta): orienta senza rubare spazio in testata. */
 .passo__sezione {
   display: flex;
