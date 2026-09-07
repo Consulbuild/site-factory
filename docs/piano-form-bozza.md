@@ -56,7 +56,12 @@ architettura e comandi, `PRODUCT.md` per il design).
   larghezze (`tests/schermate.spec.ts`), axe (`tests/a11y.spec.ts`), README e DESIGN.md
   scritti, `wrangler.jsonc` pronto; finish review con agente separato (istruzioni del
   finish reviewer di impeccable in modalità degradata: gli agenti nativi della skill non
-  sono installati in questo harness).
+  sono installati in questo harness). **Esito «fix» con 8 correzioni materiali, tutte
+  applicate**: fondo chiaro di «Fatto» anche su `<html>`, card che si accorcia con
+  transizione all'invio, primo passo in 680 px (test `390x680-01`), niente etichette
+  impilate né eyebrow duplicata, spunta SVG, nomi presi non selezionabili, primo passo
+  statico senza animazione, card «Fatto» a misura e binario sticky. Verdict pass in
+  corso.
 
 ## Rilievi del detector accettati (2026-09-07)
 

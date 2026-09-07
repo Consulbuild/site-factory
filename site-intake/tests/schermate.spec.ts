@@ -116,6 +116,16 @@ test.describe("@schermate", () => {
     });
   }
 
+  test("primo passo nel browser interno di Instagram (390×680)", async ({ page }) => {
+    mkdirSync(OUT, { recursive: true });
+    await page.setViewportSize({ width: 390, height: 680 });
+    await page.goto("/");
+    await page.waitForTimeout(400);
+    await page.screenshot({ path: join(OUT, "390x680-01-mestiere.png") }); // solo la piega, non tutta la pagina
+    const cta = await page.getByRole("button", { name: "Continua", exact: true }).boundingBox();
+    if (!cta || cta.y + cta.height > 680) throw new Error(`«Continua» sotto la piega a 390×680: fondo a ${cta ? cta.y + cta.height : "?"}px`);
+  });
+
   test("sipario a metà corsa e ingresso a scaglioni (390px)", async ({ page }) => {
     mkdirSync(OUT, { recursive: true });
     await page.setViewportSize({ width: 390, height: 844 });

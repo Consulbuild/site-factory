@@ -17,17 +17,25 @@ export function creaNomeSito({ risposte, valore }: ArgomentiComponente<ValoreNom
   if (valore) esiti.set(valore.nome, valore.esito);
   const personalizzato = !!valore && !proposte.includes(valore.nome);
 
+  const riempiStato = (span: HTMLElement, e: EsitoDominio | undefined) => {
+    span.className = `stato-dominio${e ? ` is-${e}` : ""}`;
+    span.replaceChildren(...(e === "libero" ? [svgIcona("spunta")] : []), e ? TESTO_ESITO[e] : "Controllo…");
+  };
   const stato = (nome: string) => {
-    const e = esiti.get(nome);
-    const span = h("span", { class: `stato-dominio${e ? ` is-${e}` : ""}`, "data-nome": nome }, e ? TESTO_ESITO[e] : "Controllo…");
+    const span = h("span", { "data-nome": nome });
+    riempiStato(span, esiti.get(nome));
     return span;
   };
   const aggiornaStato = (nome: string, e: EsitoDominio) => {
     esiti.set(nome, e);
-    el.querySelectorAll<HTMLElement>(`.stato-dominio[data-nome="${nome}"]`).forEach((s) => {
-      s.className = `stato-dominio is-${e}`;
-      s.textContent = TESTO_ESITO[e];
-    });
+    el.querySelectorAll<HTMLElement>(`.stato-dominio[data-nome="${nome}"]`).forEach((s) => riempiStato(s, e));
+    // Un nome preso non si può scegliere: la card si attenua e l'eventuale selezione cade.
+    const inp = scelte.querySelector<HTMLInputElement>(`.scelta__input[value="${nome}"]`);
+    if (inp) {
+      inp.disabled = e === "preso";
+      inp.closest(".scelta")?.classList.toggle("is-preso", e === "preso");
+      if (e === "preso" && inp.checked) inp.checked = false;
+    }
   };
   const controlla = (nome: string) => {
     if (nome.length < 3) return;

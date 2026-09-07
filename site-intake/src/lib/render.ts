@@ -90,10 +90,11 @@ export function montaDomanda(a: ArgomentiMonta): PassoMontato {
   const el = h(
     "section",
     { class: "passo", "data-passo": a.domanda.id, "aria-labelledby": "domanda" },
+    // Al primo passo delle sezioni con incoraggiamento la riga verde PRENDE IL POSTO
+    // dell'eyebrow (mai due etichette impilate sopra la domanda); la testata dice comunque la sezione.
     a.primoDellaSezione && "incoraggiamento" in sezione && sezione.incoraggiamento
       ? h("p", { class: "passo__brindisi" }, svgIcona("spunta"), sezione.incoraggiamento)
-      : null,
-    h("p", { class: "passo__sezione" }, sezione.nome),
+      : h("p", { class: "passo__sezione" }, sezione.nome),
     h("h1", { class: "passo__titolo", id: "domanda", tabindex: "-1" }, a.domanda.testo),
     a.domanda.aiuto ? h("p", { class: "passo__aiuto" }, a.domanda.aiuto) : null,
     h("div", { class: "passo__campo" }, comp.el),

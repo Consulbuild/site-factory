@@ -116,10 +116,16 @@ export function mostraAttesa(card: HTMLElement): Attesa {
   centro.append(onde, logo);
   el.append(centro, testo, sotto, barra);
   card.append(el);
-  card.classList.add("is-attesa"); // la card torna alta come un passo normale: il riepilogo sotto sparisce
+  // La card si accorcia dall'altezza del riepilogo a quella di un passo normale, animando
+  // l'altezza (una sola volta, un solo elemento): il pannello «cresce» dal bottone.
+  const da = card.offsetHeight;
+  const a = Math.min(560, innerHeight - 24);
+  card.style.height = `${da}px`;
+  card.classList.add("is-attesa");
   window.scrollTo({ top: 0, behavior: riduciMotion() ? "auto" : "smooth" });
   void el.offsetWidth;
   el.classList.add("is-aperta");
+  card.style.height = `${a}px`;
   return {
     logo,
     aggiorna(t, s, f) {
@@ -130,6 +136,7 @@ export function mostraAttesa(card: HTMLElement): Attesa {
     chiudi() {
       el.remove();
       card.classList.remove("is-attesa");
+      card.style.height = "";
     },
   };
 }

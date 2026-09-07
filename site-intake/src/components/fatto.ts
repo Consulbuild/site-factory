@@ -14,7 +14,7 @@ export function montaFatto(risposte: Risposte): HTMLElement {
   return h(
     "section",
     { class: "passo passo--fatto", "data-passo": "fatto", "aria-labelledby": "domanda" },
-    h("p", { class: "passo__sezione" }, "Fatto"),
+    // niente eyebrow: la testata dice già «Fatto»
     h("h1", { class: "passo__titolo", id: "domanda", tabindex: "-1" }, "Il tuo nuovo sito è in lavorazione"),
     h("p", { class: "passo__aiuto" }, `Grazie${risposte.referente ? `, ${risposte.referente.split(" ")[0]}` : ""}. Ecco cosa succede adesso.`),
     h(

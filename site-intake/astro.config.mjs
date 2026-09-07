@@ -9,6 +9,8 @@ import { devInbox } from "./dev/inbox.mjs";
 export default defineConfig({
   site: "https://bozza.consulbuild.com",
   build: { inlineStylesheets: "always" },
+  devToolbar: { enabled: false }, // le schermate di prova vanno prese pulite
+
   vite: {
     plugins: [devInbox()],
   },

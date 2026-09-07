@@ -206,15 +206,14 @@
 }
 
 /* ---------- Pannello di attesa ---------- */
+/* La card si accorcia con una transizione (altezza esplicita impostata da motion.ts):
+   è il «bottone che diventa pannello» del video, non un salto secco. */
+.card.is-attesa {
+  min-height: 0; /* l'altezza la governa motion.ts durante la transizione */
+  transition: height var(--d-panel) var(--e-decel);
+}
 .card.is-attesa .stage {
   visibility: hidden;
-  flex: 0 0 0;
-  min-height: 0;
-  height: 0;
-  overflow: hidden;
-}
-.card.is-attesa {
-  min-height: min(560px, calc(100dvh - var(--s-6)));
 }
 .attesa {
   position: absolute;
@@ -349,9 +348,18 @@
 }
 
 /* ---------- Fatto: card blu su fondo chiaro ---------- */
+html.is-fatto,
 body.is-fatto {
   background: var(--c-slate-50);
+  background-attachment: scroll;
   color-scheme: light;
+}
+/* Niente bottoni da tenere fermi: la card «Fatto» è alta quanto il suo contenuto. */
+.card.is-fatto {
+  min-height: 0;
+}
+.card.is-fatto .fatto__nota {
+  margin-top: var(--s-4);
 }
 body.is-fatto .piede,
 body.is-fatto .piede a,

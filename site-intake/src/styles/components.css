@@ -537,6 +537,39 @@ textarea.campo__input {
   color: var(--on-bg-2);
 }
 
+/* ---------- Telefoni stretti: il primo passo (8 riquadri + Continua) sta in 680 px,
+   l'altezza del browser interno di Instagram ---------- */
+@media (max-width: 429px) {
+  .card__testata {
+    padding-top: var(--s-3);
+  }
+  .progresso {
+    padding-top: var(--s-2);
+  }
+  .progresso__barra {
+    margin-top: 6px;
+  }
+  .passo {
+    padding-top: var(--s-4);
+    gap: var(--s-3);
+  }
+  .scelte {
+    gap: var(--s-2);
+  }
+  .scelte--riquadri .scelta {
+    min-height: 76px;
+    padding: var(--s-2) var(--s-2);
+    gap: var(--s-1);
+  }
+  .scelta__icona {
+    width: 26px;
+    height: 26px;
+  }
+  .passo__azioni {
+    padding-top: var(--s-4);
+  }
+}
+
 /* ---------- Tablet ---------- */
 @media (min-width: 768px) {
   .pagina {
@@ -563,6 +596,13 @@ textarea.campo__input {
     width: var(--rail-w);
     padding-top: var(--s-6);
     color: var(--on-bg-2);
+    position: sticky; /* sul riepilogo lungo il «dove sono» resta in vista */
+    top: var(--s-8);
+    align-self: flex-start;
+  }
+  /* Col binario in vista il nome della sezione sopra la domanda sarebbe la terza copia. */
+  .passo__sezione {
+    display: none;
   }
   .binario__titolo {
     font-size: var(--fs-eyebrow);
@@ -702,14 +742,27 @@ textarea.campo__input {
   font-weight: 600;
   color: var(--ink-2);
 }
+.stato-dominio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+.stato-dominio .icona {
+  width: 16px;
+  height: 16px;
+  stroke-width: 3;
+}
 .stato-dominio.is-libero {
   color: var(--ok);
 }
-.stato-dominio.is-libero::before {
-  content: "✓ ";
-}
 .stato-dominio.is-preso {
   color: var(--err);
+}
+/* Un nome già preso non è una scelta: attenuato e non toccabile, così la prima card viva è un nome libero. */
+.scelta--dominio.is-preso {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: var(--surface-2);
 }
 .stato-dominio.is-sconosciuto {
   color: var(--warn);

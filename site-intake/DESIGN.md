@@ -48,11 +48,19 @@ offset 10 px. Target minimo 48 px (`--tap`), CTA e campi 56 px. Spazi su base 4 
 
 - **Card** = il dispositivo: testata (marchio + «Sezione N di 7»), barra di progresso 6 px,
   `.stage` con un solo `.passo`, `.sipario` per le transizioni. Altezza minima stabile
-  (680 px o l'altezza dello schermo) così i bottoni non saltano tra un passo e l'altro.
+  (680 px o l'altezza dello schermo) così i bottoni non saltano tra un passo e l'altro;
+  due eccezioni volute: all'invio la card si accorcia con una transizione di altezza
+  (350 ms) fino al pannello di attesa, e la card «Fatto», senza bottoni, è alta quanto il
+  contenuto. Sotto i 430 px la griglia dei riquadri si compatta (76 px) perché il primo
+  passo intero, «Continua» compreso, stia nei 680 px del browser interno di Instagram.
 - **Passo**: eyebrow con lineetta = nome della sezione (orientamento, pattern GOV.UK
   «caption»; scelta deliberata contro la regola generica di impeccable sui kicker), h1 =
   la domanda, riga di aiuto, campo, avviso, azioni (Indietro ghost a sinistra, Continua a
-  pillola a destra).
+  pillola a destra). Mai due etichette impilate: al primo passo delle sezioni 4 e 6 la riga
+  verde di incoraggiamento prende il posto dell'eyebrow; su «Fatto» l'eyebrow non c'è (la
+  testata dice già «Fatto»); da 1024 px, col binario in vista, l'eyebrow è nascosta.
+- **Primo passo**: già nell'HTML e visibile al primo paint, senza animazione d'ingresso;
+  gli scaglioni valgono solo per i passi montati dopo il sipario.
 - **Scelte** in tre layout: riquadri con icona (2 colonne, 108 px min), righe (1 colonna),
   chip (pillole). Selezionata = bordo blu + fondo blu 8 % + spunta a molla in alto a
   destra (chip: fondo blu pieno). Input nativi nascosti ma accessibili.
@@ -71,7 +79,9 @@ offset 10 px. Target minimo 48 px (`--tap`), CTA e campi 56 px. Spazi su base 4 
 - **Fatto**: `body.is-fatto` fondo `#f8fafc`, `.card.is-fatto` blu con testo bianco,
   timeline a tre tappe con numeri bianchi.
 - **Binario** (≥1024 px): le 7 sezioni a sinistra della card, voce corrente con fondo
-  bianco 8 %, fatte con spunta.
+  bianco 8 %, fatte con spunta; resta fisso allo scroll (sticky) sui passi lunghi.
+- **Nome del sito**: le proposte «già prese» sono attenuate e non selezionabili, così la
+  prima card viva è sempre un nome libero; lo stato «Libero» usa l'icona spunta SVG.
 
 ## Motion (`motion.css`, `motion.ts`)
 

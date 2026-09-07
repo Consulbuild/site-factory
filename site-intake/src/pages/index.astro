@@ -63,11 +63,12 @@ const SEZIONI = [
         </div>
 
         <div class="stage" id="stage">
-          <section class="passo is-entrata" data-passo="mestiere" aria-labelledby="domanda">
-            <p class="passo__sezione" style="--i: 0">Il tuo lavoro</p>
-            <h1 class="passo__titolo" id="domanda" tabindex="-1" style="--i: 1">Qual è il tuo mestiere?</h1>
-            <p class="passo__aiuto" style="--i: 2">Tocca quello principale. Gli altri lavori li scegli dopo.</p>
-            <div class="passo__campo" style="--i: 3">
+          {/* Il primo passo è già visibile al primo paint: nessuna animazione d'ingresso. */}
+          <section class="passo" data-passo="mestiere" aria-labelledby="domanda">
+            <p class="passo__sezione">Il tuo lavoro</p>
+            <h1 class="passo__titolo" id="domanda" tabindex="-1">Qual è il tuo mestiere?</h1>
+            <p class="passo__aiuto">Tocca quello principale. Gli altri lavori li scegli dopo.</p>
+            <div class="passo__campo">
               <div class="scelte scelte--riquadri" role="radiogroup" aria-labelledby="domanda">
                 {
                   MESTIERI.map((m) => (
@@ -83,7 +84,7 @@ const SEZIONI = [
                 }
               </div>
             </div>
-            <footer class="passo__azioni" style="--i: 4">
+            <footer class="passo__azioni">
               <button class="btn btn--ghost" type="button" hidden>
                 <Fragment set:html={icona("sinistra")} />
                 Indietro

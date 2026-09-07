@@ -198,6 +198,7 @@ async function inviaLead(): Promise<void> {
     motore.chiudi();
     inTransizione = true;
     await rivelazione(attesa.logo, () => {
+      document.documentElement.classList.add("is-fatto"); // anche <html>: è lui a dipingere il fondo sotto il body
       document.body.classList.add("is-fatto");
       card.classList.add("is-fatto");
       const nuovo = monta();
