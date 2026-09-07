@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+*.log
+.env
+.env.*
+# inbox locale di sviluppo: risposte e foto dei lead di prova (mai versionate)
+.dev-inbox/
+# generato da scripts/build-comuni.mjs a ogni build/dev (fonte: data-src/comuni.json)
+public/data/
+test-results/
+playwright-report/
+# stato di impeccable per-macchina
+.impeccable/hook.cache.json
+.impeccable/hook.pending.json
+.impeccable/config.local.json
+.impeccable/review/

@@ -1,0 +1,109 @@
+/*
+  Motion del form (dal video di riferimento, tempi in tokens.css).
+  Regole: solo transform/opacity, interrompibile, mai gating del contenuto,
+  prefers-reduced-motion azzera le durate (tokens.css) e qui toglie le forme.
+*/
+
+/* ---- Sipario: pannello bianco con bordo blu che copre la card tra un passo e l'altro ---- */
+.sipario {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  transform: translateX(101%);
+  pointer-events: none;
+  will-change: transform;
+}
+.sipario::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 6px;
+  background: var(--accent);
+}
+.sipario.is-indietro {
+  transform: translateX(-101%);
+}
+.sipario.is-indietro::before {
+  left: auto;
+  right: 0;
+}
+.sipario.is-chiuso {
+  transform: translateX(0);
+  transition: transform var(--d-wipe) var(--e-standard);
+}
+.sipario.is-uscita {
+  opacity: 0;
+  transition: opacity var(--d-fast) var(--e-accel);
+}
+
+/* ---- Ingresso a scaglioni dei figli del passo ---- */
+@keyframes entra-su {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.passo.is-entrata > * {
+  animation: entra-su var(--d-enter) var(--e-decel) both;
+  animation-delay: calc(var(--i, 0) * var(--stagger));
+}
+
+/* ---- Errore: comparsa + scossa breve (4 px, due oscillazioni) ---- */
+@keyframes scossa {
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+.is-scossa {
+  animation: scossa 300ms var(--e-standard);
+}
+.avviso.is-nuovo {
+  animation: entra-su var(--d-fast) var(--e-decel) both;
+}
+
+/* ---- Alone morbido al tocco (bottone primario) ---- */
+.btn--primario::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  background: var(--accent-ring);
+  opacity: 0;
+  transform: scale(0.9);
+  transition:
+    opacity var(--d-base) var(--e-standard),
+    transform var(--d-base) var(--e-standard);
+  pointer-events: none;
+}
+.btn--primario {
+  position: relative;
+}
+.btn--primario:active::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sipario,
+  .btn--primario::after {
+    display: none;
+  }
+  .is-scossa {
+    animation: none;
+  }
+}

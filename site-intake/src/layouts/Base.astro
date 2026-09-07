@@ -1,0 +1,48 @@
+---
+/**
+ * Layout unico del form: head essenziale, font preloadato, CSS inline (astro.config:
+ * inlineStylesheets "always"), niente script di terzi nel percorso critico.
+ * Umami (statistiche senza cookie, come sui siti clienti) solo se le env pubbliche
+ * PUBLIC_UMAMI_HOST e PUBLIC_UMAMI_WEBSITE_ID sono impostate alla build.
+ */
+import "../styles/tokens.css";
+import "../styles/base.css";
+import "../styles/components.css";
+import "../styles/motion.css";
+
+interface Props {
+  titolo: string;
+  descrizione: string;
+}
+const { titolo, descrizione } = Astro.props;
+const umamiHost = import.meta.env.PUBLIC_UMAMI_HOST;
+const umamiId = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID;
+---
+
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{titolo}</title>
+    <meta name="description" content={descrizione} />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="/fonts/atkinson-hyperlegible-next-normal-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    {
+      umamiHost && umamiId && (
+        <script is:inline defer src={`${umamiHost}/script.js`} data-website-id={umamiId} data-auto-track="false" />
+      )
+    }
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

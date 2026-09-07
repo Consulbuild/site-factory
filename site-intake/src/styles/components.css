@@ -1,0 +1,607 @@
+/*
+  Componenti del form. Ogni classe usa solo i token di tokens.css.
+  Struttura della pagina:
+    .pagina > .scena > (.binario | .card > .card__testata + .progresso + .stage + .sipario) + .piede
+  Un passo dentro .stage:
+    .passo > .passo__titolo + .passo__aiuto + .passo__campo + .passo__errore + .passo__azioni
+*/
+
+/* ---------- Pagina e card ---------- */
+.pagina {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: max(var(--s-3), env(safe-area-inset-top)) max(var(--s-3), env(safe-area-inset-right))
+    max(var(--s-3), env(safe-area-inset-bottom)) max(var(--s-3), env(safe-area-inset-left));
+  gap: var(--s-4);
+}
+
+.scena {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--s-10);
+  width: 100%;
+  min-width: 0;
+}
+
+.card {
+  position: relative;
+  width: min(100%, var(--card-w));
+  min-width: 0; /* mai più largo dello schermo: il contenuto va a capo, non spinge */
+  min-height: min(680px, calc(100dvh - var(--s-6)));
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden; /* il sipario e la rivelazione restano dentro gli angoli */
+}
+
+.card__testata {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-5) var(--card-pad) 0;
+}
+
+.marchio {
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.marchio b {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+/* ---------- Progresso ---------- */
+.progresso {
+  padding: var(--s-3) var(--card-pad) 0;
+}
+.progresso__eti {
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.progresso__eti b {
+  color: var(--accent);
+  font-weight: 700;
+}
+.progresso__barra {
+  margin-top: var(--s-2);
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.progresso__riempi {
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transform-origin: left center;
+  transform: scaleX(var(--p, 0));
+  transition: transform var(--d-bar) var(--e-standard);
+}
+
+/* ---------- Passo ---------- */
+.stage {
+  position: relative;
+  flex: 1;
+  display: flex;
+}
+
+.passo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--s-6) var(--card-pad) var(--card-pad);
+  gap: var(--s-4);
+}
+
+/* Nome della sezione sopra la domanda (eyebrow con lineetta): orienta senza rubare spazio in testata. */
+.passo__sezione {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.passo__sezione::before {
+  content: "";
+  width: 18px;
+  height: 3px;
+  border-radius: var(--r-pill);
+  background: currentColor;
+}
+
+.passo__titolo {
+  font-size: var(--fs-h1);
+  font-weight: 800;
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-h1);
+  color: var(--ink);
+  text-wrap: balance;
+  max-width: 22ch;
+}
+.passo__titolo:focus {
+  outline: none;
+}
+
+.passo__aiuto {
+  font-size: var(--fs-help);
+  line-height: var(--lh-body);
+  color: var(--ink-2);
+  max-width: 60ch;
+}
+
+.passo__campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding-top: var(--s-2);
+}
+
+.passo__azioni {
+  margin-top: auto;
+  padding-top: var(--s-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.passo__azioni .btn--primario {
+  margin-left: auto;
+}
+
+/* ---------- Bottoni ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: var(--tap-lg);
+  padding: 0 var(--s-7);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-body);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    transform var(--d-fast) var(--e-standard),
+    background-color var(--d-fast) var(--e-standard),
+    box-shadow var(--d-fast) var(--e-standard),
+    color var(--d-fast) var(--e-standard);
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn--primario {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-cta);
+}
+.btn--primario:hover {
+  background: var(--accent-hover);
+}
+.btn--ghost {
+  color: var(--ink-2);
+  padding-inline: var(--s-4);
+  min-width: var(--tap-lg);
+}
+.btn--ghost:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+.btn--secondario {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+.btn--secondario:hover {
+  background: var(--line);
+}
+.btn--sm {
+  min-height: var(--tap);
+  padding: 0 var(--s-5);
+  font-size: var(--fs-help);
+}
+.btn--blocco {
+  width: 100%;
+}
+
+/* ---------- Scelte: riquadri con icona (2 colonne), righe (1 colonna), chip ---------- */
+.scelte {
+  display: grid;
+  gap: var(--s-3);
+}
+.scelte--riquadri {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.scelte--righe {
+  grid-template-columns: 1fr;
+}
+.scelte--chip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+/* Una scelta = label che avvolge un input nativo (radio/checkbox) nascosto ma accessibile. */
+.scelta {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: var(--tap-lg);
+  padding: var(--s-3) var(--s-4);
+  border: var(--border-input) solid var(--line);
+  border-radius: var(--r-choice);
+  background: var(--surface);
+  box-shadow: var(--shadow-choice);
+  font-size: var(--fs-choice);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+  color: var(--ink);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color var(--d-base) var(--e-standard),
+    background-color var(--d-base) var(--e-standard),
+    transform var(--d-fast) var(--e-standard);
+}
+.scelta:active {
+  transform: scale(0.98);
+}
+.scelte--riquadri .scelta {
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  min-height: 108px;
+  padding: var(--s-4) var(--s-3);
+  gap: var(--s-2);
+}
+.scelte--chip .scelta {
+  min-height: var(--tap);
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r-pill);
+  box-shadow: none;
+  font-size: var(--fs-help);
+}
+.scelta__input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+.scelta__icona {
+  width: 32px;
+  height: 32px;
+  color: var(--accent);
+  flex: none;
+}
+.scelte--righe .scelta__icona {
+  width: 24px;
+  height: 24px;
+}
+.scelta__testo {
+  flex: 1;
+}
+.scelta__nota {
+  display: block;
+  font-size: var(--fs-small);
+  font-weight: 400;
+  color: var(--ink-3);
+}
+/* Spunta: appare con overshoot alla selezione (motion.css). */
+.scelta__spunta {
+  position: absolute;
+  top: var(--s-2);
+  right: var(--s-2);
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  display: grid;
+  place-items: center;
+  transform: scale(0);
+  transition: transform var(--d-base) var(--e-spring);
+}
+.scelta__spunta .icona {
+  width: 14px;
+  height: 14px;
+  stroke-width: 3;
+}
+.scelte--righe .scelta__spunta,
+.scelte--chip .scelta__spunta {
+  position: static;
+  order: 3;
+  width: 22px;
+  height: 22px;
+}
+.scelte--chip .scelta__spunta {
+  display: none;
+}
+.scelta:has(.scelta__input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.scelta:has(.scelta__input:checked) .scelta__spunta {
+  transform: scale(1);
+}
+.scelte--chip .scelta:has(.scelta__input:checked) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+.scelta:has(.scelta__input:focus-visible) {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.scelta:hover {
+  border-color: var(--line-strong);
+}
+.scelta:has(.scelta__input:checked):hover {
+  border-color: var(--accent);
+}
+
+/* Casella di testo che si apre sotto una scelta «Altro». */
+.scelta-testo {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+/* ---------- Campi di testo ---------- */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.campo__etichetta {
+  font-size: var(--fs-help);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.campo__facoltativo {
+  font-weight: 400;
+  color: var(--ink-3);
+}
+.campo__cornice {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.campo__input {
+  width: 100%;
+  min-height: var(--tap-lg);
+  padding: var(--s-3) var(--s-4);
+  border: var(--border-input) solid var(--line-strong);
+  border-radius: var(--r-input);
+  background: var(--surface);
+  font-size: var(--fs-input);
+  line-height: var(--lh-snug);
+  color: var(--ink);
+  transition:
+    border-color var(--d-base) var(--e-standard),
+    box-shadow var(--d-base) var(--e-standard);
+  appearance: none;
+}
+.campo__input::placeholder {
+  color: var(--ink-3);
+  opacity: 1;
+}
+.campo__input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-ring);
+}
+textarea.campo__input {
+  resize: vertical;
+  min-height: 120px;
+}
+/* Prefisso fisso (+39) e suffisso fisso (.it) dentro la cornice. */
+.campo__prefisso,
+.campo__suffisso {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--fs-input);
+  color: var(--ink-3);
+  pointer-events: none;
+}
+.campo__prefisso {
+  left: var(--s-4);
+}
+.campo__suffisso {
+  right: var(--s-4);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.campo--prefisso .campo__input {
+  padding-left: calc(var(--s-4) + 3.2ch);
+}
+.campo--suffisso .campo__input {
+  padding-right: calc(var(--s-4) + 2.4ch);
+}
+/* Stato ok: spunta verde a destra (solo sui campi complessi). */
+.campo__ok {
+  position: absolute;
+  right: var(--s-4);
+  color: var(--ok);
+  transform: scale(0);
+  transition: transform var(--d-base) var(--e-spring);
+}
+.campo--ok .campo__ok {
+  transform: scale(1);
+}
+.campo--ok .campo__input {
+  border-color: var(--ok);
+  padding-right: calc(var(--s-4) + 32px);
+}
+.campo--errore .campo__input {
+  border-color: var(--err);
+}
+.campo__aiuto {
+  font-size: var(--fs-small);
+  color: var(--ink-3);
+}
+
+/* ---------- Messaggi sotto il campo ---------- */
+.avviso {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-chip);
+  font-size: var(--fs-help);
+  line-height: var(--lh-snug);
+}
+.avviso .icona {
+  margin-top: 2px;
+}
+.avviso--errore {
+  background: var(--err-soft);
+  color: var(--err);
+}
+.avviso--attenzione {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.avviso--ok {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.avviso__azioni {
+  display: flex;
+  gap: var(--s-2);
+  margin-top: var(--s-2);
+  flex-wrap: wrap;
+}
+.avviso .btn {
+  min-height: var(--tap);
+  padding: 0 var(--s-4);
+  font-size: var(--fs-small);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* ---------- Binario delle sezioni (solo desktop) ---------- */
+.binario {
+  display: none;
+}
+
+/* ---------- Piè di pagina ---------- */
+.piede {
+  text-align: center;
+  font-size: var(--fs-small);
+  color: var(--on-bg-3);
+  padding: var(--s-2) var(--s-4);
+}
+.piede a {
+  color: var(--on-bg-2);
+}
+
+/* ---------- Tablet ---------- */
+@media (min-width: 768px) {
+  .pagina {
+    padding: var(--s-8);
+  }
+  .card {
+    width: min(100%, var(--card-w-tablet));
+    min-height: 720px;
+  }
+}
+
+/* ---------- Desktop: card + binario delle sezioni a sinistra ---------- */
+@media (min-width: 1024px) {
+  .scena {
+    align-items: stretch;
+    padding-top: var(--s-8);
+  }
+  .card {
+    width: var(--card-w-desktop);
+    min-height: 680px;
+  }
+  .binario {
+    display: block;
+    width: var(--rail-w);
+    padding-top: var(--s-6);
+    color: var(--on-bg-2);
+  }
+  .binario__titolo {
+    font-size: var(--fs-eyebrow);
+    font-weight: 700;
+    letter-spacing: var(--ls-eyebrow);
+    text-transform: uppercase;
+    color: var(--on-bg-3);
+    margin-bottom: var(--s-4);
+  }
+  .binario ol {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-1);
+  }
+  .binario__voce {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    min-height: var(--tap);
+    padding: var(--s-2) var(--s-3);
+    border-radius: var(--r-chip);
+    font-size: var(--fs-help);
+    font-weight: 600;
+    color: var(--on-bg-3);
+    transition:
+      color var(--d-base) var(--e-standard),
+      background-color var(--d-base) var(--e-standard);
+  }
+  .binario__voce[aria-current="step"] {
+    color: var(--on-bg);
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .binario__voce.is-fatta {
+    color: var(--on-bg-2);
+  }
+  .binario__num {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--r-pill);
+    border: 2px solid currentColor;
+    font-size: var(--fs-small);
+    font-weight: 700;
+    flex: none;
+  }
+  .binario__voce[aria-current="step"] .binario__num {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+  }
+  .binario__voce.is-fatta .binario__num {
+    background: var(--on-bg-2);
+    border-color: var(--on-bg-2);
+    color: var(--bg);
+  }
+  .binario__num .icona {
+    width: 16px;
+    height: 16px;
+    stroke-width: 3;
+  }
+}

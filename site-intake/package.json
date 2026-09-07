@@ -1,0 +1,31 @@
+{
+  "name": "site-intake",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Form bozza di ConsulBuild (bozza.consulbuild.com): il lead risponde a 21 domande e carica foto e logo; le risposte alimentano la pipeline Site-factory.",
+  "scripts": {
+    "predev": "node scripts/build-comuni.mjs",
+    "dev": "astro dev",
+    "prebuild": "node scripts/build-comuni.mjs",
+    "build": "astro build && node scripts/check-budget.mjs",
+    "preview": "astro preview",
+    "check": "astro check",
+    "font": "node scripts/fetch-font.mjs",
+    "comuni": "node scripts/build-comuni.mjs",
+    "budget": "node scripts/check-budget.mjs",
+    "test": "playwright test",
+    "test:a11y": "playwright test --grep @a11y",
+    "test:schermate": "playwright test --grep @schermate"
+  },
+  "dependencies": {
+    "astro": "^5.6.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^26.1.0",
+    "typescript": "^5.9.3"
+  }
+}

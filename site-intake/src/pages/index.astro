@@ -1,0 +1,104 @@
+---
+/**
+ * Pagina unica del form bozza. Il primo passo (domanda 1, «Qual è il tuo mestiere?»)
+ * è già nell'HTML statico così compare prima del JS; il motore (src/lib/engine.ts,
+ * M1) lo prende in carico e renderizza i passi successivi dalla configurazione
+ * in src/data/domande.ts.
+ */
+import Base from "../layouts/Base.astro";
+import { MESTIERI } from "../data/tassonomia";
+import { icona } from "../lib/icone";
+
+const SEZIONI = [
+  "Il tuo lavoro",
+  "La tua azienda",
+  "Il tuo numero",
+  "Le tue foto",
+  "Perché scegliere te",
+  "Lo stile del sito",
+  "Per finire",
+];
+---
+
+<Base
+  titolo="Il tuo nuovo sito in 48 ore · ConsulBuild"
+  descrizione="Rispondi a poche domande e ricevi il tuo nuovo sito da vedere, pronto in 48 ore."
+>
+  <a class="salta" href="#domanda">Salta al modulo</a>
+  <div class="pagina">
+    <main class="scena">
+      <nav class="binario" aria-label="Sezioni del modulo">
+        <p class="binario__titolo">Il tuo percorso</p>
+        <ol>
+          {
+            SEZIONI.map((nome, i) => (
+              <li class="binario__voce" aria-current={i === 0 ? "step" : undefined} data-sezione={i + 1}>
+                <span class="binario__num" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <span>{nome}</span>
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+
+      <div class="card" id="card">
+        <div class="card__testata">
+          <a class="marchio" href="https://consulbuild.site" aria-label="ConsulBuild">CONSUL<b>BUILD</b></a>
+          <p class="progresso__eti" id="progresso-eti"><b>Sezione 1</b> di 7</p>
+        </div>
+        <div
+          class="progresso"
+          id="progresso"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="7"
+          aria-valuenow="1"
+          aria-valuetext="Sezione 1 di 7: Il tuo lavoro"
+        >
+          <div class="progresso__barra"><div class="progresso__riempi" id="progresso-riempi" style="--p: 0.14"></div></div>
+        </div>
+
+        <div class="stage" id="stage">
+          <section class="passo is-entrata" data-passo="mestiere" aria-labelledby="domanda">
+            <p class="passo__sezione" style="--i: 0">Il tuo lavoro</p>
+            <h1 class="passo__titolo" id="domanda" tabindex="-1" style="--i: 1">Qual è il tuo mestiere?</h1>
+            <p class="passo__aiuto" style="--i: 2">Tocca quello principale. Gli altri lavori li scegli dopo.</p>
+            <div class="passo__campo" style="--i: 3">
+              <div class="scelte scelte--riquadri" role="radiogroup" aria-labelledby="domanda">
+                {
+                  MESTIERI.map((m) => (
+                    <label class="scelta">
+                      <input class="scelta__input" type="radio" name="mestiere" value={m.id} />
+                      {m.icona && <Fragment set:html={icona(m.icona, "icona scelta__icona")} />}
+                      <span class="scelta__testo">{m.testo}</span>
+                      <span class="scelta__spunta" aria-hidden="true">
+                        <Fragment set:html={icona("spunta")} />
+                      </span>
+                    </label>
+                  ))
+                }
+              </div>
+            </div>
+            <footer class="passo__azioni" style="--i: 4">
+              <button class="btn btn--ghost" type="button" hidden>
+                <Fragment set:html={icona("sinistra")} />
+                Indietro
+              </button>
+              <button class="btn btn--primario" type="button">
+                Continua
+                <Fragment set:html={icona("destra")} />
+              </button>
+            </footer>
+          </section>
+        </div>
+        <div class="sipario" id="sipario" aria-hidden="true"></div>
+      </div>
+    </main>
+    <footer class="piede">
+      ConsulBuild di Vecchiato Edoardo · Vicenza · P.IVA 04594370241 · <a href="#privacy">Privacy</a>
+    </footer>
+  </div>
+  <div class="sr-only" aria-live="polite" id="annuncio"></div>
+</Base>
