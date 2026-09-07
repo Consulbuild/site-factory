@@ -7,6 +7,7 @@
  */
 import Base from "../layouts/Base.astro";
 import { MESTIERI } from "../data/tassonomia";
+import { INFORMATIVA_ESTESA_URL, TITOLARE } from "../data/privacy";
 import { icona } from "../lib/icone";
 
 const SEZIONI = [
@@ -52,6 +53,7 @@ const SEZIONI = [
           class="progresso"
           id="progresso"
           role="progressbar"
+          aria-label="Avanzamento del modulo"
           aria-valuemin="0"
           aria-valuemax="7"
           aria-valuenow="1"
@@ -97,7 +99,8 @@ const SEZIONI = [
       </div>
     </main>
     <footer class="piede">
-      ConsulBuild di Vecchiato Edoardo · Vicenza · P.IVA 04594370241 · <a href="#privacy">Privacy</a>
+      {TITOLARE.denominazione} · Vicenza · P.IVA {TITOLARE.piva} ·
+      <a href={INFORMATIVA_ESTESA_URL} target="_blank" rel="noopener">Privacy</a>
     </footer>
   </div>
   <div class="sr-only" aria-live="polite" id="annuncio"></div>

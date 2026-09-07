@@ -29,7 +29,7 @@
   --c-green-100: #dcfce7;
   --c-amber-700: #b45309;
   --c-amber-100: #fef3c7;
-  --c-red-600: #dc2626;
+  --c-red-700: #b91c1c; /* testo errore su fondo rosa: 5,3:1 (il 600 fermava a 3,9) */
   --c-red-100: #fee2e2;
 
   /* ---- Ruoli ---- */
@@ -57,7 +57,7 @@
   --ok-soft: var(--c-green-100);
   --warn: var(--c-amber-700);
   --warn-soft: var(--c-amber-100);
-  --err: var(--c-red-600);
+  --err: var(--c-red-700);
   --err-soft: var(--c-red-100);
 
   /* ---- Tipografia (un solo carattere, variabile 200-800) ---- */

@@ -326,7 +326,7 @@
   display: block;
   font-size: var(--fs-small);
   font-weight: 400;
-  color: var(--ink-3);
+  color: var(--ink-2); /* anche sul fondo blu tenue della scelta selezionata resta ≥4,5:1 */
 }
 /* Spunta: appare con overshoot alla selezione (motion.css). */
 .scelta__spunta {
@@ -654,18 +654,18 @@ textarea.campo__input {
   max-height: 264px;
   overflow-y: auto;
 }
-.suggerimenti__voce button {
-  display: block;
-  width: 100%;
-  text-align: left;
+.suggerimenti__voce {
+  display: flex;
+  align-items: center;
   min-height: var(--tap);
   padding: var(--s-2) var(--s-3);
   border-radius: var(--r-chip);
   font-size: var(--fs-input);
   color: var(--ink);
+  cursor: pointer;
 }
-.suggerimenti__voce button:hover,
-.suggerimenti__voce.is-attivo button {
+.suggerimenti__voce:hover,
+.suggerimenti__voce.is-attivo {
   background: var(--accent-soft);
   color: var(--accent-hover);
 }
@@ -694,13 +694,13 @@ textarea.campo__input {
   word-break: break-all;
 }
 .dominio__tld {
-  color: var(--ink-3);
+  color: var(--ink-2);
   font-weight: 400;
 }
 .stato-dominio {
   font-size: var(--fs-small);
   font-weight: 600;
-  color: var(--ink-3);
+  color: var(--ink-2);
 }
 .stato-dominio.is-libero {
   color: var(--ok);
@@ -855,11 +855,17 @@ dialog.informativa::backdrop {
 }
 .informativa__corpo {
   max-height: min(85dvh, 800px);
-  overflow-y: auto;
   padding: var(--card-pad);
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
+}
+/* Scorre solo il testo: titolo e «Ho capito, chiudi» restano sempre visibili. */
+.informativa__testo {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: var(--s-2);
 }
 .informativa__titolo {
   font-size: 22px;

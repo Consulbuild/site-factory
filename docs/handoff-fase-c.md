@@ -128,9 +128,17 @@ form con upload in background (deciso da Mattia); destinazione Google Drive
 dell'agenzia via n8n (`_inbox/<lead-id>/`), import nell'editor dal filesystem
 con le versioni a 1600 px fatte dal Mac come oggi, VPS senza residui, pulizia
 `_inbox` a 60 giorni obbligatoria; frontend = input nativo + uploader proprio
-(mai `accept="image/*"` su iOS); MinIO e FileBrowser sono archiviati, non usarli. Roadmap: scheda Form
-bozza → scheda Intake da `_inbox` nell'editor (prerequisito: symlink `out/` →
-Drive) → riaccensione annuncio con misurazione per step.
+(mai `accept="image/*"` su iOS); MinIO e FileBrowser sono archiviati, non usarli.
+**Scheda Form bozza COSTRUITA (2026-09-07, `site-intake/`, piano vivo
+`docs/piano-form-bozza.md`)**: Astro statico, 21 domande in configurazione, motore con
+sipario/scaglioni, comuni ISTAT, disponibilità del nome via DoH, foto in originale con
+coda in background, presa visione privacy (art. 6.1.b), riepilogo, invio, «Fatto»;
+Playwright (controlli, percorso completo su 3 dispositivi, axe, schermate a 9
+larghezze), budget prestazioni 67 KB. In dev tutto finisce in `site-intake/.dev-inbox/`.
+Prossime schede: B = webhook n8n → Google Drive `_inbox` (+ Turnstile lato server),
+C = import da `_inbox` nell'editor (prerequisito: symlink `out/` → Drive); poi deploy su
+`bozza.consulbuild.com` (wrangler.jsonc pronto, solo su ok di Mattia) e riaccensione
+dell'annuncio con misurazione per step.
 
 ## Prossime schede (ordine deciso: una per volta, SEMPRE pianificando prima)
 

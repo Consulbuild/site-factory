@@ -116,6 +116,8 @@ export function mostraAttesa(card: HTMLElement): Attesa {
   centro.append(onde, logo);
   el.append(centro, testo, sotto, barra);
   card.append(el);
+  card.classList.add("is-attesa"); // la card torna alta come un passo normale: il riepilogo sotto sparisce
+  window.scrollTo({ top: 0, behavior: riduciMotion() ? "auto" : "smooth" });
   void el.offsetWidth;
   el.classList.add("is-aperta");
   return {
@@ -127,6 +129,7 @@ export function mostraAttesa(card: HTMLElement): Attesa {
     },
     chiudi() {
       el.remove();
+      card.classList.remove("is-attesa");
     },
   };
 }

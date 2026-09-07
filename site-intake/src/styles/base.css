@@ -93,8 +93,15 @@ svg.icona {
   border-radius: var(--r-chip);
 }
 
+/* Superfici del browser che portano comunque il design: selezione, cursore, controlli nativi, scrollbar. */
 ::selection {
   background: var(--accent-soft-2);
+}
+:root {
+  caret-color: var(--accent);
+  accent-color: var(--accent);
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
 }
 
 .sr-only {

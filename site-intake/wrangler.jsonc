@@ -1,0 +1,16 @@
+{
+  // Pubblicazione su Cloudflare Workers con static assets (stessa ricetta dei siti
+  // clienti, site-factory-editor/lib/deploy.ts). Prerequisiti: zona consulbuild.com
+  // attiva su Cloudflare (lo è: ospita coolify/n8n/stats), token nel Keychain.
+  // Deploy (dopo `npm run build`, solo su ok di Mattia):
+  //   npx wrangler deploy --config wrangler.jsonc
+  // Le env PUBLIC_* si passano alla build (es. PUBLIC_INTAKE_URL=https://n8n.consulbuild.com/webhook/intake).
+  "name": "sf-bozza",
+  "compatibility_date": "2026-07-08",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  "workers_dev": true,
+  "routes": [{ "pattern": "bozza.consulbuild.com", "custom_domain": true }]
+}

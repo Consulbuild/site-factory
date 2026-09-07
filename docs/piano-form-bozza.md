@@ -44,10 +44,27 @@ architettura e comandi, `PRODUCT.md` per il design).
   Test Playwright: `controlli.spec.ts` (validators) e `flusso.spec.ts` (percorso completo
   su telefono/tablet/computer + ripresa). Scoperto e corretto: un tocco nei 130 ms finali
   della transizione veniva ignorato.
-- **M3**: foto e logo (upload in background), pannello di attesa con onde, rivelazione blu.
-- **M4**: rifinitura con impeccable (craft-floor, detect, critique, finish reviewer,
-  documenter → DESIGN.md), schermate a 9 larghezze, axe, Lighthouse, README completo,
-  `wrangler.jsonc`, handoff.
+- **M3 fatto** (0468cd1): foto e logo con coda in background (2 in parallelo, retry
+  0/1/3/5 s, miniature dal decoder, HEIC e foto piccole segnalate, max 15, 25 MB per
+  file), pannello di attesa con onde, rivelazione blu, «Fatto» rovesciato; test
+  end-to-end con caricamenti reali.
+- **M4 in corso**: craft-floor letto; detector impeccable su `dist` → tre rilievi
+  accettati e motivati in `site-intake/DESIGN.md` (bordo del sipario, ombra blu della
+  CTA, padding della card nei figli); contrasto errori alzato (rosso 700) e testi
+  secondari sulle scelte selezionate a ink-2 dopo axe; pannello di attesa ad altezza
+  normale; dialog privacy con testo scorrevole e bottone sempre visibile; schermate a 9
+  larghezze (`tests/schermate.spec.ts`), axe (`tests/a11y.spec.ts`), README e DESIGN.md
+  scritti, `wrangler.jsonc` pronto; finish review con agente separato (istruzioni del
+  finish reviewer di impeccable in modalità degradata: gli agenti nativi della skill non
+  sono installati in questo harness).
+
+## Rilievi del detector accettati (2026-09-07)
+
+`side-tab` su `.sipario::before` (bordo del sipario dal video, non accento su card);
+`dark-glow` sull'ombra della CTA (offset 10 px, sfocatura 28 px, sta sulla card bianca);
+`cramped-padding` sulla `.card` (il padding vive in testata, progresso e passo). La
+regola generica di impeccable contro gli eyebrow sopra i titoli non si applica: l'eyebrow
+di sezione è il nome della sezione (pattern GOV.UK «caption»), grammatica ConsulBuild.
 
 ## Lezioni
 

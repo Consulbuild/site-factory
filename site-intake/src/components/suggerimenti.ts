@@ -14,9 +14,11 @@ export interface OpzioniSuggerimenti {
 }
 
 export function attaccaSuggerimenti(o: OpzioniSuggerimenti): { chiudi: () => void; el: HTMLElement } {
-  const lista = h("ul", { class: "suggerimenti", role: "listbox", hidden: true });
+  const listaId = `${o.input.id || "campo"}-suggerimenti`;
+  const lista = h("ul", { class: "suggerimenti", role: "listbox", id: listaId, "aria-label": "Suggerimenti", hidden: true });
   o.input.after(lista);
   o.input.setAttribute("role", "combobox");
+  o.input.setAttribute("aria-controls", listaId);
   o.input.setAttribute("aria-autocomplete", "list");
   o.input.setAttribute("aria-expanded", "false");
   o.input.dataset["enter"] = "ignora"; // Invio qui sceglie, non manda avanti il form
@@ -32,17 +34,28 @@ export function attaccaSuggerimenti(o: OpzioniSuggerimenti): { chiudi: () => voi
     attivo = -1;
   };
   const evidenzia = () => {
-    [...lista.children].forEach((li, i) => li.classList.toggle("is-attivo", i === attivo));
+    [...lista.children].forEach((li, i) => {
+      li.classList.toggle("is-attivo", i === attivo);
+      li.setAttribute("aria-selected", i === attivo ? "true" : "false");
+    });
   };
   const mostra = (v: string[]) => {
     voci = v;
     if (v.length === 0) return chiudi();
+    // L'opzione è il <li> stesso (niente bottone dentro: un'opzione non contiene altri controlli).
     lista.replaceChildren(
       ...v.map((testo, i) =>
         h(
           "li",
-          { role: "option", class: "suggerimenti__voce", "data-i": i },
-          h("button", { type: "button", tabindex: "-1", onmousedown: (e: Event) => e.preventDefault(), onclick: () => scegli(i) }, testo),
+          {
+            role: "option",
+            class: "suggerimenti__voce",
+            "data-i": i,
+            "aria-selected": "false",
+            onmousedown: (e: Event) => e.preventDefault(), // il campo non perde il focus prima del click
+            onclick: () => scegli(i),
+          },
+          testo,
         ),
       ),
     );
