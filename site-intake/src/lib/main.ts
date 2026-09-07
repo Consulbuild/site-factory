@@ -1,16 +1,17 @@
 /**
- * Avvio del form: collega motore, render, motion, progresso, tastiera e History.
+ * Avvio del form: collega motore, render, motion, progresso, tastiera, History e invio.
  * È l'unico modulo che conosce gli id di index.astro.
  */
 import { DOMANDE, quotaProgresso, sezioneDi, TOTALE_SEZIONI } from "../data/domande";
 import { MESTIERI } from "../data/tassonomia";
+import { montaFatto } from "../components/fatto";
+import { montaRiepilogo, type RiepilogoMontato } from "../components/riepilogo";
 import { annuncia, focusTitolo } from "./a11y";
 import { traccia } from "./analytics";
 import { caricaOAvvia, INDICE_FATTO, INDICE_RIEPILOGO, Motore, type Passo } from "./engine";
 import { transizione } from "./motion";
 import { montaDomanda, type PassoMontato } from "./render";
-import { salvaBozza } from "./transport";
-import { h } from "../components/base";
+import { ErroreTrasporto, invia, salvaBozza } from "./transport";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -31,26 +32,35 @@ if (!motore.risposte.mestiere) {
 }
 
 let corrente: PassoMontato | null = null;
+let riepilogo: RiepilogoMontato | null = null;
 let ultimoAvviso: string | null = null;
 let ultimaSezione = 0;
+/** Dopo «Modifica» dal riepilogo, il prossimo «Continua» torna al riepilogo invece di andare oltre. */
+let tornaAlRiepilogo = false;
+
+const SPUNTA_SVG =
+  '<svg class="icona" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
 
 function aggiornaProgresso(): void {
   const n = motore.sezione;
   const s = sezioneDi(n);
-  etichetta.innerHTML = `<b>Sezione ${n}</b> di ${TOTALE_SEZIONI}`;
-  barra.setAttribute("aria-valuenow", String(n));
-  barra.setAttribute("aria-valuetext", `Sezione ${n} di ${TOTALE_SEZIONI}: ${s.nome}`);
-  riempi.style.setProperty("--p", String(quotaProgresso(motore.indice >= INDICE_FATTO ? TOTALE_SEZIONI : n)));
+  const finito = motore.indice >= INDICE_FATTO;
+  etichetta.innerHTML = finito ? "<b>Fatto</b>" : `<b>Sezione ${n}</b> di ${TOTALE_SEZIONI}`;
+  barra.setAttribute("aria-valuenow", String(finito ? TOTALE_SEZIONI : n));
+  barra.setAttribute("aria-valuetext", finito ? "Completato" : `Sezione ${n} di ${TOTALE_SEZIONI}: ${s.nome}`);
+  riempi.style.setProperty("--p", String(quotaProgresso(finito ? TOTALE_SEZIONI : n)));
   document.querySelectorAll<HTMLElement>(".binario__voce").forEach((v) => {
     const k = Number(v.dataset["sezione"]);
-    v.toggleAttribute("aria-current", k === n);
-    if (k === n) v.setAttribute("aria-current", "step");
-    v.classList.toggle("is-fatta", k < n);
+    const attiva = k === n && !finito;
+    const fatta = k < n || finito;
+    if (attiva) v.setAttribute("aria-current", "step");
+    else v.removeAttribute("aria-current");
+    v.classList.toggle("is-fatta", fatta);
     const num = v.querySelector(".binario__num");
-    if (num) num.innerHTML = k < n ? '<svg class="icona" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>' : String(k);
+    if (num) num.innerHTML = fatta ? SPUNTA_SVG : String(k);
   });
   if (n !== ultimaSezione) {
-    if (ultimaSezione !== 0) annuncia(`Sezione ${n} di ${TOTALE_SEZIONI}: ${s.nome}`);
+    if (ultimaSezione !== 0) annuncia(finito ? "Completato" : `Sezione ${n} di ${TOTALE_SEZIONI}: ${s.nome}`);
     ultimaSezione = n;
   }
 }
@@ -59,6 +69,8 @@ function aggiornaProgresso(): void {
 function monta(adotta?: HTMLElement): HTMLElement {
   const passo: Passo = motore.passo;
   ultimoAvviso = null;
+  corrente = null;
+  riepilogo = null;
   if (passo.tipo === "domanda") {
     const d = passo.domanda;
     corrente = montaDomanda({
@@ -72,21 +84,30 @@ function monta(adotta?: HTMLElement): HTMLElement {
     });
     corrente.btnAvanti.onclick = () => continua(false);
     corrente.btnIndietro.onclick = () => vai(motore.indice - 1, "indietro");
+    if (tornaAlRiepilogo) {
+      corrente.btnAvanti.replaceChildren("Salva e torna al riepilogo");
+      corrente.btnIndietro.onclick = () => {
+        tornaAlRiepilogo = false;
+        vai(INDICE_RIEPILOGO, "avanti");
+      };
+    }
     return corrente.el;
   }
-  corrente = null;
-  // Riepilogo e Fatto arrivano in M2/M3: per ora un segnaposto che chiude il giro.
-  const titolo = passo.tipo === "riepilogo" ? "Controlla le tue risposte" : "Fatto!";
-  const btn = h("button", { class: "btn btn--primario", type: "button", onclick: () => (passo.tipo === "riepilogo" ? vai(INDICE_FATTO, "avanti") : location.reload()) }, passo.tipo === "riepilogo" ? "Voglio vedere il mio sito" : "Ricomincia");
-  const indietro = h("button", { class: "btn btn--ghost", type: "button", hidden: passo.tipo === "fatto", onclick: () => vai(motore.indice - 1, "indietro") }, "Indietro");
-  return h(
-    "section",
-    { class: "passo", "data-passo": passo.tipo, "aria-labelledby": "domanda" },
-    h("p", { class: "passo__sezione" }, "Per finire"),
-    h("h1", { class: "passo__titolo", id: "domanda", tabindex: "-1" }, titolo),
-    h("pre", { class: "passo__aiuto", style: "white-space: pre-wrap; font-size: 14px" }, JSON.stringify(motore.risposte, null, 1)),
-    h("footer", { class: "passo__azioni" }, indietro, btn),
-  );
+  if (passo.tipo === "riepilogo") {
+    riepilogo = montaRiepilogo({
+      risposte: motore.risposte,
+      confermate: motore.stato.confermate,
+      puoIndietro: motore.puoIndietro,
+      indietro: () => vai(motore.indice - 1, "indietro"),
+      modifica: (indice) => {
+        tornaAlRiepilogo = true;
+        vai(indice, "indietro");
+      },
+      invia: () => void inviaLead(),
+    });
+    return riepilogo.el;
+  }
+  return montaFatto(motore.risposte);
 }
 
 let inTransizione = false;
@@ -113,16 +134,63 @@ function continua(forza: boolean): void {
   const esito = corrente.comp.valida(forza || ultimoAvviso !== null);
   if (!esito.ok) {
     ultimoAvviso = esito.messaggio;
-    corrente.mostraEsito(
-      esito,
-      esito.livello === "avviso" ? [{ testo: "Va bene così, continua", esegui: () => continua(true) }] : [],
-    );
+    corrente.mostraEsito(esito, esito.livello === "avviso" ? [{ testo: "Va bene così, continua", esegui: () => continua(true) }] : []);
     return;
   }
   corrente.mostraEsito(null);
   motore.rispondi(passo.domanda.id, corrente.comp.leggi());
   salvaBozza(motore.stato.leadId, { risposte: motore.risposte, indice: motore.indice + 1, aggiornatoAt: new Date().toISOString() });
-  void vai(motore.indice + 1, "avanti");
+  if (tornaAlRiepilogo) {
+    tornaAlRiepilogo = false;
+    void vai(INDICE_RIEPILOGO, "avanti");
+  } else {
+    void vai(motore.indice + 1, "avanti");
+  }
+}
+
+/** Il lead completo che parte con «Voglio vedere il mio sito». */
+function componiLead() {
+  return {
+    versione: 1,
+    formVersione: "v4-2026-09-07",
+    leadId: motore.stato.leadId,
+    iniziatoAt: motore.stato.iniziatoAt,
+    inviatoAt: new Date().toISOString(),
+    risposte: motore.risposte,
+    foto: [] as unknown[], // M3: manifesto delle foto caricate
+    logo: null as unknown,
+    origine: motore.stato.origine,
+  };
+}
+
+async function inviaLead(): Promise<void> {
+  if (!riepilogo || inTransizione) return;
+  const btn = riepilogo.btnInvia;
+  btn.classList.add("is-attesa");
+  btn.setAttribute("aria-busy", "true");
+  riepilogo.mostraEsito(null);
+  try {
+    await invia(motore.stato.leadId, componiLead());
+    traccia("invio", { sezione: TOTALE_SEZIONI });
+    motore.chiudi();
+    await vai(INDICE_FATTO, "avanti");
+  } catch (e) {
+    const ripetibile = e instanceof ErroreTrasporto ? e.ripetibile : true;
+    riepilogo.mostraEsito(
+      {
+        ok: false,
+        livello: "blocco",
+        messaggio: ripetibile
+          ? "Non siamo riusciti a inviare le risposte: controlla la connessione e riprova. Le tue risposte sono al sicuro su questo dispositivo."
+          : "Qualcosa non ha funzionato dal nostro lato. Riprova tra un minuto: le tue risposte sono salvate.",
+        azioni: [{ testo: "Riprova", esegui: () => void inviaLead() }],
+      },
+    );
+    traccia("errore-invio");
+  } finally {
+    btn.classList.remove("is-attesa");
+    btn.removeAttribute("aria-busy");
+  }
 }
 
 // ---------- Avvio ----------
@@ -141,15 +209,15 @@ history.replaceState({ indice: motore.indice }, "");
 // Indietro/avanti del browser = indietro/avanti del form (senza ripetere il push).
 window.addEventListener("popstate", (e) => {
   const a = (e.state as { indice?: number } | null)?.indice;
-  if (typeof a !== "number" || a === motore.indice) return;
+  if (typeof a !== "number" || a === motore.indice || motore.indice >= INDICE_FATTO) return;
   void vai(a, a < motore.indice ? "indietro" : "avanti", false);
 });
 
-// Invio con Enter dai campi a una riga.
+// Invio con Enter dai campi a una riga (non da quelli con suggerimenti: lì Invio sceglie).
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Enter") return;
   const t = e.target as HTMLElement;
-  if (t instanceof HTMLInputElement && t.type !== "checkbox" && t.type !== "radio") {
+  if (t instanceof HTMLInputElement && t.type !== "checkbox" && t.type !== "radio" && t.dataset["enter"] !== "ignora") {
     e.preventDefault();
     continua(false);
   }

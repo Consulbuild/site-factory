@@ -79,9 +79,18 @@ export interface Risposte {
   lavori?: { ids: string[]; altro?: string };
   azienda?: string;
   nome_sito?: { nome: string; esito: "libero" | "preso" | "sconosciuto" };
-  sede?: { comune: string; provincia: string; regione: string; cap: string; via: string; senzaCivico?: boolean };
+  sede?: {
+    comune: string;
+    provincia: string; // sigla, es. "MI"
+    provinciaNome?: string;
+    regione: string;
+    cap: string; // vuoto per le città con più CAP: lo ricava l'operatore dalla via
+    via: string;
+    senzaCivico?: boolean;
+    daVerificare?: boolean; // comune scritto a mano, non trovato nell'elenco
+  };
   zone?: string[];
-  esperienza_anni?: string;
+  esperienza_anni?: { id: string };
   sito_attuale?: string;
   telefono?: string;
   punti_di_forza?: { ids: string[]; altro?: string; certificazioni?: string };
@@ -92,7 +101,7 @@ export interface Risposte {
   email?: string;
   partita_iva?: { valore: string; daVerificare?: boolean };
   social?: { facebook?: string; instagram?: string; tiktok?: string };
-  ricontatto?: string;
+  ricontatto?: { id: string };
   consenso?: boolean;
 }
 
@@ -306,7 +315,8 @@ export const DOMANDE: readonly Domanda[] = [
     id: "consenso",
     sezione: 7,
     tipo: "consenso",
-    testo: "Ho letto l'informativa sulla privacy e acconsento",
+    // Presa visione, non consenso: la base giuridica è l'art. 6.1.b (vedi src/data/privacy.ts).
+    testo: "Ho letto l'informativa sulla privacy",
     aiuto: "Usiamo i tuoi dati solo per preparare il tuo nuovo sito e per contattarti. Leggi l'informativa (si apre qui, senza uscire).",
     obbligatoria: true,
     campo: "consenso",

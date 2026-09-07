@@ -60,14 +60,19 @@ export async function transizione(
   scaglioni(nuovo);
   stage.replaceChildren(nuovo);
 
-  // 3. il sipario sparisce in dissolvenza e il nuovo passo entra a scaglioni
+  // 3. il sipario sparisce in dissolvenza e il nuovo passo entra a scaglioni.
+  //    Da qui il passo è già usabile: la coda non blocca i tocchi (un «Continua»
+  //    rapido non va perso). Se nel frattempo parte un'altra transizione, la
+  //    pulizia la fa lei (controllo su `mia`).
   sipario.classList.add("is-uscita");
   nuovo.classList.add("is-entrata");
-  await attendi(durata("--d-fast") + 10);
-  sipario.style.transition = "none";
-  sipario.classList.remove("is-chiuso", "is-uscita", "is-indietro");
-  void sipario.offsetWidth;
-  sipario.style.transition = "";
+  void attendi(durata("--d-fast") + 10).then(() => {
+    if (mia !== inCorso) return;
+    sipario.style.transition = "none";
+    sipario.classList.remove("is-chiuso", "is-uscita", "is-indietro");
+    void sipario.offsetWidth;
+    sipario.style.transition = "";
+  });
   return nuovo;
 }
 

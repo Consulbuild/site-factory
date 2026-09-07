@@ -6,9 +6,18 @@
  */
 import type { Domanda, Risposte, TipoDomanda } from "../data/domande";
 import { sezioneDi } from "../data/domande";
+import { creaColori } from "../components/colori";
+import { creaConsenso } from "../components/consenso";
+import { creaNomeSito } from "../components/nome-sito";
+import { creaPiva } from "../components/piva";
 import { creaPlaceholder } from "../components/placeholder";
 import { creaSceltaMultipla, creaSceltaSingola } from "../components/scelte";
+import { creaSede } from "../components/sede";
+import { creaSito } from "../components/sito";
+import { creaSocial } from "../components/social";
+import { creaStile } from "../components/stile";
 import { creaEmail, creaTelefono, creaTesto } from "../components/testo";
+import { creaZone } from "../components/zone";
 import { h, svgIcona, type Azione, type Componente, type Esito, type Fabbrica } from "../components/base";
 import { scuoti } from "./motion";
 
@@ -22,17 +31,17 @@ const REGISTRO: Record<TipoDomanda, FabbricaQualsiasi> = {
   testo: creaTesto,
   telefono: creaTelefono,
   email: creaEmail,
-  piva: creaPlaceholder,
-  sito: creaPlaceholder,
-  "nome-sito": creaPlaceholder,
-  sede: creaPlaceholder,
-  zone: creaPlaceholder,
-  foto: creaPlaceholder,
-  logo: creaPlaceholder,
-  stile: creaPlaceholder,
-  colori: creaPlaceholder,
-  social: creaPlaceholder,
-  consenso: creaPlaceholder,
+  piva: creaPiva,
+  sito: creaSito,
+  "nome-sito": creaNomeSito,
+  sede: creaSede,
+  zone: creaZone,
+  foto: creaPlaceholder, // M3
+  logo: creaPlaceholder, // M3
+  stile: creaStile,
+  colori: creaColori,
+  social: creaSocial,
+  consenso: creaConsenso,
 };
 
 export interface PassoMontato {

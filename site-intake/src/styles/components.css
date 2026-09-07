@@ -627,3 +627,366 @@ textarea.campo__input {
     stroke-width: 3;
   }
 }
+
+/* ---------- Gruppi di campi (più elementi in un passo) ---------- */
+.campo-gruppo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+.campo-gruppo > .scelte + .campo {
+  margin-top: var(--s-2);
+}
+
+/* ---------- Suggerimenti sotto un campo (comuni, zone) ---------- */
+.campo__cornice {
+  flex-wrap: wrap;
+}
+.suggerimenti {
+  list-style: none;
+  margin: var(--s-2) 0 0;
+  padding: var(--s-1);
+  width: 100%;
+  border: var(--border-input) solid var(--line);
+  border-radius: var(--r-input);
+  background: var(--surface);
+  box-shadow: var(--shadow-float);
+  max-height: 264px;
+  overflow-y: auto;
+}
+.suggerimenti__voce button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  min-height: var(--tap);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-chip);
+  font-size: var(--fs-input);
+  color: var(--ink);
+}
+.suggerimenti__voce button:hover,
+.suggerimenti__voce.is-attivo button {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+
+/* Riga di conferma dell'indirizzo ricomposto. */
+.conferma {
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-chip);
+  background: var(--surface-2);
+  font-size: var(--fs-help);
+  color: var(--ink-2);
+  line-height: var(--lh-snug);
+}
+.conferma strong {
+  color: var(--ink);
+}
+
+/* ---------- Nome del sito ---------- */
+.scelta--dominio .scelta__testo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dominio__nome {
+  font-weight: 700;
+  word-break: break-all;
+}
+.dominio__tld {
+  color: var(--ink-3);
+  font-weight: 400;
+}
+.stato-dominio {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--ink-3);
+}
+.stato-dominio.is-libero {
+  color: var(--ok);
+}
+.stato-dominio.is-libero::before {
+  content: "✓ ";
+}
+.stato-dominio.is-preso {
+  color: var(--err);
+}
+.stato-dominio.is-sconosciuto {
+  color: var(--warn);
+}
+
+/* ---------- Zone: «Aggiungi una zona» con bottone accanto ---------- */
+.zone__aggiungi .campo__cornice {
+  gap: var(--s-2);
+}
+.zone__aggiungi .campo__input {
+  flex: 1 1 200px;
+  width: auto;
+}
+
+/* ---------- Stile: card con anteprima ---------- */
+.scelte--stili .scelta--stile {
+  padding: var(--s-2) var(--s-2) var(--s-3);
+  gap: var(--s-2);
+}
+.stile__anteprima {
+  display: block;
+  width: 100%;
+  border-radius: var(--r-chip);
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.stile__anteprima svg {
+  width: 100%;
+  height: auto;
+}
+
+/* ---------- Colori: pallini ---------- */
+.tavolozza {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+.swatch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: var(--tap);
+  cursor: pointer;
+  font-size: var(--fs-small);
+  color: var(--ink-2);
+  text-align: center;
+}
+.swatch__cerchio {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-pill);
+  background: var(--sw);
+  border: 2px solid var(--line-strong);
+  display: grid;
+  place-items: center;
+  color: var(--on-accent);
+  transition:
+    transform var(--d-fast) var(--e-standard),
+    box-shadow var(--d-base) var(--e-standard);
+}
+.swatch__cerchio .icona {
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    opacity var(--d-fast) var(--e-standard),
+    transform var(--d-base) var(--e-spring);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.6));
+}
+.swatch:has(.scelta__input:checked) .swatch__cerchio {
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 6px var(--accent);
+  transform: scale(1.05);
+}
+.swatch:has(.scelta__input:checked) .swatch__cerchio .icona {
+  opacity: 1;
+  transform: scale(1);
+}
+.swatch:has(.scelta__input:focus-visible) .swatch__cerchio {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---------- Presa visione privacy ---------- */
+.consenso {
+  align-items: flex-start;
+}
+.consenso__quadrato {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-chip);
+  border: var(--border-input) solid var(--line-strong);
+  display: grid;
+  place-items: center;
+  color: var(--on-accent);
+  transition:
+    background-color var(--d-fast) var(--e-standard),
+    border-color var(--d-fast) var(--e-standard);
+}
+.consenso__quadrato .icona {
+  width: 18px;
+  height: 18px;
+  stroke-width: 3;
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    opacity var(--d-fast) var(--e-standard),
+    transform var(--d-base) var(--e-spring);
+}
+.consenso:has(.scelta__input:checked) .consenso__quadrato {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.consenso:has(.scelta__input:checked) .consenso__quadrato .icona {
+  opacity: 1;
+  transform: scale(1);
+}
+.consenso.is-errore {
+  border-color: var(--err);
+}
+.consenso__sintesi {
+  font-size: var(--fs-small);
+  color: var(--ink-2);
+  line-height: var(--lh-snug);
+}
+
+dialog.informativa {
+  width: min(100% - var(--s-6), 640px);
+  max-height: min(85dvh, 800px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-card);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+dialog.informativa::backdrop {
+  background: rgba(2, 6, 23, 0.6);
+}
+.informativa__corpo {
+  max-height: min(85dvh, 800px);
+  overflow-y: auto;
+  padding: var(--card-pad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+.informativa__titolo {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: var(--ls-h1);
+}
+.informativa__testo {
+  font-size: var(--fs-help);
+  line-height: var(--lh-body);
+  color: var(--ink-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.informativa__testo ul {
+  padding-left: var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.informativa__testo strong {
+  color: var(--ink);
+}
+.informativa__data {
+  font-size: var(--fs-small);
+  color: var(--ink-3);
+}
+
+/* ---------- Riepilogo ---------- */
+.riepilogo {
+  gap: var(--s-5);
+}
+.riepilogo__titolo {
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: var(--s-2);
+}
+.riepilogo__lista {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+.riepilogo__riga {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "dt mod"
+    "dd mod";
+  gap: 2px var(--s-3);
+  align-items: center;
+  padding: var(--s-3) 0;
+  border-top: 1px solid var(--line);
+}
+.riepilogo__riga dt {
+  grid-area: dt;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--ink-3);
+}
+.riepilogo__riga dd {
+  grid-area: dd;
+  margin: 0;
+  font-size: var(--fs-help);
+  color: var(--ink);
+  line-height: var(--lh-snug);
+  overflow-wrap: anywhere;
+}
+.riepilogo__modifica {
+  grid-area: mod;
+}
+.passo__azioni--colonna {
+  flex-direction: column;
+  align-items: stretch;
+}
+.btn--invia {
+  font-size: 20px;
+  min-height: 64px;
+}
+.btn.is-attesa {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* ---------- Fatto: timeline ---------- */
+.tappe {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+.tappa {
+  display: flex;
+  gap: var(--s-3);
+  align-items: flex-start;
+}
+.tappa__n {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+}
+.tappa strong {
+  display: block;
+  font-size: var(--fs-body);
+}
+.tappa p {
+  color: var(--ink-2);
+  font-size: var(--fs-help);
+  line-height: var(--lh-snug);
+}
+.fatto__nota {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-chip);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: var(--fs-help);
+  margin-top: auto;
+}

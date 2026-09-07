@@ -44,8 +44,8 @@ export function formattaTelefono(n: string): string {
 // ---------- Email ----------
 const DOMINI_NOTI = ["gmail.com", "libero.it", "hotmail.it", "hotmail.com", "outlook.it", "outlook.com", "yahoo.it", "yahoo.com", "icloud.com", "tiscali.it", "virgilio.it", "alice.it", "tin.it", "pec.it", "legalmail.it"];
 
-/** Distanza di Levenshtein limitata: basta per i refusi da tastiera. */
-function distanza(a: string, b: string): number {
+/** Distanza di Levenshtein: basta per i refusi da tastiera (email, comuni). */
+export function distanza(a: string, b: string): number {
   const m = a.length;
   const n = b.length;
   const riga: number[] = Array.from({ length: n + 1 }, (_, j) => j);
