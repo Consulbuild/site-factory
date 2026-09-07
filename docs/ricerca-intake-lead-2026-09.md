@@ -337,6 +337,14 @@ Su desktop stessa sequenza in una card centrata con mockup più grande.
 
 ### 6.4 Architettura tecnica (minima)
 
+> Aggiornamento dello stesso giorno: la parte «foto e loghi» è stata rifatta in
+> `docs/ricerca-storage-foto-lead-2026-09.md`. Esito: con la compressione lato
+> client un lead pesa 2-25 MB, e la destinazione raccomandata è **Google Drive
+> dell'agenzia via n8n** (cartella `_inbox`, import nell'editor dal filesystem),
+> non R2. R2, Backblaze B2 e Hetzner Object Storage restano alternative se si
+> vorrà disaccoppiare l'upload dal VPS. Le righe su R2 qui sotto valgono come
+> variante, non come scelta.
+
 - **Pagina**: progetto Astro dedicato (cartella nuova nel repo, design system
   proprio di ConsulBuild, non i preset dei siti clienti), pubblicato come Worker con
   static assets sul sottodominio; richiede la zona `consulbuild.com` attiva su

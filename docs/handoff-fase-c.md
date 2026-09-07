@@ -121,8 +121,14 @@ riepilogo, prenotazione chiamata nella pagina finale; editor fa pull da R2 come
 oggi da Tally (`intake-r2.ts`, stesso contratto di `intake-tally.ts`). Instant
 Form Meta (15 domande, zero upload) e Tally (niente dominio/ripresa/webview)
 scartati con limiti verificati. Prerequisiti e decisioni aperte in §6.5 del doc;
-l'elenco dei campi si decide in una sessione dedicata. Roadmap: scheda Form bozza
-→ scheda Intake R2 → riaccensione annuncio con misurazione per step.
+l'elenco dei campi si decide in una sessione dedicata. **Foto e loghi rivisti lo
+stesso giorno** (`docs/ricerca-storage-foto-lead-2026-09.md`): compressione lato
+client (un lead = 2-25 MB), destinazione Google Drive dell'agenzia via n8n
+(`_inbox/<lead-id>/`), import nell'editor dal filesystem, VPS senza residui;
+frontend = input nativo + uploader proprio + compressorjs (mai `accept="image/*"`
+su iOS); MinIO e FileBrowser sono archiviati, non usarli. Roadmap: scheda Form
+bozza → scheda Intake da `_inbox` nell'editor (prerequisito: symlink `out/` →
+Drive) → riaccensione annuncio con misurazione per step.
 
 ## Prossime schede (ordine deciso: una per volta, SEMPRE pianificando prima)
 
