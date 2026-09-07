@@ -198,6 +198,8 @@ Alert: Telegram bot "ConsulBuild Alert" (nota "Telegram bot alert")
 Uptime Kuma: eliminato il 05/09/2026
 N8N_ENCRYPTION_KEY: non è una env di Coolify, sta in /home/node/.n8n/config del volume n8n → copia in Bitwarden
 Report al rinnovo (Piano 2): workflow sf-report-rinnovo, tabelle Lead e Report, mittente report@notifiche.consulbuild.com
+Form bozza (scheda B): workflow sf-bozza e sf-bozza-pulizia → Drive info@consulbuild.com/site-factory-clienti/_inbox; credenziale n8n "Google Drive ConsulBuild" (client OAuth nel progetto Google Cloud "n8n consulbuild", nota "Google OAuth n8n")
+DNS consulbuild.com: su Cloudflare dal 07/09/2026 (nameserver anahi/elliott), n8n/coolify/stats con nuvola grigia
 Stripe: chiave ristretta "n8n report" (sandbox e live) in "Stripe restricted key n8n"; credenziale n8n "Stripe ConsulBuild"
 ```
 
@@ -296,3 +298,77 @@ delegato conta ogni clic su `tel:`, `mailto:` e `wa.me` come evento Umami `chiam
 ricordare; Umami spedisce con `keepalive`, quindi il clic conta anche se il link porta
 via dalla pagina. Nessun dato personale. I siti già pubblicati lo prendono alla prossima
 Build + Pubblica.
+
+## 10. Form bozza → Google Drive (scheda B, 2026-09-07)
+
+Il form dei lead dell'agenzia (`site-intake/`, pubblicato come Worker) parla con n8n
+su `https://n8n.consulbuild.com/webhook/bozza` e n8n archivia tutto nel Drive di
+info@consulbuild.com in `Il mio Drive/site-factory-clienti/_inbox/<leadId>/`
+(cartella `_inbox` id `1NeHPWo61GABCotC-rvxAtLRs4BlnVf3v`, fissato nei nodi). Il Mac la
+sincronizza in `~/Library/CloudStorage/GoogleDrive-info@consulbuild.com/Il mio Drive/
+site-factory-clienti/_inbox/`: è da lì che l'editor importerà (scheda C).
+
+### 10.1 Credenziale Google (fatta da Mattia il 2026-09-07)
+Google Cloud Console (info@consulbuild.com, organizzazione consulbuild.com): progetto
+«n8n consulbuild», API Google Drive abilitata, schermata di consenso **Interna** (app
+Workspace: il token non scade), client OAuth «Applicazione web» con redirect
+`https://n8n.consulbuild.com/rest/oauth2-credential/callback`. In n8n: credenziale
+**Google Drive OAuth2 API** «Google Drive ConsulBuild» (id `uqc6XtI3bXiIgKXC`, usato
+nei workflow versionati). Lezione: «The OAuth callback state is invalid» al Sign in =
+problema del browser (popup, cookie), si risolve ricaricando n8n o in incognito di
+Chrome. I service account non servono: dall'aprile 2025 non possono scrivere nel «Mio
+Drive» (solo Drive condivisi). L'API Drive è gratuita (nessun account di fatturazione).
+
+### 10.2 Workflow `sf-bozza` (`infra/n8n/bozza.json`, 17 nodi)
+Tre Webhook con Allowed Origins `*` (il form gira su un altro dominio; l'endpoint è
+pubblico per natura) e risposta dal nodo «Rispondi» (n8n non accetta un webhook a
+risposta immediata insieme a nodi Respond to Webhook):
+- `PATCH bozza/lead?id=` autosalvataggio → `bozza.json` (creato o aggiornato);
+- `POST bozza/lead/file?id=` multipart `{kind: foto|logo, index, file}` →
+  `foto-NN-<nome>` o `logo.<ext>`; risponde 200 solo a file salvato;
+- `POST bozza/lead?id=` → `lead.json`, poi Telegram «Nuova richiesta di sito: cartella
+  <id> (N foto, logo sì/no)» — id e conteggi, mai dati del lead (server extra-UE).
+
+Catena: **Prepara** (Code: riconosce la route da `$prevNode.name`, controlla id
+`^[a-z0-9-]{8,64}$`, kind, index 1-15, MIME `image/*`, peso ≤ 26 MiB dal binario
+reale — l'intestazione content-length non arriva al nodo; per bozza e lead serializza il
+JSON come file) → **Valido?** (no → Rispondi 400 `{ok:false, errore}`) → **Cerca
+cartella** (query `name = '<id>'` in `_inbox`, «Always Output Data») → **Esiste?** → se
+no **Crea cartella** → **Cerca file** (stesso nome nella cartella) → **Unisci** (Code:
+rimette il binario sull'item con cartellaId e fileId) → **File esiste?** → **Aggiorna**
+(Change File Content) oppure **Carica** → **Rispondi 200** `{ok:true, file}` → **È il
+lead?** → **Avvisa** (Telegram). Stesso nome = aggiornamento: i retry del form dopo un
+timeout non creano doppioni. Settings: successi non salvati (le foto non restano nel DB),
+errori a `sf-errori`. Perché l'id sta nella query: con `:id` nel path n8n antepone
+all'URL l'id del nodo (verificato il 5/9). Nessuna env da cambiare: il limite
+`N8N_PAYLOAD_SIZE_MAX` (16 MB) non vale per i multipart (`N8N_FORMDATA_FILE_SIZE_MAX`,
+200 MB, e il controllo dei 25 MB è nel workflow). Con volumi alti valutare
+`N8N_DEFAULT_BINARY_DATA_MODE=filesystem` su Coolify.
+
+Il form (`site-intake/src/lib/transport.ts`) serializza le richieste finché non ha
+ricevuto la prima risposta 2xx: la cartella nasce alla prima richiesta e due richieste
+parallele non la creano due volte. Turnstile non è attivo (deciso il 2026-09-07: rischio
+basso, si aggiunge se compare spam); la sorveglianza è la soglia di 300 cartelle (§10.3).
+
+### 10.3 Workflow `sf-bozza-pulizia` (`infra/n8n/bozza-pulizia.json`, 9 nodi)
+Ogni notte alle 04:00 (Europe/Rome): cerca tutte le cartelle di `_inbox`, cestina quelle
+con `createdTime` più vecchio di 60 giorni (Cestino di Drive, che si svuota da solo dopo
+30) e avvisa su Telegram «Pulizia _inbox: N cartelle…»; se le cartelle sono più di 300
+manda «Attenzione… possibile abuso». Prova a comando, stessa chiave dell'editor
+(`N8N_REGISTRA_KEY`, header `X-Site-Factory-Key`):
+
+```
+curl -X POST https://n8n.consulbuild.com/webhook/bozza-pulizia \
+  -H "X-Site-Factory-Key: <chiave>" -H "Content-Type: application/json" -d '{"giorni": 0}'
+```
+
+`giorni: 0` cestina tutto ciò che c'è in `_inbox` (usato solo per le prove).
+
+### 10.4 Verifica fatta il 2026-09-07
+Preflight CORS della PATCH (204 con `PATCH, POST`), 400 su id/kind/corpo sbagliati,
+autosalvataggio ripetuto → un solo `bozza.json` aggiornato, foto ripetuta → aggiornata
+non duplicata, foto e logo in parallelo, lead → `lead.json` + Telegram, file da 24 MB
+accettato e da 30 MB rifiutato, percorso completo del form con Playwright contro n8n
+(`INTAKE_REALE=1`), cartella sincronizzata sul Mac in pochi secondi, pulizia a comando
+con `giorni: 0` che ha cestinato le cartelle di prova, webhook di pulizia senza chiave →
+403. Nessun doppione di cartella.

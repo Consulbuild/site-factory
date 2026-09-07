@@ -4,6 +4,7 @@
 //   cd site-factory-editor
 //   node --experimental-strip-types scripts/n8n-import.ts export   # n8n → repo (dopo averli costruiti/modificati in UI)
 //   node --experimental-strip-types scripts/n8n-import.ts import   # repo → n8n (ripristino, nuova istanza)
+//   … export|import bozza                                           # solo quel workflow
 //
 // Nome file = nome del workflow in n8n senza il prefisso «sf-»: infra/n8n/form-lead.json
 // ↔ workflow «sf-form-lead». Si versionano SOLO name/nodes/connections/settings
@@ -16,7 +17,8 @@ import { getSecret } from "../lib/secrets.ts";
 import { N8N_HOST } from "../lib/integrazioni.ts";
 
 const DIR = path.join(REPO_ROOT, "infra", "n8n");
-const WORKFLOWS = ["registra-cliente", "form-lead", "errori", "report-rinnovo"];
+const TUTTI = ["registra-cliente", "form-lead", "errori", "report-rinnovo", "bozza", "bozza-pulizia"];
+const WORKFLOWS = process.argv[3] ? [process.argv[3]] : TUTTI;
 const nomeN8n = (file: string) => `sf-${file}`;
 
 type Workflow = { id?: string; name: string; nodes: unknown[]; connections: unknown; settings?: unknown };

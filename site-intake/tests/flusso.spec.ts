@@ -158,14 +158,19 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
   await expect(page.locator(".card")).toHaveClass(/is-fatto/);
 
   expect(leadId).toBeTruthy();
+  // Contro n8n vero (INTAKE_REALE=1) l'inbox locale non esiste: i file si verificano su Drive.
+  if (process.env.INTAKE_REALE) {
+    console.log(`lead inviato a n8n: ${leadId}`);
+    return;
+  }
   const file = join(INBOX, leadId!, "lead.json");
   expect(existsSync(file)).toBe(true);
   const lead = JSON.parse(readFileSync(file, "utf8"));
   expect(lead.foto).toHaveLength(2);
   expect(lead.fotoArrivate).toBe(2);
   expect(lead.logo).toMatchObject({ kind: "logo", nome: "logo.png", stato: "fatto" });
-  expect(existsSync(join(INBOX, leadId!, "foto", "01-lavoro-1.jpg"))).toBe(true);
-  expect(existsSync(join(INBOX, leadId!, "foto", "02-lavoro-2.jpg"))).toBe(true);
+  expect(existsSync(join(INBOX, leadId!, "foto-01-lavoro-1.jpg"))).toBe(true);
+  expect(existsSync(join(INBOX, leadId!, "foto-02-lavoro-2.jpg"))).toBe(true);
   expect(existsSync(join(INBOX, leadId!, "logo.png"))).toBe(true);
   expect(lead.risposte.azienda).toBe("Cavaliere Build S.r.l.s.");
   expect(lead.risposte.lavori.ids).toEqual(["bagni", "cucine"]);

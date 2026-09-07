@@ -88,9 +88,25 @@ di sezione è il nome della sezione (pattern GOV.UK «caption»), grammatica Con
 - I selettori di test devono usare i ruoli o le classi del componente: i testi delle
   scelte con sottotitolo e l'annuncio per screen reader creano doppioni.
 
+## Scheda B (2026-09-07): webhook n8n → Google Drive — FATTA
+
+Piano in `~/.claude/plans/buzzing-swimming-lightning.md` (sostituisce quello del form);
+guida e verifica in `docs/vps-integrazioni-setup.md` §10. Decisioni: id del lead in
+query (`?id=`) perché n8n con `:id` nel path antepone l'id del nodo; file piatti nella
+cartella del lead (`foto-NN-<nome>`, niente sottocartella: una cartella in meno da creare
+in concorrenza); stesso nome = aggiornamento (retry senza doppioni); il form serializza le
+richieste fino alla prima risposta 2xx (cartella creata una volta sola); autosalvataggio
+su Drive come `bozza.json`; Telegram con solo id e conteggi; pulizia a 60 giorni con
+allarme oltre 300 cartelle; **Turnstile rimandato** (rischio basso, si aggiunge se
+compare spam). Scoperte: consulbuild.com non era su Cloudflare (Mattia ha spostato i
+nameserver: prerequisito del Worker con dominio custom); i service account Google non
+scrivono più nel «Mio Drive» → OAuth dell'account agenzia. File toccati rispetto al
+piano: tutti quelli elencati tranne `site-intake/playwright.config.ts` (non serviva: le
+env passano da sole al server di sviluppo).
+
 ## Punti aperti
 
-1. Piano Workspace e quota Drive (scheda B).
-2. Turnstile: chiavi e verifica lato n8n (scheda B).
-3. Informativa completa del sito da estendere a questo modulo (Mattia con la catena legale).
-4. Test su iPhone reale dentro Instagram (Mattia, con il link di anteprima).
+1. Deploy su un sottodominio di consulbuild.com (nome da scegliere, solo su ok di Mattia).
+2. Informativa completa del sito da estendere a questo modulo (Mattia con la catena legale).
+3. Test su iPhone reale dentro Instagram (Mattia, con il link pubblicato).
+4. Turnstile, se compare spam (`PUBLIC_TURNSTILE_SITE_KEY` già prevista nel form).

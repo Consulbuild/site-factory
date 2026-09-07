@@ -1,0 +1,635 @@
+{
+  "name": "sf-bozza",
+  "nodes": [
+    {
+      "id": "eaa9803f-c81f-4087-96bf-fa928e604792",
+      "name": "Webhook bozza",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "PATCH",
+        "path": "bozza/lead",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "webhookId": "6c4cd961-c53a-4852-bb34-9b9cfe10228f"
+    },
+    {
+      "id": "a7dcb173-d624-4983-ba64-d44c8c83dca5",
+      "name": "Webhook file",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bozza/lead/file",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "webhookId": "e95eaaf3-a3f9-4bc0-83c6-3ddce9968c48"
+    },
+    {
+      "id": "89128d7b-c031-4869-a60d-920a644ae145",
+      "name": "Webhook lead",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        400
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bozza/lead",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "webhookId": "0b0dd124-58c8-4c94-ba20-a212ea6b4bd4"
+    },
+    {
+      "id": "6d021813-eb82-4dd5-9e95-12645faa88c6",
+      "name": "Prepara",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Le tre route del form (transport.ts) diventano un solo formato:\n// json {route, id, nome, errore} + binary.file (l'immagine caricata oppure la\n// bozza/il lead serializzati come file JSON). Controlli sull'ingresso qui, in un\n// posto solo: id, kind, index, tipo e peso del file.\nconst item = $input.first();\nconst route = { 'Webhook bozza': 'bozza', 'Webhook file': 'file', 'Webhook lead': 'lead' }[$prevNode.name];\nconst id = String(item.json.query?.id ?? '');\nconst pulisci = (n) => n.normalize('NFKD').replace(/[^\\w.-]+/g, '-').replace(/-+/g, '-').toLowerCase().slice(0, 80) || 'file';\nconst errore = (msg) => [{ json: { route, id, nome: '', errore: msg } }];\nif (!/^[a-z0-9-]{8,64}$/i.test(id)) return errore('id non valido');\n\nlet nome, binary, extra = {};\nif (route === 'file') {\n  const body = item.json.body ?? {};\n  const file = item.binary?.file;\n  if (!file) return errore('manca il file');\n  if (!/^image\\//.test(file.mimeType ?? '')) return errore('sono ammesse solo immagini');\n  // Peso reale del binario (l'intestazione content-length non arriva al nodo).\n  if ((await this.helpers.getBinaryDataBuffer(0, 'file')).length > 26 * 1024 * 1024) return errore('file oltre 25 MB');\n  const index = Number(body.index);\n  const ext = (/\\.[a-z0-9]+$/i.exec(file.fileName ?? '')?.[0] ?? '').toLowerCase();\n  if (body.kind === 'logo') nome = 'logo' + (ext || '.bin');\n  else if (body.kind === 'foto' && Number.isInteger(index) && index >= 1 && index <= 15) nome = 'foto-' + String(index).padStart(2, '0') + '-' + pulisci(file.fileName ?? 'foto');\n  else return errore('kind deve essere foto (index 1-15) o logo');\n  binary = { file };\n} else {\n  const corpo = item.json.body;\n  if (!corpo || typeof corpo !== 'object' || Array.isArray(corpo)) return errore('corpo mancante');\n  nome = route === 'lead' ? 'lead.json' : 'bozza.json';\n  binary = { file: await this.helpers.prepareBinaryData(Buffer.from(JSON.stringify(corpo, null, 2) + '\\n'), nome, 'application/json') };\n  if (route === 'lead') extra = { nFoto: Number(corpo.fotoArrivate ?? 0), logo: corpo.logo?.stato === 'fatto' ? 'sì' : 'no' };\n}\nreturn [{ json: { route, id, nome, errore: '', ...extra }, binary }];"
+      }
+    },
+    {
+      "id": "52a97226-24dd-407e-a453-ee02e1a8b4ab",
+      "name": "Valido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        480,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e70e8671-b0c0-4ac1-bb02-7a38d6f40918",
+              "leftValue": "={{ $json.errore }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "afd0ffdd-b355-455c-bd40-43557d5a0a71",
+      "name": "Rispondi 400",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        700,
+        400
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, errore: $json.errore }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "89906d2c-2d51-4f80-a784-403ebe6b5ba2",
+      "name": "Cerca cartella",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        700,
+        100
+      ],
+      "parameters": {
+        "resource": "fileFolder",
+        "operation": "search",
+        "searchMethod": "query",
+        "queryString": "=name = '{{ $json.id }}'",
+        "returnAll": false,
+        "limit": 1,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "1NeHPWo61GABCotC-rvxAtLRs4BlnVf3v"
+          },
+          "whatToSearch": "folders"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "uqc6XtI3bXiIgKXC",
+          "name": "Google Drive ConsulBuild"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "376d2f5f-65c4-4031-a17a-cb943aea2c20",
+      "name": "Esiste?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        920,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f2036e21-112f-4781-90ed-966edd8230e9",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "d6473608-e49a-4095-97c1-7f174da2beb6",
+      "name": "Crea cartella",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1140,
+        240
+      ],
+      "parameters": {
+        "resource": "folder",
+        "operation": "create",
+        "name": "={{ $('Prepara').first().json.id }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1NeHPWo61GABCotC-rvxAtLRs4BlnVf3v"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "uqc6XtI3bXiIgKXC",
+          "name": "Google Drive ConsulBuild"
+        }
+      }
+    },
+    {
+      "id": "2187e723-6a1f-40c9-8d63-43b449b7903f",
+      "name": "Cerca file",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1360,
+        100
+      ],
+      "parameters": {
+        "resource": "fileFolder",
+        "operation": "search",
+        "searchMethod": "query",
+        "queryString": "=name = '{{ $('Prepara').first().json.nome }}'",
+        "returnAll": false,
+        "limit": 1,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $json.id }}"
+          },
+          "whatToSearch": "files"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "uqc6XtI3bXiIgKXC",
+          "name": "Google Drive ConsulBuild"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "18c3f1a2-cb15-40ba-83a7-82cad398d280",
+      "name": "Unisci",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1580,
+        100
+      ],
+      "parameters": {
+        "jsCode": "// Riporta sull'item il file (binario) preparato all'inizio e gli id trovati:\n// la cartella del lead (trovata o appena creata) e il file omonimo, se esiste già\n// (retry del form dopo un timeout: si aggiorna invece di duplicare).\nconst prep = $('Prepara').first();\nconst cartellaId = $('Crea cartella').isExecuted ? $('Crea cartella').first().json.id : $('Cerca cartella').first().json.id;\nconst fileId = $input.first().json.id ?? '';\nreturn [{ json: { ...prep.json, cartellaId, fileId }, binary: prep.binary }];"
+      }
+    },
+    {
+      "id": "e0ff8b4f-73df-457a-bcbc-520209c4d0c4",
+      "name": "File esiste?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1800,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e3771a95-1065-4085-a320-243be8406018",
+              "leftValue": "={{ $json.fileId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "8747c1b1-ff45-4090-b80f-b838b8363724",
+      "name": "Aggiorna",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2020,
+        0
+      ],
+      "parameters": {
+        "resource": "file",
+        "operation": "update",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.fileId }}"
+        },
+        "changeFileContent": true,
+        "inputDataFieldName": "file",
+        "newUpdatedFileName": "",
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "uqc6XtI3bXiIgKXC",
+          "name": "Google Drive ConsulBuild"
+        }
+      }
+    },
+    {
+      "id": "1210d7fd-a1f5-4a66-bde6-f3d6caa6d868",
+      "name": "Carica",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2020,
+        200
+      ],
+      "parameters": {
+        "resource": "file",
+        "operation": "upload",
+        "inputDataFieldName": "file",
+        "name": "={{ $json.nome }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.cartellaId }}"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "uqc6XtI3bXiIgKXC",
+          "name": "Google Drive ConsulBuild"
+        }
+      }
+    },
+    {
+      "id": "3f94d20a-2ac5-4d37-a00b-60872247e1d1",
+      "name": "Rispondi 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2240,
+        100
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, file: $('Unisci').first().json.nome }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "5e738598-f897-4fa0-8af9-1f1348287424",
+      "name": "È il lead?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2460,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ae77c075-059d-46db-86e8-48e547266835",
+              "leftValue": "={{ $('Prepara').first().json.route }}",
+              "rightValue": "lead",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "428d5aa9-ef96-4023-a5ef-a4a26d0c5d72",
+      "name": "Avvisa",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2680,
+        100
+      ],
+      "parameters": {
+        "chatId": "905276779",
+        "text": "=Nuova richiesta di sito: cartella {{ $('Prepara').first().json.id }} ({{ $('Prepara').first().json.nFoto }} foto, logo {{ $('Prepara').first().json.logo }}). Importala dall'editor.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "jlHkcxrBzFZ2Htxw",
+          "name": "Telegram ConsulBuild Alert"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook bozza": {
+      "main": [
+        [
+          {
+            "node": "Prepara",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook file": {
+      "main": [
+        [
+          {
+            "node": "Prepara",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook lead": {
+      "main": [
+        [
+          {
+            "node": "Prepara",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepara": {
+      "main": [
+        [
+          {
+            "node": "Valido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valido?": {
+      "main": [
+        [
+          {
+            "node": "Cerca cartella",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rispondi 400",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cerca cartella": {
+      "main": [
+        [
+          {
+            "node": "Esiste?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esiste?": {
+      "main": [
+        [
+          {
+            "node": "Cerca file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Crea cartella",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crea cartella": {
+      "main": [
+        [
+          {
+            "node": "Cerca file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cerca file": {
+      "main": [
+        [
+          {
+            "node": "Unisci",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unisci": {
+      "main": [
+        [
+          {
+            "node": "File esiste?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File esiste?": {
+      "main": [
+        [
+          {
+            "node": "Aggiorna",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Carica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggiorna": {
+      "main": [
+        [
+          {
+            "node": "Rispondi 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Carica": {
+      "main": [
+        [
+          {
+            "node": "Rispondi 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rispondi 200": {
+      "main": [
+        [
+          {
+            "node": "È il lead?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "È il lead?": {
+      "main": [
+        [
+          {
+            "node": "Avvisa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Rome",
+    "errorWorkflow": "Nmtq10XO2pWwXwnE",
+    "callerPolicy": "workflowsFromSameOwner",
+    "saveDataSuccessExecution": "none"
+  }
+}

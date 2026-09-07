@@ -62,15 +62,22 @@ compare prima del JavaScript. Poi il motore prende il controllo:
 `leadId`, `iniziatoAt`, `inviatoAt`, `formVersione`, `risposte` (chiavi = id delle
 domande; forme in `Risposte`), `foto[]` e `logo` (manifesto della coda: `n`, `nome`,
 `bytes`, `tipo`, `stato`), `fotoAttese`/`fotoArrivate`, `origine` (utm, fbclid, mestiere
-dall'annuncio, user agent). I file: `foto/NN-<nome>` e `logo.<ext>` accanto al JSON.
+dall'annuncio, user agent). I file: `foto-NN-<nome>`, `logo.<ext>` e `bozza.json`
+(ultimo autosalvataggio) piatti accanto al JSON, nella cartella `<leadId>/`.
 
 ### Trasporto (dev = prod)
 
-`PATCH {base}/lead/{id}` autosalvataggio · `POST {base}/lead/{id}/file` multipart
-`{kind, index, file}` · `POST {base}/lead/{id}` lead completo. `base` =
-`PUBLIC_INTAKE_URL` alla build, altrimenti `/api` servito da `dev/inbox.mjs` in
-`.dev-inbox/<leadId>/`. Un file = una richiesta (≤25 MB): niente chunk, niente ripresa,
-retry per file. Il webhook n8n che riceverà queste route è la scheda successiva.
+`PATCH {base}/lead?id=` autosalvataggio · `POST {base}/lead/file?id=` multipart
+`{kind, index, file}` · `POST {base}/lead?id=` lead completo. `base` =
+`PUBLIC_INTAKE_URL` alla build (prod: `https://n8n.consulbuild.com/webhook/bozza`,
+workflow `sf-bozza` in `infra/n8n/bozza.json`, guida in
+`docs/vps-integrazioni-setup.md` §10), altrimenti `/api` servito da `dev/inbox.mjs` in
+`.dev-inbox/<leadId>/`. L'id sta nella query perché n8n, con `:id` nel path, antepone
+all'URL l'id del nodo. Un file = una richiesta (≤25 MB): niente chunk, niente ripresa,
+retry per file; stesso nome già presente = aggiornamento, mai doppioni. Finché il
+backend non ha risposto 2xx una prima volta, le richieste partono una alla volta
+(`transport.ts`): la cartella del lead nasce alla prima richiesta e non va creata due
+volte da due richieste parallele.
 
 ## Design system
 
@@ -110,11 +117,15 @@ motion e i tempi si usano i test Playwright, non il pannello browser nascosto.
 
 ## Deploy
 
-`wrangler.jsonc`: Worker `sf-bozza` con static assets su `bozza.consulbuild.com` (zona
-già su Cloudflare). Build con le env pubbliche, poi `npx wrangler deploy --config
-wrangler.jsonc` (token nel Keychain come per i siti clienti). Env alla build:
-`PUBLIC_INTAKE_URL` (webhook n8n), `PUBLIC_UMAMI_HOST`/`PUBLIC_UMAMI_WEBSITE_ID`
-(statistiche), `PUBLIC_TURNSTILE_SITE_KEY` (quando la verifica lato n8n sarà pronta).
+`wrangler.jsonc`: Worker `sf-bozza` con static assets su un sottodominio di
+consulbuild.com (zona su Cloudflare dal 2026-09-07; il record DNS lo crea wrangler).
+Build con le env pubbliche, poi `npx wrangler deploy --config wrangler.jsonc` (token nel
+Keychain come per i siti clienti). Env alla build: `PUBLIC_INTAKE_URL`
+(`https://n8n.consulbuild.com/webhook/bozza`), `PUBLIC_UMAMI_HOST`/
+`PUBLIC_UMAMI_WEBSITE_ID` (statistiche), `PUBLIC_TURNSTILE_SITE_KEY` (Turnstile non è
+attivo: si aggiunge se compare spam). Prova contro n8n vero senza pubblicare:
+`PUBLIC_INTAKE_URL=… INTAKE_REALE=1 npx playwright test tests/flusso.spec.ts
+--project=telefono` (salta le asserzioni sull'inbox locale; i file si controllano su Drive).
 
 ## Test
 

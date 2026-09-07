@@ -1,0 +1,312 @@
+{
+  "name": "sf-bozza-pulizia",
+  "nodes": [
+    {
+      "id": "ab4f0273-1f41-40e9-9162-6817c7dcd25f",
+      "name": "Ogni notte",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 4,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "8f546a12-6093-4b4c-9f00-f532d04c138d",
+      "name": "Prova",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bozza-pulizia",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "webhookId": "4f00a0f5-516b-431a-9ac3-9a803cf22668",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GNxAY36CwcnGQcQG",
+          "name": "Site-factory registra"
+        }
+      }
+    },
+    {
+      "id": "36055b59-2ea4-49c9-8c20-25302f08d007",
+      "name": "Cerca tutte",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        220,
+        100
+      ],
+      "parameters": {
+        "resource": "fileFolder",
+        "operation": "search",
+        "searchMethod": "query",
+        "queryString": "=mimeType = 'application/vnd.google-apps.folder'",
+        "returnAll": true,
+        "limit": 1,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "1NeHPWo61GABCotC-rvxAtLRs4BlnVf3v"
+          },
+          "whatToSearch": "folders"
+        },
+        "options": {
+          "fields": [
+            "*"
+          ]
+        }
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "uqc6XtI3bXiIgKXC",
+          "name": "Google Drive ConsulBuild"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "12713d68-b064-472d-b1a7-09e5a53f87bf",
+      "name": "Valuta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        100
+      ],
+      "parameters": {
+        "jsCode": "// _inbox è un'anticamera: ciò che l'editor non ha importato entro 60 giorni va nel\n// Cestino (dove resta altri 30). Se le cartelle sono più di 300 qualcosa non torna\n// (bot, form in loop): un avviso separato.\n// Dal webhook di prova (header auth) si può passare {\"giorni\": 0} per una prova.\nconst GIORNI = $('Prova').isExecuted ? Number($('Prova').first().json.body?.giorni ?? 60) : 60;\nconst SOGLIA = 300;\nconst tutte = $input.all().map((i) => i.json).filter((f) => f.id);\nconst limite = Date.now() - GIORNI * 864e5;\nconst uscita = tutte.filter((f) => new Date(f.createdTime).getTime() < limite).map((f) => ({ json: { azione: 'cestina', id: f.id, nome: f.name } }));\nif (tutte.length > SOGLIA) uscita.push({ json: { azione: 'allarme', totale: tutte.length } });\nreturn uscita;"
+      }
+    },
+    {
+      "id": "8b1d1e4f-a8bc-4ec2-97ae-4c296e3caace",
+      "name": "Da cestinare?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        660,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8626b519-bb4f-4c4f-9f01-654bc204f8b5",
+              "leftValue": "={{ $json.azione }}",
+              "rightValue": "cestina",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "23e0ee48-0da5-4f0f-bda3-1683aa1a9c94",
+      "name": "Cestina",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "resource": "folder",
+        "operation": "deleteFolder",
+        "folderNoRootId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "uqc6XtI3bXiIgKXC",
+          "name": "Google Drive ConsulBuild"
+        }
+      }
+    },
+    {
+      "id": "b28e06d5-196e-43f7-98a7-f8d12a696858",
+      "name": "Riassunto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const n = $input.all().length;\nreturn n ? [{ json: { n } }] : [];"
+      }
+    },
+    {
+      "id": "f656e588-c9a2-4b55-b849-2eac9320e5ee",
+      "name": "Avvisa pulizia",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        0
+      ],
+      "parameters": {
+        "chatId": "905276779",
+        "text": "=Pulizia _inbox del form: {{ $json.n }} cartelle più vecchie di 60 giorni spostate nel Cestino di Drive (si svuota da solo dopo 30 giorni).",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "jlHkcxrBzFZ2Htxw",
+          "name": "Telegram ConsulBuild Alert"
+        }
+      }
+    },
+    {
+      "id": "2deda5eb-674e-438b-b3a4-790480967e84",
+      "name": "Avvisa abuso",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        240
+      ],
+      "parameters": {
+        "chatId": "905276779",
+        "text": "=Attenzione: _inbox del form ha {{ $json.totale }} cartelle (soglia 300). Possibile abuso: controlla le esecuzioni di sf-bozza e la cartella su Drive.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "jlHkcxrBzFZ2Htxw",
+          "name": "Telegram ConsulBuild Alert"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Prova": {
+      "main": [
+        [
+          {
+            "node": "Cerca tutte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ogni notte": {
+      "main": [
+        [
+          {
+            "node": "Cerca tutte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cerca tutte": {
+      "main": [
+        [
+          {
+            "node": "Valuta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valuta": {
+      "main": [
+        [
+          {
+            "node": "Da cestinare?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Da cestinare?": {
+      "main": [
+        [
+          {
+            "node": "Cestina",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Avvisa abuso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cestina": {
+      "main": [
+        [
+          {
+            "node": "Riassunto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Riassunto": {
+      "main": [
+        [
+          {
+            "node": "Avvisa pulizia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Rome",
+    "errorWorkflow": "Nmtq10XO2pWwXwnE",
+    "callerPolicy": "workflowsFromSameOwner",
+    "saveDataSuccessExecution": "none"
+  }
+}

@@ -1,10 +1,11 @@
 {
   // Pubblicazione su Cloudflare Workers con static assets (stessa ricetta dei siti
   // clienti, site-factory-editor/lib/deploy.ts). Prerequisiti: zona consulbuild.com
-  // attiva su Cloudflare (lo è: ospita coolify/n8n/stats), token nel Keychain.
+  // attiva su Cloudflare (nameserver spostati il 2026-09-07), token nel Keychain.
+  // Il record DNS del sottodominio lo crea wrangler (custom_domain).
   // Deploy (dopo `npm run build`, solo su ok di Mattia):
+  //   PUBLIC_INTAKE_URL=https://n8n.consulbuild.com/webhook/bozza npm run build
   //   npx wrangler deploy --config wrangler.jsonc
-  // Le env PUBLIC_* si passano alla build (es. PUBLIC_INTAKE_URL=https://n8n.consulbuild.com/webhook/intake).
   "name": "sf-bozza",
   "compatibility_date": "2026-07-08",
   "assets": {

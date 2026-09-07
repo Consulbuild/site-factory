@@ -135,10 +135,19 @@ sipario/scaglioni, comuni ISTAT, disponibilità del nome via DoH, foto in origin
 coda in background, presa visione privacy (art. 6.1.b), riepilogo, invio, «Fatto»;
 Playwright (controlli, percorso completo su 3 dispositivi, axe, schermate a 9
 larghezze), budget prestazioni 67 KB. In dev tutto finisce in `site-intake/.dev-inbox/`.
-Prossime schede: B = webhook n8n → Google Drive `_inbox` (+ Turnstile lato server),
-C = import da `_inbox` nell'editor (prerequisito: symlink `out/` → Drive); poi deploy su
-`bozza.consulbuild.com` (wrangler.jsonc pronto, solo su ok di Mattia) e riaccensione
-dell'annuncio con misurazione per step.
+**Scheda B FATTA (2026-09-07)**: workflow `sf-bozza` (tre route su
+`n8n.consulbuild.com/webhook/bozza`, id in query, controlli, cartella per lead in
+`Il mio Drive/site-factory-clienti/_inbox/<leadId>/` con `bozza.json`, `foto-NN-<nome>`,
+`logo.<ext>`, `lead.json`; stesso nome = aggiornamento; Telegram senza dati personali)
+e `sf-bozza-pulizia` (04:00, cestina oltre 60 giorni, allarme oltre 300 cartelle,
+prova a comando con la chiave dell'editor); credenziale Google OAuth fatta da Mattia;
+DNS di consulbuild.com spostato su Cloudflare (prerequisito del Worker con dominio
+custom); verifica end-to-end contro n8n vero. Guida: `docs/vps-integrazioni-setup.md`
+§10. Turnstile rimandato (si aggiunge se compare spam).
+Prossime: deploy del form su un sottodominio di consulbuild.com (nome da scegliere;
+build con `PUBLIC_INTAKE_URL`, record DNS creato da wrangler), test su iPhone reale
+dentro Instagram, C = import da `_inbox` nell'editor (prerequisito: symlink `out/` →
+Drive), riaccensione dell'annuncio con misurazione per step.
 
 ## Prossime schede (ordine deciso: una per volta, SEMPRE pianificando prima)
 

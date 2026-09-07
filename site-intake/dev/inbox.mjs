@@ -5,10 +5,12 @@
 // logo, invio) si prova end-to-end senza VPS.
 //
 // Contratto (identico a produzione, base = PUBLIC_INTAKE_URL, in dev "/api"):
-//   PATCH {base}/lead/{id}          JSON risposte parziali  → bozza.json   (autosalvataggio)
-//   POST  {base}/lead/{id}/file     multipart {kind, index, file} → foto/NN-<nome> | logo.<ext>
-//   POST  {base}/lead/{id}          JSON lead completo      → lead.json
+//   PATCH {base}/lead?id={id}        JSON risposte parziali  → bozza.json   (autosalvataggio)
+//   POST  {base}/lead/file?id={id}   multipart {kind, index, file} → foto-NN-<nome> | logo.<ext>
+//   POST  {base}/lead?id={id}        JSON lead completo      → lead.json
 // Risposta: 200 {"ok":true,...} · 4xx {"ok":false,"errore":"…"}.
+// I file stanno piatti nella cartella del lead (come su Drive, infra/n8n/bozza.json):
+// una cartella sola da creare, nessuna sottocartella da creare in concorrenza.
 //
 // Latenza artificiale (per provare barre e retry): INBOX_DELAY_MS=1500 astro dev
 // Errori artificiali (1 su N richieste di file): INBOX_FAIL_EVERY=4 astro dev
@@ -53,9 +55,11 @@ export function devInbox() {
     apply: "serve",
     configureServer(server) {
       server.middlewares.use("/api", async (req, res, next) => {
-        const m = /^\/lead\/([^/]+)(\/file)?$/.exec(req.url?.split("?")[0] ?? "");
+        const u = new URL(req.url ?? "/", "http://localhost");
+        const m = /^\/lead(\/file)?$/.exec(u.pathname);
         if (!m) return next();
-        const [, id, isFile] = m;
+        const isFile = m[1];
+        const id = u.searchParams.get("id") ?? "";
         if (!ID_OK.test(id)) return rispondi(res, 400, { ok: false, errore: "leadId non valido" });
         const dir = join(RADICE, id);
         if (DELAY) await new Promise((r) => setTimeout(r, DELAY));
@@ -72,9 +76,9 @@ export function devInbox() {
             if (!(file instanceof File)) return rispondi(res, 400, { ok: false, errore: "manca il file" });
             let rel;
             if (kind === "logo") rel = `logo${extname(file.name).toLowerCase() || ".bin"}`;
-            else if (kind === "foto") rel = join("foto", `${String(index).padStart(2, "0")}-${pulisciNome(file.name)}`);
+            else if (kind === "foto") rel = `foto-${String(index).padStart(2, "0")}-${pulisciNome(file.name)}`;
             else return rispondi(res, 400, { ok: false, errore: "kind deve essere foto o logo" });
-            await mkdir(join(dir, "foto"), { recursive: true });
+            await mkdir(dir, { recursive: true });
             await writeFile(join(dir, rel), Buffer.from(await file.arrayBuffer()));
             return rispondi(res, 200, { ok: true, file: rel, bytes: file.size });
           }
