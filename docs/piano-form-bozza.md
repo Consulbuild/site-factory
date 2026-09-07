@@ -1,4 +1,4 @@
-# Piano — Form bozza (`site-intake/`, bozza.consulbuild.com)
+# Piano — Form bozza (`site-intake/`, sito.consulbuild.com)
 
 Piano vivo della scheda. Il piano approvato sta in
 `~/.claude/plans/buzzing-swimming-lightning.md`; qui il decision log, lo stato e i punti
@@ -13,7 +13,7 @@ architettura e comandi, `PRODUCT.md` per il design).
   `site-intake/.dev-inbox/<leadId>/` con lo stesso contratto HTTP che useranno i webhook
   n8n (scheda B); l'import nell'editor è la scheda C.
 - **Progetto Astro dedicato**, statico, zero framework UI, pubblicato come Worker con assets
-  su `bozza.consulbuild.com`. **Caricamento istantaneo** come requisito: budget misurato da
+  su `sito.consulbuild.com`. **Caricamento istantaneo** come requisito: budget misurato da
   `scripts/check-budget.mjs` (HTML+CSS ≤25 KB, JS ≤35 KB, font ≤45 KB, totale ≤110 KB gz).
 - **Web font con personalità**: Atkinson Hyperlegible Next (variabile 200-800, un solo
   file da 33 KB, self-hosted), scelto perché disegnato per chi vede meno bene. Alternativa
@@ -68,7 +68,7 @@ architettura e comandi, `PRODUCT.md` per il design).
 - **Scheda chiusa il 2026-09-07.** File toccati rispetto al piano: tutto dentro
   `site-intake/**` (come previsto), `docs/piano-form-bozza.md`, `docs/handoff-fase-c.md`;
   nessun file fuori perimetro. Fuori scheda, come da piano: webhook n8n e Drive
-  (scheda B), import nell'editor (scheda C), deploy su `bozza.consulbuild.com` (solo su ok
+  (scheda B), import nell'editor (scheda C), deploy su `sito.consulbuild.com` (solo su ok
   di Mattia), test su iPhone reale dentro Instagram, Lighthouse (non eseguito: il gate del
   budget copre i pesi; da lanciare sul sito pubblicato).
 

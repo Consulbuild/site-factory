@@ -2,7 +2,7 @@
 
 Registro del mondo visivo costruito, letto dal codice (`src/styles/*.css`,
 `src/components/*`), non dalle intenzioni. Vale solo per il form
-`bozza.consulbuild.com`; i siti dei clienti hanno il loro standard in
+`sito.consulbuild.com`; i siti dei clienti hanno il loro standard in
 `site-renderer/DESIGN.md`, l'editor in `site-factory-editor/DESIGN-SYSTEM.md`.
 
 ## Il mondo in una frase

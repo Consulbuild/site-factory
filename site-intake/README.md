@@ -1,4 +1,4 @@
-# site-intake — il form bozza (bozza.consulbuild.com)
+# site-intake — il form bozza (sito.consulbuild.com)
 
 Il lead che clicca l'annuncio risponde qui a 21 domande in 7 sezioni e carica foto e
 logo; le risposte alimentano la pipeline Site-factory che produce il suo sito in 48 ore.

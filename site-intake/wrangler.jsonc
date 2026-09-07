@@ -13,5 +13,5 @@
     "not_found_handling": "404-page"
   },
   "workers_dev": true,
-  "routes": [{ "pattern": "bozza.consulbuild.com", "custom_domain": true }]
+  "routes": [{ "pattern": "sito.consulbuild.com", "custom_domain": true }]
 }

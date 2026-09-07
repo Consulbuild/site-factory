@@ -9,7 +9,7 @@ web
 ## Stack
 
 Astro 5 statico + TypeScript senza framework UI, CSS a token, pubblicato come Cloudflare
-Worker con static assets su `bozza.consulbuild.com` (scelta di Mattia, 2026-09-07:
+Worker con static assets su `sito.consulbuild.com` (scelta di Mattia, 2026-09-07:
 progetto dedicato `site-intake/`, caricamento istantaneo come requisito).
 
 ## Users

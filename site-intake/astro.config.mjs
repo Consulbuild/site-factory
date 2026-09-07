@@ -7,7 +7,7 @@ import { devInbox } from "./dev/inbox.mjs";
 // richieste. In `astro dev` il plugin devInbox risponde alle stesse route HTTP
 // che in produzione saranno i webhook n8n (vedi README «Trasporto»).
 export default defineConfig({
-  site: "https://bozza.consulbuild.com",
+  site: "https://sito.consulbuild.com",
   build: { inlineStylesheets: "always" },
   devToolbar: { enabled: false }, // le schermate di prova vanno prese pulite
 
