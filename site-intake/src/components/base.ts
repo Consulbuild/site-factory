@@ -6,6 +6,7 @@
  */
 import type { Domanda, Risposte } from "../data/domande";
 import { icona, type NomeIcona } from "../lib/icone";
+import type { CodaUpload } from "../lib/upload";
 
 export interface Azione {
   testo: string;
@@ -39,6 +40,8 @@ export interface ArgomentiComponente<V = unknown> {
   radice?: HTMLElement;
   /** Il componente può chiedere al motore di andare avanti (es. dopo una scelta singola). */
   avanti?: () => void;
+  /** Coda di caricamento condivisa (foto e logo). */
+  coda?: CodaUpload;
 }
 
 export type Fabbrica<V = unknown> = (arg: ArgomentiComponente<V>) => Componente<V>;

@@ -98,6 +98,9 @@ export function formattaRisposta(d: Domanda, r: Risposte): string {
 export interface ArgomentiRiepilogo {
   risposte: Risposte;
   confermate: string[];
+  /** Foto già arrivate e nome del logo (o «Lo disegnate voi»): vengono dalla coda, non dalle risposte. */
+  foto: number;
+  logo: string | null;
   /** Vai alla domanda (indice nel form) per modificarla, poi torna qui. */
   modifica: (indice: number) => void;
   invia: () => void;
@@ -112,8 +115,9 @@ export interface RiepilogoMontato {
 }
 
 export function montaRiepilogo(a: ArgomentiRiepilogo): RiepilogoMontato {
+  const rigaFile = (d: Domanda): string => (d.id === "foto" ? (a.foto ? `${a.foto} ${a.foto === 1 ? "foto caricata" : "foto caricate"}` : "Nessuna foto (puoi mandarle dopo)") : (a.logo ?? "Nessun logo: lo disegniamo noi"));
   const gruppi = SEZIONI.map((s) => {
-    const righe = DOMANDE.filter((d) => d.sezione === s.n && a.confermate.includes(d.id) && d.id !== "consenso" && d.id !== "foto" && d.id !== "logo");
+    const righe = DOMANDE.filter((d) => d.sezione === s.n && a.confermate.includes(d.id) && d.id !== "consenso");
     if (righe.length === 0) return null;
     return h(
       "section",
@@ -127,7 +131,7 @@ export function montaRiepilogo(a: ArgomentiRiepilogo): RiepilogoMontato {
             "div",
             { class: "riepilogo__riga" },
             h("dt", {}, ETICHETTE[d.id] ?? d.testo),
-            h("dd", {}, formattaRisposta(d, a.risposte)),
+            h("dd", {}, d.id === "foto" || d.id === "logo" ? rigaFile(d) : formattaRisposta(d, a.risposte)),
             h(
               "button",
               { class: "btn btn--ghost btn--sm riepilogo__modifica", type: "button", "aria-label": `Modifica: ${ETICHETTE[d.id] ?? d.testo}`, onclick: () => a.modifica(DOMANDE.indexOf(d)) },

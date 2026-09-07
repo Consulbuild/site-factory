@@ -76,6 +76,91 @@ export async function transizione(
   return nuovo;
 }
 
+/** Il cerchio blu con la «C» del logo: usato nel pannello di attesa e nella rivelazione. */
+const MARCHIO_SVG =
+  '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M42 24a12 12 0 1 0 0 16" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></svg>';
+
+export interface Attesa {
+  aggiorna(testo: string, sotto: string, frazione: number): void;
+  /** L'elemento del logo: centro della rivelazione. */
+  logo: HTMLElement;
+  chiudi(): void;
+}
+
+/**
+ * Pannello di attesa (dal video: il bottone si espande in un pannello bianco con il
+ * logo e le onde). Copre la card sopra il riepilogo mentre finiscono i caricamenti
+ * e parte l'invio.
+ */
+export function mostraAttesa(card: HTMLElement): Attesa {
+  const logo = document.createElement("div");
+  logo.className = "attesa__logo";
+  logo.innerHTML = MARCHIO_SVG;
+  const onde = document.createElement("div");
+  onde.className = "attesa__onde";
+  onde.innerHTML = '<span class="onda"></span><span class="onda"></span><span class="onda"></span>';
+  const testo = document.createElement("p");
+  testo.className = "attesa__testo";
+  const sotto = document.createElement("p");
+  sotto.className = "attesa__sotto";
+  const barra = document.createElement("div");
+  barra.className = "attesa__barra";
+  barra.innerHTML = '<span class="attesa__riempi"></span>';
+  const riempi = barra.firstElementChild as HTMLElement;
+  const el = document.createElement("div");
+  el.className = "attesa";
+  el.setAttribute("role", "status");
+  el.setAttribute("aria-live", "polite");
+  const centro = document.createElement("div");
+  centro.className = "attesa__centro";
+  centro.append(onde, logo);
+  el.append(centro, testo, sotto, barra);
+  card.append(el);
+  void el.offsetWidth;
+  el.classList.add("is-aperta");
+  return {
+    logo,
+    aggiorna(t, s, f) {
+      testo.textContent = t;
+      sotto.textContent = s;
+      riempi.style.setProperty("--p", String(Math.max(0.04, Math.min(1, f))));
+    },
+    chiudi() {
+      el.remove();
+    },
+  };
+}
+
+/**
+ * Rivelazione: un cerchio blu parte dal logo e copre tutto lo schermo (dal video:
+ * il «rovescio»). A metà, `alCulmine` cambia la pagina sotto (card blu, fondo chiaro,
+ * schermata Fatto); poi il cerchio si dissolve. Con reduced-motion: solo il cambio.
+ */
+export async function rivelazione(origine: HTMLElement, alCulmine: () => void): Promise<void> {
+  if (riduciMotion() || durata("--d-reveal") === 0) {
+    alCulmine();
+    return;
+  }
+  const r = origine.getBoundingClientRect();
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+  const raggio = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy));
+  const cerchio = document.createElement("div");
+  cerchio.className = "rivelazione";
+  cerchio.style.left = `${cx}px`;
+  cerchio.style.top = `${cy}px`;
+  cerchio.style.setProperty("--scala", String((raggio * 2) / 20 + 1));
+  document.body.append(cerchio);
+  void cerchio.offsetWidth;
+  cerchio.classList.add("is-aperta");
+  await attendi(durata("--d-reveal") + 30);
+  alCulmine();
+  await attendi(80);
+  cerchio.classList.add("is-sparisce");
+  await attendi(durata("--d-enter") + 30);
+  cerchio.remove();
+}
+
 export function scuoti(el: HTMLElement): void {
   el.classList.remove("is-scossa");
   void el.offsetWidth;

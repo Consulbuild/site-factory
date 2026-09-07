@@ -93,6 +93,9 @@ export interface Risposte {
   esperienza_anni?: { id: string };
   sito_attuale?: string;
   telefono?: string;
+  /** Solo il conteggio: i file e i loro stati stanno nel manifesto della coda (lead.foto). */
+  foto?: number;
+  logo?: { nome?: string; nessuno?: boolean };
   punti_di_forza?: { ids: string[]; altro?: string; certificazioni?: string };
   clienti?: { ids: string[]; altro?: string };
   stile?: string[];

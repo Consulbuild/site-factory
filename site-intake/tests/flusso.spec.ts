@@ -68,7 +68,22 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
   await expect(page.getByText("Bene, il grosso è fatto.")).toBeVisible();
   await expect(page.locator("#progresso-eti")).toHaveText("Sezione 4 di 7");
 
+  // foto: due buone e una piccola, caricate in background; poi il logo
+  await page.locator("#foto-input").setInputFiles([
+    join(process.cwd(), "tests/fixtures/lavoro-1.jpg"),
+    join(process.cwd(), "tests/fixtures/lavoro-2.jpg"),
+    join(process.cwd(), "tests/fixtures/piccola.png"),
+  ]);
+  await expect(page.locator(".foto-voce")).toHaveCount(3);
+  await expect(page.getByText("Una foto è piccola")).toBeVisible();
+  await expect(page.locator(".foto-voce.is-fatto")).toHaveCount(3, { timeout: 15_000 });
+  await expect(page.locator(".foto-contatore")).toHaveText("3 di 15 foto · 3 caricate");
+  await page.locator(".foto-voce", { has: page.locator(".foto-voce__nota") }).getByRole("button", { name: /^Togli/ }).click();
+  await expect(page.locator(".foto-voce")).toHaveCount(2);
   await continua(page, "Hai un logo? Caricalo qui");
+
+  await page.locator("#logo-input").setInputFiles(join(process.cwd(), "tests/fixtures/logo.png"));
+  await expect(page.locator(".logo-anteprima__stato")).toHaveText("Caricato", { timeout: 15_000 });
   await continua(page, "Perché i clienti scelgono te?");
 
   await page.getByText("Un solo referente", { exact: true }).click();
@@ -125,8 +140,10 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
   await continua(page, "Controlla le tue risposte");
 
   // riepilogo: modifica e ritorno
-  await expect(page.locator(".riepilogo__riga")).toHaveCount(18); // 21 domande meno privacy, foto, logo
+  await expect(page.locator(".riepilogo__riga")).toHaveCount(20); // 21 domande meno la privacy
   await expect(page.locator(".riepilogo__riga", { hasText: "Sede" })).toContainText("Via Milano 89, 20093 Cologno Monzese (MI)");
+  await expect(page.locator(".riepilogo__riga", { hasText: "Foto dei lavori" })).toContainText("2 foto caricate");
+  await expect(page.locator(".riepilogo__riga", { hasText: "Logo" })).toContainText("logo.png");
   await page.getByRole("button", { name: "Modifica: Azienda" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Come si chiama la tua azienda?");
   await page.getByRole("textbox").fill("Cavaliere Build S.r.l.s.");
@@ -136,13 +153,20 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
   // invio
   const leadId = await page.evaluate(() => localStorage.getItem("bozza:corrente"));
   await page.getByRole("button", { name: "Voglio vedere il mio sito" }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Il tuo nuovo sito è in lavorazione");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Il tuo nuovo sito è in lavorazione", { timeout: 15_000 });
   await expect(page.locator("#progresso-eti")).toHaveText("Fatto");
+  await expect(page.locator(".card")).toHaveClass(/is-fatto/);
 
   expect(leadId).toBeTruthy();
   const file = join(INBOX, leadId!, "lead.json");
   expect(existsSync(file)).toBe(true);
   const lead = JSON.parse(readFileSync(file, "utf8"));
+  expect(lead.foto).toHaveLength(2);
+  expect(lead.fotoArrivate).toBe(2);
+  expect(lead.logo).toMatchObject({ kind: "logo", nome: "logo.png", stato: "fatto" });
+  expect(existsSync(join(INBOX, leadId!, "foto", "01-lavoro-1.jpg"))).toBe(true);
+  expect(existsSync(join(INBOX, leadId!, "foto", "02-lavoro-2.jpg"))).toBe(true);
+  expect(existsSync(join(INBOX, leadId!, "logo.png"))).toBe(true);
   expect(lead.risposte.azienda).toBe("Cavaliere Build S.r.l.s.");
   expect(lead.risposte.lavori.ids).toEqual(["bagni", "cucine"]);
   expect(lead.risposte.nome_sito.nome).toBe("cavaliere-build");

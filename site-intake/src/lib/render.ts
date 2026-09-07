@@ -8,6 +8,8 @@ import type { Domanda, Risposte, TipoDomanda } from "../data/domande";
 import { sezioneDi } from "../data/domande";
 import { creaColori } from "../components/colori";
 import { creaConsenso } from "../components/consenso";
+import { creaFoto } from "../components/foto";
+import { creaLogo } from "../components/logo";
 import { creaNomeSito } from "../components/nome-sito";
 import { creaPiva } from "../components/piva";
 import { creaPlaceholder } from "../components/placeholder";
@@ -20,6 +22,7 @@ import { creaEmail, creaTelefono, creaTesto } from "../components/testo";
 import { creaZone } from "../components/zone";
 import { h, svgIcona, type Azione, type Componente, type Esito, type Fabbrica } from "../components/base";
 import { scuoti } from "./motion";
+import type { CodaUpload } from "./upload";
 
 // Il valore di ogni componente ha una forma diversa (vedi Risposte in domande.ts):
 // il registro è volutamente non tipizzato sul valore; la forma la garantisce ogni componente.
@@ -36,8 +39,8 @@ const REGISTRO: Record<TipoDomanda, FabbricaQualsiasi> = {
   "nome-sito": creaNomeSito,
   sede: creaSede,
   zone: creaZone,
-  foto: creaPlaceholder, // M3
-  logo: creaPlaceholder, // M3
+  foto: creaFoto,
+  logo: creaLogo,
   stile: creaStile,
   colori: creaColori,
   social: creaSocial,
@@ -62,6 +65,7 @@ export interface ArgomentiMonta {
   /** Passo già nell'HTML statico da adottare (primo caricamento). */
   adotta?: HTMLElement;
   avanti?: () => void;
+  coda?: CodaUpload;
 }
 
 export function montaDomanda(a: ArgomentiMonta): PassoMontato {
@@ -71,7 +75,7 @@ export function montaDomanda(a: ArgomentiMonta): PassoMontato {
   if (a.adotta) {
     // Primo passo: il markup c'è già (index.astro); si aggancia il componente al suo campo.
     const radice = a.adotta.querySelector<HTMLElement>(".passo__campo > *") ?? undefined;
-    const comp = fabbrica({ domanda: a.domanda, risposte: a.risposte, valore: a.valore as never, radice, avanti: a.avanti });
+    const comp = fabbrica({ domanda: a.domanda, risposte: a.risposte, valore: a.valore as never, radice, avanti: a.avanti, coda: a.coda });
     const btnAvanti = a.adotta.querySelector<HTMLButtonElement>(".btn--primario")!;
     const btnIndietro = a.adotta.querySelector<HTMLButtonElement>(".btn--ghost")!;
     const slot = h("div", { class: "passo__esito", "aria-live": "assertive" });
@@ -79,7 +83,7 @@ export function montaDomanda(a: ArgomentiMonta): PassoMontato {
     return { el: a.adotta, comp, btnAvanti, btnIndietro, mostraEsito: creaMostraEsito(slot, a.adotta) };
   }
 
-  const comp = fabbrica({ domanda: a.domanda, risposte: a.risposte, valore: a.valore as never, avanti: a.avanti });
+  const comp = fabbrica({ domanda: a.domanda, risposte: a.risposte, valore: a.valore as never, avanti: a.avanti, coda: a.coda });
   const slot = h("div", { class: "passo__esito", "aria-live": "assertive" });
   const btnIndietro = h("button", { class: "btn btn--ghost", type: "button", hidden: !a.puoIndietro }, svgIcona("sinistra"), "Indietro");
   const btnAvanti = h("button", { class: "btn btn--primario", type: "button" }, "Continua", svgIcona("destra"));

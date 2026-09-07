@@ -1,6 +1,6 @@
 /**
- * Avvio del form: collega motore, render, motion, progresso, tastiera, History e invio.
- * È l'unico modulo che conosce gli id di index.astro.
+ * Avvio del form: collega motore, render, motion, progresso, tastiera, History,
+ * coda di caricamento e invio. È l'unico modulo che conosce gli id di index.astro.
  */
 import { DOMANDE, quotaProgresso, sezioneDi, TOTALE_SEZIONI } from "../data/domande";
 import { MESTIERI } from "../data/tassonomia";
@@ -9,14 +9,16 @@ import { montaRiepilogo, type RiepilogoMontato } from "../components/riepilogo";
 import { annuncia, focusTitolo } from "./a11y";
 import { traccia } from "./analytics";
 import { caricaOAvvia, INDICE_FATTO, INDICE_RIEPILOGO, Motore, type Passo } from "./engine";
-import { transizione } from "./motion";
+import { mostraAttesa, rivelazione, scaglioni, transizione } from "./motion";
 import { montaDomanda, type PassoMontato } from "./render";
 import { ErroreTrasporto, invia, salvaBozza } from "./transport";
+import { CodaUpload } from "./upload";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const stage = $("stage");
 const sipario = $("sipario");
+const card = $("card");
 const etichetta = $("progresso-eti");
 const barra = $("progresso");
 const riempi = $("progresso-riempi");
@@ -24,6 +26,7 @@ const riempi = $("progresso-riempi");
 const url = new URL(location.href);
 const stato = caricaOAvvia(url);
 const motore = new Motore(stato);
+const coda = new CodaUpload(stato.leadId);
 
 // Il mestiere può arrivare dall'annuncio (?mestiere=idraulico o utm_content=idraulico): progresso «dotato».
 if (!motore.risposte.mestiere) {
@@ -81,6 +84,7 @@ function monta(adotta?: HTMLElement): HTMLElement {
       puoIndietro: motore.puoIndietro,
       adotta,
       avanti: () => continua(false),
+      coda,
     });
     corrente.btnAvanti.onclick = () => continua(false);
     corrente.btnIndietro.onclick = () => vai(motore.indice - 1, "indietro");
@@ -97,6 +101,8 @@ function monta(adotta?: HTMLElement): HTMLElement {
     riepilogo = montaRiepilogo({
       risposte: motore.risposte,
       confermate: motore.stato.confermate,
+      foto: coda.di("foto").filter((v) => v.stato === "fatto").length,
+      logo: coda.di("logo")[0]?.nome ?? (motore.risposte.logo?.nessuno ? "Lo disegnate voi" : null),
       puoIndietro: motore.puoIndietro,
       indietro: () => vai(motore.indice - 1, "indietro"),
       modifica: (indice) => {
@@ -150,6 +156,8 @@ function continua(forza: boolean): void {
 
 /** Il lead completo che parte con «Voglio vedere il mio sito». */
 function componiLead() {
+  const foto = coda.manifesto("foto");
+  const logo = coda.manifesto("logo")[0] ?? null;
   return {
     versione: 1,
     formVersione: "v4-2026-09-07",
@@ -157,39 +165,65 @@ function componiLead() {
     iniziatoAt: motore.stato.iniziatoAt,
     inviatoAt: new Date().toISOString(),
     risposte: motore.risposte,
-    foto: [] as unknown[], // M3: manifesto delle foto caricate
-    logo: null as unknown,
+    foto,
+    fotoAttese: foto.length,
+    fotoArrivate: foto.filter((f) => f.stato === "fatto").length,
+    logo,
     origine: motore.stato.origine,
   };
 }
 
+let invioInCorso = false;
+
 async function inviaLead(): Promise<void> {
-  if (!riepilogo || inTransizione) return;
-  const btn = riepilogo.btnInvia;
-  btn.classList.add("is-attesa");
-  btn.setAttribute("aria-busy", "true");
+  if (!riepilogo || inTransizione || invioInCorso) return;
+  invioInCorso = true;
   riepilogo.mostraEsito(null);
-  try {
-    await invia(motore.stato.leadId, componiLead());
-    traccia("invio", { sezione: TOTALE_SEZIONI });
-    motore.chiudi();
-    await vai(INDICE_FATTO, "avanti");
-  } catch (e) {
-    const ripetibile = e instanceof ErroreTrasporto ? e.ripetibile : true;
-    riepilogo.mostraEsito(
-      {
-        ok: false,
-        livello: "blocco",
-        messaggio: ripetibile
-          ? "Non siamo riusciti a inviare le risposte: controlla la connessione e riprova. Le tue risposte sono al sicuro su questo dispositivo."
-          : "Qualcosa non ha funzionato dal nostro lato. Riprova tra un minuto: le tue risposte sono salvate.",
-        azioni: [{ testo: "Riprova", esegui: () => void inviaLead() }],
-      },
+  const attesa = mostraAttesa(card);
+  const aggiorna = () => {
+    const pendenti = coda.attive;
+    attesa.aggiorna(
+      pendenti ? "Stiamo salvando le tue foto…" : "Stiamo salvando le tue risposte…",
+      pendenti ? `${pendenti} ${pendenti === 1 ? "foto ancora in arrivo" : "foto ancora in arrivo"}: non chiudere la pagina.` : "Un momento.",
+      pendenti ? coda.frazioneTotale * 0.9 : 0.95,
     );
+  };
+  const stacca = coda.onCambio(aggiorna);
+  aggiorna();
+  try {
+    await coda.attendiTutto();
+    await invia(motore.stato.leadId, componiLead());
+    attesa.aggiorna("Fatto!", "", 1);
+    traccia("invio", { foto: coda.manifesto("foto").length });
+    motore.chiudi();
+    inTransizione = true;
+    await rivelazione(attesa.logo, () => {
+      document.body.classList.add("is-fatto");
+      card.classList.add("is-fatto");
+      const nuovo = monta();
+      scaglioni(nuovo);
+      stage.replaceChildren(nuovo);
+      nuovo.classList.add("is-entrata");
+      attesa.chiudi();
+      aggiornaProgresso();
+      focusTitolo(nuovo);
+    });
+    inTransizione = false;
+  } catch (e) {
+    attesa.chiudi();
+    const ripetibile = e instanceof ErroreTrasporto ? e.ripetibile : true;
+    riepilogo.mostraEsito({
+      ok: false,
+      livello: "blocco",
+      messaggio: ripetibile
+        ? "Non siamo riusciti a inviare le risposte: controlla la connessione e riprova. Le tue risposte sono al sicuro su questo dispositivo."
+        : "Qualcosa non ha funzionato dal nostro lato. Riprova tra un minuto: le tue risposte sono salvate.",
+      azioni: [{ testo: "Riprova", esegui: () => void inviaLead() }],
+    });
     traccia("errore-invio");
   } finally {
-    btn.classList.remove("is-attesa");
-    btn.removeAttribute("aria-busy");
+    stacca();
+    invioInCorso = false;
   }
 }
 
@@ -199,8 +233,8 @@ if (motore.indice === 0 && statico) {
   monta(statico); // adotta l'HTML già dipinto: niente doppia animazione
 } else {
   const nuovo = monta();
+  scaglioni(nuovo);
   nuovo.classList.add("is-entrata");
-  [...nuovo.children].forEach((c, i) => (c as HTMLElement).style.setProperty("--i", String(i)));
   stage.replaceChildren(nuovo);
 }
 aggiornaProgresso();
@@ -217,9 +251,17 @@ window.addEventListener("popstate", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Enter") return;
   const t = e.target as HTMLElement;
-  if (t instanceof HTMLInputElement && t.type !== "checkbox" && t.type !== "radio" && t.dataset["enter"] !== "ignora") {
+  if (t instanceof HTMLInputElement && t.type !== "checkbox" && t.type !== "radio" && t.type !== "file" && t.dataset["enter"] !== "ignora") {
     e.preventDefault();
     continua(false);
+  }
+});
+
+// Foto ancora in viaggio: avvisa prima di chiudere (il browser mostra il suo dialogo).
+window.addEventListener("beforeunload", (e) => {
+  if (coda.attive > 0 && motore.indice < INDICE_FATTO) {
+    e.preventDefault();
+    e.returnValue = "";
   }
 });
 

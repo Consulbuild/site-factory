@@ -1,0 +1,394 @@
+/*
+  Foto e logo (griglia di miniature con barra per file), pannello di attesa con le
+  onde, rivelazione blu e schermata «Fatto» rovesciata (card blu su fondo chiaro).
+  Token in tokens.css; forme del motion coerenti con motion.css.
+*/
+
+/* ---------- Foto ---------- */
+.foto-azioni {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.foto-azioni label.btn {
+  cursor: pointer;
+}
+.foto-azioni__scatta {
+  display: none;
+}
+@media (hover: none) and (pointer: coarse) {
+  .foto-azioni__scatta {
+    display: inline-flex;
+  }
+}
+.foto-contatore {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.foto-contatore:empty {
+  display: none;
+}
+.foto-griglia {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+.foto-voce {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 1;
+  border-radius: var(--r-chip);
+  overflow: hidden;
+  background: var(--surface-3);
+  animation: entra-su var(--d-base) var(--e-decel) both;
+}
+.foto-voce__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity var(--d-base) var(--e-standard);
+}
+.foto-voce.is-in-coda .foto-voce__img,
+.foto-voce.is-in-corso .foto-voce__img {
+  opacity: 0.55;
+}
+.foto-voce.is-errore .foto-voce__img {
+  opacity: 0.35;
+}
+.foto-voce__segnaposto {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+}
+.foto-voce__segnaposto .icona {
+  width: 28px;
+  height: 28px;
+}
+.foto-voce__barra {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5px;
+  background: rgba(15, 23, 42, 0.25);
+}
+.foto-voce__riempi {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: left center;
+  transform: scaleX(var(--p, 0));
+  transition: transform var(--d-base) linear;
+}
+.foto-voce.is-fatto .foto-voce__barra {
+  opacity: 0;
+  transition: opacity var(--d-base) var(--e-standard);
+}
+.foto-voce__ok {
+  position: absolute;
+  left: var(--s-2);
+  bottom: var(--s-2);
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-pill);
+  background: var(--ok);
+  color: var(--on-accent);
+  display: grid;
+  place-items: center;
+  animation: spunta-in var(--d-base) var(--e-spring) both;
+}
+.foto-voce__ok .icona {
+  width: 14px;
+  height: 14px;
+  stroke-width: 3;
+}
+@keyframes spunta-in {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+}
+.foto-voce__togli {
+  position: absolute;
+  top: var(--s-1);
+  right: var(--s-1);
+  width: var(--tap);
+  height: var(--tap);
+  display: grid;
+  place-items: center;
+  color: var(--on-accent);
+}
+.foto-voce__togli .icona {
+  width: 24px;
+  height: 24px;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: rgba(15, 23, 42, 0.65);
+}
+.foto-voce__riprova {
+  position: absolute;
+  inset: auto var(--s-2) var(--s-3);
+  min-height: 36px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--err);
+  color: var(--on-accent);
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+.foto-voce__nota {
+  position: absolute;
+  top: var(--s-2);
+  left: var(--s-2);
+  padding: 2px var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: 12px;
+  font-weight: 700;
+}
+.foto-messaggi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.foto-messaggi:empty {
+  display: none;
+}
+
+/* ---------- Logo ---------- */
+.logo label.btn {
+  cursor: pointer;
+}
+.logo-anteprima {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  border: var(--border-input) solid var(--line);
+  border-radius: var(--r-choice);
+}
+.logo-anteprima__img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  border-radius: var(--r-chip);
+  background: var(--surface-2);
+  padding: var(--s-2);
+}
+.logo-anteprima__file {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.logo-anteprima__stato {
+  flex: 1 1 120px;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--ink-3);
+}
+.logo-anteprima__stato.is-fatto {
+  color: var(--ok);
+}
+.logo-anteprima__stato.is-errore {
+  color: var(--err);
+}
+.btn.is-scelto {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+/* ---------- Pannello di attesa ---------- */
+.attesa {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-4);
+  padding: var(--card-pad);
+  background: var(--surface);
+  text-align: center;
+  transform: scale(0.3);
+  transform-origin: 50% 90%;
+  opacity: 0;
+  transition:
+    transform var(--d-panel) var(--e-decel),
+    opacity var(--d-fast) var(--e-standard);
+}
+.attesa.is-aperta {
+  transform: none;
+  opacity: 1;
+}
+.attesa__centro {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+  margin-bottom: var(--s-4);
+}
+.attesa__logo {
+  position: relative;
+  z-index: 1;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow-cta);
+  animation: logo-in var(--d-enter) var(--e-spring) both;
+}
+.attesa__logo svg {
+  width: 40px;
+  height: 40px;
+}
+@keyframes logo-in {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+.attesa__onde {
+  position: absolute;
+  inset: 0;
+}
+.onda {
+  position: absolute;
+  inset: 12px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  opacity: 0;
+  animation: onda 2100ms var(--e-decel) infinite;
+}
+.onda:nth-child(2) {
+  animation-delay: 700ms;
+}
+.onda:nth-child(3) {
+  animation-delay: 1400ms;
+}
+@keyframes onda {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+.attesa__testo {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: var(--ls-h1);
+  color: var(--ink);
+  text-wrap: balance;
+}
+.attesa__sotto {
+  font-size: var(--fs-help);
+  color: var(--ink-2);
+  min-height: 1.5em;
+}
+.attesa__barra {
+  width: min(100%, 280px);
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.attesa__riempi {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: left center;
+  transform: scaleX(var(--p, 0.04));
+  transition: transform var(--d-bar) var(--e-standard);
+}
+
+/* ---------- Rivelazione ---------- */
+.rivelazione {
+  position: fixed;
+  z-index: 50;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  transform: scale(1);
+  pointer-events: none;
+  will-change: transform, opacity;
+  transition: transform var(--d-reveal) var(--e-accel);
+}
+.rivelazione.is-aperta {
+  transform: scale(var(--scala, 100));
+}
+.rivelazione.is-sparisce {
+  opacity: 0;
+  transition: opacity var(--d-enter) var(--e-standard);
+}
+
+/* ---------- Fatto: card blu su fondo chiaro ---------- */
+body.is-fatto {
+  background: var(--c-slate-50);
+  color-scheme: light;
+}
+body.is-fatto .piede,
+body.is-fatto .piede a,
+body.is-fatto .binario {
+  color: var(--ink-3);
+}
+.card.is-fatto {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 32px 80px rgba(37, 99, 235, 0.35), 0 2px 10px rgba(2, 6, 23, 0.15);
+}
+.card.is-fatto .marchio,
+.card.is-fatto .marchio b,
+.card.is-fatto .progresso__eti,
+.card.is-fatto .progresso__eti b,
+.card.is-fatto .passo__sezione,
+.card.is-fatto .passo__titolo {
+  color: var(--on-accent);
+}
+.card.is-fatto .progresso__barra {
+  background: rgba(255, 255, 255, 0.25);
+}
+.card.is-fatto .progresso__riempi {
+  background: var(--on-accent);
+}
+.card.is-fatto .passo__aiuto,
+.card.is-fatto .tappa p {
+  color: rgba(255, 255, 255, 0.85);
+}
+.card.is-fatto .tappa__n {
+  background: var(--on-accent);
+  color: var(--accent);
+}
+.card.is-fatto .fatto__nota {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--on-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onda,
+  .attesa__logo,
+  .foto-voce,
+  .foto-voce__ok {
+    animation: none;
+  }
+  .attesa {
+    transform: none;
+    opacity: 1;
+  }
+}
