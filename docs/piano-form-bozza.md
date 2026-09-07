@@ -60,8 +60,11 @@ architettura e comandi, `PRODUCT.md` per il design).
   applicate**: fondo chiaro di «Fatto» anche su `<html>`, card che si accorcia con
   transizione all'invio, primo passo in 680 px (test `390x680-01`), niente etichette
   impilate né eyebrow duplicata, spunta SVG, nomi presi non selezionabili, primo passo
-  statico senza animazione, card «Fatto» a misura e binario sticky. Verdict pass in
-  corso.
+  statico senza animazione, card «Fatto» a misura e binario sticky. Verdict pass: 7
+  risolti, 1 parziale (card «Fatto» stirata a ≥1024 dallo stretch della scena) e una
+  regressione (righe della griglia disuguali a 390) → corretti con `align-self` sulla
+  card finale e `grid-auto-rows: 1fr` con spazi compensati sotto i 430 px; secondo
+  verdict pass sui due punti.
 
 ## Rilievi del detector accettati (2026-09-07)
 

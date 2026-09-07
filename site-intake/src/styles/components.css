@@ -251,6 +251,7 @@
 }
 .scelte--riquadri {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr; /* righe tutte uguali: la più alta detta il ritmo, mai una riga «gobba» */
 }
 .scelte--righe {
   grid-template-columns: 1fr;
@@ -551,22 +552,26 @@ textarea.campo__input {
   }
   .passo {
     padding-top: var(--s-4);
-    gap: var(--s-3);
+    padding-bottom: var(--s-4);
+    gap: var(--s-2);
+  }
+  .passo__aiuto {
+    line-height: var(--lh-snug);
   }
   .scelte {
     gap: var(--s-2);
   }
   .scelte--riquadri .scelta {
-    min-height: 76px;
+    min-height: 72px;
     padding: var(--s-2) var(--s-2);
     gap: var(--s-1);
   }
   .scelta__icona {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
   }
   .passo__azioni {
-    padding-top: var(--s-4);
+    padding-top: var(--s-3);
   }
 }
 
@@ -590,6 +595,11 @@ textarea.campo__input {
   .card {
     width: var(--card-w-desktop);
     min-height: 680px;
+  }
+  /* La card «Fatto» non si stira con la scena: alta quanto il contenuto anche qui. */
+  .card.is-fatto {
+    align-self: flex-start;
+    min-height: 0;
   }
   .binario {
     display: block;
