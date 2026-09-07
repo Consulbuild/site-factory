@@ -113,6 +113,17 @@ Metro: nessuna sequenza di 3+ parole in >2 slot — oggi è un gate deterministi
 (`.claude/skills/copy-critic/scripts/check-slop.mjs`, spawnat da `lib/slop.ts`) eseguito
 automaticamente a ogni run copy, prima del critico.
 
+**Intake lead — ricerca chiusa (2026-09-07, `docs/ricerca-intake-lead-2026-09.md`)**:
+come raccogliere dati e foto del lead dopo il click sull'annuncio. Esito: form
+proprio multi-step su `bozza.consulbuild.com` (Astro + Worker + R2 + Turnstile,
+costo ~0), foto consigliate mai bloccanti, cellulare a un quarto del percorso,
+riepilogo, prenotazione chiamata nella pagina finale; editor fa pull da R2 come
+oggi da Tally (`intake-r2.ts`, stesso contratto di `intake-tally.ts`). Instant
+Form Meta (15 domande, zero upload) e Tally (niente dominio/ripresa/webview)
+scartati con limiti verificati. Prerequisiti e decisioni aperte in §6.5 del doc;
+l'elenco dei campi si decide in una sessione dedicata. Roadmap: scheda Form bozza
+→ scheda Intake R2 → riaccensione annuncio con misurazione per step.
+
 ## Prossime schede (ordine deciso: una per volta, SEMPRE pianificando prima)
 
 1. **Immagini** — multi-fase come il copy (`copyRun` in `lib/steps.ts` è il modello):
