@@ -58,26 +58,32 @@ export async function listSubmissions(apiKey?: string): Promise<TallySubmission[
   return rows.filter((s) => s.id && s.submittedAt);
 }
 
+/** Richiesta non ancora importata: da Tally o dal form sito.consulbuild.com (lib/inbox-form.ts). */
+export type Richiesta = TallySubmission & { fonte: "tally" | "form" };
+
 export interface HomeData {
   clients: import("./clients").ClientSummary[];
-  nonImportati: TallySubmission[];
+  nonImportati: Richiesta[];
   tally: "ok" | "key_mancante" | "errore";
   tallyError?: string;
 }
 
-/** Lista merged disco + Tally, usata sia dalla pagina che dalla API route. */
+/** Lista merged disco + form + Tally, usata sia dalla pagina che dalla API route. */
 export async function getHomeData(): Promise<HomeData> {
   const { listClients } = await import("./clients");
+  const { listLeadsForm } = await import("./inbox-form");
   const clients = listClients();
   const importedIds = new Set(clients.map((c) => c.submissionId).filter(Boolean));
+  // Le richieste del form stanno su disco: si vedono anche se Tally è giù.
+  const dalForm: Richiesta[] = listLeadsForm().filter((s) => !importedIds.has(s.id));
   try {
-    const nonImportati = (await listSubmissions()).filter((s) => !importedIds.has(s.id));
-    return { clients, nonImportati, tally: "ok" };
+    const daTally: Richiesta[] = (await listSubmissions()).filter((s) => !importedIds.has(s.id)).map((s) => ({ ...s, fonte: "tally" }));
+    return { clients, nonImportati: [...dalForm, ...daTally], tally: "ok" };
   } catch (e) {
-    if (e instanceof TallyKeyMissingError) return { clients, nonImportati: [], tally: "key_mancante" };
+    if (e instanceof TallyKeyMissingError) return { clients, nonImportati: dalForm, tally: "key_mancante" };
     return {
       clients,
-      nonImportati: [],
+      nonImportati: dalForm,
       tally: "errore",
       tallyError: e instanceof Error ? e.message : String(e),
     };

@@ -37,6 +37,24 @@ correzioni siano rifiniture, non riscritture.
   conforme allo schema qui sotto. Nessun altro file, nessun output a schermo oltre una
   riga di conferma finale.
 
+### Brief dal form sito.consulbuild.com (`brief.fonte === "form"`, dal 2026-09-07)
+
+Il form a scelte (import in `site-factory-editor/lib/inbox-form.ts`) produce un brief con
+gli stessi campi di Tally più alcuni **campi propri**, che sono verità al pari degli altri:
+- `servizi[]`: i lavori toccati dal cliente, già atomizzati (testi della tassonomia del
+  form o testo libero «altro»). Sono la fonte primaria dei servizi: `settore` qui è solo
+  il mestiere (es. «Ristrutturazioni»).
+- `punti_di_forza[]`: dichiarati dal cliente toccando i riquadri («Un solo referente»,
+  «Certificazioni: SOA OG1»…). Vanno nei punti di forza SOLO questi, ognuno tracciato a
+  `brief.punti_di_forza`.
+- `esperienza_anni`: fascia («<1», «1-3», «4-10», «11-20», «>20»), non un anno di inizio
+  (`anno_inizio` è vuoto): mai dedurre un anno, mai «ventennale» senza la fascia «>20».
+- `dominio_scelto`, `provincia`, `regione`, `origine` (utm dell'annuncio): contesto, non copy.
+- `descrizione`, `azione_principale`, `obiettivi_sito`, `canali_attuali`, `da_evitare`
+  sono **vuoti per costruzione** (il form non li chiede): non inventarli e non segnalarli
+  come mancanti; l'azione principale resta la richiesta di preventivo/contatto di norma.
+- `raw-submission.json` è il `lead.json` del form (risposte con gli id delle scelte).
+
 ## La regola d'oro: prima l'identità (la lezione Cavaliere)
 
 Errore reale già capitato: un'impresa che nel form dichiarava «Costruzioni edili civili

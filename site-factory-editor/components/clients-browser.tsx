@@ -685,7 +685,7 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
       ) : subs.length > 0 || (q && data.nonImportati.length > 0) ? (
         <section>
           <h2 className="text-sm font-semibold text-muted">
-            Dal form Tally (non importati) {q && `· ${subs.length}/${data.nonImportati.length}`}
+            Richieste dal form (non importate) {q && `· ${subs.length}/${data.nonImportati.length}`}
           </h2>
           {subs.length === 0 ? (
             <p className="mt-3 text-sm text-muted">Nessuna richiesta corrisponde alla ricerca.</p>
@@ -696,7 +696,7 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{s.businessName || "(senza nome)"}</div>
                     <div className="mono mt-0.5 truncate text-muted">
-                      {[s.ownerName, formatDate(s.submittedAt), s.phone].filter(Boolean).join(" · ")}
+                      {[s.fonte === "form" ? "sito.consulbuild.com" : "Tally", s.ownerName, formatDate(s.submittedAt), s.phone].filter(Boolean).join(" · ")}
                     </div>
                   </div>
                   <ImportButton submissionId={s.id} />

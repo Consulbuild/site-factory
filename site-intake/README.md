@@ -63,7 +63,11 @@ compare prima del JavaScript. Poi il motore prende il controllo:
 domande; forme in `Risposte`), `foto[]` e `logo` (manifesto della coda: `n`, `nome`,
 `bytes`, `tipo`, `stato`), `fotoAttese`/`fotoArrivate`, `origine` (utm, fbclid, mestiere
 dall'annuncio, user agent). I file: `foto-NN-<nome>`, `logo.<ext>` e `bozza.json`
-(ultimo autosalvataggio) piatti accanto al JSON, nella cartella `<leadId>/`.
+(ultimo autosalvataggio) piatti accanto al JSON, nella cartella `<leadId>/`. Chi lo
+legge: l'editor (`site-factory-editor/lib/inbox-form.ts`, scheda C) dalla cartella Drive
+sincronizzata sul Mac; la mappa `risposte → brief.json` segue le annotazioni `campo:` di
+`src/data/domande.ts` e i testi di `tassonomia.ts` (copia nell'editor, con guardia di
+deriva in `scripts/test-import-form.ts`: se cambi la tassonomia, quel test lo dice).
 
 ### Trasporto (dev = prod)
 

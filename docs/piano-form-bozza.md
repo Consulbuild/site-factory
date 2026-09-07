@@ -104,9 +104,36 @@ scrivono più nel «Mio Drive» → OAuth dell'account agenzia. File toccati ris
 piano: tutti quelli elencati tranne `site-intake/playwright.config.ts` (non serviva: le
 env passano da sole al server di sviluppo).
 
+## Pubblicazione (2026-09-07)
+
+Online su **https://sito.consulbuild.com** (scelta di Mattia: «sito» parla del risultato
+promesso, non del mezzo), Worker `sf-bozza`, build con `PUBLIC_INTAKE_URL` verso n8n,
+record DNS creato da wrangler nella zona Cloudflare.
+
+## Scheda C (2026-09-07): import nell'editor — FATTA
+
+`site-factory-editor/lib/inbox-form.ts`: le richieste complete (con `lead.json`) della
+cartella Drive sincronizzata compaiono in home accanto a quelle Tally (chip
+«sito.consulbuild.com»); «Importa» crea `out/<slug>/` con `brief.json` (mappa
+`risposte → brief`, campi propri `servizi[]`, `punti_di_forza[]`, `esperienza_anni`,
+`dominio_scelto`, `provincia`, `regione`; campi non chiesti dal form vuoti per
+costruzione), `intake.json` (11 slot), `raw-submission.json` (= lead.json),
+`logo.<ext>`, `foto-originali/` (qualità originale) e `img/lavoro-N.jpg` a 1600 px
+via `sips` + `lavori.json` (massimo 12 in Gallery), `client.json`; poi la cartella
+sparisce da `_inbox` (Cestino di Drive). Controllo di sincronizzazione prima di
+scrivere (Drive Desktop può mostrare segnaposto). L'API di import riconosce la fonte
+dall'id (nessuna modifica al pulsante). Scheda «Revisione intake» con le righe nuove.
+Tassonomia: copia dei testi nell'editor (Turbopack non importa fuori radice) con
+guardia di deriva nel banco di prova `scripts/test-import-form.ts`. Skill
+`context-enricher` istruita sui brief dal form. Verificato: banco di prova, build,
+catena reale n8n → Drive → Mac → editor (lista, import, scheda, pulizia).
+Fuori scheda: symlink `out/` → Drive (backup, indipendente da questo import).
+
 ## Punti aperti
 
-1. Deploy su un sottodominio di consulbuild.com (nome da scegliere, solo su ok di Mattia).
-2. Informativa completa del sito da estendere a questo modulo (Mattia con la catena legale).
-3. Test su iPhone reale dentro Instagram (Mattia, con il link pubblicato).
-4. Turnstile, se compare spam (`PUBLIC_TURNSTILE_SITE_KEY` già prevista nel form).
+1. **Link «informativa completa» del form**: punta a consulbuild.site/privacy-policy, sito
+   che Mattia non usa più. Prima di riaccendere l'annuncio va puntato a una pagina valida
+   (es. una pagina privacy su sito.consulbuild.com). Deciso il 2026-09-07 di non toccarlo ora.
+2. Test su iPhone reale dentro Instagram (Mattia, con il link pubblicato).
+3. Turnstile, se compare spam (`PUBLIC_TURNSTILE_SITE_KEY` già prevista nel form).
+4. Symlink `site-renderer/out` → Drive (strategia di backup, memoria `backup-strategia`).

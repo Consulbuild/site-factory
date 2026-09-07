@@ -1,0 +1,46 @@
+{
+  "versione": 1,
+  "formVersione": "v4-2026-09-07",
+  "leadId": "zz-test-form-0001",
+  "iniziatoAt": "2026-09-07T19:16:04.106Z",
+  "inviatoAt": "2026-09-07T19:16:32.198Z",
+  "risposte": {
+    "mestiere": { "id": "ristrutturazioni" },
+    "lavori": { "ids": ["bagni", "cucine", "altro"], "altro": "Piscine" },
+    "azienda": "ZZ Test Form S.r.l.",
+    "nome_sito": { "nome": "zz-test-form", "esito": "sconosciuto" },
+    "sede": {
+      "comune": "Cologno Monzese",
+      "provincia": "MI",
+      "provinciaNome": "Milano",
+      "regione": "Lombardia",
+      "cap": "20093",
+      "via": "Via Milano 89"
+    },
+    "zone": ["Milano e provincia", "Bergamo e provincia"],
+    "esperienza_anni": { "id": "4-10" },
+    "sito_attuale": "",
+    "telefono": "3888937188",
+    "foto": 2,
+    "logo": { "nome": "logo.png" },
+    "punti_di_forza": { "ids": ["referente-unico", "certificazioni"], "certificazioni": "SOA OG1" },
+    "clienti": { "ids": ["privati", "agenzie"] },
+    "stile": ["elegante", "tecnico"],
+    "colori": { "ids": ["oro", "nero"] },
+    "referente": "Mario Rossi",
+    "email": "",
+    "partita_iva": { "valore": "14763170967" },
+    "social": { "instagram": "https://www.instagram.com/zztestform" },
+    "ricontatto": { "id": "whatsapp" },
+    "consenso": true
+  },
+  "foto": [
+    { "n": 1, "kind": "foto", "nome": "Lavoro 1.jpg", "bytes": 11473, "tipo": "image/jpeg", "stato": "fatto" },
+    { "n": 2, "kind": "foto", "nome": "lavoro-2.jpg", "bytes": 11472, "tipo": "image/jpeg", "stato": "fatto" },
+    { "n": 3, "kind": "foto", "nome": "piccola.png", "bytes": 1, "tipo": "image/png", "stato": "errore" }
+  ],
+  "fotoAttese": 3,
+  "fotoArrivate": 2,
+  "logo": { "n": 1, "kind": "logo", "nome": "logo.png", "bytes": 1412, "tipo": "image/png", "stato": "fatto" },
+  "origine": { "utm": { "mestiere": "ristrutturazioni", "utm_source": "test" }, "ua": "test" }
+}

@@ -144,10 +144,17 @@ prova a comando con la chiave dell'editor); credenziale Google OAuth fatta da Ma
 DNS di consulbuild.com spostato su Cloudflare (prerequisito del Worker con dominio
 custom); verifica end-to-end contro n8n vero. Guida: `docs/vps-integrazioni-setup.md`
 §10. Turnstile rimandato (si aggiunge se compare spam).
-Prossime: deploy del form su un sottodominio di consulbuild.com (nome da scegliere;
-build con `PUBLIC_INTAKE_URL`, record DNS creato da wrangler), test su iPhone reale
-dentro Instagram, C = import da `_inbox` nell'editor (prerequisito: symlink `out/` →
-Drive), riaccensione dell'annuncio con misurazione per step.
+**Form ONLINE su https://sito.consulbuild.com** (2026-09-07). **Scheda C FATTA lo
+stesso giorno**: `site-factory-editor/lib/inbox-form.ts` legge la cartella Drive
+sincronizzata, le richieste compaiono in home con quelle Tally, «Importa» crea
+`out/<slug>/` (brief con campi propri del form, intake, raw = lead.json, logo, originali
+in `foto-originali/`, `img/lavoro-N.jpg` a 1600 px + `lavori.json`, client.json) e
+toglie la cartella da `_inbox`; banco di prova `scripts/test-import-form.ts` (con
+guardia di deriva sulla tassonomia del form); skill `context-enricher` istruita sui
+brief dal form. Verificata la catena reale n8n → Drive → Mac → editor. Punti aperti in
+`docs/piano-form-bozza.md`: link dell'informativa completa da ripuntare (consulbuild.site
+non è più in uso) prima di riaccendere l'annuncio, test su iPhone in Instagram, Turnstile
+se serve, symlink `out/` → Drive (backup).
 
 ## Prossime schede (ordine deciso: una per volta, SEMPRE pianificando prima)
 

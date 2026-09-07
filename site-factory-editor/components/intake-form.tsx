@@ -211,6 +211,12 @@ export function IntakeForm({
           <Riga label="Città" campo="citta">
             <input value={str("citta")} onChange={(e) => set("citta", e.target.value)} {...daConfermare(str("citta"))} />
           </Riga>
+          <Riga label="Provincia / regione" hint="Dal form (sigla e regione dell'elenco ISTAT).">
+            <div className="flex gap-3">
+              <input className="mono max-w-20" value={str("provincia")} onChange={(e) => set("provincia", e.target.value)} />
+              <input className="max-w-56" value={str("regione")} onChange={(e) => set("regione", e.target.value)} />
+            </div>
+          </Riga>
           <Riga label="Slug" hint="Identificatore del workspace, non modificabile.">
             <span className="mono text-muted">{slug}</span>
           </Riga>
@@ -219,6 +225,15 @@ export function IntakeForm({
         <Gruppo titolo="Attività">
           <Riga label="Settore / servizi" campo="settore" hint="Testo libero del form: è la fonte primaria dei servizi.">
             <textarea rows={3} value={str("settore")} onChange={(e) => set("settore", e.target.value)} />
+          </Riga>
+          <Riga label="Servizi (dal form)" campo="servizi" hint="Uno per riga: i lavori toccati nel form sito.consulbuild.com.">
+            <textarea rows={4} value={righe("servizi")} onChange={(e) => setRighe("servizi", e.target.value)} />
+          </Riga>
+          <Riga label="Anni di attività" campo="esperienza_anni" hint="Fascia scelta nel form (es. 4-10).">
+            <input className="max-w-32" value={str("esperienza_anni")} onChange={(e) => set("esperienza_anni", e.target.value)} />
+          </Riga>
+          <Riga label="Punti di forza" campo="punti_di_forza" hint="Uno per riga: solo ciò che il cliente ha dichiarato.">
+            <textarea rows={4} value={righe("punti_di_forza")} onChange={(e) => setRighe("punti_di_forza", e.target.value)} />
           </Riga>
           <Riga label="Descrizione" campo="descrizione">
             <textarea rows={3} value={str("descrizione")} onChange={(e) => set("descrizione", e.target.value)} />
@@ -251,6 +266,9 @@ export function IntakeForm({
         </Gruppo>
 
         <Gruppo titolo="Presenza online">
+          <Riga label="Nome sito scelto" campo="dominio_scelto" hint="Dal form: esito della verifica DNS al momento della compilazione, da ricontrollare all'acquisto.">
+            <input className="max-w-80" value={str("dominio_scelto")} onChange={(e) => set("dominio_scelto", e.target.value)} />
+          </Riga>
           <Riga label="Sito attuale" campo="sito_attuale">
             <input className="max-w-64" value={str("sito_attuale")} onChange={(e) => set("sito_attuale", e.target.value)} />
           </Riga>
