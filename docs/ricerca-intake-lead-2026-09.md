@@ -246,9 +246,10 @@ piattaforma (Zuko 93 M sessioni, Typeform, Formstack), [C] case study di vendor.
    obbligatori sono la categoria con ~60% di abbandono [B]; ogni campo obbligatorio
    non spiegato è fonte di abbandono [R]; il webview Instagram è fragile (§3). Su
    iPhone l'input file converte HEIC in JPEG da solo; l'HEIC arriva quasi solo da
-   Android o dalla scelta «File». Ridimensionare lato client a ≤2000 px JPEG 0,8
-   (300-600 KB a foto) rende l'upload 5-10× più veloce; caricare mentre l'utente
-   prosegue, con miniatura, barra per foto e retry.
+   Android o dalla scelta «File». Il ridimensionamento lato client renderebbe
+   l'upload 5-10× più veloce, ma la decisione finale (storage doc, §2 bis) è
+   caricare gli originali e nascondere il tempo chiedendo le foto a metà form:
+   caricare mentre l'utente prosegue, con miniatura, barra per foto e retry.
 7. **Marcare obbligatorio E opzionale, validare all'uscita dal campo, errori sotto il
    campo.** Solo il 14% dei siti marca entrambi; quando si marcano solo gli opzionali
    il 32% incappa in errori [R]. Niente label dentro il campo, niente campi spezzati,
@@ -330,7 +331,7 @@ Su desktop stessa sequenza in una card centrata con mockup più grande.
 | 5 | Cosa ti distingue | Punti di forza (chips: garanzia, sopralluogo gratuito, preventivo in 24 h, certificazioni…); 1-2 aperte (storia, cosa dicono i clienti) | chips sì | Textarea con hint microfono |
 | 6 | Clienti e promesse | Tipo clienti; cosa NON promettere; bonus/incentivi trattati; quando vorresti partire | sì | Chips; alimenta `promesse_vietate`; qualificazione |
 | 7 | Stile | Tono e atmosfera a scelte visuali (mappabili sul preset), colori se esistono | sì | Card A/B, niente testo |
-| 8 | Foto e logo | Logo; 3-15 foto dei lavori; per foto «che lavoro è?» | **no**, ma con copy «senza foto la bozza avrà la gallery vuota; le aggiungiamo appena ce le mandi» | Input file nativo `multiple accept="image/*"` senza `capture`; resize canvas; upload in background con miniatura e barra; chip dal servizio scelto in §1 (diventa `caption` di `lavori.json`) |
+| 8 | Foto e logo (**da spostare subito dopo il cellulare, §4**, così l'upload corre in background durante le domande seguenti) | Logo; fino a 15 foto dei lavori in qualità originale, «le 10-15 migliori»; per foto «che lavoro è?» | **no**, ma con copy «senza foto la bozza avrà la gallery vuota; le aggiungiamo appena ce le mandi» | Input file nativo `multiple accept="image/jpeg,image/png,image/webp"` (mai `image/*`: su iPhone fa arrivare HEIC) senza `capture`; nessuna compressione; upload in background con miniatura e barra; avviso se la foto è sotto i 1200 px; chip dal servizio scelto in §1 (diventa `caption` di `lavori.json`) |
 | 9 | Recapiti sul sito | Telefono pubblico (= §4, modificabile), email, social, orari | tel sì | Handle IG/FB solo testo |
 | 10 | Controlla e invia | Riepilogo per sezione con «Modifica»; informativa breve (skill `informativa-breve-form`) | | Submit disabilitato dopo il tap |
 | 11 | Fatto | Timeline (oggi → bozza in 48 h → chiamata 15'); prenota lo slot; «vuoi aggiungere foto? rispondi al messaggio» | | |
@@ -338,10 +339,11 @@ Su desktop stessa sequenza in una card centrata con mockup più grande.
 ### 6.4 Architettura tecnica (minima)
 
 > Aggiornamento dello stesso giorno: la parte «foto e loghi» è stata rifatta in
-> `docs/ricerca-storage-foto-lead-2026-09.md`. Esito: con la compressione lato
-> client un lead pesa 2-25 MB, e la destinazione raccomandata è **Google Drive
-> dell'agenzia via n8n** (cartella `_inbox`, import nell'editor dal filesystem),
-> non R2. R2, Backblaze B2 e Hetzner Object Storage restano alternative se si
+> `docs/ricerca-storage-foto-lead-2026-09.md`. Esito (deciso da Mattia): foto in
+> **qualità originale, nessuna compressione sul telefono, massimo 15 foto**,
+> chieste a metà form con upload in background; destinazione **Google Drive
+> dell'agenzia via n8n** (cartella `_inbox`, import nell'editor dal filesystem,
+> versioni a 1600 px prodotte dal Mac come oggi), non R2. R2, Backblaze B2 e Hetzner Object Storage restano alternative se si
 > vorrà disaccoppiare l'upload dal VPS. Le righe su R2 qui sotto valgono come
 > variante, non come scelta.
 
