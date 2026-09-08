@@ -1,0 +1,222 @@
+---
+/**
+ * Informativa privacy COMPLETA (secondo livello, art. 13 GDPR) a cui rinvia
+ * l'informativa breve del modulo. Fonte e note: legale/informativa-completa.md
+ * (aggiornare i due insieme). Stessa scena visiva del form: card chiara sul navy.
+ * Il layout Base mette già noindex su tutto il sito.
+ */
+import Base from "../layouts/Base.astro";
+import { TITOLARE } from "../data/privacy";
+
+const DATA = "08/09/2026";
+---
+
+<Base
+  titolo="Informativa sulla privacy · ConsulBuild"
+  descrizione="Come ConsulBuild tratta i dati inviati tramite il modulo per la demo del sito."
+>
+  <div class="pagina">
+    <main class="scena">
+      <article class="card doc">
+        <header class="card__testata">
+          <a class="marchio" href="/" aria-label="Torna al modulo">CONSUL<b>BUILD</b></a>
+          <a class="doc__torna" href="/">← Torna al modulo</a>
+        </header>
+
+        <div class="doc__corpo">
+          <p class="doc__eyebrow">Informativa sul trattamento dei dati personali</p>
+          <h1 class="doc__titolo">Cosa facciamo con i dati che ci mandi</h1>
+          <p class="doc__lead">
+            Informativa completa ai sensi dell'art. 13 del Regolamento (UE) 2016/679 (GDPR)
+            per chi compila il modulo su sito.consulbuild.com. Aggiornata al {DATA}.
+          </p>
+
+          <h2>1. Titolare del trattamento</h2>
+          <p>
+            <strong>{TITOLARE.denominazione}</strong>, {TITOLARE.sede}, P.IVA {TITOLARE.piva}, e-mail
+            <a href={`mailto:${TITOLARE.email}`}>{TITOLARE.email}</a>. Non è stato nominato un Responsabile
+            della protezione dei dati (DPO). Per qualsiasi richiesta sul trattamento puoi scrivere a
+            questo indirizzo.
+          </p>
+
+          <h2>2. Perché trattiamo i tuoi dati e su quale base</h2>
+          <ol>
+            <li>
+              <strong>Preparare la versione dimostrativa (demo) del tuo nuovo sito</strong> con i dati,
+              le foto dei lavori e il logo che ci fornisci — art. 6, par. 1, lett. b) GDPR (misure
+              precontrattuali adottate su tua richiesta).
+            </li>
+            <li>
+              <strong>Ricontattarti</strong> con la modalità che hai scelto (WhatsApp o telefonata) per
+              mostrarti la demo e darti riscontro — art. 6, par. 1, lett. b) GDPR.
+            </li>
+            <li>
+              <strong>Se attivi il servizio</strong>: gestione del rapporto contrattuale, pubblicazione e
+              manutenzione del sito, fatturazione e adempimenti fiscali e contabili — art. 6, par. 1,
+              lett. b) e lett. c) GDPR.
+            </li>
+          </ol>
+          <p>
+            Per inviare il modulo <strong>non serve alcun consenso</strong>: la casella finale è una presa
+            visione di questa informativa. Non facciamo marketing né newsletter con i tuoi dati.
+          </p>
+
+          <h2>3. Quali dati trattiamo</h2>
+          <ul>
+            <li>dati identificativi del referente (nome e cognome);</li>
+            <li>dati di contatto (cellulare, e-mail, eventuali pagine social dell'azienda);</li>
+            <li>
+              dati dell'azienda (denominazione, Partita IVA, sede, zone servite, anni di attività,
+              mestiere e lavori svolti, punti di forza, tipologia di clienti);
+            </li>
+            <li>immagini (fino a 15 foto dei lavori svolti e il logo, se li carichi);</li>
+            <li>preferenze sul sito (nome del sito desiderato, stile, colori, eventuale sito attuale);</li>
+            <li>
+              dati tecnici e di provenienza della richiesta (parametri della campagna pubblicitaria da
+              cui arrivi al modulo, tipo di browser e dispositivo).
+            </li>
+          </ul>
+          <p>
+            Il conferimento è facoltativo, ma i campi contrassegnati come obbligatori sono necessari per
+            darti seguito: senza, non possiamo preparare la demo. Non trattiamo dati particolari (art. 9
+            GDPR).
+          </p>
+
+          <h2>4. A chi possono essere comunicati</h2>
+          <ul>
+            <li>al Titolare e ai suoi eventuali collaboratori autorizzati;</li>
+            <li><strong>Google</strong> (Google Workspace / Google Drive): conservazione dei dati e dei file inviati;</li>
+            <li>
+              <strong>Hetzner Online GmbH</strong> (Germania): server nell'Unione Europea su cui il Titolare
+              gestisce la ricezione e lo smistamento automatico delle richieste;
+            </li>
+            <li>
+              <strong>Cloudflare, Inc.</strong>: pubblicazione del modulo e dei siti dimostrativi, rete di
+              distribuzione dei contenuti e sicurezza;
+            </li>
+            <li>
+              <strong>Anthropic, PBC</strong>: servizi di intelligenza artificiale usati dal Titolare per
+              redigere i testi e organizzare i contenuti del sito dimostrativo a partire dai dati forniti;
+            </li>
+            <li>
+              se attivi il servizio: commercialista e consulenti del Titolare, istituti di pagamento,
+              fornitori del dominio internet.
+            </li>
+          </ul>
+          <p>
+            Questi soggetti operano come responsabili del trattamento (art. 28 GDPR) o come autonomi
+            titolari. I tuoi dati non vengono diffusi.
+          </p>
+
+          <h2>5. Trasferimenti fuori dall'Unione Europea</h2>
+          <p>
+            Google, Cloudflare e Anthropic hanno sede negli Stati Uniti. I trasferimenti avvengono sulla
+            base della decisione di adeguatezza della Commissione europea del 10 luglio 2023 (EU-US Data
+            Privacy Framework, art. 45 GDPR) per i fornitori che vi aderiscono e, in ogni caso, delle
+            clausole contrattuali standard (art. 46, par. 2, lett. c) GDPR).
+          </p>
+
+          <h2>6. Per quanto tempo conserviamo i dati</h2>
+          <p>
+            <strong>Se non attivi il servizio</strong>, dati e file (foto e logo) vengono cancellati
+            automaticamente entro 60 giorni dall'invio del modulo. <strong>Se lo attivi</strong>, li
+            conserviamo per tutta la durata del rapporto e poi per i termini previsti dalla legge per la
+            documentazione fiscale e contabile (10 anni, art. 2220 c.c.). Decorsi i termini, i dati
+            vengono cancellati o resi anonimi.
+          </p>
+
+          <h2>7. I tuoi diritti</h2>
+          <p>
+            Puoi chiedere l'accesso ai dati (art. 15), la rettifica (art. 16), la cancellazione (art. 17),
+            la limitazione del trattamento (art. 18), la portabilità (art. 20) e opporti al trattamento
+            (art. 21) scrivendo a <a href={`mailto:${TITOLARE.email}`}>{TITOLARE.email}</a>. Rispondiamo
+            entro un mese, prorogabile di due mesi per richieste complesse (art. 12, par. 3 GDPR). Puoi
+            inoltre proporre reclamo al Garante per la protezione dei dati personali (art. 77 GDPR):
+            <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">www.garanteprivacy.it</a>,
+            garante@gpdp.it, Piazza Venezia 11, 00187 Roma.
+          </p>
+
+          <p class="doc__data">
+            Informativa aggiornata al {DATA} ai sensi del Reg. (UE) 2016/679 (GDPR) e del D.Lgs. 196/2003
+            come modificato dal D.Lgs. 101/2018.
+          </p>
+        </div>
+      </article>
+    </main>
+    <footer class="piede">
+      <a href="/">Torna al modulo</a>
+    </footer>
+  </div>
+</Base>
+
+<style>
+  /* Documento: la card del form rilassata per la lettura lunga (solo token). */
+  .doc {
+    min-height: 0;
+    width: min(100%, var(--card-w-tablet));
+  }
+  .doc__torna {
+    font-size: var(--fs-small);
+    color: var(--ink-2);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .doc__torna:hover {
+    color: var(--accent);
+  }
+  .doc__corpo {
+    padding: var(--s-6) var(--card-pad) var(--s-8);
+    max-width: 68ch;
+  }
+  .doc__eyebrow {
+    margin: 0 0 var(--s-2);
+    font-size: var(--fs-eyebrow);
+    font-weight: 700;
+    letter-spacing: var(--ls-eyebrow);
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .doc__titolo {
+    margin: 0 0 var(--s-3);
+    font-size: var(--fs-h1);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--ls-h1);
+    font-weight: 800;
+  }
+  .doc__lead {
+    margin: 0 0 var(--s-6);
+    font-size: var(--fs-help);
+    color: var(--ink-2);
+  }
+  .doc h2 {
+    margin: var(--s-7) 0 var(--s-2);
+    font-size: var(--fs-body);
+    line-height: var(--lh-snug);
+    font-weight: 700;
+  }
+  .doc p,
+  .doc li {
+    font-size: var(--fs-help);
+    line-height: var(--lh-body);
+    color: var(--ink);
+  }
+  .doc p {
+    margin: 0 0 var(--s-3);
+  }
+  .doc ul,
+  .doc ol {
+    margin: 0 0 var(--s-3);
+    padding-left: var(--s-5);
+  }
+  .doc li + li {
+    margin-top: var(--s-1);
+  }
+  .doc a {
+    color: var(--accent);
+  }
+  .doc__data {
+    margin-top: var(--s-6);
+    font-size: var(--fs-small);
+    color: var(--ink-3);
+  }
+</style>

@@ -30,7 +30,8 @@ trattamento), contattabile a consulbuildev@gmail.com.
 > n8n su server UE, Cloudflare) e confermare per quelli USA la certificazione EU-US Data
 > Privacy Framework o le SCC.]
 
-Informativa completa: https://www.consulbuild.site/privacy-policy
+Informativa completa: https://sito.consulbuild.com/privacy (dal 2026-09-08; prima puntava al
+sito dismesso consulbuild.site — vedi informativa-completa.md)
 
 *Informativa aggiornata al 07/09/2026 ai sensi del Reg. (UE) 2016/679 (GDPR).*
 

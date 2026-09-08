@@ -6,9 +6,10 @@
  * consenso richiesto per inviare il modulo, solo presa visione.
  *
  * Per aggiornarla: modificare legale/informativa-breve.md, rilanciare validate.py,
- * riportare qui il testo. Il secondo livello (informativa completa) è sul sito.
+ * riportare qui il testo. Il secondo livello (informativa completa) è la pagina
+ * /privacy di questo stesso sito (src/pages/privacy.astro, fonte legale/informativa-completa.md).
  */
-export const INFORMATIVA_ESTESA_URL = "https://www.consulbuild.site/privacy-policy";
+export const INFORMATIVA_ESTESA_URL = "https://sito.consulbuild.com/privacy";
 export const INFORMATIVA_DATA = "07/09/2026";
 
 export const TITOLARE = {
