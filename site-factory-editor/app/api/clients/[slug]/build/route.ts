@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
 import { clientDir } from "@/lib/paths";
-import { readClientState, patchClientState } from "@/lib/clients";
+import { patchClientState } from "@/lib/clients";
 import { setPreviewRoot } from "@/lib/preview";
+import { confermaBuild, rispostaConferma } from "@/lib/conferme";
 
 export const dynamic = "force-dynamic";
 
@@ -35,21 +36,8 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
   }
 
   if (action === "confirm") {
-    const build = readClientState(slug).steps.build;
-    if (build.stato !== "da_verificare") {
-      return NextResponse.json({ error: `build in stato «${build.stato}»: nulla da confermare` }, { status: 409 });
-    }
-    if (build.partial) {
-      return NextResponse.json(
-        { error: "l'ultima build è PARZIALE (segnaposto del blueprint): si conferma solo una build completa" },
-        { status: 409 },
-      );
-    }
-    patchClientState(slug, (s) => {
-      s.steps.build.stato = "verificato";
-      delete s.steps.build.errore;
-    });
-    return NextResponse.json({ ok: true });
+    const { body: out, status } = rispostaConferma(confermaBuild(slug));
+    return NextResponse.json(status === 200 ? { ok: true } : out, { status });
   }
 
   if (action === "domain") {

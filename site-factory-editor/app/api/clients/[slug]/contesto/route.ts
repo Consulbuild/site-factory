@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "node:fs";
 import { clientDir } from "@/lib/paths";
-import { ContestoSchema, checkCopertura } from "@/lib/schemas";
-import { writeContesto, patchClientState, readContesto } from "@/lib/clients";
+import { ContestoSchema } from "@/lib/schemas";
+import { writeContesto, patchClientState } from "@/lib/clients";
+import { confermaContesto, rispostaConferma } from "@/lib/conferme";
 
 export const dynamic = "force-dynamic";
 
@@ -33,21 +34,10 @@ export async function PUT(req: NextRequest, ctx: { params: Promise<{ slug: strin
   return NextResponse.json({ ok: true });
 }
 
-/** Conferma il contesto: gate di copertura deterministico, poi verificato. */
+/** Conferma umana del contesto (gate di copertura + side effect in lib/conferme.ts). */
 export async function POST(_req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
   const { slug } = await ctx.params;
   if (!ensureClient(slug)) return NextResponse.json({ error: "cliente non trovato" }, { status: 404 });
-
-  const contesto = readContesto(slug);
-  if (!contesto) return NextResponse.json({ error: "contesto assente o non valido" }, { status: 404 });
-
-  const problemi = checkCopertura(contesto);
-  if (problemi.length) {
-    return NextResponse.json({ error: "copertura incompleta", problemi }, { status: 422 });
-  }
-  writeContesto(slug, { ...contesto, verificato: true });
-  const client = patchClientState(slug, (s) => {
-    s.steps.contesto.stato = "verificato";
-  });
-  return NextResponse.json({ ok: true, client });
+  const { body, status } = rispostaConferma(confermaContesto(slug));
+  return NextResponse.json(body, { status });
 }

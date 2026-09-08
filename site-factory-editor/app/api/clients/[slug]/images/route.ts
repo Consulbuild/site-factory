@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "node:fs";
-import path from "node:path";
 import { clientDir } from "@/lib/paths";
-import { readImagesTrace, patchClientState, writeJson } from "@/lib/clients";
-import { writeImagesTrace, validateImagesTrace, deriveImagesArtifact } from "@/lib/images";
-import { computeUpstream } from "@/lib/staleness";
+import { readImagesTrace, patchClientState } from "@/lib/clients";
+import { writeImagesTrace } from "@/lib/images";
+import { confermaImages, rispostaConferma } from "@/lib/conferme";
 
 export const dynamic = "force-dynamic";
-
-const IMAGES_UPSTREAM = ["contesto.json", "copy.json", "palette.json"];
 
 function ensureClient(slug: string): string | null {
   let dir: string;
@@ -54,25 +51,10 @@ export async function PUT(req: NextRequest, ctx: { params: Promise<{ slug: strin
   return NextResponse.json({ ok: true });
 }
 
-/**
- * Conferma umana: rivalida il set contro il manifest, DERIVA images.json
- * (artifact flat per l'assembler — mai scritto dal modello), poi verificato
- * + snapshot upstream.
- */
+/** Conferma umana delle immagini (rivalida il set, deriva images.json — lib/conferme.ts). */
 export async function POST(_req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
   const { slug } = await ctx.params;
-  const dir = ensureClient(slug);
-  if (!dir) return NextResponse.json({ error: "cliente non trovato" }, { status: 404 });
-
-  const errors = validateImagesTrace(slug);
-  if (errors.length) {
-    return NextResponse.json({ error: "set immagini non conforme al manifest", errors }, { status: 422 });
-  }
-  writeJson(path.join(dir, "images.json"), deriveImagesArtifact(slug));
-  const client = patchClientState(slug, (s) => {
-    s.steps.images.stato = "verificato";
-    delete s.steps.images.errore;
-    s.steps.images.upstream = computeUpstream(slug, IMAGES_UPSTREAM);
-  });
-  return NextResponse.json({ ok: true, client });
+  if (!ensureClient(slug)) return NextResponse.json({ error: "cliente non trovato" }, { status: 404 });
+  const { body, status } = rispostaConferma(confermaImages(slug));
+  return NextResponse.json(body, { status });
 }

@@ -75,11 +75,13 @@ export function readClientState(slug: string): ClientState {
         stato: contestoOk?.success ? (contestoOk.data.verificato ? "verificato" : "da_verificare") : "assente",
       },
       palette: { stato: "assente" },
+      logo: { stato: "assente" },
       copy: { stato: "assente" },
       images: { stato: "assente" },
       legale: { stato: "assente" },
       build: { stato: "assente" },
     },
+    percorso: "completo",
   });
 }
 

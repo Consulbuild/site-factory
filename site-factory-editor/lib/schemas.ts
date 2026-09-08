@@ -23,10 +23,13 @@ export const ClientStateSchema = z.object({
   importedAt: z.string(),
   updatedAt: z.string(),
   steps: z.object({
-    intake: z.object({ stato: StatoIntake }),
+    // autoConferma: lo step è stato confermato dalla catena automatica (lib/catena.ts),
+    // non da un umano: la verifica umana avviene una volta, sulla demo finita.
+    intake: z.object({ stato: StatoIntake, autoConferma: z.boolean().optional() }),
     contesto: z.object({
       stato: StatoStep,
       errore: z.string().optional(),
+      autoConferma: z.boolean().optional(),
       // Provenienza: valori dei campi-fonte del brief all'ultimo allineamento
       // del contesto (generazione/riallineamento/dismiss). Serve a rilevare il drift.
       fonte: z.record(z.string(), z.string()).optional(),
@@ -41,8 +44,19 @@ export const ClientStateSchema = z.object({
       .object({
         stato: StatoStep,
         errore: z.string().optional(),
+        autoConferma: z.boolean().optional(),
         // Hash degli artifact a monte all'ultima generazione/conferma
         // (lib/staleness.ts): se divergono → banner "a monte è cambiato".
+        upstream: z.record(z.string(), z.string()).optional(),
+        ultimaRun: UltimaRun,
+      })
+      .default({ stato: "assente" }),
+    // Simbolo del logo generato (logo-designer) quando il cliente non ne fornisce uno.
+    logo: z
+      .object({
+        stato: StatoStep,
+        errore: z.string().optional(),
+        autoConferma: z.boolean().optional(),
         upstream: z.record(z.string(), z.string()).optional(),
         ultimaRun: UltimaRun,
       })
@@ -51,6 +65,7 @@ export const ClientStateSchema = z.object({
       .object({
         stato: StatoStep,
         errore: z.string().optional(),
+        autoConferma: z.boolean().optional(),
         upstream: z.record(z.string(), z.string()).optional(),
         // Estratto per-campo del contesto all'ultimo allineamento (hash dei
         // campi chiave): permette all'update-mode di dire COSA è cambiato.
@@ -62,6 +77,7 @@ export const ClientStateSchema = z.object({
       .object({
         stato: StatoStep,
         errore: z.string().optional(),
+        autoConferma: z.boolean().optional(),
         upstream: z.record(z.string(), z.string()).optional(),
         ultimaRun: UltimaRun,
       })
@@ -70,6 +86,7 @@ export const ClientStateSchema = z.object({
       .object({
         stato: StatoStep,
         errore: z.string().optional(),
+        autoConferma: z.boolean().optional(),
         upstream: z.record(z.string(), z.string()).optional(),
         // Estratto per-area del brief (identità / sede e foro / recapiti):
         // l'update-mode rigenera SOLO i documenti delle aree cambiate.
@@ -81,9 +98,12 @@ export const ClientStateSchema = z.object({
       .object({
         stato: StatoStep,
         errore: z.string().optional(),
+        autoConferma: z.boolean().optional(),
         upstream: z.record(z.string(), z.string()).optional(),
         /** true = ultima build con --partial (segnaposto del blueprint): mai confermabile/pubblicabile. */
         partial: z.boolean().optional(),
+        /** true = build per la demo (meta robots noindex su tutte le pagine): pubblicabile SOLO come demo. */
+        noindex: z.boolean().optional(),
         builtAt: z.string().optional(),
         pages: z.number().optional(),
         sizeKb: z.number().optional(),
@@ -126,6 +146,39 @@ export const ClientStateSchema = z.object({
       })
       .default({ stato: "assente" }),
   }),
+  // Ciclo di vita (decisione 2026-09-08): ogni lead del form nasce in «demo»
+  // (sito completo senza legale/servizi, su <nome>.demo.consulbuild.com);
+  // «completo» = si è abbonato (o sviluppo diretto): legale + dominio + deploy.
+  // I client.json precedenti non hanno la chiave → «completo» (erano già siti veri).
+  percorso: z.enum(["demo", "completo"]).default("completo"),
+  // Catena automatica (lib/catena.ts): stato persistito per l'hub, il run vero
+  // sta nel bus. "ferma" = intervento umano richiesto sul passo indicato.
+  catena: z
+    .object({
+      stato: z.enum(["in_coda", "in_corso", "attesa_limite", "ferma", "demo_pronta", "completata"]),
+      passo: z.string().optional(),
+      errore: z.string().optional(),
+      avviataAt: z.string(),
+      finitaAt: z.string().optional(),
+      /** Solo attesa_limite: quando la catena riproverà il passo. */
+      riprovaAlle: z.string().optional(),
+    })
+    .optional(),
+  // Demo pubblicata sul worker separato <slug>-demo (lib/deploy.ts deployDemo).
+  demo: z
+    .object({
+      host: z.string(),
+      workerName: z.string(),
+      url: z.string(),
+      pubblicataAt: z.string(),
+      /** pubblicataAt + 15 giorni: oltre, il sweep spegne il worker (lib/demo-sweep.ts). */
+      scadenza: z.string(),
+      spentaAt: z.string().optional(),
+      /** true = «Il cliente si è abbonato»: la scadenza non conta più. */
+      congelata: z.boolean().optional(),
+      errore: z.string().optional(),
+    })
+    .optional(),
 });
 export type ClientState = z.infer<typeof ClientStateSchema>;
 
