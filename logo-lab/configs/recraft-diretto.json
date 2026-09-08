@@ -1,0 +1,22 @@
+{
+  "nome": "diretto",
+  "_": "Isola la leva Recraft: niente agente, stesso soggetto, N seed per ogni stile. Recraft accetta substyle SOLO con il suo style: i valori-oggetto della matrice si fondono in «recraft». Soggetto = settore di Cavaliere (edilizia/ristrutturazioni).",
+  "cliente": "cavaliere-build-srls",
+  "modo": "diretto",
+  "recraft": {
+    "prompt": "stylized trowel and plumb line forming a single bold mark for a construction and renovation company",
+    "varianti": 3,
+    "model": "recraftv3_vector"
+  },
+  "matrice": {
+    "recraft": [
+      { "nome": "nessuno-stile" },
+      { "style": "icon", "substyle": "offset_fill" },
+      { "style": "icon", "substyle": "outline" },
+      { "style": "vector_illustration", "substyle": "roundish_flat" },
+      { "style": "vector_illustration", "substyle": "bold_stroke" }
+    ]
+  },
+  "critico": { "model": "claude-opus-4-8", "effort": "high", "prompt": "prompts/critico-v1.md" },
+  "parallelo": 2
+}

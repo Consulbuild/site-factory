@@ -1,0 +1,23 @@
+{
+  "nome": "rif",
+  "_": "Verso il bersaglio di logo-lab/riferimenti: mascotte/emblema a 2-3 colori piatti, colori imposti a Recraft (controls.colors = primary + accent + bianco), NIENTE appiattimento monocromo, formula tecnica riscritta per l'illustrazione. Matrice: 3 soggetti × 2 stili.",
+  "cliente": "cavaliere-build-srls",
+  "modo": "diretto",
+  "recraft": {
+    "varianti": 3,
+    "model": "recraftv3_vector",
+    "colors": ["#1a160f", "#8a6d15", "#ffffff"],
+    "keepColors": true,
+    "technical": "flat vector logo mascot, bold clean outlines, 3 flat colors only (near-black, gold, white), compact closed silhouette, no gradients, no shadows, no 3d, no text, no letters, white background, professional brand mark style"
+  },
+  "matrice": {
+    "recraft": [
+      { "nome": "cavaliere", "prompt": "armored medieval knight bust with plumed helmet holding a small house in front of his chest, logo mascot for a construction company" },
+      { "nome": "casa", "prompt": "stylized house and building silhouette combined with construction lines and a roof, two-tone geometric emblem for a building and renovation company" },
+      { "nome": "elmetto", "prompt": "friendly round smiling face wearing a yellow construction hard hat, cartoon mascot emblem for a renovation company" }
+    ],
+    "recraft.style": [null, "vector_illustration"]
+  },
+  "critico": { "model": "claude-opus-4-8", "effort": "high", "prompt": "prompts/critico-v2.md" },
+  "parallelo": 2
+}

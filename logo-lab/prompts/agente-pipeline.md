@@ -1,0 +1,9 @@
+Usa la skill logo-designer per il cliente «{{slug}}» in MODALITÀ PIPELINE: nessun checkpoint umano, scegli TU la variante migliore e motiva scelta e scarti nel trace.
+Input: {{base}}/contesto.json (servizi reali, settore, identità — il soggetto viene da qui) e {{base}}/palette.json (primary {{primary}}).
+REGOLA SUI COMANDI (i permessi bloccano tutto il resto): ogni comando Bash deve iniziare ESATTAMENTE con `{{script}}` — la cwd è già la root del repo e node è già nel PATH. NIENTE `cd`, NIENTE `export PATH`, niente `&&`, niente percorso assoluto al binario node, niente `--version`: un comando diverso viene rifiutato e non va ritentato. Ignora l'intestazione «Uso (da site-renderer/)» dello script: qui si lancia dalla root con il percorso site-renderer/scripts/….
+1) Genera 6 varianti, una per comando, con seed diversi e lo stesso soggetto: `{{script}} --prompt "<soggetto + formula tecnica della skill>" --color "{{primary}}" --out {{base}}/logo/mark-N.svg` con N da 1 a 6 (lo script scrive anche mark-N-dark.svg).
+2) Applica l'auto-scarto della skill (lista nera dei cliché, colori residui, dettagli che spariscono a 32px) leggendo gli SVG.
+3) Scegli UNA variante sopravvissuta con i criteri della skill (punto 4, modalità pipeline).
+4) Materializza il kit finale alla RADICE del workspace col ricoloro offline: `{{script}} --recolor {{base}}/logo/mark-N.svg --color "{{primary}}" --out {{base}}/mark.svg` (produce mark.svg e mark-dark.svg) e `{{script}} --recolor {{base}}/logo/mark-N.svg --color "{{primary}}" --out {{base}}/favicon.svg`.
+5) Scrivi {{base}}/logo-trace.json: {"prompt": "…", "model": "…", "scelta": "logo/mark-N.svg", "motivo": "…", "varianti": [{"file": "logo/mark-N.svg", "esito": "scelta" | "scartata", "motivo": "…"}, …]} (tutte e 6).
+Nessun altro file. Chiudi con UNA riga: la variante scelta e perché.

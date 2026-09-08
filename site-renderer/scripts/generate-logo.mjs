@@ -4,7 +4,7 @@
 //
 // Uso (da site-renderer/, RECRAFT_API_KEY in env o in .env):
 //   node scripts/generate-logo.mjs --prompt "<soggetto>" --color "#90711c" --out out/x/logo/mark-1.svg
-//     [--model recraftv3_vector] [--substyle icon]     # default: recraftv3_vector
+//     [--model recraftv3_vector] [--style icon --substyle outline]   # default: recraftv3_vector, nessuno style
 //   node scripts/generate-logo.mjs --recolor <file.svg> --color "#90711c" --out <out.svg>
 //     # solo ricoloro (niente API): utile per varianti dark e per testare il ricoloro
 //
@@ -23,6 +23,17 @@ const out = flag("--out");
 const recolorSrc = flag("--recolor");
 const model = flag("--model") ?? "recraftv3_vector";
 const substyle = flag("--substyle");
+// --style: Recraft accetta un substyle SOLO insieme al suo style (es. style
+// "icon" + substyle "outline"; style "vector_illustration" + "line_art").
+// Senza --style, i modelli non-vector usano vector_illustration come prima.
+const style = flag("--style");
+// --colors "#hex,#hex,…": palette imposta a Recraft (controls.colors) — il modello
+// genera già nei colori di marca. --keep-colors: NON appiattire al monocromo,
+// tenere i colori generati (solo lo sfondo a tutta tela viene tolto); la
+// variante -dark è allora una copia (i mark a 2–3 colori con un neutro chiaro
+// reggono da soli sul fondo scuro, come i riferimenti in logo-lab/riferimenti).
+const colors = (flag("--colors") ?? "").split(",").map((c) => c.trim()).filter(Boolean);
+const keepColors = args.includes("--keep-colors");
 
 if (!out || !color || (!prompt && !recolorSrc)) {
   console.error('uso: generate-logo.mjs (--prompt "…" | --recolor file.svg) --color "#rrggbb" --out mark.svg [--model …] [--substyle …]');
@@ -69,8 +80,15 @@ function recolor(svg, hex) {
 }
 function writeKit(svg, outPath, hex) {
   mkdirSync(dirname(outPath) || ".", { recursive: true });
-  writeFileSync(outPath, recolor(svg, hex));
   const dark = outPath.replace(/\.svg$/, "-dark.svg");
+  if (keepColors) {
+    const pulito = stripBackground(svg);
+    writeFileSync(outPath, pulito);
+    writeFileSync(dark, pulito);
+    console.log(`OK — ${outPath} (colori generati conservati) + ${dark} (copia)`);
+    return;
+  }
+  writeFileSync(outPath, recolor(svg, hex));
   writeFileSync(dark, recolor(svg, "#ffffff"));
   console.log(`OK — ${outPath} (su ${hex}) + ${dark} (variante per sezioni scure)`);
 }
@@ -98,11 +116,16 @@ non dà diritti commerciali sugli output — mai usarlo per loghi di clienti).`)
 // Guardrail anti-slop nel prompt, sempre appesi al soggetto (vedi SKILL.md logo-designer).
 const TECHNICAL = "flat vector pictogram, single solid dark color on white background, bold geometric shapes, clean silhouette, no gradients, no shadows, no 3d, no letters, no text, no words";
 
+// --technical "…" sostituisce la formula (stringa vuota = nessuna coda): serve
+// al banco logo-lab per provare formule diverse senza toccare lo script.
+const technical = flag("--technical") ?? TECHNICAL;
+const hexToRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 const body = {
-  prompt: `${prompt}, ${TECHNICAL}`,
+  prompt: technical ? `${prompt}, ${technical}` : prompt,
   model,
+  ...(colors.length ? { controls: { colors: colors.map((c) => ({ rgb: hexToRgb(c) })) } } : {}),
   ...(substyle ? { substyle } : {}),
-  ...(model.includes("vector") ? {} : { style: "vector_illustration" }),
+  ...(style ? { style } : model.includes("vector") ? {} : { style: "vector_illustration" }),
 };
 
 const res = await fetch("https://external.api.recraft.ai/v1/images/generations", {

@@ -1,0 +1,10 @@
+{
+  "nome": "base",
+  "_": "Replica ESATTA dello step logo della pipeline (steps.ts, 2026-09-08): stesso prompt, stessa skill (tool Skill), stesso claude -p opus-4-8/xhigh, Recraft di default. È la baseline: ogni altra config cambia UNA leva.",
+  "cliente": "cavaliere-build-srls",
+  "modo": "agente",
+  "agente": { "model": "claude-opus-4-8", "effort": "xhigh", "prompt": "prompts/agente-pipeline.md", "skill": null, "maxTurns": 60 },
+  "recraft": { "model": null, "substyle": null },
+  "critico": { "model": "claude-opus-4-8", "effort": "high", "prompt": "prompts/critico-v1.md" },
+  "parallelo": 2
+}
