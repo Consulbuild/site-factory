@@ -326,8 +326,11 @@ risposta immediata insieme a nodi Respond to Webhook):
 - `PATCH bozza/lead?id=` autosalvataggio → `bozza.json` (creato o aggiornato);
 - `POST bozza/lead/file?id=` multipart `{kind: foto|logo, index, file}` →
   `foto-NN-<nome>` o `logo.<ext>`; risponde 200 solo a file salvato;
-- `POST bozza/lead?id=` → `lead.json`, poi Telegram «Nuova richiesta di sito: cartella
-  <id> (N foto, logo sì/no)» — id e conteggi, mai dati del lead (server extra-UE).
+- `POST bozza/lead?id=` → `lead.json`, poi Telegram «🆕 Nuova richiesta di sito» con
+  azienda, referente, mestiere, sede, telefono (e canale preferito), foto e logo.
+  Decisione Mattia 2026-09-08: l'avviso deve
+  bastare per lavorarci, quindi contiene i dati del lead (eccezione consapevole alla
+  regola «mai dati del lead su Telegram», che resta per i lead dei siti clienti).
 
 Catena: **Prepara** (Code: riconosce la route da `$prevNode.name`, controlla id
 `^[a-z0-9-]{8,64}$`, kind, index 1-15, MIME `image/*`, peso ≤ 26 MiB dal binario
