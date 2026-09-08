@@ -108,7 +108,9 @@ tuo compito è spezzarla in voci atomiche e raggrupparle — così il copywriter
 struttura già fatta e verificata dall'umano, invece di rifarla a valle dove l'errore
 costa di più.
 
-1. **Atomizza**: estrai da `settore` + `descrizione` + `azione_principale` OGNI servizio
+1. **Atomizza**: estrai da `settore` + `descrizione` + `azione_principale` (col form
+   sito.consulbuild.com questi due sono VUOTI: allora da `servizi[]`, `punti_di_forza`,
+   `cliente_tipo` e `clienti` — mai inventare ciò che il form non ha chiesto) OGNI servizio
    dichiarato come **voce atomica singola**. Spezza le stringhe composte:
    «Ristrutturazione bagni e cucine» → `Ristrutturazione bagni` + `Ristrutturazione cucine`;
    «Intonaci, rasature e tinteggiature» → tre voci. Non perdere nulla, non aggiungere
@@ -296,9 +298,11 @@ Procedura in modalità aggiornamento:
    toccare — e NON toccare nient'altro:
    - `settore` (o servizi) → `settore_normalizzato`, `sottosettore`, `servizi_atomizzati`,
      `macro_categorie`, e a cascata `identita`, `punti_di_forza`, `promesse`.
-   - `descrizione` → `identita`, `sottosettore`, `zona.area_intervento`, `punti_di_forza`.
+   - `descrizione` → `identita`, `sottosettore`, `zona.area_intervento`, `punti_di_forza`
+     (se vuota: `servizi[]` + `punti_di_forza` fanno lo stesso lavoro).
    - `cliente_tipo` → `identita` (canale distintivo), `target.descrizione`.
-   - `azione_principale` → `promesse_consentite`, `promessa_martello`.
+   - `azione_principale` → `promesse_consentite`, `promessa_martello` (se vuota: la
+     promessa nasce dai `punti_di_forza` dichiarati e dalla norma di settore).
    - `area_geografica` → `zona.area_intervento`.
    - `anno di inizio` → `promesse_vietate` (esperienza/anni).
 3. **Preserva la curatela umana**: i servizi che l'operatore ha aggiunto/rinominato/spostato

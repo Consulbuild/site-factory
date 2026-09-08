@@ -57,6 +57,27 @@ test di robustezza superati (sf-errori → Telegram, reboot del VPS → tutto ri
 da solo); Uptime Kuma eliminato. **Resta**: Conferma umana del legale di Cavaliere
 nella scheda.
 
+**Modalità demo (2026-09-08, piano `~/.claude/plans/1-principalmente-si-ma-luminous-sifakis.md`)**:
+Tally rimosso (form `sito.consulbuild.com` unica sorgente, `lib/home-data.ts`);
+conferme degli step condivise in `lib/conferme.ts`; `client.json` con `percorso`
+demo|completo, `catena`, `demo`, step `logo`, `build.noindex`; step `logo`
+(logo-designer in modalità pipeline, kit alla radice del workspace); catena
+automatica `lib/catena.ts` (coda a 2, riprendibile, verdetti dei critici,
+limite Max → attesa/riprova); demo su worker `<slug>-demo` +
+`<nome>.demo.consulbuild.com` (`deployDemo`/`spegniDemo`/`prorogaDemo`), build
+`NOINDEX` (Base.astro), sweep orario delle scadenze (`instrumentation.ts`,
+`POST /api/demo/sweep {dryRun}`); UI: card Catena nell'hub, home, riga Logo con
+varianti (`DESIGN-BRIEF.md`). Informativa completa del form su
+`sito.consulbuild.com/privacy` (**deploy del worker sf-bozza dopo l'ok di
+Mattia**). Provato E2E su `zz-test-demo` (copia di Costruzioni): logo step
+reale (7′, 6 varianti), catena → demo_pronta, «Pubblica demo» dalla UI →
+host con TLS in ~4′, sweep. **Aperti**: `generate-logo.mjs` ricolora il
+rettangolo di sfondo di Recraft (il mark esce come quadrato pieno — Cavaliere
+in produzione usa un `mark.png` fatto a mano): fix strutturale = scartare il
+primo path a tutta tela, fuori perimetro del piano; `scripts/test-demo.ts`
+(banco per `demoScaduta`/`etichettaDemo`) bloccato dallo scope-guard; link
+del marchio nel form (`index.astro:49`) ancora a consulbuild.site.
+
 **Piano 2 — report mensile al rinnovo (2026-09-06, piano in
 `~/.claude/plans/…zesty-swan.md` §Piano 2)**: Stripe è l'orologio (`invoice.upcoming`
 3 giorni prima, Stripe Trigger in n8n) → `sf-report-rinnovo` riconosce il cliente nel

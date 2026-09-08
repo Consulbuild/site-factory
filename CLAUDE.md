@@ -279,9 +279,24 @@ tassonomia sezioni). Regole operative nei componenti:
     cache in memoria (`lib/cache.ts`) e stato per fonte (mai uno «0» a fonte giù);
     banco di prova `scripts/test-portafoglio.ts`. Niente avvisi flottanti: la card
     rossa col nome è l'avviso.
-  - Parti successive: immagini (multi-fase prompter→critic, key BFL), build
-    (deterministico: assemble → validate → `SITE_JSON=… astro build` + preview),
-    poi deploy Workers.
+  - **Parte 6 — modalità demo fatta** (2026-09-08, piano
+    `~/.claude/plans/1-principalmente-si-ma-luminous-sifakis.md`, memoria
+    `demo-mode-decisioni`): ogni lead del form `sito.consulbuild.com` (unica
+    sorgente: **Tally eliminato**) nasce in `percorso: "demo"`. **Catena
+    automatica** (`lib/catena.ts`): contesto → palette → logo (solo se manca,
+    step `logo` = skill logo-designer in modalità pipeline) → copy (3 round di
+    critico) → alt foto lavori → immagini → build `noindex` → «demo pronta»;
+    nessun checkpoint umano (conferme condivise in `lib/conferme.ts`,
+    `steps.<k>.autoConferma`), si ferma al primo critico FAIL/errore,
+    idempotente («Riprendi»), coda a 2 con priorità completo > demo, attesa
+    e riprova sul limite del piano Max. Mattia verifica UNA volta e pubblica:
+    worker separato `<slug>-demo` su `<nome-sito>.demo.consulbuild.com`
+    (`lib/deploy.ts deployDemo`), scadenza 15 gg spenta dal sweep orario
+    (`instrumentation.ts` → `lib/demo-sweep.ts`, solo `wrangler delete
+    <slug>-demo`, mai un abbonato/dominio). «Il cliente si è abbonato» →
+    percorso completo → legale → dominio → build reale → deploy → demo
+    spenta. UI: card «Catena» nell'hub (unica primaria in demo), home con
+    «Avvia demo» + «Importa soltanto», riga Logo con varianti.
 
 ## Servizi del VPS (n8n, Umami, Gatus, Brevo, Stripe) — dal 2026-09-05
 

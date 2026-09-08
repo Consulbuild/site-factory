@@ -703,7 +703,7 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
                       </span>
                       <span className="w-28 text-sm">
                         {!dominio ? (
-                          demo && <span className="text-faint">anteprima</span>
+                          demoAccesa(c) ? <span className="text-faint">demo</span> : demo && <span className="text-faint">anteprima</span>
                         ) : caricamento ? (
                           <Skeleton className="w-16" />
                         ) : !fonteOk("gatus") ? (

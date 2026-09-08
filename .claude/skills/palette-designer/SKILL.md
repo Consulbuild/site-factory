@@ -14,6 +14,7 @@ Non emetti CSS. Produci il blocco `brand` di `site.json`: il **preset** + la **p
 - **Fonte primaria: `out/<slug>/contesto.json`** — il contesto distillato e VERIFICATO dall'umano. Da lì:
   - `settore_normalizzato` + `sottosettore` → la riga della tabella preset (sotto);
   - `tono.registro` + `tono.da_evitare` → orientano l'estetica (es. "istituzionale" ↛ vita);
+    `da_evitare` è spesso vuoto (il form sito.consulbuild.com non lo chiede): non dedurlo;
   - `materiali.colori` → i colori indicati dal cliente: sono la BASE della palette (scurire del
     minimo necessario se falliscono AA, mai sostituire la tinta con una tua).
 - Fonte secondaria: `out/<slug>/brief.json` (verbatim del form, per dettagli non distillati).
