@@ -132,6 +132,9 @@ export interface ClientSummary {
   importedAt: string;
   updatedAt: string;
   steps: ClientState["steps"];
+  percorso: ClientState["percorso"];
+  catena?: ClientState["catena"];
+  demo?: ClientState["demo"];
   flagsCount: number;
 }
 
@@ -157,10 +160,22 @@ export function listClients(): ClientSummary[] {
       importedAt: state.importedAt,
       updatedAt: state.updatedAt,
       steps: state.steps,
+      percorso: state.percorso,
+      ...(state.catena ? { catena: state.catena } : {}),
+      ...(state.demo ? { demo: state.demo } : {}),
       flagsCount: brief?._da_verificare?.length ?? 0,
     });
   }
   return clients.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+/** intake.json (slot flat del blueprint) — null se assente o illeggibile. */
+export function readIntake(slug: string): Intake | null {
+  return readJson<Intake>(path.join(clientDir(slug), "intake.json"));
+}
+
+export function writeIntake(slug: string, intake: Intake): void {
+  writeJson(path.join(clientDir(slug), "intake.json"), intake);
 }
 
 /** Bundle completo per la pagina cliente. */

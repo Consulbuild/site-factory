@@ -66,12 +66,30 @@ export type Portafoglio = {
 export type ClienteMin = {
   slug: string;
   steps?: { build?: { deploy?: { url?: string; dominio?: string } } };
+  percorso?: "demo" | "completo";
+  demo?: { url?: string; scadenza?: string; spentaAt?: string; congelata?: boolean };
 };
+
+/**
+ * Demo da spegnere (lib/demo-sweep.ts): accesa, scaduta, non congelata, cliente
+ * ancora in percorso demo e senza dominio pubblicato. Tutto locale e puro: il
+ * controllo Stripe (abbonamento attivo) lo aggiunge il sweep come ultima rete.
+ */
+export const demoScaduta = (c: ClienteMin, ora = Date.now()): boolean =>
+  !!c.demo &&
+  !c.demo.spentaAt &&
+  !c.demo.congelata &&
+  c.percorso !== "completo" &&
+  !dominioDi(c) &&
+  !!c.demo.scadenza &&
+  Date.parse(c.demo.scadenza) <= ora;
 
 export const dominioDi = (c: ClienteMin): string | null => c.steps?.build?.deploy?.dominio ?? null;
 
-/** Demo = pubblicato su workers.dev senza dominio: il cliente non si è ancora abbonato. */
-export const isDemo = (c: ClienteMin): boolean => !!c.steps?.build?.deploy?.url && !dominioDi(c);
+/** Demo = demo accesa su <nome>.demo.consulbuild.com (o, storico, workers.dev senza
+ *  dominio): il cliente non si è ancora abbonato. */
+export const isDemo = (c: ClienteMin): boolean =>
+  !dominioDi(c) && ((!!c.demo && !c.demo.spentaAt) || !!c.steps?.build?.deploy?.url);
 
 /** Da sviluppare = sito non ancora pubblicato con dominio (in lavorazione o demo),
  *  a prescindere dal pagamento: un cliente che paga già e non ha il sito è il

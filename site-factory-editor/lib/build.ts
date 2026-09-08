@@ -167,7 +167,11 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
   // Il sito pubblicato riceve statistiche senza cookie e modulo reale come env
   // di build (stesso meccanismo di SITE_URL): infrastruttura dell'agenzia, mai
   // site.json. Senza dominio (demo, anteprime) il sito resta demo.
-  const dominio = readClientState(slug).steps.build.dominio;
+  const statoCliente = readClientState(slug);
+  const dominio = statoCliente.steps.build.dominio;
+  // Percorso demo: meta robots noindex su tutte le pagine (Base.astro legge
+  // NOINDEX); la build resta pubblicabile SOLO come demo (deploy.ts).
+  const noindex = statoCliente.percorso === "demo";
   let integrazioni: { umamiWebsiteId: string; formAction: string } | null = null;
   if (dominio && !partial) {
     yield { type: "phase", label: "integrazioni (Umami, modulo)" };
@@ -201,6 +205,7 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
     cwd: SITE_RENDERER,
     env: {
       SITE_JSON: siteJson,
+      ...(noindex ? { NOINDEX: "1" } : {}),
       ...(dominio ? { SITE_URL: `https://${dominio}` } : {}),
       ...(integrazioni
         ? { UMAMI_HOST, UMAMI_WEBSITE_ID: integrazioni.umamiWebsiteId, FORM_ACTION: integrazioni.formAction }
@@ -222,6 +227,8 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
     s.steps.build.builtAt = new Date().toISOString();
     s.steps.build.pages = pages;
     s.steps.build.sizeKb = sizeKb;
+    if (noindex) s.steps.build.noindex = true;
+    else delete s.steps.build.noindex;
     // Con quale SITE_URL è uscita QUESTA build: il deploy confronta col
     // dominio corrente e richiede il rebuild se nel frattempo è cambiato.
     if (dominio) s.steps.build.siteUrl = `https://${dominio}`;
@@ -234,7 +241,7 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
   });
   yield {
     type: "text",
-    text: `build ok — ${pages} pagine, ${sizeKb} KB${partial ? " (parziale)" : ""}${integrazioni ? " · integrazioni attive" : ""}`,
+    text: `build ok — ${pages} pagine, ${sizeKb} KB${partial ? " (parziale)" : ""}${noindex ? " · noindex (demo)" : ""}${integrazioni ? " · integrazioni attive" : ""}`,
   };
   return { ok: true };
 }

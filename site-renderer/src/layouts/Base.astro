@@ -8,7 +8,9 @@ interface Props {
   pageTitle?: string; // sottopagine (legali, grazie): "Titolo · NomeAzienda"
   noindex?: boolean; // sottopagine di servizio fuori dai motori
 }
-const { site, pageTitle, noindex = false } = Astro.props;
+// NOINDEX=1 (env di build, come UMAMI_*): tutto il sito fuori dai motori — è la
+// build demo dell'editor (lib/build.ts), pubblicata su <nome>.demo.consulbuild.com.
+const { site, pageTitle, noindex = !!process.env.NOINDEX } = Astro.props;
 const { brand, meta } = site;
 const preset = brand.preset as Preset;
 
