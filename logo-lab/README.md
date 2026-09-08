@@ -45,6 +45,33 @@ I riferimenti del bersaglio (loghi che vogliamo raggiungere) sono descritti in
 `riferimenti/README.md`: mettere lì le immagini con i nomi indicati e il critico v2
 le guarda.
 
+## Confronto tra servizi (iterazione 2: lockup completo, simbolo + nome)
+
+Recraft è scartato (Mattia, 2026-09-08). `genera.mjs` genera un lockup raster PNG
+con lo stesso prompt (`prompts/logo-lockup.md`, placeholder `{{nome}} {{settore}}
+{{soggetto}} {{primary}} {{accent}}`) su 4 servizi: `bfl` (FLUX.2 pro/max, chiave
+già presente), `openai` (gpt-image-1, il servizio dei riferimenti), `gemini`
+(gemini-2.5-flash-image), `ideogram` (v3). Config `configs/servizi.json`
+(matrice servizio × soggetto), critico `prompts/critico-v3-lockup.md` (testo esatto,
+tipografia, simbolo, colore, composizione, scalabilità). Le chiavi mancanti si
+aggiungono al Keychain:
+
+```bash
+security add-generic-password -s site-factory -a OPENAI_API_KEY -w '<chiave>'
+security add-generic-password -s site-factory -a GEMINI_API_KEY -w '<chiave>'
+security add-generic-password -s site-factory -a IDEOGRAM_API_KEY -w '<chiave>'
+```
+
+**Risultato FLUX.2 pro** (2 soggetti × 2 seed, ~$0.03 l'uno, 9 s): PASS su entrambi i
+soggetti. Testo perfetto in 4/4 (nome esatto, niente lettere storpiate). Il
+cavaliere con la casa (mark-1) è al livello del riferimento Cavaliere Build:
+13/14 dal critico, unico appunto l'oro con leggere sfumature metalliche invece
+che piatto. L'emblema-monogramma è coeso ma lascia il nastro vuoto (slot da
+template) e a 16 px è troppo denso. Per integrarlo in pipeline mancano: sfondo
+trasparente/ritaglio del lockup (o prompt su fondo bianco + rimozione), separazione
+simbolo/nome per favicon e header, eventuale vettorizzazione. Gli altri tre
+servizi restano da provare quando ci sono le chiavi.
+
 ## Risultati (2026-09-08, iterazione 1)
 
 Sei run su Cavaliere Build (primary `#1a160f`, accent `#8a6d15`). Vedi `runs/index.html`.

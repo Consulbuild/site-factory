@@ -1,0 +1,19 @@
+{
+  "nome": "servizi",
+  "_": "Confronto dei servizi di generazione con LO STESSO prompt (prompts/logo-lockup.md: simbolo + nome azienda, 3 colori, stile dei riferimenti). Output raster PNG. Matrice servizio × soggetto, 2 seed ciascuno. Chiavi nel Keychain: BFL_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY, IDEOGRAM_API_KEY.",
+  "cliente": "cavaliere-build-srls",
+  "modo": "diretto",
+  "recraft": {
+    "varianti": 2,
+    "promptFile": "prompts/logo-lockup.md"
+  },
+  "matrice": {
+    "recraft.servizio": ["bfl", "openai", "gemini", "ideogram"],
+    "recraft": [
+      { "nome": "cavaliere", "soggetto": "an armored knight bust with a plumed helmet holding a small stylized house in front of his chest (mascot with character)" },
+      { "nome": "emblema", "soggetto": "a badge emblem: stylized house roof over the bold monogram of the company initials, with a ribbon banner below, thin oval frame" }
+    ]
+  },
+  "critico": { "model": "claude-opus-4-8", "effort": "high", "prompt": "prompts/critico-v3-lockup.md" },
+  "parallelo": 4
+}

@@ -101,19 +101,24 @@ function preparaWorkspace(cfg, ws) {
   const cl = cfg.cliente;
   if (typeof cl === "string") {
     // slug reale in site-renderer/out: stessi input della pipeline
-    for (const f of ["contesto.json", "palette.json"]) {
+    for (const f of ["contesto.json", "palette.json", "intake.json"]) {
       const src = join(OUT, cl, f);
       if (!existsSync(src)) throw new Error(`cliente «${cl}»: manca ${src}`);
       copyFileSync(src, join(ws, f));
     }
     const pal = leggiJson(join(ws, "palette.json"));
-    return { slug: cl, primary: pal["brand.palette.primary"] };
+    const intake = leggiJson(join(ws, "intake.json"), {});
+    const ctx = leggiJson(join(ws, "contesto.json"), {});
+    // nome del lockup: ragione sociale senza la forma giuridica (come nei riferimenti)
+    const nome = String(intake["meta.businessName"] ?? cl).replace(/\s+(s\.?r\.?l\.?s?\.?|s\.?p\.?a\.?|s\.?n\.?c\.?|s\.?a\.?s\.?)$/i, "").trim().toUpperCase();
+    return { slug: cl, primary: pal["brand.palette.primary"], accent: pal["brand.palette.accent"] ?? pal["brand.palette.primary"], nome, settore: ctx.settore_normalizzato ?? intake["meta.industry"] ?? "" };
   }
-  // cliente sintetico: {slug, primary, contesto: <path a un contesto.json>}
+  // cliente sintetico: {slug, nome, settore, primary, accent, contesto: <path a un contesto.json>}
   copyFileSync(trova(cl.contesto), join(ws, "contesto.json"));
   const primary = cl.primary ?? DEFAULT_PRIMARY;
-  writeFileSync(join(ws, "palette.json"), JSON.stringify({ "brand.preset": "meridian", "brand.palette.primary": primary, "brand.palette.accent": primary }, null, 2));
-  return { slug: cl.slug ?? "cliente-test", primary };
+  const accent = cl.accent ?? primary;
+  writeFileSync(join(ws, "palette.json"), JSON.stringify({ "brand.preset": "meridian", "brand.palette.primary": primary, "brand.palette.accent": accent }, null, 2));
+  return { slug: cl.slug ?? "cliente-test", primary, accent, nome: (cl.nome ?? cl.slug ?? "CLIENTE TEST").toUpperCase(), settore: cl.settore ?? "" };
 }
 
 // Leve Recraft della config → flag di generate-logo.mjs (stessi in modo diretto e agente).
@@ -191,28 +196,40 @@ async function eseguiAgente(cfg, dir, ws, slug, primary, log) {
 /* ---------------- modo diretto: solo Recraft, niente agente ---------------- */
 // Isola la variabile Recraft (modello/substyle/prompt) dall'agente: lo stesso
 // soggetto, N seed, e il kit si materializza sulla prima variante.
-async function eseguiDiretto(cfg, dir, ws, primary, log) {
+// Con `recraft.servizio` (bfl|openai|gemini|ideogram) genera invece un lockup
+// raster PNG via genera.mjs; il prompt viene da `promptFile` (template con
+// {{nome}} {{settore}} {{soggetto}} {{primary}} {{accent}}) o da `prompt`.
+async function eseguiDiretto(cfg, dir, ws, cliente, log) {
   const r = cfg.recraft ?? {};
-  if (!r.prompt) throw new Error("modo diretto: serve recraft.prompt (il soggetto)");
+  const { primary } = cliente;
+  let prompt = r.prompt;
+  if (r.promptFile) {
+    prompt = readFileSync(trova(r.promptFile), "utf8").trim();
+    for (const [k, v] of Object.entries({ ...cliente, soggetto: r.soggetto ?? "" })) prompt = prompt.replaceAll(`{{${k}}}`, String(v));
+  }
+  if (!prompt) throw new Error("modo diretto: serve recraft.prompt o recraft.promptFile");
+  writeFileSync(join(dir, "prompt-generazione.txt"), prompt);
   const n = r.varianti ?? 6;
-  const flags = flagsRecraft(r);
+  const ext = r.servizio ? "png" : "svg";
   const t0 = Date.now();
   const esiti = [];
-  // sequenziale: in parallelo Recraft rifiuta parte delle richieste
+  // sequenziale: in parallelo i servizi rifiutano parte delle richieste
   for (let i = 1; i <= n; i++) {
-    const out = join(ws, "logo", `mark-${i}.svg`);
-    const res = await sh("node", [SCRIPT, "--prompt", r.prompt, "--color", primary, "--out", out, ...flags]);
+    const out = join(ws, "logo", `mark-${i}.${ext}`);
+    const res = r.servizio
+      ? await sh("node", [join(LAB, "genera.mjs"), "--servizio", r.servizio, "--prompt", prompt, "--out", out, ...(r.model ? ["--model", r.model] : [])])
+      : await sh("node", [SCRIPT, "--prompt", prompt, "--color", primary, "--out", out, ...flagsRecraft(r)]);
     log(`  mark-${i}: exit ${res.code} ${(res.err || res.out).trim().split("\n")[0].slice(0, 200)}`);
     esiti.push(res.code === 0);
   }
   const prima = esiti.findIndex(Boolean) + 1;
-  if (prima > 0) {
+  if (prima > 0 && !r.servizio) {
     for (const f of ["mark.svg", "favicon.svg"]) await sh("node", [SCRIPT, "--recolor", join(ws, "logo", `mark-${prima}.svg`), "--color", primary, "--out", join(ws, f), ...(r.keepColors ? ["--keep-colors"] : [])]);
   }
   writeFileSync(join(ws, "logo-trace.json"), JSON.stringify({
-    prompt: r.prompt, model: r.model ?? "recraftv3_vector", style: r.style ?? null, substyle: r.substyle ?? null,
-    scelta: prima ? `logo/mark-${prima}.svg` : null, motivo: "modo diretto: nessuna scelta, kit sulla prima variante riuscita",
-    varianti: esiti.map((ok, i) => ({ file: `logo/mark-${i + 1}.svg`, esito: ok ? "generata" : "errore" })),
+    prompt, servizio: r.servizio ?? "recraft", model: r.model ?? (r.servizio ? "default" : "recraftv3_vector"), style: r.style ?? null, substyle: r.substyle ?? null,
+    scelta: prima ? `logo/mark-${prima}.${ext}` : null, motivo: "modo diretto: nessuna scelta, kit sulla prima variante riuscita",
+    varianti: esiti.map((ok, i) => ({ file: `logo/mark-${i + 1}.${ext}`, esito: ok ? "generata" : "errore" })),
   }, null, 2));
   const esito = { ok: esiti.some(Boolean), subtype: "diretto", durata_s: Math.round((Date.now() - t0) / 1000), generate: esiti.filter(Boolean).length };
   writeFileSync(join(dir, "agente-esito.json"), JSON.stringify(esito, null, 2));
@@ -221,6 +238,7 @@ async function eseguiDiretto(cfg, dir, ws, primary, log) {
 
 /* ---------------- render: foglio di contatto + metriche ---------------- */
 function svgInfo(file) {
+  if (!file.endsWith(".svg")) return { bytes: statSync(file).size, paths: 0, fills: [], sfondo_residuo: false, testo: false, raster: true };
   const svg = readFileSync(file, "utf8");
   const fills = [...new Set([...svg.matchAll(/(?:fill|stroke)="([^"]+)"/g)].map((m) => m[1].toLowerCase()))].filter((f) => f !== "none");
   const vb = /viewBox="\s*0\s+0\s+([\d.]+)\s+([\d.]+)/.exec(svg);
@@ -237,7 +255,7 @@ function svgInfo(file) {
 
 function varianti(ws) {
   const dir = join(ws, "logo");
-  const list = existsSync(dir) ? readdirSync(dir).filter((f) => /^mark-\d+\.svg$/.test(f)).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).map((f) => `logo/${f}`) : [];
+  const list = existsSync(dir) ? readdirSync(dir).filter((f) => /^mark-\d+\.(svg|png)$/.test(f)).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).map((f) => `logo/${f}`) : [];
   if (existsSync(join(ws, "mark.svg"))) list.push("mark.svg");
   return list;
 }
@@ -256,7 +274,7 @@ async function render(dir) {
     const badge = trace.scelta === f ? " ★ scelta" : f === "mark.svg" ? " (kit finale)" : "";
     return `<section data-file="${f}"><h2>${f}${badge}</h2><div class="row">
       ${[16, 32, 64, 256].map((s) => `<figure><img src="${src}" width="${s}" height="${s}" data-size="${s}"><figcaption>${s}px</figcaption></figure>`).join("")}
-      <figure class="dark">${dark ? `<img src="../ws/${dark}" width="64" height="64">` : "<span>—</span>"}<figcaption>64px scuro</figcaption></figure>
+      ${info[f].raster ? `<figure><img src="${src}" width="512" height="512"><figcaption>512px (lockup)</figcaption></figure>` : `<figure class="dark">${dark ? `<img src="../ws/${dark}" width="64" height="64">` : "<span>—</span>"}<figcaption>64px scuro</figcaption></figure>`}
       <figure class="tab"><span class="chip"><img src="${src}" width="16" height="16"> ${basename(f, ".svg")} · sito</span><figcaption>scheda browser</figcaption></figure>
       <pre class="m">${info[f].paths} path · ${Math.round(info[f].bytes / 1024)} KB · fill ${info[f].fills.join(",") || "—"}${info[f].sfondo_residuo ? " · SFONDO RESIDUO" : ""}${info[f].testo ? " · TESTO" : ""}</pre>
     </div></section>`;
@@ -284,12 +302,14 @@ async function render(dir) {
   // (linee sottili che spariscono nella favicon).
   // Gli SVG entrano come data URI: un'immagine file:// «sporca» il canvas e
   // getImageData viene rifiutato.
-  const svgs = Object.fromEntries(files.map((f) => [f, readFileSync(join(ws, f), "utf8")]));
+  const svgs = Object.fromEntries(files.map((f) => [f, f.endsWith(".svg")
+    ? "data:image/svg+xml;charset=utf-8," + encodeURIComponent(readFileSync(join(ws, f), "utf8"))
+    : "data:image/png;base64," + readFileSync(join(ws, f)).toString("base64")]));
   const ink = await page.evaluate(async (svgs) => {
     const out = {};
-    for (const [f, svg] of Object.entries(svgs)) {
+    for (const [f, uri] of Object.entries(svgs)) {
       const img = new Image();
-      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+      img.src = uri;
       await img.decode().catch(() => {});
       const misura = (s) => {
         const c = document.createElement("canvas");
@@ -311,7 +331,8 @@ async function render(dir) {
   const metriche = Object.fromEntries(files.map((f) => {
     const m = { ...info[f], ...ink[f] };
     m.dettaglio = m.ink256 ? +(m.ink32 / m.ink256).toFixed(2) : 0;
-    m.flag = [m.sfondo_residuo && "sfondo_residuo", m.testo && "testo", m.ink256 > 0.85 && "blob", m.ink256 < 0.05 && "vuoto", m.dettaglio < 0.6 && "dettagli_persi", m.fills.length > 1 && "colori_residui"].filter(Boolean);
+    // per i PNG (lockup su fondo scuro) ink/blob non hanno senso: restano solo le misure
+    m.flag = m.raster ? [] : [m.sfondo_residuo && "sfondo_residuo", m.testo && "testo", m.ink256 > 0.85 && "blob", m.ink256 < 0.05 && "vuoto", m.dettaglio < 0.6 && "dettagli_persi", m.fills.length > 1 && "colori_residui"].filter(Boolean);
     return [f, m];
   }));
   writeFileSync(join(rd, "metriche.json"), JSON.stringify(metriche, null, 2));
@@ -326,6 +347,7 @@ async function critica(dir, cr, log = console.log) {
   const prompt = readFileSync(trova(cr.prompt), "utf8")
     .replaceAll("{{foglio}}", join(dir, "render", "foglio.png"))
     .replaceAll("{{riferimenti}}", join(LAB, "riferimenti"))
+    .replaceAll("{{nome}}", String(leggiJson(join(ws, "intake.json"), {})["meta.businessName"] ?? "").replace(/\s+(s\.?r\.?l\.?s?\.?|s\.?p\.?a\.?|s\.?n\.?c\.?|s\.?a\.?s\.?)$/i, "").toUpperCase())
     .replaceAll("{{contesto}}", join(ws, "contesto.json"))
     .replaceAll("{{metriche}}", JSON.stringify(metriche))
     .replaceAll("{{scelta}}", trace.scelta ?? "nessuna")
@@ -388,7 +410,7 @@ function galleria() {
     const metriche = leggiJson(join(dir, "render", "metriche.json"), {});
     const trace = leggiJson(join(dir, "ws", "logo-trace.json"), {});
     const flags = Object.values(metriche).flatMap((m) => m.flag);
-    const chips = [`${cfg.modo}`, cfg.agente && `${cfg.agente.model}/${cfg.agente.effort}`, `recraft ${cfg.recraft?.model ?? "v3_vector"}${cfg.recraft?.substyle ? "/" + cfg.recraft.substyle : ""}`, cfg.agente?.skill && `skill ${basename(cfg.agente.skill)}`, cfg.agente?.prompt && basename(cfg.agente.prompt)].filter(Boolean);
+    const chips = [`${cfg.modo}`, cfg.agente && `${cfg.agente.model}/${cfg.agente.effort}`, cfg.recraft?.servizio ? `servizio ${cfg.recraft.servizio}${cfg.recraft.model ? "/" + cfg.recraft.model : ""}` : `recraft ${cfg.recraft?.model ?? "v3_vector"}${cfg.recraft?.substyle ? "/" + cfg.recraft.substyle : ""}`, cfg.agente?.skill && `skill ${basename(cfg.agente.skill)}`, cfg.agente?.prompt && basename(cfg.agente.prompt)].filter(Boolean);
     return `<article class="${crit?.verdetto === "PASS" ? "pass" : crit ? "fail" : ""}">
       <header><h2>${d}</h2><div class="chips">${chips.map((c) => `<span>${c}</span>`).join("")}</div></header>
       <p class="meta">${esito.subtype ?? "?"} · ${esito.durata_s ?? "?"}s · $${esito.costo_usd?.toFixed?.(2) ?? "—"} · scelta ${trace.scelta ?? "—"} · flag: ${flags.length ? [...new Set(flags)].join(", ") : "nessuno"}</p>
@@ -417,11 +439,11 @@ async function eseguiRun(cfg) {
   const ws = join(dir, "ws");
   mkdirSync(dir, { recursive: true });
   const log = (s) => { console.log(`[${cfg.nome}] ${s}`); appendFileSync(join(dir, "log.txt"), `${new Date().toISOString()} ${s}\n`); };
-  const { slug, primary } = preparaWorkspace(cfg, ws);
+  const cliente = preparaWorkspace(cfg, ws);
   writeFileSync(join(dir, "config.json"), JSON.stringify(cfg, null, 2));
   try {
-    if (cfg.modo === "diretto") await eseguiDiretto(cfg, dir, ws, primary, log);
-    else await eseguiAgente(cfg, dir, ws, slug, primary, log);
+    if (cfg.modo === "diretto") await eseguiDiretto(cfg, dir, ws, cliente, log);
+    else await eseguiAgente(cfg, dir, ws, cliente.slug, cliente.primary, log);
     const m = await render(dir);
     log(`render: ${Object.keys(m).length} varianti, flag ${JSON.stringify(Object.fromEntries(Object.entries(m).filter(([, v]) => v.flag.length).map(([k, v]) => [k, v.flag])))}`);
     if (cfg.critico && Object.keys(m).length) await critica(dir, cfg.critico, log);
