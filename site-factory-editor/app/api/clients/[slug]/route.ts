@@ -5,6 +5,7 @@ import { listClients, readClientState } from "@/lib/clients";
 import { getRun, busIdCliente } from "@/lib/run-bus";
 import { STEPS, type StepKey } from "@/lib/steps";
 import { deleteUmamiWebsite, rimuoviInfra } from "@/lib/integrazioni";
+import { catenaViva } from "@/lib/catena";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,9 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ slug: st
   }
   if (!fs.existsSync(dir)) return NextResponse.json({ error: "cliente non trovato" }, { status: 404 });
 
+  if (catenaViva(slug)) {
+    return NextResponse.json({ error: "catena automatica in corso per questo cliente: fermala prima di eliminare" }, { status: 409 });
+  }
   for (const step of Object.keys(STEPS) as StepKey[]) {
     const run = getRun(busIdCliente(slug, step));
     if (run && !run.done) {

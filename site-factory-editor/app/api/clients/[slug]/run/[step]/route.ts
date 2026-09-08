@@ -5,6 +5,7 @@ import { STEPS, type StepKey, type RunMode } from "@/lib/steps";
 import { listClients } from "@/lib/clients";
 import { startClientRun, stopRun, busIdCliente } from "@/lib/run-bus";
 import { rispostaStreamRun } from "@/lib/run-stream";
+import { catenaViva } from "@/lib/catena";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 3600; // secondi: gli step multi-fase possono durare a lungo
@@ -27,6 +28,12 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
   }
   if (!fs.existsSync(dir)) return new Response(JSON.stringify({ error: "cliente non trovato" }), { status: 404 });
   if (!(step in STEPS)) return new Response(JSON.stringify({ error: `step sconosciuto: ${step}` }), { status: 400 });
+
+  // La catena automatica lancia gli step da sola: un avvio a mano nel mezzo
+  // farebbe collidere due run sullo stesso workspace.
+  if (catenaViva(slug)) {
+    return new Response(JSON.stringify({ error: "catena automatica in corso per questo cliente: fermala prima di lanciare uno step a mano" }), { status: 409 });
+  }
 
   const body = await req.json().catch(() => ({}));
   const mode: RunMode = MODES.includes(body?.mode) ? body.mode : "generate";

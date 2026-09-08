@@ -276,6 +276,10 @@ export const STEPS: Record<StepKey, StepDef> = {
           `scegli TU la variante migliore e motiva scelta e scarti nel trace.\n` +
           `Input: ${base}/contesto.json (servizi reali, settore, identità — il soggetto viene da qui) e ` +
           `${base}/palette.json (primary ${primary}).\n` +
+          `REGOLA SUI COMANDI (i permessi bloccano tutto il resto): ogni comando Bash deve iniziare ESATTAMENTE con ` +
+          `\`${script}\` — la cwd è già la root del repo e node è già nel PATH. NIENTE \`cd\`, NIENTE \`export PATH\`, ` +
+          `niente \`&&\`, niente percorso assoluto al binario node, niente \`--version\`: un comando diverso viene rifiutato e non va ritentato. ` +
+          `Ignora l'intestazione «Uso (da site-renderer/)» dello script: qui si lancia dalla root con il percorso site-renderer/scripts/….\n` +
           `1) Genera 6 varianti, una per comando, con seed diversi e lo stesso soggetto: ` +
           `\`${script} --prompt "<soggetto + formula tecnica della skill>" --color "${primary}" --out ${base}/logo/mark-N.svg\` ` +
           `con N da 1 a 6 (lo script scrive anche mark-N-dark.svg).\n` +
@@ -379,7 +383,8 @@ export const STEPS: Record<StepKey, StepDef> = {
     artifact: "dist/index.html",
     // Staleness sugli INPUT dell'assembler (site.json lo produce build stessa).
     // legale.json incluso (M5 piano legale): un legale aggiornato → build stale.
-    upstream: ["intake.json", "contesto.json", "palette.json", "copy.json", "images.json", "legale.json"],
+    // logo-trace.json: cambiare variante del mark (scelta nel trace) rende la build stale.
+    upstream: ["intake.json", "contesto.json", "palette.json", "copy.json", "images.json", "legale.json", "logo-trace.json"],
     // Gate minimo comune (la route applica il gate PRIMA di leggere il mode):
     // il gate della build completa (images verificato) vive dentro buildRun.
     gate: (slug) =>
@@ -994,6 +999,9 @@ async function* imagesRun(slug: string, ctx: RunCtx, io: StepIO): AsyncGenerator
   }
   return { ok: true };
 }
+
+/** Motivo per cui uno step NON è lanciabile ora (null = via libera): stessa fonte della route run e dell'hub. */
+export const motivoGate = (slug: string, key: StepKey, mode?: RunMode): string | null => STEPS[key].gate?.(slug, mode) ?? null;
 
 /** Segna lo stato di uno step in client.json, preservando gli altri campi (fonte/drift/upstream). */
 export function setStepState(slug: string, key: StepKey, stato: string, errore?: string) {

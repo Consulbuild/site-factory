@@ -10,7 +10,8 @@ import path from "node:path";
 // risultati integrali dei tool riusciti, thinking): troppa quantità peggiora il
 // ragionamento di chi poi legge il contesto per fixare. Vedi docs/DEBUG.md.
 
-export type PhaseClasse = "abort" | "spawn" | "auth" | "timeout" | "result" | "exit";
+/** "limite" = result d'errore per limite di utilizzo del piano Max (la catena attende e riprova). */
+export type PhaseClasse = "abort" | "spawn" | "auth" | "timeout" | "result" | "limite" | "exit";
 
 export type ToolAction = {
   tool: string;

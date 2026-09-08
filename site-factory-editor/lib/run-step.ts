@@ -54,6 +54,14 @@ export interface StepIO {
 
 const DEFAULT_TIMEOUT_MS = 10 * 60 * 1000;
 
+/**
+ * Limite di utilizzo del piano Max (finestra di 5 ore): non è un errore dello
+ * step ma del momento — la catena (lib/catena.ts) attende e riprova.
+ * ponytail: euristica sul messaggio del CLI; parsare «resets at» quando stabile.
+ */
+export const isErroreLimite = (msg: string): boolean =>
+  /usage limit|rate limit|limit reached|resets at|overloaded|too many requests|\b429\b/i.test(msg);
+
 async function* claudePhase(
   opts: {
     phase: string;
@@ -186,7 +194,7 @@ async function* claudePhase(
       "auth",
     );
   }
-  if (resultError) return finalize({ ok: false, error: resultError }, "result");
+  if (resultError) return finalize({ ok: false, error: resultError }, isErroreLimite(resultError) ? "limite" : "result");
   if (code !== 0) {
     return finalize(
       {

@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { clientDir } from "@/lib/paths";
 import { readClientState, patchClientState } from "@/lib/clients";
 import { deployDemo, spegniDemo, prorogaDemo } from "@/lib/deploy";
+import { avviaCatena } from "@/lib/catena";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -38,7 +39,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
         s.percorso = "completo";
         if (s.demo) s.demo.congelata = true;
       });
-      return NextResponse.json({ ok: true, percorso: client.percorso });
+      // Il completamento (legale, poi build col dominio) parte da solo; se una
+      // catena è già viva continuerà leggendo il percorso aggiornato.
+      const catena = avviaCatena(slug);
+      return NextResponse.json({ ok: true, percorso: client.percorso, catena: "error" in catena ? catena.error : "avviata" });
     }
     return NextResponse.json({ error: `azione sconosciuta: ${action}` }, { status: 400 });
   } catch (e) {

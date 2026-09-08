@@ -227,6 +227,27 @@ export function getRun(id: string): BusRun | undefined {
   return BUS.runs.get(id);
 }
 
+/**
+ * Attende la fine di un run del bus (per la catena, lib/catena.ts). Risolve
+ * subito se è già finito; un id sconosciuto è un esito «errore», mai un hang.
+ */
+export function attendiRun(id: string): Promise<BusRunInfo> {
+  return new Promise((resolve) => {
+    const run = BUS.runs.get(id);
+    if (!run) {
+      const ora = Date.now();
+      return resolve({ id, kind: "cliente", label: id, startedAt: ora, fase: null, fasi: [], done: true, esito: "errore", errore: "run sconosciuto", endedAt: ora });
+    }
+    if (run.done) return resolve(pubblica(run));
+    const off = subscribe(id, (ev) => {
+      if (ev.type === "bus-done") {
+        off?.();
+        resolve(pubblica(run));
+      }
+    });
+  });
+}
+
 const pubblica = (r: BusRun): BusRunInfo => ({
   id: r.id,
   kind: r.kind,
