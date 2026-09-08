@@ -110,6 +110,24 @@ export const inRitardo = (c: ClienteMin, p: Portafoglio | null): boolean => p?.a
 export const senzaAbbonamento = (c: ClienteMin, p: Portafoglio | null): boolean =>
   p?.fonti.stripe.stato === "ok" && !!dominioDi(c) && !p.abbonamenti[c.slug];
 
+/**
+ * Etichetta dell'host demo dal NOME DELL'AZIENDA (decisione Mattia 2026-09-08:
+ * «Cavaliere Build Srls» → «cavaliere-build-srls»). Fallback: lo slug. Solo
+ * [a-z0-9-], max 40, mai trattini ai bordi. Pura: vive qui per il banco di prova.
+ */
+export function etichettaDemo(azienda: unknown, slug: string): string {
+  const etichetta = String(azienda ?? "")
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40)
+    .replace(/-+$/, "");
+  return etichetta || slug;
+}
+
 const GIORNO_MS = 86_400_000;
 
 /** Conteggio lead per slug: ultimi 30 giorni, i 30 precedenti, l'ultimo. Finestre

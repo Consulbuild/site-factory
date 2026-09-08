@@ -13,7 +13,7 @@ export function creaConsenso({ valore }: ArgomentiComponente<boolean>): Componen
     { class: "scelta consenso" },
     input,
     h("span", { class: "consenso__quadrato", "aria-hidden": "true" }, svgIcona("spunta")),
-    h("span", { class: "scelta__testo" }, "Ho letto l'informativa sulla privacy"),
+    h("span", { class: "scelta__testo" }, "Ho letto l'informativa sulla privacy e accetto le condizioni della richiesta"),
   );
   const btnChiudi = h("button", { class: "btn btn--primario btn--blocco", type: "button" }, "Ho capito, chiudi");
   const dialogo: HTMLDialogElement = h(
@@ -49,7 +49,7 @@ export function creaConsenso({ valore }: ArgomentiComponente<boolean>): Componen
     valida: () => {
       if (input.checked) return OK;
       casella.classList.add("is-errore");
-      return blocco("Serve la spunta per proseguire: conferma di aver letto l'informativa.");
+      return blocco("Serve la spunta per proseguire: conferma di aver letto l'informativa e le condizioni.");
     },
     distruggi: () => {
       if (dialogo.open) dialogo.close();

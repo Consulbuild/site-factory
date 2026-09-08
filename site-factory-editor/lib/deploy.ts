@@ -5,6 +5,7 @@ import { SITE_RENDERER, childEnv, clientDir } from "./paths";
 import { readClientState, patchClientState, writeJson } from "./clients";
 import { getSecret } from "./secrets";
 import { syncInfra, type InfraEsito } from "./integrazioni";
+import { etichettaDemo } from "./portafoglio-shared";
 
 // Pubblicazione su Cloudflare Workers static assets (decisione 2026-07,
 // docs/decisions/2026-07-verifiche-fase-b.md §6): wrangler.jsonc per cliente
@@ -162,33 +163,13 @@ export async function deployClient(slug: string): Promise<DeployResult> {
 // Demo
 // ---------------------------------------------------------------------------
 
-/**
- * Etichetta dell'host demo dal nome sito scelto dal cliente nel form
- * («cavalierebuild.it (libero)» → «cavalierebuild»): il lead vede già il suo
- * nome. Fallback: lo slug. Solo [a-z0-9-], max 40, mai trattini ai bordi.
- */
-export function etichettaDemo(dominioScelto: unknown, slug: string): string {
-  const base = String(dominioScelto ?? "")
-    .toLowerCase()
-    .replace(/\s*\((libero|preso|sconosciuto)\)\s*$/, "")
-    .trim()
-    .replace(/^www\./, "")
-    .replace(/\.[a-z]{2,}$/, "");
-  const etichetta = base
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 40)
-    .replace(/-+$/, "");
-  return etichetta || slug;
-}
+export { etichettaDemo };
 
 export const demoWorkerName = (slug: string) => `${slug}-demo`;
 
-function leggiDominioScelto(dir: string): unknown {
+function leggiAzienda(dir: string): unknown {
   try {
-    return JSON.parse(fs.readFileSync(path.join(dir, "brief.json"), "utf8")).dominio_scelto;
+    return JSON.parse(fs.readFileSync(path.join(dir, "brief.json"), "utf8")).azienda;
   } catch {
     return undefined;
   }
@@ -225,7 +206,7 @@ export async function deployDemo(slug: string): Promise<DemoResult> {
     throw new Error("la build contiene dominio o integrazioni (statistiche, modulo reale): una demo non deve averli. Togli il dominio e ribuilda.");
   }
 
-  const host = `${etichettaDemo(leggiDominioScelto(dir), slug)}.${DEMO_ZONA}`;
+  const host = `${etichettaDemo(leggiAzienda(dir), slug)}.${DEMO_ZONA}`;
   const workerName = demoWorkerName(slug);
   writeJson(path.join(dir, DEMO_CONFIG), {
     name: workerName,

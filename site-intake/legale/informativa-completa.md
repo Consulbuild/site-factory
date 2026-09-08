@@ -17,16 +17,30 @@ protezione dei dati (DPO) è stato nominato.
 ## 2. Finalità e basi giuridiche
 
 1. Preparare la versione dimostrativa (demo) del nuovo sito web dell'azienda
-   richiedente con i dati, le foto dei lavori e il logo forniti tramite il modulo —
-   art. 6, par. 1, lett. b) GDPR (misure precontrattuali su richiesta dell'interessato).
+   richiedente con i dati, le foto dei lavori e il logo forniti tramite il modulo, e
+   pubblicarla per 15 giorni su un indirizzo web dedicato non indicizzato
+   (nome-azienda.demo.consulbuild.com) per mostrarla al richiedente; la demo riporta
+   i recapiti aziendali indicati nel modulo e si spegne alla scadenza — art. 6,
+   par. 1, lett. b) GDPR (misure precontrattuali su richiesta dell'interessato).
 2. Ricontattare il richiedente con la modalità scelta (WhatsApp o telefonata) per
    mostrargli la demo e dare riscontro alla richiesta — art. 6, par. 1, lett. b) GDPR.
 3. In caso di attivazione del servizio: gestione del rapporto contrattuale,
    pubblicazione e manutenzione del sito, fatturazione e adempimenti fiscali e
    contabili — art. 6, par. 1, lett. b) e lett. c) GDPR.
 
-Nessun consenso è richiesto per l'invio del modulo: la casella finale è una presa
-visione di questa informativa. Nessuna finalità di marketing o newsletter.
+Nessun consenso è richiesto per l'invio del modulo: la casella finale è la presa
+visione di questa informativa e l'accettazione delle condizioni della richiesta.
+Nessuna finalità di marketing o newsletter; nessuna decisione automatizzata con
+effetti giuridici (art. 22).
+
+## 2 bis. Foto e logo caricati (condizioni della richiesta)
+
+Caricando foto dei lavori e logo il richiedente conferma di averne i diritti d'uso
+(o l'autorizzazione dell'autore) e che non ritraggono persone identificabili senza
+il loro accordo; autorizza il Titolare a usarli solo per preparare e mostrare la
+demo e, in caso di attivazione, per il sito. Non vengono usati per altri clienti né
+per scopi diversi e sono cancellati con gli altri dati se il servizio non viene
+attivato.
 
 ## 3. Categorie di dati trattati
 
@@ -89,6 +103,24 @@ D.Lgs. 196/2003 come modificato dal D.Lgs. 101/2018.*
 Reg. (UE) 2016/679: artt. 6, 12, 13, 15-21, 28, 45, 46, 77 — Normattiva/EUR-Lex.
 Codice civile art. 2220. Decisione di esecuzione (UE) 2023/1795 della Commissione
 del 10 luglio 2023 (EU-US Data Privacy Framework).
+
+## Verifica di copertura (2026-09-08, `analisi_base_giuridica` + `verifica_necessita_dpia`)
+
+- Base giuridica consigliata dallo strumento: **art. 6.1.b** (contratto / misure
+  precontrattuali), la stessa adottata: la richiesta della demo parte dall'interessato,
+  quindi nessun consenso da raccogliere né revocabile; la casella è presa visione +
+  accettazione delle condizioni (evidenza: `consenso: true` e `inviatoAt` in
+  `raw-submission.json` del cliente e in `lead.json` su Drive).
+- DPIA **non obbligatoria** (1 criterio su 2: tecnologie innovative — AI generativa);
+  nessun dato particolare, nessuna profilazione, nessuna decisione automatizzata.
+- Coperture aggiunte in questa revisione: pubblicazione temporanea della demo su
+  indirizzo dedicato non indicizzato (era assente: senza, la messa online dei recapiti
+  non rientrava nelle finalità dichiarate); licenza e garanzia su foto e logo
+  (diritti d'autore e persone ritratte: art. 96 L. 633/1941); art. 22 dichiarato.
+- Impegno di conservazione: la richiesta grezza su Drive viene cancellata da n8n
+  entro 60 giorni; il workspace importato nell'editor (`out/<slug>`) va cancellato a
+  mano (eliminazione del cliente in home) entro lo stesso termine se il cliente non
+  si abbona — finché non è automatizzato, è un obbligo operativo di Mattia.
 
 ## Note
 

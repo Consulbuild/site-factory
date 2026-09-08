@@ -5,11 +5,17 @@ inseriti in questo modulo sono trattati da **ConsulBuild di Vecchiato Edoardo**,
 Cul de Ola 254 P int. 1, 36100 Vicenza (VI), P.IVA 04594370241 (Titolare del
 trattamento), contattabile a consulbuildev@gmail.com.
 
-- **Finalità:** preparare la versione dimostrativa del tuo nuovo sito web con i dati, le
-  foto e il logo che ci fornisci, e ricontattarti per mostrartela (dare riscontro alla tua
-  richiesta).
+- **Finalità:** preparare la versione dimostrativa (demo) del tuo nuovo sito web con i
+  dati, le foto e il logo che ci fornisci; pubblicarla per 15 giorni su un indirizzo web
+  dedicato e non indicizzato (nome-azienda.demo.consulbuild.com) per mostrartela — la demo
+  riporta i recapiti aziendali che indichi, come farà il sito; ricontattarti con la
+  modalità che scegli (dare riscontro alla tua richiesta). [rev. 2026-09-08]
 - **Base giuridica:** esecuzione di misure precontrattuali adottate su tua richiesta (art.
-  6, par. 1, lett. b, GDPR).
+  6, par. 1, lett. b, GDPR). La spunta è presa visione + accettazione delle condizioni
+  della richiesta.
+- **Foto e logo:** caricandoli confermi di averne i diritti d'uso e che non ritraggono
+  persone identificabili senza il loro accordo; ci autorizzi a usarli solo per la demo e,
+  se attivi il servizio, per il tuo sito. [rev. 2026-09-08]
 - **Conferimento dei dati:** facoltativo, ma i dati contrassegnati come obbligatori
   (mestiere e lavori, nome dell'azienda, nome del sito, sede, zone, anni di mestiere,
   cellulare, punti di forza, clienti, stile, nome e cognome, email, Partita IVA, modalità

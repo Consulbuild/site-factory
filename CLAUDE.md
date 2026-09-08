@@ -290,7 +290,7 @@ tassonomia sezioni). Regole operative nei componenti:
     `steps.<k>.autoConferma`), si ferma al primo critico FAIL/errore,
     idempotente («Riprendi»), coda a 2 con priorità completo > demo, attesa
     e riprova sul limite del piano Max. Mattia verifica UNA volta e pubblica:
-    worker separato `<slug>-demo` su `<nome-sito>.demo.consulbuild.com`
+    worker separato `<slug>-demo` su `<nome-azienda>.demo.consulbuild.com`
     (`lib/deploy.ts deployDemo`), scadenza 15 gg spenta dal sweep orario
     (`instrumentation.ts` → `lib/demo-sweep.ts`, solo `wrangler delete
     <slug>-demo`, mai un abbonato/dominio). «Il cliente si è abbonato» →

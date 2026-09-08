@@ -71,12 +71,20 @@ varianti (`DESIGN-BRIEF.md`). Informativa completa del form su
 `sito.consulbuild.com/privacy` (**deploy del worker sf-bozza dopo l'ok di
 Mattia**). Provato E2E su `zz-test-demo` (copia di Costruzioni): logo step
 reale (7′, 6 varianti), catena → demo_pronta, «Pubblica demo» dalla UI →
-host con TLS in ~4′, sweep. **Aperti**: `generate-logo.mjs` ricolora il
-rettangolo di sfondo di Recraft (il mark esce come quadrato pieno — Cavaliere
-in produzione usa un `mark.png` fatto a mano): fix strutturale = scartare il
-primo path a tutta tela, fuori perimetro del piano; `scripts/test-demo.ts`
-(banco per `demoScaduta`/`etichettaDemo`) bloccato dallo scope-guard; link
-del marchio nel form (`index.astro:49`) ancora a consulbuild.site.
+host con TLS in ~4′, sweep. **Chiusi lo stesso giorno (ok Mattia)**:
+`generate-logo.mjs` scarta il path a tutta tela di Recraft (il mark usciva
+come quadrato pieno; Cavaliere in produzione usa ancora il suo `mark.png`);
+`scripts/test-demo.ts` (banco `demoScaduta`/`isDemo`/`etichettaDemo`, ora in
+`portafoglio-shared.ts`); host demo dal **nome dell'azienda**
+(`cavaliere-build-srls.demo.consulbuild.com`); form: marchio →
+www.consulbuild.com, informativa breve/completa riviste dopo
+`analisi_base_giuridica` (6.1.b confermata, DPIA non dovuta): dichiarate la
+pubblicazione temporanea della demo e la licenza/garanzia su foto e logo,
+spunta = presa visione + accettazione condizioni; worker `sf-bozza`
+ridistribuito. **Obbligo operativo** finché non è automatizzato: cancellare
+a mano (home → Elimina) i clienti non convertiti entro 60 giorni dall'invio
+del modulo, come promesso nell'informativa (n8n cancella da solo solo la
+richiesta grezza su Drive).
 
 **Piano 2 — report mensile al rinnovo (2026-09-06, piano in
 `~/.claude/plans/…zesty-swan.md` §Piano 2)**: Stripe è l'orologio (`invoice.upcoming`

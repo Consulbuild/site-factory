@@ -200,7 +200,7 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
   const prossimo = primariaCatena ? null : (righe.find((r) => r.abilitato && r.stato !== "verificato" && !r.nota)?.key ?? null);
   // Il legale è parte del percorso completo: in demo la riga resta ma non è nel cammino.
   const mostraCard = client.percorso === "demo" || !!client.catena || !!client.demo || client.steps.build.stato !== "verificato";
-  const hostPrevisto = client.demo?.host ?? `${etichettaDemo(brief.dominio_scelto, slug)}.${DEMO_ZONA}`;
+  const hostPrevisto = client.demo?.host ?? `${etichettaDemo(brief.azienda, slug)}.${DEMO_ZONA}`;
 
   return (
     <div>

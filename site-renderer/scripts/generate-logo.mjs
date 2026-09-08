@@ -39,9 +39,31 @@ if (!/^#[0-9a-fA-F]{6}$/.test(color)) {
 // sottostante), tutto il resto diventa il colore di marca. Così lo stesso mark
 // funziona su header chiaro e su sezioni scure senza casi speciali.
 const WHITEISH = /^(#fff(?:fff)?|#f[e-f]{5}|white|transparent)$/i;
+
+// Recraft apre ogni SVG con un path rettangolare a TUTTA TELA (lo sfondo), di un
+// bianco «quasi» (#f9f9f9 &c.) che la regola cromatica non riconosce: ricolorato
+// diventava un quadrato pieno del colore di marca con il soggetto invisibile
+// (visto il 2026-09-08: Cavaliere in produzione usava un mark.png fatto a mano).
+// Lo sfondo si riconosce dalla GEOMETRIA, non dal colore: un path che copre
+// tutto il viewBox va tolto, qualunque sia il suo fill.
+function stripBackground(svg) {
+  const vb = /viewBox="\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*"/i.exec(svg);
+  if (!vb) return svg;
+  const [w, hgt] = [Number(vb[1]), Number(vb[2])];
+  const num = "\\s*-?[\\d.]+\\s*";
+  const fullCanvas = new RegExp(`^M${num}${num}[LH]`, "i");
+  return svg.replace(/<path\b[^>]*\bd="([^"]+)"[^>]*\/?>(?:<\/path>)?/gi, (tag, d) => {
+    if (!fullCanvas.test(d.trim())) return tag;
+    const xs = [...d.matchAll(/-?\d+(?:\.\d+)?/g)].map(Number);
+    // un rettangolo a tutta tela cita gli estremi 0 e W/H e nient'altro in mezzo
+    const soloEstremi = xs.every((n) => Math.abs(n) < 1 || Math.abs(n - w) < 1 || Math.abs(n - hgt) < 1);
+    return soloEstremi && xs.some((n) => Math.abs(n - w) < 1) && xs.some((n) => Math.abs(n - hgt) < 1) ? "" : tag;
+  });
+}
+
 function recolor(svg, hex) {
   const map = (val) => (val.trim() === "none" ? "none" : WHITEISH.test(val.trim()) ? "none" : hex);
-  return svg
+  return stripBackground(svg)
     .replace(/(fill|stroke)="([^"]+)"/gi, (_, attr, val) => `${attr}="${map(val)}"`)
     .replace(/(fill|stroke):\s*([^;"'}]+)/gi, (_, attr, val) => `${attr}:${map(val)}`);
 }
