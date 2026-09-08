@@ -14,6 +14,6 @@
       { "nome": "emblema", "soggetto": "a badge emblem: stylized house roof over the bold monogram of the company initials, with a ribbon banner below, thin oval frame" }
     ]
   },
-  "critico": { "model": "claude-opus-4-8", "effort": "high", "prompt": "prompts/critico-v3-lockup.md" },
+  "critico": { "model": "claude-opus-4-8", "effort": "high", "prompt": "prompts/critico-v4-lockup.md" },
   "parallelo": 4
 }
