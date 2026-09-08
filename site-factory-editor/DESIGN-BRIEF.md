@@ -396,3 +396,63 @@ contestuale allo stato; tutto il resto secondario/ghost.
    nota fissa sul prerequisito DNS; usato al deploy successivo.
 7. **Prerequisiti inline**: KeySetup per le 2 key CF al posto del bottone
    Pubblica; nota una tantum sul subdomain workers.dev al primo deploy.
+
+---
+
+# Modalità demo: card «Catena», home, riga Logo (shape /impeccable — 2026-09-08)
+
+Modo: **Operate**. Chi arriva: Mattia, 7 lead in due giorni, deve capire in un
+colpo d'occhio *dove sta ogni demo* e fare l'unica cosa che tocca a lui: la
+verifica finale e la pubblicazione. Successo = zero domande in chat, zero
+click superflui, nessuno stato ambiguo. Decisioni confermate da Mattia:
+**la catena è l'unica primaria dell'hub in percorso demo**; in home la
+richiesta nuova ha **«Avvia demo» (importa + lancia) + «Importa soltanto»**.
+
+## Card «Catena» (hub, sopra la lista degli step; solo se percorso demo, o se esiste una catena/demo)
+
+Una `card` a tre righe: titolo («Demo» / «Completamento») + `Badge` di stato ·
+una frase di fatto (mai un progress %) · riga azioni. Stati e primaria:
+
+| Stato | Frase | Primaria | Altre |
+|---|---|---|---|
+| nessuna catena, demo | «Contesto → palette → logo → copy → immagini → build, senza fermarsi. Di solito 60–90 min.» | **Avvia demo** | — |
+| in_coda | «In coda · posizione N» | — | Togli dalla coda (ghost) |
+| in_corso | «Passo: Copy · copywriter · 12:31» (fase live dal bus, tempo mono) | — | Ferma (danger ghost) |
+| attesa_limite | «Limite di utilizzo del piano raggiunto · riprova alle 15:40» | — | Ferma |
+| ferma | «Ferma a Copy: critico del copy FAIL (2 bloccanti)» in `err` | **Riprendi** | Apri Copy → (secondaria) |
+| in_corso senza processo (riavvio) | «Interrotta dal riavvio dell'editor» | **Riprendi** | — |
+| demo_pronta | «Demo costruita: guardala come la vedrebbe il titolare, poi pubblica.» | **Pubblica demo** (ConfirmDialog: host, «il certificato può richiedere qualche minuto») | Apri anteprima ↗ |
+| demo online | host cliccabile · «scade il gg/mm (tra N gg)» (warn ≤ 3) · «pubblicata il gg/mm» | **Ripubblica demo** solo se c'è una build più nuova, altrimenti nessuna | Copia link · Invia su WhatsApp · Proroga +15 gg (ghost) · Il cliente si è abbonato (secondaria, dialog) · Spegni demo (danger, dialog) |
+| demo spenta | «Demo spenta il gg/mm» | Riaccendi demo | Il cliente si è abbonato |
+| completo, ferma a deploy | «Manca il dominio: inseriscilo nella scheda Build e riprendi» | **Riprendi** (se dominio presente) | Apri Build → |
+| completata | «Sito online · url» | — | — |
+
+Percorso completo senza catena (clienti storici): card compatta con
+«Esegui in automatico gli step mancanti» **secondaria**; la primaria resta il
+prossimo passo di oggi. Durante la catena la card si aggiorna da sola (refresh
+10 s) e le righe degli step mostrano stato + fase live, tutte con «Apri» grigio.
+
+## Home
+
+- Riga cliente: colonna sito → `host.demo.consulbuild.com ↗ · scade tra N gg`
+  (warn ≤ 3) / «demo spenta il gg/mm» / «catena: Copy» / «senza sito». Colonna
+  stato → `Demo online` (idle) / `Demo da controllare` (warn) / `Catena in corso`
+  (brand) / `Catena ferma` (err) / `In lavorazione`. Menu riga: «Avvia demo» /
+  «Riprendi» quando il percorso è demo e la catena non è viva.
+- `MiniPipeline` a 8 tacche (+Logo, stessa forma/colore).
+- Richieste dal form: **Avvia demo** (primaria: importa, lancia, va all'hub) +
+  **Importa soltanto** (ghost).
+
+## Riga «Logo» nell'hub (4ª, tra Palette e Copy)
+
+Cliente con logo → badge idle «fornito dal cliente», nessun bottone. Altrimenti
+stato come gli altri step; con un kit presente: miniatura del mark (28 px) +
+«Varianti» che apre inline una griglia 6×(mark + motivo dello scarto/scelta)
+con «Usa questa» per variante (ricoloro offline deterministico → logo
+`da_verificare` → build «cambiato a monte»). Niente scheda dedicata.
+
+## Anti-obiettivi
+
+Nessuna percentuale, nessun banner flottante, nessuna card annidata, nessun
+timer che riannuncia (tempo `aria-hidden`), nessuna azione distruttiva senza
+`ConfirmDialog`, nessun bottone blu oltre l'unico della catena.

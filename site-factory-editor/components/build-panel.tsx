@@ -196,6 +196,7 @@ export function BuildPanel({
             <span className="mono ml-auto text-xs text-muted">
               ultima: {dt(build.builtAt)} · {build.pages} pagine · {build.sizeKb} KB{" "}
               {build.partial && <Badge tone="warn">parziale</Badge>}
+              {build.noindex && <Badge tone="idle">noindex</Badge>}
             </span>
           )}
         </div>
@@ -396,13 +397,24 @@ export function BuildPanel({
               </div>
             )}
 
+            {build.noindex && (
+              <div className="mt-4">
+                <Banner tone="brand" title="Build demo (noindex)">
+                  Questa build è fuori dai motori di ricerca: si pubblica come demo dalla card «Demo» dell&apos;hub, su{" "}
+                  <span className="mono">demo.consulbuild.com</span>. Il sito reale si builda dopo «Il cliente si è
+                  abbonato», col dominio.
+                </Banner>
+              </div>
+            )}
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <button
-                className={momento === "pubblica" ? btnPrimary : btnSecondary}
+                className={momento === "pubblica" && !build.noindex ? btnPrimary : btnSecondary}
                 onClick={() => setChiediPubblica(true)}
-                disabled={busy || runner.running || !verificata || rebuild}
+                disabled={busy || runner.running || !verificata || rebuild || !!build.noindex}
                 title={
-                  rebuild
+                  build.noindex
+                    ? "Build demo: si pubblica dalla card «Demo» dell'hub."
+                    : rebuild
                     ? "Il dominio o le integrazioni sono cambiati dopo l'ultima build: ribuilda e riconferma prima di pubblicare."
                     : !verificata
                       ? "Si pubblica solo una build completa, rivista e confermata."

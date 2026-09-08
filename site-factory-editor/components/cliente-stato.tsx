@@ -78,9 +78,9 @@ export function ClienteStato({
       <p className="card mt-6 px-4 py-3 text-sm text-muted">
         {demo ? (
           <>
-            Demo inviata il <B>{ggmm(demo.dal)}</B> ·{" "}
-            <a href={demo.url} target="_blank" rel="noreferrer" className="underline-offset-2 hover:underline">
-              anteprima su workers.dev ↗
+            Demo online dal <B>{ggmm(demo.dal)}</B> ·{" "}
+            <a href={demo.url} target="_blank" rel="noreferrer" className="mono underline-offset-2 hover:underline">
+              {demo.url.replace(/^https?:\/\//, "")} ↗
             </a>{" "}
             · il cliente non è ancora abbonato: con il dominio compaiono abbonamento, monitor, lead e visite.
           </>

@@ -20,6 +20,7 @@ import {
   AlertTriangle,
   CreditCard,
   MoreHorizontal,
+  Play,
   ExternalLink,
   LinkIcon,
   Trash2,
@@ -48,11 +49,12 @@ function match(q: string, ...fields: string[]): boolean {
 
 /* ---- Derivazioni di stato per filtri e pipeline ---------------------------- */
 
-const STEP_ORDER = ["intake", "contesto", "palette", "copy", "images", "legale", "build"] as const;
+const STEP_ORDER = ["intake", "contesto", "palette", "logo", "copy", "images", "legale", "build"] as const;
 const STEP_LABEL: Record<(typeof STEP_ORDER)[number], string> = {
   intake: "Intake",
   contesto: "Contesto",
   palette: "Palette",
+  logo: "Logo",
   copy: "Copy",
   images: "Immagini",
   legale: "Legale",
@@ -60,6 +62,21 @@ const STEP_LABEL: Record<(typeof STEP_ORDER)[number], string> = {
 };
 
 const deployUrl = (c: ClientSummary): string | null => c.steps.build.deploy?.url ?? null;
+const demoAccesa = (c: ClientSummary) => (c.demo && !c.demo.spentaAt ? c.demo : null);
+const catenaViva = (c: ClientSummary) => !!c.catena && ["in_coda", "in_corso", "attesa_limite"].includes(c.catena.stato);
+const giorniA = (iso: string) => Math.ceil((Date.parse(iso) - Date.now()) / 86_400_000);
+const NOME_PASSO: Record<string, string> = {
+  intake: "Intake",
+  contesto: "Contesto",
+  palette: "Palette",
+  logo: "Logo",
+  copy: "Copy",
+  lavori: "Foto",
+  images: "Immagini",
+  legale: "Legale",
+  build: "Build",
+  deploy: "Pubblicazione",
+};
 
 type Filtro = "tutti" | "sviluppare" | "attivi" | "giu" | "ritardo";
 const FILTRO_LABEL: Record<Exclude<Filtro, "tutti">, string> = {
@@ -141,8 +158,21 @@ function KpiCard({
 /* ---- Menu azioni per riga --------------------------------------------------- */
 
 function RowMenu({ c, onElimina }: { c: ClientSummary; onElimina: () => void }) {
+  const router = useRouter();
   const [copiato, setCopiato] = useState(false);
-  const url = deployUrl(c);
+  const [avvio, setAvvio] = useState<string | null>(null);
+  const url = demoAccesa(c)?.url ?? deployUrl(c);
+  // «Avvia demo» / «Riprendi»: percorso demo, catena non viva, demo non ancora pronta né online.
+  const avviabile =
+    c.percorso === "demo" && !catenaViva(c) && !demoAccesa(c) && !(c.catena?.stato === "demo_pronta" && c.steps.build.stato === "verificato");
+  async function avvia(e: React.MouseEvent) {
+    (e.target as HTMLElement).closest("details")?.removeAttribute("open");
+    setAvvio("…");
+    const res = await fetch(`/api/clients/${c.slug}/catena`, { method: "POST" });
+    const data = await res.json().catch(() => ({}));
+    setAvvio(res.ok ? null : String(data.error ?? `errore ${res.status}`));
+    router.refresh();
+  }
   return (
     <details className="relative" onClick={(e) => e.stopPropagation()}>
       <summary
@@ -152,6 +182,15 @@ function RowMenu({ c, onElimina }: { c: ClientSummary; onElimina: () => void }) 
         <MoreHorizontal className="size-4" aria-hidden />
       </summary>
       <div className="card absolute right-0 z-20 mt-1 w-56 p-1 shadow-raise">
+        {avviabile && (
+          <>
+            <button className="flex w-full items-center gap-2 rounded-ctl px-3 py-2 text-sm hover:bg-raise" onClick={avvia} disabled={avvio === "…"}>
+              <Play className="size-4 text-muted" aria-hidden /> {c.catena?.stato === "ferma" ? "Riprendi la catena" : "Avvia demo"}
+            </button>
+            {avvio && avvio !== "…" && <p className="px-3 pb-1 text-xs text-err">{avvio}</p>}
+            <div className="my-1 border-t border-line" />
+          </>
+        )}
         {url && (
           <>
             <a
@@ -160,7 +199,7 @@ function RowMenu({ c, onElimina }: { c: ClientSummary; onElimina: () => void }) 
               rel="noreferrer"
               className="flex items-center gap-2 rounded-ctl px-3 py-2 text-sm hover:bg-raise"
             >
-              <ExternalLink className="size-4 text-muted" aria-hidden /> Apri il sito online
+              <ExternalLink className="size-4 text-muted" aria-hidden /> {demoAccesa(c) ? "Apri la demo" : "Apri il sito online"}
             </a>
             <button
               className="flex w-full items-center gap-2 rounded-ctl px-3 py-2 text-sm hover:bg-raise"
@@ -173,7 +212,7 @@ function RowMenu({ c, onElimina }: { c: ClientSummary; onElimina: () => void }) 
                 }, 900);
               }}
             >
-              <LinkIcon className="size-4 text-muted" aria-hidden /> {copiato ? "Copiato ✓" : "Copia link del sito"}
+              <LinkIcon className="size-4 text-muted" aria-hidden /> {copiato ? "Copiato ✓" : demoAccesa(c) ? "Copia link della demo" : "Copia link del sito"}
             </button>
             <div className="my-1 border-t border-line" />
           </>
@@ -593,8 +632,30 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
                           >
                             {dominio} ↗
                           </a>
+                        ) : demoAccesa(c) ? (
+                          <>
+                            <a
+                              href={demoAccesa(c)!.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="border-b border-line2 transition-colors duration-150 hover:border-ink hover:text-ink"
+                            >
+                              {demoAccesa(c)!.host} ↗
+                            </a>
+                            {demoAccesa(c)!.congelata ? (
+                              " · scadenza congelata"
+                            ) : (
+                              <span className={giorniA(demoAccesa(c)!.scadenza) <= 3 ? "text-warn" : ""}>
+                                {" · "}scade tra {Math.max(0, giorniA(demoAccesa(c)!.scadenza))} gg
+                              </span>
+                            )}
+                          </>
+                        ) : c.demo?.spentaAt ? (
+                          `demo spenta il ${ggmm(c.demo.spentaAt)}`
                         ) : demo ? (
                           "anteprima su workers.dev"
+                        ) : catenaViva(c) ? (
+                          `catena: ${NOME_PASSO[c.catena?.passo ?? ""] ?? c.catena?.passo ?? "in coda"}`
                         ) : (
                           "senza sito"
                         )}
@@ -607,7 +668,18 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
                         {abb ? (
                           <AbbonamentoBadge a={abb} /> /* paga già, anche senza sito: si vede */
                         ) : !dominio ? (
-                          demo ? (
+                          demoAccesa(c) ? (
+                            <>
+                              <Badge tone="idle">Demo online</Badge>
+                              <span>dal {ggmm(demoAccesa(c)!.pubblicataAt)}</span>
+                            </>
+                          ) : c.catena?.stato === "ferma" ? (
+                            <Badge tone="err">Catena ferma</Badge>
+                          ) : catenaViva(c) ? (
+                            <Badge tone="brand">Catena in corso</Badge>
+                          ) : c.catena?.stato === "demo_pronta" && c.steps.build.stato === "verificato" ? (
+                            <Badge tone="warn">Demo da controllare</Badge>
+                          ) : demo ? (
                             <>
                               <Badge tone="idle">Demo inviata</Badge>
                               {c.steps.build.deploy?.deployedAt && <span>il {ggmm(c.steps.build.deploy.deployedAt)}</span>}

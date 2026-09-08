@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { btnPrimary, btnSecondary } from "./ui";
+import { btnPrimary, btnSecondary, btnGhost } from "./ui";
 import { ConfirmDialog } from "./confirm-dialog";
 
 /**
@@ -157,14 +157,21 @@ export function ApiKeysPanel({ aperto = false }: { aperto?: boolean }) {
   );
 }
 
+/**
+ * Richiesta nuova dal form: «Avvia demo» (primaria: importa e lancia subito la
+ * catena automatica, poi apre l'hub) + «Importa soltanto» (ghost: per guardare
+ * l'intake prima). Decisione Mattia 2026-09-08.
+ */
 export function ImportButton({ submissionId }: { submissionId: string }) {
   const router = useRouter();
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<"avvia" | "importa" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confermaSlug, setConfermaSlug] = useState<string | null>(null);
+  const [avviaDopo, setAvviaDopo] = useState(false);
 
-  async function doImport(overwrite = false) {
-    setBusy(true);
+  async function doImport(overwrite = false, avvia = avviaDopo) {
+    setBusy(avvia ? "avvia" : "importa");
+    setAvviaDopo(avvia);
     setError(null);
     const res = await fetch("/api/clients", {
       method: "POST",
@@ -173,11 +180,18 @@ export function ImportButton({ submissionId }: { submissionId: string }) {
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
+      if (avvia) {
+        const c = await fetch(`/api/clients/${data.slug}/catena`, { method: "POST" });
+        if (!c.ok) {
+          const e = await c.json().catch(() => ({}));
+          setError(`importato, ma la catena non è partita: ${e.error ?? c.status}`);
+        }
+      }
       router.push(`/clienti/${data.slug}`);
       router.refresh();
       return;
     }
-    setBusy(false);
+    setBusy(null);
     if (res.status === 409) {
       setConfermaSlug(data.slug); // apre il dialog di conferma reimport
     } else {
@@ -187,9 +201,14 @@ export function ImportButton({ submissionId }: { submissionId: string }) {
 
   return (
     <div className="flex flex-col items-end gap-1">
-      <button className={btnSecondary} disabled={busy} onClick={() => doImport()}>
-        {busy ? "Importo…" : "Importa"}
-      </button>
+      <div className="flex items-center gap-2">
+        <button className={btnGhost} disabled={busy !== null} onClick={() => doImport(false, false)}>
+          {busy === "importa" ? "Importo…" : "Importa soltanto"}
+        </button>
+        <button className={btnPrimary} disabled={busy !== null} onClick={() => doImport(false, true)}>
+          {busy === "avvia" ? "Avvio…" : "Avvia demo"}
+        </button>
+      </div>
       {error && <p className="max-w-xs text-right text-xs text-err">{error}</p>}
       <ConfirmDialog
         open={confermaSlug !== null}
