@@ -1,0 +1,28 @@
+{
+  "assegnazioni": [
+    {
+      "slug": "zz-scroll-test",
+      "mercato": {
+        "macroSettore": "edilizia",
+        "comune": "puglia (città da confermare, indirizzo: via carlo d'ambrosio 101)"
+      },
+      "preset": "meridian",
+      "presetVersion": "1.0.0",
+      "hueBucket": 7,
+      "varianti": {},
+      "data": "2026-07-12T06:36:49.456Z"
+    },
+    {
+      "slug": "cavaliere-build-srls",
+      "mercato": {
+        "macroSettore": "edilizia",
+        "comune": "cologno monzese"
+      },
+      "preset": "meridian",
+      "presetVersion": "1.0.0",
+      "hueBucket": 1,
+      "varianti": {},
+      "data": "2026-07-13T15:44:48.642Z"
+    }
+  ]
+}
