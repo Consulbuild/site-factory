@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { KNOWN_KEYS, KEY_LABELS, type KeyName, getSecret, hasSecret, secretHint, setSecret } from "@/lib/secrets";
-import { listSubmissions } from "@/lib/tally";
 import { umamiLogin, n8nPing, registraCliente } from "@/lib/integrazioni";
 import { stripePing } from "@/lib/stripe";
 import { gatusPing } from "@/lib/gatus";
@@ -21,14 +20,6 @@ export async function GET() {
 
 /** Prova reale della key prima di salvarla. Ritorna null se ok, il motivo se no. */
 async function provaKey(name: KeyName, key: string): Promise<string | null> {
-  if (name === "TALLY_API_KEY") {
-    try {
-      await listSubmissions(key);
-      return null;
-    } catch (e) {
-      return e instanceof Error ? e.message : String(e);
-    }
-  }
   if (name === "RECRAFT_API_KEY") {
     const r = await fetch("https://external.api.recraft.ai/v1/users/me", {
       headers: { Authorization: `Bearer ${key}` },

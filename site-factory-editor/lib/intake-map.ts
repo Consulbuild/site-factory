@@ -1,7 +1,8 @@
 // Campi condivisi tra brief.json (input Copywriter) e intake.json (slot del
 // blueprint): il salvataggio dalla GUI è un dual-write che passa SEMPRE da qui.
-// ⚠ Accoppiato al form Tally: se cambia la tabella Q in
-// site-renderer/scripts/intake-tally.ts va aggiornata anche questa mappa.
+// ⚠ Accoppiato al form sito.consulbuild.com: se cambia mappaLead in
+// lib/inbox-form.ts (o le annotazioni `campo:` di site-intake/src/data/domande.ts)
+// va aggiornata anche questa mappa.
 
 export const BRIEF_TO_INTAKE: Record<string, string> = {
   azienda: "meta.businessName",

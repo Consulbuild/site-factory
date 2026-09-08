@@ -12,7 +12,6 @@ const SECURITY = "/usr/bin/security";
 const SERVICE = "site-factory";
 
 export const KNOWN_KEYS = [
-  "TALLY_API_KEY",
   "BFL_API_KEY",
   "RECRAFT_API_KEY",
   "CLOUDFLARE_API_TOKEN",
@@ -28,7 +27,6 @@ export const KNOWN_KEYS = [
 export type KeyName = (typeof KNOWN_KEYS)[number];
 
 export const KEY_LABELS: Record<KeyName, string> = {
-  TALLY_API_KEY: "Tally (import form)",
   BFL_API_KEY: "Black Forest Labs (immagini FLUX.2)",
   RECRAFT_API_KEY: "Recraft (logo vettoriale)",
   CLOUDFLARE_API_TOKEN: "Cloudflare (token deploy Workers)",

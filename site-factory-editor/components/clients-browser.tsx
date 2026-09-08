@@ -24,12 +24,12 @@ import {
   LinkIcon,
   Trash2,
 } from "lucide-react";
-import type { HomeData } from "@/lib/tally";
+import type { HomeData } from "@/lib/home-data";
 import type { ClientSummary } from "@/lib/clients";
 import { type Portafoglio, dominioDi, isDemo, daSviluppare, attivo, giu, inRitardo, senzaAbbonamento } from "@/lib/portafoglio-shared";
 import { Badge, Banner, btnPrimary, btnSecondary, btnGhost, formatDate, EmptyState } from "./ui";
 import { AbbonamentoBadge, SitoStato, Skeleton, euro, faMin, ggmm, oraBreve } from "./portafoglio-ui";
-import { TallySetup, ImportButton, RetryTally } from "./home";
+import { ImportButton } from "./home";
 import { EliminaClienteDialog } from "./elimina-cliente-dialog";
 
 const norm = (s: string) =>
@@ -331,13 +331,11 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
       const nuovi = fresh.nonImportati.filter((s) => !prima.has(s.id)).length;
       setData(fresh);
       setRefreshMsg(
-        fresh.tally === "key_mancante"
-          ? "Configura prima la API key di Tally (Impostazioni)."
-          : fresh.tally === "errore"
-            ? `Tally non raggiungibile: ${fresh.tallyError ?? ""}`
-            : nuovi > 0
-              ? `${nuovi} ${nuovi === 1 ? "nuova richiesta" : "nuove richieste"} dal form`
-              : "Nessuna nuova richiesta",
+        fresh.inbox === "non_raggiungibile"
+          ? "Cartella _inbox di Google Drive non raggiungibile: Drive Desktop è attivo?"
+          : nuovi > 0
+            ? `${nuovi} ${nuovi === 1 ? "nuova richiesta" : "nuove richieste"} dal form`
+            : "Nessuna nuova richiesta",
       );
     } catch (e) {
       setRefreshMsg(`errore: ${e instanceof Error ? e.message : String(e)}`);
@@ -355,7 +353,7 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
             onClick={refresh}
             disabled={refreshing}
             className={btnSecondary}
-            title="Interroga di nuovo il form Tally e recupera eventuali nuove richieste"
+            title="Rilegge la cartella _inbox di Google Drive e mostra le nuove richieste dal form"
           >
             <RefreshCw aria-hidden className={`size-3.5 ${refreshing ? "animate-spin" : ""}`} />
             {refreshing ? "Controllo…" : "Controlla nuovi dal form"}
@@ -550,7 +548,7 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
               }
               hint={
                 data.clients.length === 0
-                  ? "Le submission del form Tally appariranno qui sotto: importale per iniziare."
+                  ? "Le richieste dal form sito.consulbuild.com appariranno qui sotto: importale per iniziare."
                   : undefined
               }
             />
@@ -673,15 +671,11 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
       </section>
 
       {/* Nuove richieste dal form (non importate) */}
-      {data.tally === "key_mancante" ? (
-        <TallySetup />
-      ) : data.tally === "errore" ? (
-        <section className="card flex items-center justify-between px-4 py-3">
-          <p className="text-sm text-muted">
-            Tally non raggiungibile: <span className="text-err">{data.tallyError}</span>
-          </p>
-          <RetryTally />
-        </section>
+      {data.inbox === "non_raggiungibile" ? (
+        <Banner tone="warn" title="Richieste dal form non raggiungibili">
+          La cartella <span className="mono">_inbox</span> di Google Drive non c&apos;è su questo Mac: controlla che Drive
+          Desktop sia attivo con l&apos;account dell&apos;agenzia, poi «Controlla nuovi dal form».
+        </Banner>
       ) : subs.length > 0 || (q && data.nonImportati.length > 0) ? (
         <section>
           <h2 className="text-sm font-semibold text-muted">
@@ -696,7 +690,7 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{s.businessName || "(senza nome)"}</div>
                     <div className="mono mt-0.5 truncate text-muted">
-                      {[s.fonte === "form" ? "sito.consulbuild.com" : "Tally", s.ownerName, formatDate(s.submittedAt), s.phone].filter(Boolean).join(" · ")}
+                      {["sito.consulbuild.com", s.ownerName, formatDate(s.submittedAt), s.phone].filter(Boolean).join(" · ")}
                     </div>
                   </div>
                   <ImportButton submissionId={s.id} />

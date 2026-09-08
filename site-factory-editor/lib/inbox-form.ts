@@ -63,7 +63,7 @@ function writeJson(file: string, data: unknown): void {
   fs.renameSync(file + ".tmp", file);
 }
 
-// Seconda fonte dei clienti, accanto a Tally (lib/tally.ts): le richieste del form
+// Unica fonte dei clienti (Tally dismesso il 2026-09-08): le richieste del form
 // sito.consulbuild.com che n8n (infra/n8n/bozza.json) lascia nel Drive dell'agenzia,
 // sincronizzato dal Mac in _inbox/<leadId>/ {lead.json, bozza.json, foto-NN-<nome>,
 // logo.<ext>}. Una richiesta è completa solo se c'è lead.json (bozza.json da sola =
@@ -149,8 +149,8 @@ const pulisciNome = (nome: string) =>
   nome.normalize("NFKD").replace(/[^\w.-]+/g, "-").replace(/-+/g, "-").toLowerCase().slice(0, 80) || "file";
 const nomeServer = (v: VoceFile) => (v.kind === "logo" ? `logo${(/\.[a-z0-9]+$/i.exec(v.nome)?.[0] ?? ".bin").toLowerCase()}` : `foto-${String(v.n).padStart(2, "0")}-${pulisciNome(v.nome)}`);
 
-// Regola kebab identica a site-renderer/scripts/intake-tally.ts (stesso slug per la
-// stessa ragione sociale, qualunque sia la fonte).
+// Regola kebab storica (stessa dell'import Tally dismesso): stesso slug per la
+// stessa ragione sociale, così i clienti importati prima restano deduplicati.
 const slugDi = (nome: string) =>
   nome
     .normalize("NFD")
@@ -276,9 +276,9 @@ function fileSincronizzato(file: string, bytes: number): boolean {
 }
 
 /**
- * Import di una richiesta del form → out/<slug>/ (stessa politica di
- * importSubmission in lib/tally.ts: dir temporanea, re-import che preserva
- * client.json e contesto.json). Alla fine la cartella sparisce da _inbox.
+ * Import di una richiesta del form → out/<slug>/: dir temporanea, poi rename;
+ * con overwrite (stesso slug già esistente) si preservano client.json e
+ * contesto.json. Alla fine la cartella sparisce da _inbox.
  */
 export function importLeadForm(id: string, overwrite = false): string {
   if (!ID_OK.test(id)) throw new Error("id non valido");
@@ -336,7 +336,9 @@ export function importLeadForm(id: string, overwrite = false): string {
     fs.renameSync(tmpDir, dest);
   }
 
-  // Stesso client.json di importSubmission (lib/tally.ts): stati preservati, intake da verificare.
+  // client.json: stati preservati in overwrite, intake da verificare. Un lead
+  // del form nasce in percorso «demo» (lib/schemas.ts); catena/demo di un
+  // eventuale cliente sovrascritto si preservano come gli step.
   const now = new Date().toISOString();
   const prev = fs.existsSync(path.join(dest, "client.json")) ? JSON.parse(fs.readFileSync(path.join(dest, "client.json"), "utf8")) : null;
   writeJson(path.join(dest, "client.json"), {
@@ -345,6 +347,9 @@ export function importLeadForm(id: string, overwrite = false): string {
     importedAt: prev?.importedAt ?? now,
     updatedAt: now,
     steps: { ...(prev?.steps ?? {}), intake: { stato: "da_verificare" }, contesto: prev?.steps?.contesto ?? { stato: "assente" } },
+    percorso: prev?.percorso ?? "demo",
+    ...(prev?.catena ? { catena: prev.catena } : {}),
+    ...(prev?.demo ? { demo: prev.demo } : {}),
   });
 
   fs.rmSync(src, { recursive: true, force: true }); // nella cartella sincronizzata = Cestino di Drive

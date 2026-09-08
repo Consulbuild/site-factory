@@ -1,8 +1,7 @@
 "use client";
 
-// Componenti interattivi della lista clienti: setup key first-run,
-// pannello Chiavi API (Keychain), bottone Importa (con conferma overwrite
-// su 409), riprova Tally.
+// Componenti interattivi della lista clienti: form generico per una API key,
+// pannello Chiavi API (Keychain), bottone Importa (con conferma overwrite su 409).
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -12,7 +11,7 @@ import { ConfirmDialog } from "./confirm-dialog";
 /**
  * Form generico di inserimento/aggiornamento di una API key: la valida con
  * una chiamata reale e la salva nel Keychain macOS (mai in chiaro su disco).
- * Riusato in home (Tally, pannello chiavi) e nelle schede che richiedono
+ * Riusato nel pannello chiavi e nelle schede che richiedono
  * una key mancante (es. Immagini → BFL).
  */
 export function KeySetup({
@@ -88,17 +87,6 @@ export function KeySetup({
       <p className="mt-1 text-sm text-muted">{description}</p>
       {form}
     </section>
-  );
-}
-
-export function TallySetup() {
-  return (
-    <KeySetup
-      name="TALLY_API_KEY"
-      title="Configura Tally"
-      description="Incolla la API key di Tally per vedere le submission del form. Viene salvata nel portachiavi macOS (Keychain), mai in chiaro su disco."
-      placeholder="tly-…"
-    />
   );
 }
 
@@ -221,14 +209,5 @@ export function ImportButton({ submissionId }: { submissionId: string }) {
         onCancel={() => setConfermaSlug(null)}
       />
     </div>
-  );
-}
-
-export function RetryTally() {
-  const router = useRouter();
-  return (
-    <button className={btnSecondary} onClick={() => router.refresh()}>
-      Riprova
-    </button>
   );
 }

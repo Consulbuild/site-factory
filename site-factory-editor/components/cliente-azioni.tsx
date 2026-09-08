@@ -1,12 +1,12 @@
 "use client";
 
 // Testata dell'hub cliente: contatti a copia rapida + menu azioni
-// (apri sito, reimporta da Tally con conferma, elimina forte).
+// (apri sito, elimina forte). Niente re-import: la richiesta del form viene
+// tolta da _inbox all'import (lib/inbox-form.ts).
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MoreHorizontal, ExternalLink, RefreshCw, Trash2, Phone, Mail } from "lucide-react";
-import { ConfirmDialog } from "./confirm-dialog";
+import { MoreHorizontal, ExternalLink, Trash2, Phone, Mail } from "lucide-react";
 import { EliminaClienteDialog } from "./elimina-cliente-dialog";
 
 function CopiaChip({
@@ -45,7 +45,6 @@ function CopiaChip({
 export function ClienteAzioni({
   slug,
   businessName,
-  submissionId,
   telefono,
   email,
   deployUrl,
@@ -53,7 +52,6 @@ export function ClienteAzioni({
 }: {
   slug: string;
   businessName: string;
-  submissionId: string;
   telefono?: string;
   email?: string;
   deployUrl?: string;
@@ -62,29 +60,9 @@ export function ClienteAzioni({
 }) {
   const router = useRouter();
   const [eliminaAperto, setEliminaAperto] = useState(false);
-  const [reimportaAperto, setReimportaAperto] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
-
-  async function reimporta() {
-    setReimportaAperto(false);
-    setMsg("Reimporto…");
-    const res = await fetch("/api/clients", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ submissionId, overwrite: true }),
-    });
-    if (res.ok) {
-      setMsg(null);
-      router.refresh();
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setMsg(data.error ?? `errore ${res.status}`);
-    }
-  }
 
   return (
     <div className="flex items-center gap-2">
-      {msg && <span className="text-xs text-muted">{msg}</span>}
       {telefono && <CopiaChip icona={Phone} valore={telefono} label="telefono" urgente={sitoGiu} />}
       {email && <CopiaChip icona={Mail} valore={email} label="email" />}
       <details className="relative">
@@ -105,16 +83,7 @@ export function ClienteAzioni({
               <ExternalLink className="size-4 text-muted" aria-hidden /> Apri il sito online
             </a>
           )}
-          <button
-            className="flex w-full items-center gap-2 rounded-ctl px-3 py-2 text-sm hover:bg-raise"
-            onClick={(e) => {
-              (e.target as HTMLElement).closest("details")?.removeAttribute("open");
-              setReimportaAperto(true);
-            }}
-          >
-            <RefreshCw className="size-4 text-muted" aria-hidden /> Reimporta da Tally…
-          </button>
-          <div className="my-1 border-t border-line" />
+          {deployUrl && <div className="my-1 border-t border-line" />}
           <button
             className="flex w-full items-center gap-2 rounded-ctl px-3 py-2 text-sm text-err hover:bg-err-bg"
             onClick={(e) => {
@@ -127,19 +96,6 @@ export function ClienteAzioni({
         </div>
       </details>
 
-      <ConfirmDialog
-        open={reimportaAperto}
-        title="Reimportare i dati dal form?"
-        message={
-          <>
-            I dati del form Tally sovrascrivono l&apos;intake, che tornerà «da verificare». Contesto, stato degli step e
-            storia del deploy vengono preservati.
-          </>
-        }
-        confirmLabel="Reimporta"
-        onConfirm={reimporta}
-        onCancel={() => setReimportaAperto(false)}
-      />
       <EliminaClienteDialog
         open={eliminaAperto}
         slug={slug}

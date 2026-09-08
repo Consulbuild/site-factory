@@ -183,7 +183,6 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
         <ClienteAzioni
           slug={slug}
           businessName={azienda}
-          submissionId={client.submissionId}
           telefono={brief.telefono ? String(brief.telefono) : undefined}
           email={brief.email ? String(brief.email) : undefined}
           deployUrl={deployUrl}

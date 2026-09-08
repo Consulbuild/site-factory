@@ -1,7 +1,7 @@
 # site-factory-editor
 
 Console locale della pipeline Site-factory (Fase C, parte 1). App Next.js per un solo
-operatore: importa le PMI dal form Tally, revisiona i dati, genera e verifica il
+operatore: importa le PMI dal form di sito.consulbuild.com, revisiona i dati, genera e verifica il
 **contesto arricchito** che alimenta gli agenti a valle. UI italiana, tema scuro.
 
 ## Prerequisiti
@@ -10,8 +10,11 @@ operatore: importa le PMI dal form Tally, revisiona i dati, genera e verifica il
 - **Login Claude Max attivo**: lo step «Genera contesto» lancia `claude -p` headless col
   tuo login Max (nessuna `ANTHROPIC_API_KEY`, nessuna API a pagamento). Se la sessione
   scade, l'editor lo segnala: esegui `claude login` nel terminale e riprova.
-- API key Tally: la incolli alla prima apertura (schermata «Configura Tally»); viene
-  salvata in `../site-renderer/.env` (gitignored, mai committata).
+- **Google Drive Desktop** attivo con l'account dell'agenzia: le richieste del form
+  arrivano (via n8n) nella cartella sincronizzata `site-factory-clienti/_inbox/`,
+  che l'editor legge da disco (`lib/inbox-form.ts`; override con `SF_INBOX_DIR`).
+- Le altre API key (BFL, Recraft, Cloudflare, VPS, Stripe) si incollano in
+  Impostazioni → «Chiavi API» e vivono nel Keychain macOS.
 
 ## Avvio
 
@@ -23,15 +26,15 @@ npm run dev       # http://localhost:3000
 
 ## Flusso
 
-1. **Lista** (`/`): clienti già importati + submission Tally da importare. Prima volta:
-   pannello per incollare la API key.
+1. **Lista** (`/`): clienti già importati + richieste del form da importare (lette da
+   `_inbox`; se la cartella manca lo dice un banner).
    - **Ricerca**: barra in cima che filtra live per nome azienda, referente o telefono
-     (case/accento-insensitive, telefono per sole cifre), su importati E nuovi da Tally.
-   - **Controlla nuovi dal form**: bottone che ri-interroga Tally e mostra le nuove
-     richieste (dedup per `submissionId`, nessun duplicato). Lo script `intake-tally.ts`
-     pagina tutte le submission del form (`--list-json`), quindi regge molti clienti.
-2. **Importa**: lancia `intake-tally.ts` → crea `../site-renderer/out/<slug>/` (intake,
-   brief, logo, raw-submission, client.json).
+     (case/accento-insensitive, telefono per sole cifre), su importati E nuove richieste.
+   - **Controlla nuovi dal form**: rilegge `_inbox` e mostra le nuove richieste (dedup
+     per `submissionId`, nessun duplicato).
+2. **Importa**: `importLeadForm` copia la richiesta in `../site-renderer/out/<slug>/`
+   (intake, brief, logo, foto dei lavori, raw-submission, client.json) e la toglie da
+   `_inbox` (nella cartella sincronizzata = Cestino di Drive: non è reimportabile).
 3. **Revisione intake** (`/clienti/<slug>/intake`): correggi i campi del form, i flag di
    qualità sono inline; salvare fa dual-write coerente brief+intake e segna «verificato».
 4. **Genera contesto** (`/clienti/<slug>/contesto`): l'enricher (`claude -p`, Opus 4.8,

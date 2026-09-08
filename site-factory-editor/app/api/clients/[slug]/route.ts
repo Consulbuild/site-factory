@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  * Eliminazione DIRETTA del cliente (decisione Mattia 2026-07-11): cancella
  * out/<slug> con tutti gli artifact. Difesa in profondità: il body deve
  * ripetere la ragione sociale esatta (la UI la fa digitare), e non si
- * elimina con un run in corso. La submission Tally resta reimportabile;
+ * elimina con un run in corso. La richiesta del form non è recuperabile (tolta da _inbox all'import);
  * un eventuale sito già deployato resta online (fuori scope, detto nel dialog),
  * ma NON resta nel registro del modulo, nel monitor né su Umami: la
  * deregistrazione è best effort (la cartella è già via; gli errori tornano

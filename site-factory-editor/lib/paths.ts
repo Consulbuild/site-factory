@@ -9,7 +9,6 @@ export const REPO_ROOT = path.resolve(process.cwd(), "..");
 export const SITE_RENDERER = path.join(REPO_ROOT, "site-renderer");
 export const OUT_DIR = path.join(SITE_RENDERER, "out");
 export const ENV_FILE = path.join(SITE_RENDERER, ".env");
-export const INTAKE_SCRIPT = path.join(SITE_RENDERER, "scripts", "intake-tally.ts");
 
 // Node e claude vivono in ~/.local/bin (non nel PATH di default dei processi GUI).
 const LOCAL_BIN = path.join(homedir(), ".local", "bin");
