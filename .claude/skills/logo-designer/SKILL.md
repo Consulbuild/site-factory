@@ -47,11 +47,21 @@ spiovente e camino, ingranaggio generico, scudo con spunta.
    (il ricoloro alla palette è automatico; ~$0.08/variante).
 3. Auto-scarto: elimina le varianti con più di ~3 colori residui, dettagli che
    spariscono a 32px (test favicon), o soggetti della lista nera.
-4. **Checkpoint umano**: presenta le sopravvissute affiancate (il titolare/agency
-   sceglie o chiede un'altra ronda con soggetto diverso).
-5. Output finale nel kit: `mark.svg` (ricolorato su primary), `mark-dark.svg`
-   (bianco, per sezioni scure), `favicon.svg` (quadrato). Il lockup completo
-   (mark + nome azienda) lo compone l'Header con la tipografia del preset.
+4. **Scelta della variante** — due modalità:
+   - **Checkpoint umano** (uso in chat): presenta le sopravvissute affiancate
+     (il titolare/agency sceglie o chiede un'altra ronda con soggetto diverso).
+   - **Modalità pipeline** (il prompt dell'editor la dichiara, step `logo` della
+     catena demo): scegli TU la migliore tra le sopravvissute — leggibilità a
+     32px, silhouette netta, pertinenza col mestiere reale, zero cliché — e
+     motiva la scelta e ogni scarto in `logo-trace.json`
+     (`{prompt, model, scelta, motivo, varianti:[{file, esito, motivo}]}`).
+     L'umano rivede la scelta (e può cambiarla tra le varianti conservate)
+     nel controllo finale della demo.
+5. Output finale nel kit, alla RADICE del workspace cliente (`out/<slug>/`,
+   dove la build cerca `./mark.svg`): `mark.svg` (ricolorato su primary),
+   `mark-dark.svg` (bianco, per sezioni scure), `favicon.svg` (quadrato);
+   le varianti restano in `out/<slug>/logo/`. Il lockup completo (mark + nome
+   azienda) lo compone l'Header con la tipografia del preset.
 
 ## Vincoli operativi
 
@@ -61,4 +71,6 @@ spiovente e camino, ingranaggio generico, scudo con spunta.
   V4.1 standard vector come alternativa (più fedele al prompt, niente style curati).
 - Se il cliente HA caricato un logo dal form: questa skill NON si usa (il logo del
   cliente è verità; al massimo si vettorizza con l'endpoint vectorize, $0.01).
-- Fermati al checkpoint: mai scegliere la variante finale da solo.
+- In chat fermati al checkpoint: mai scegliere la variante finale da solo.
+  In modalità pipeline la scelta autonoma è richiesta, ma sempre motivata nel
+  trace e mai fuori dai criteri del punto 4.

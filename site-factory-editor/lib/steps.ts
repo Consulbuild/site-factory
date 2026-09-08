@@ -13,6 +13,8 @@ import {
   readImagesTrace,
   readImageReview,
   readLavori,
+  readIntake,
+  writeIntake,
   patchClientState,
   type Brief,
 } from "./clients";
@@ -55,7 +57,7 @@ import type { RunEvent, PhaseResult, StepIO } from "./run-step";
 // entry qui, NON nuove route. Il gate d'ingresso, l'artifact a monte
 // (staleness) e la validazione post-run restano dichiarativi.
 
-export type StepKey = "contesto" | "palette" | "copy" | "images" | "legale" | "build";
+export type StepKey = "contesto" | "palette" | "logo" | "copy" | "images" | "legale" | "build";
 // "lavori" = side-run dello step immagini: scrive alt/didascalia delle foto reali
 // (lavori.json) SENZA toccare lo stato verificato di hero/card (vedi runStep).
 export type RunMode = "generate" | "update" | "critic" | "regen" | "partial" | "lavori";
@@ -240,6 +242,92 @@ export const STEPS: Record<StepKey, StepDef> = {
       // con la famiglia di tinta effettivamente scelta
       const palette = readPalette(slug);
       if (palette) registraAssegnazione(slug, hueBucket(palette["brand.palette.primary"]));
+    },
+  },
+
+  // Step logo (2026-09-08): SOLO se il cliente non ha caricato un logo. La skill
+  // logo-designer genera 6 simboli vettoriali (Recraft), scarta i cliché e in
+  // modalità pipeline sceglie da sola; l'umano rivede (e può cambiare variante)
+  // nel controllo finale della demo. Kit alla radice del workspace: è lì che
+  // build.ts risolve «./mark.svg». Mai testo nel mark: il lockup lo fa l'Header.
+  logo: {
+    stateKey: "logo",
+    artifact: "mark.svg",
+    upstream: ["palette.json"],
+    gate(slug) {
+      if (readClientState(slug).steps.palette.stato !== "verificato") {
+        return "Prima conferma la palette: il simbolo si ricolora sul primary curato.";
+      }
+      if (readIntake(slug)?.["brand.logo"]) return "Il cliente ha fornito un logo: il logo-designer non si usa.";
+      if (readContesto(slug)?.materiali.logo !== false) return "Il contesto dice che il cliente ha un logo: il logo-designer non si usa.";
+      if (!getSecret("RECRAFT_API_KEY")) return "RECRAFT_API_KEY non configurata: aggiungila dal pannello «Chiavi API».";
+      return null;
+    },
+    run: async function* (slug, _ctx, io) {
+      const palette = readPalette(slug);
+      if (!palette) return { ok: false, error: "palette.json assente: il mark si ricolora sul primary della palette" };
+      const primary = palette["brand.palette.primary"];
+      const base = `site-renderer/out/${slug}`;
+      const script = "node site-renderer/scripts/generate-logo.mjs";
+      return yield* io.claude({
+        phase: "logo-designer",
+        prompt:
+          `Usa la skill logo-designer per il cliente «${slug}» in MODALITÀ PIPELINE: nessun checkpoint umano, ` +
+          `scegli TU la variante migliore e motiva scelta e scarti nel trace.\n` +
+          `Input: ${base}/contesto.json (servizi reali, settore, identità — il soggetto viene da qui) e ` +
+          `${base}/palette.json (primary ${primary}).\n` +
+          `1) Genera 6 varianti, una per comando, con seed diversi e lo stesso soggetto: ` +
+          `\`${script} --prompt "<soggetto + formula tecnica della skill>" --color "${primary}" --out ${base}/logo/mark-N.svg\` ` +
+          `con N da 1 a 6 (lo script scrive anche mark-N-dark.svg).\n` +
+          `2) Applica l'auto-scarto della skill (lista nera dei cliché, colori residui, dettagli che spariscono a 32px) leggendo gli SVG.\n` +
+          `3) Scegli UNA variante sopravvissuta con i criteri della skill (punto 4, modalità pipeline).\n` +
+          `4) Materializza il kit finale alla RADICE del workspace col ricoloro offline: ` +
+          `\`${script} --recolor ${base}/logo/mark-N.svg --color "${primary}" --out ${base}/mark.svg\` (produce mark.svg e mark-dark.svg) ` +
+          `e \`${script} --recolor ${base}/logo/mark-N.svg --color "${primary}" --out ${base}/favicon.svg\`.\n` +
+          `5) Scrivi ${base}/logo-trace.json: {"prompt": "…", "model": "…", "scelta": "logo/mark-N.svg", "motivo": "…", ` +
+          `"varianti": [{"file": "logo/mark-N.svg", "esito": "scelta" | "scartata", "motivo": "…"}, …]} (tutte e 6).\n` +
+          `Nessun altro file. Chiudi con UNA riga: la variante scelta e perché.`,
+        allowed: [...READ_SKILL_WRITE, "Bash(node site-renderer/scripts/generate-logo.mjs:*)"],
+        disallowed: ["WebSearch", "WebFetch", "Edit", "Task"],
+        env: { RECRAFT_API_KEY: getSecret("RECRAFT_API_KEY") ?? "" },
+        timeoutMs: 15 * 60 * 1000,
+        maxTurns: 60,
+      });
+    },
+    validate(slug) {
+      const dir = path.join(OUT_DIR, slug);
+      for (const f of ["mark.svg", "mark-dark.svg", "favicon.svg"]) {
+        let svg = "";
+        try {
+          svg = fs.readFileSync(path.join(dir, f), "utf8");
+        } catch {
+          return { ok: false, errore: `${f} non scritto alla radice del workspace` };
+        }
+        if (!svg.includes("<svg")) return { ok: false, errore: `${f} non è un SVG` };
+      }
+      let trace: { scelta?: unknown; varianti?: unknown };
+      try {
+        trace = JSON.parse(fs.readFileSync(path.join(dir, "logo-trace.json"), "utf8"));
+      } catch {
+        return { ok: false, errore: "logo-trace.json non scritto o non valido" };
+      }
+      if (typeof trace.scelta !== "string" || !Array.isArray(trace.varianti) || trace.varianti.length === 0) {
+        return { ok: false, errore: "logo-trace.json: servono «scelta» e «varianti[]»" };
+      }
+      return { ok: true };
+    },
+    afterSuccess(slug) {
+      // Il mark entra nello slot brand (pattern di logo/route.ts updateIntakeLogo):
+      // l'Header compone mark + nome; il favicon è il mark stesso.
+      const intake = readIntake(slug);
+      if (intake) {
+        intake["brand.mark"] = { src: "./mark.svg", alt: `Logo ${intake["meta.businessName"] ?? slug}` };
+        intake["brand.favicon"] = "./favicon.svg";
+        writeIntake(slug, intake);
+      }
+      patchClientState(slug, (s) => {
+        s.steps.logo.upstream = computeUpstream(slug, ["palette.json"]);
+      });
     },
   },
 

@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { clientDir } from "@/lib/paths";
 import { writeJson } from "@/lib/clients";
+import { confermaLogo, rispostaConferma } from "@/lib/conferme";
 
 export const dynamic = "force-dynamic";
 
@@ -87,6 +88,14 @@ export async function PUT(req: Request, ctx: { params: Promise<{ slug: string }>
   const alt = `Logo ${intake["meta.businessName"] ?? slug}`;
   updateIntakeLogo(dir, { src: `./logo.${ext}`, alt });
   return NextResponse.json({ ok: true, ext });
+}
+
+/** Conferma umana dello step logo (kit del logo-designer): lib/conferme.ts. */
+export async function POST(_req: Request, ctx: { params: Promise<{ slug: string }> }) {
+  const { slug } = await ctx.params;
+  if (!resolveDir(slug)) return NextResponse.json({ error: "cliente non trovato" }, { status: 404 });
+  const { body, status } = rispostaConferma(confermaLogo(slug));
+  return NextResponse.json(body, { status });
 }
 
 /** Elimina il logo del cliente. */

@@ -44,6 +44,7 @@ const REGOLE: Array<[RegExp, AgenteKey, string?]> = [
 const PER_STEP: Record<string, AgenteKey> = {
   contesto: "contesto",
   palette: "palette",
+  logo: "logo",
   copy: "copy",
   images: "immagini",
   legale: "legale",
@@ -64,6 +65,8 @@ export function agenteDaFase(fase: string | null, step?: string, kind?: "cliente
 /** Rotta della scheda che ospita il run. */
 export function percorsoRun(r: { kind: string; slug?: string; step?: string; runId?: string }): string {
   if (r.kind === "fabbrica") return `/fabbrica/run/${r.runId}`;
+  // Il logo non ha una scheda: vive nella riga dell'hub (varianti e scelta).
+  if (r.step === "logo") return `/clienti/${r.slug}`;
   const scheda = r.step === "images" ? "immagini" : r.step;
   return `/clienti/${r.slug}/${scheda}`;
 }
@@ -74,6 +77,7 @@ export function nomeStep(r: { kind: string; step?: string }): string {
   const nomi: Record<string, string> = {
     contesto: "Contesto",
     palette: "Palette",
+    logo: "Logo",
     copy: "Copy",
     images: "Immagini",
     legale: "Legale",
