@@ -1,11 +1,10 @@
 # Piano — Dashboard clienti nell'editor (Parte 5)
 
-Piano vivo della scheda. Il piano approvato sta in
-`~/.claude/plans/ora-voglio-che-rifletti-zesty-swan.md` (sezione «Dashboard clienti»);
-qui il decision log, lo stato e i punti aperti. Studio UX: mockup a dati finti
-(artifact «Cruscotto Clienti Site-factory») criticato con impeccable (21/40) e riscritto
-sulle correzioni, verificato da Mattia il 2026-09-06. Dati disponibili:
-`docs/inventario-dati-dashboard.md`.
+Piano vivo della scheda (citato da `cliente-stato.tsx`, `clients-browser.tsx`,
+`lib/integrazioni.ts`, `lib/portafoglio.ts`, `lib/secrets.ts` come sede delle decisioni).
+Implementata e verificata con le chiavi reali il 2026-09-06; studio UX su mockup
+criticato con impeccable e riscritto. Inventario storico dei dati disponibili:
+`docs/archivio/inventario-dati-dashboard-2026-09.md`.
 
 ## Decisioni (Mattia, 2026-09-05/06)
 
@@ -47,23 +46,14 @@ sulle correzioni, verificato da Mattia il 2026-09-06. Dati disponibili:
 
 ## Stato
 
-- 2026-09-06: piano approvato; precondizione rispettata (Piano 2 committato: tabella
-  Lead e nodo «Registra lead» già in `sf-form-lead`, quindi `infra/n8n/form-lead.json`
-  è fuori perimetro).
-- 2026-09-06, sera: **M1–M5 fatte e verificate** con le chiavi reali (commit d3d9fff,
-  94c6e1c, 5f987e2, e M5). Nucleo puro + cache (`lib/cache.ts`, `portafoglio-shared.ts`,
-  `stripe.ts`, `gatus.ts`, `portafoglio.ts`; 43 casi in `scripts/test-portafoglio.ts`),
-  `GET /api/portafoglio` e `POST /api/portafoglio/collega`, home, hub, Impostazioni.
-  Dati veri visti: Gatus (Cavaliere su, uptime 100 %), Umami (visitatori), lead n8n
-  (tabella vuota: conta da ora), Stripe live (3 abbonamenti attivi a 99 €/mese: 1
-  collegato via e-mail a un cliente in lavorazione, 2 «da collegare» perché quei
-  clienti non sono ancora nell'editor; lordo 2026 letto; **netto vuoto finché la
-  chiave non ha «Balance read»**).
+- Fatta e verificata con le chiavi reali (2026-09-06): nucleo puro + cache
+  (`lib/cache.ts`, `portafoglio-shared.ts`, `stripe.ts`, `gatus.ts`, `portafoglio.ts`;
+  banco `scripts/test-portafoglio.ts`), `GET /api/portafoglio` e
+  `POST /api/portafoglio/collega`, home, hub, Impostazioni.
 - Correzione emersa dai dati reali: **Da sviluppare = senza dominio** a prescindere dal
-  pagamento (chi paga già e non ha il sito è il primo da fare; la sottoriga dice «N già
-  paganti»); l'abbonamento si mostra in riga anche senza sito.
-- Non fatto dall'editor: la prova di «Collega» su un abbonamento live (scrive sui dati
-  Stripe di Mattia: la fa lui dalla UI quando quei clienti saranno nell'editor).
+  pagamento (la sottoriga dice «N già paganti»); l'abbonamento si mostra in riga anche
+  senza sito. Il netto resta vuoto finché la chiave Stripe non ha «Balance read».
+- Non provato dall'editor: «Collega» su un abbonamento live (lo fa Mattia dalla UI).
 
 ## Punti aperti
 

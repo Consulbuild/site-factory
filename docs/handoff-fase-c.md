@@ -1,227 +1,76 @@
-# Handoff Fase C — sviluppo schede editor (aggiornato 2026-07-11)
+# Handoff Fase C — stato dei lavori e prossimi passi (aggiornato 2026-09-12)
 
-## Refactoring UI v2 (2026-07-11, COMPLETO)
+Regole, architettura e mappa del repo sono in `CLAUDE.md` (letto automaticamente); il
+debug delle run in `docs/DEBUG.md`; la UI dell'editor in
+`site-factory-editor/DESIGN-SYSTEM.md`. Qui solo lo stato corrente, i punti aperti e le
+prossime schede.
 
-**Per sviluppare nuove schede: `site-factory-editor/DESIGN-SYSTEM.md`** è il manuale
-operativo (token, componenti condivisi, regole, ricetta scheda) — leggerlo prima di
-toccare la UI dell'editor.
+## Stato (tutto verificato E2E)
 
-L'editor ha un design nuovo (spec: `site-factory-editor/DESIGN-REFACTOR-2026-07.md`,
-riferimento visivo fornito da Mattia): shell con sidebar+topbar (ricerca clienti
-globale ⌘K, chiavi API in /impostazioni), primario blu royal + Inter (il teal resta
-ai siti generati), card con ombre soffuse nei due temi (dark = grafite blu).
-Novità operative da conoscere:
-- **I run AI girano in background** (`lib/run-bus.ts`): navigare o chiudere il tab
-  NON li uccide più; stop esplicito (DELETE sulla route del run o dalla status bar);
-  eventi persistiti in `run.ndjson` (clienti: `out/<slug>/logs/`, fabbrica: nella
-  cartella run); run interrotti da riavvio rilevati e riparati da `/api/runs/active`.
-- **Status bar agenti** in basso ovunque: sfera per agente (fasi reali + tempo mono,
-  mai % inventate), pannello espanso con timeline fasi e log live, card «Agenti al
-  lavoro» in sidebar.
-- Dashboard clienti con KPI card-filtro e **eliminazione diretta** (dialog che
-  richiede la ragione sociale digitata; deciso da Mattia 2026-07-11); hub col
-  prossimo passo primario; ⌘S salva nelle schede; fabbrica con run/riferimenti
-  eliminabili, shot visibili nel dettaglio run, audit con tokenDiff e campi meta
-  completi.
+- **Editor**: schede Intake, Contesto, Palette (+ assegnazione deterministica del
+  preset), Logo (riga con varianti; il simbolo si genera nella catena), Copy (3 round di
+  critico dopo il gate anti-slop `check-slop.mjs`), Immagini (+ «I nostri lavori» da
+  foto reali), Legale (foro con evidenza, catena a 3 lenti, conferma condizionata),
+  Build (deterministica, anteprima :4399), Deploy su Cloudflare Workers con dominio
+  custom, dashboard clienti (Stripe/Gatus/n8n/Umami), Impostazioni (chiavi nel Keychain,
+  login Claude sorvegliato). Run in background (`lib/run-bus.ts`), status bar agenti,
+  staleness a valle con ack. Piani vivi: `docs/piano-scheda-legale.md`,
+  `docs/piano-dashboard-clienti.md`.
+- **Modalità demo** (2026-09-08): lead dal form → «Avvia demo» → catena automatica
+  (`lib/catena.ts`: coda a 2, riprendibile, si ferma al primo critico FAIL) → build
+  `noindex` → «Pubblica demo» su `<nome-azienda>.demo.consulbuild.com` (worker
+  `<slug>-demo`, scadenza 15 gg, sweep orario da `instrumentation.ts`). «Il cliente si
+  è abbonato» → percorso completo → legale → dominio → build → deploy (spegne la demo).
+  Provato E2E su `zz-test-demo`.
+- **Form bozza** (`site-intake/`, online su https://sito.consulbuild.com dal
+  2026-09-07): 21 domande, foto in originale, presa visione privacy; n8n `sf-bozza` →
+  Google Drive `_inbox/<leadId>/` → «Importa» nell'editor (`lib/inbox-form.ts`).
+  Tally dismesso. Piano vivo: `docs/piano-form-bozza.md`.
+- **VPS e integrazioni** (2026-09-05/06): build con dominio → Umami + modulo reale;
+  deploy → registro n8n + monitor Gatus; report mensile al rinnovo via Stripe
+  `invoice.upcoming` → n8n → Brevo (tabelle Lead/Report; il primo report reale parte da
+  solo al prossimo rinnovo di Cavaliere). Guida: `docs/vps-integrazioni-setup.md`.
+- **Fabbrica dei preset**: completa (M0–M9), libreria a 7 preset con «ferro» dal
+  pilota (`docs/piano-fabbrica-design-2026-07.md`). Prossimo passo naturale: la prima
+  run con riferimenti reali scelti da Mattia.
+- **Logo-lab** (`logo-lab/`, in corso): banco di prova per sostituire Recraft nella
+  generazione dei loghi; ciclo «Claude dà un prompt, Mattia testa a mano».
 
-Contesto minimo per riprendere il lavoro in una chat nuova. Le regole di ingaggio e
-l'architettura sono nel CLAUDE.md a root (letto automaticamente): qui solo stato e prossimi passi.
+## Clienti in `site-renderer/out/` (fuori git)
 
-## Stato
+- `cavaliere-build-srls`: online su cavalierebuild.it con modulo reale e Umami;
+  **resta la Conferma umana del legale** nella scheda.
+- `costruzioni-generali-…`: in lavorazione (contesto verificato; palette e copy da
+  verificare in scheda).
 
-Schede FATTE e verificate E2E: **Intake, Contesto, Palette, Copy** (+ ricerca clienti,
-import Tally, temi, staleness). Roadmap dettagliata nel CLAUDE.md (§Fase C).
-**Scheda Legale fatta (2026-08-03)**: step `legale` (foro dal circondario con
-evidenza → privacy/termini via skill + MCP → gate deterministici → montaggio →
-catena a 3 lenti → report), scheda con editor a blocchi e conferma condizionata,
-update-mode a 3 aree. Piano vivo e stato: `docs/piano-scheda-legale.md`.
-Avviso globale login CLI Claude (03/08): l'editor sorveglia `claude auth status`.
-Dev server: `cd site-factory-editor && npm run dev` → :3000 (spesso già attivo su :3311).
+## Punti aperti (Mattia)
 
-**Integrazioni VPS al deploy — codice fatto (2026-09-05, piano
-`~/.claude/plans/ora-voglio-che-rifletti-zesty-swan.md`)**: con dominio, la build
-registra il sito su Umami e cuoce nell'HTML script statistiche + action del modulo
-(env `UMAMI_HOST`/`UMAMI_WEBSITE_ID`/`FORM_ACTION`, come `SITE_URL`); il deploy
-registra il cliente in n8n (webhook `registra-cliente` → Data table `clienti`) e
-committa il monitor Gatus in `infra/gatus/config/clienti/<slug>.yaml` (Coolify
-ricostruisce da GitHub). Stato in `steps.build.{umamiWebsiteId,integrazioni,infra}`,
-interlock «ribuilda» esteso, `lib/integrazioni.ts`. Fatti di stack nel legale (area
-`stack`). **Lato VPS tutto configurato e verificato E2E il 2026-09-05** (guida
-`docs/vps-integrazioni-setup.md`; workflow n8n versionati in `infra/n8n/`, sync con
-`scripts/n8n-import.ts export|import`): cliente fittizio `zz-test-integrazione`
-build→deploy→delete verde, alert Telegram di Gatus ricevuto, e-mail lead via Brevo
-partita. Decisione: NIENTE notifiche lead all'agenzia (Telegram solo per servizi giù
-ed errori workflow). **Cavaliere pubblicato in sera con modulo reale + Umami**
-(legale riallineato in update-mode, catena PASS; lead «TEST» dal sito reale ok);
-test di robustezza superati (sf-errori → Telegram, reboot del VPS → tutto riparte
-da solo); Uptime Kuma eliminato. **Resta**: Conferma umana del legale di Cavaliere
-nella scheda.
+- Stripe: permesso «Balance read» sulla chiave ristretta (netto); collegare i 2
+  abbonamenti live «Futur Service» e «Design project» quando entrano nell'editor;
+  provare «Collega» dalla UI.
+- n8n: cancellare da UI le righe di prova in `Lead` e `Report` (del 6/9).
+- **Obbligo operativo** finché non è automatizzato: eliminare a mano (home → Elimina)
+  i clienti non convertiti entro 60 giorni dall'invio del modulo, come promesso
+  nell'informativa (n8n cancella solo la richiesta grezza su Drive).
+- Form: test su iPhone reale dentro Instagram; Turnstile solo se compare spam.
+- Backup: symlink `site-renderer/out` → Google Drive (memoria `backup-strategia`).
 
-**Modalità demo (2026-09-08, piano `~/.claude/plans/1-principalmente-si-ma-luminous-sifakis.md`)**:
-Tally rimosso (form `sito.consulbuild.com` unica sorgente, `lib/home-data.ts`);
-conferme degli step condivise in `lib/conferme.ts`; `client.json` con `percorso`
-demo|completo, `catena`, `demo`, step `logo`, `build.noindex`; step `logo`
-(logo-designer in modalità pipeline, kit alla radice del workspace); catena
-automatica `lib/catena.ts` (coda a 2, riprendibile, verdetti dei critici,
-limite Max → attesa/riprova); demo su worker `<slug>-demo` +
-`<nome>.demo.consulbuild.com` (`deployDemo`/`spegniDemo`/`prorogaDemo`), build
-`NOINDEX` (Base.astro), sweep orario delle scadenze (`instrumentation.ts`,
-`POST /api/demo/sweep {dryRun}`); UI: card Catena nell'hub, home, riga Logo con
-varianti (`DESIGN-BRIEF.md`). Informativa completa del form su
-`sito.consulbuild.com/privacy` (**deploy del worker sf-bozza dopo l'ok di
-Mattia**). Provato E2E su `zz-test-demo` (copia di Costruzioni): logo step
-reale (7′, 6 varianti), catena → demo_pronta, «Pubblica demo» dalla UI →
-host con TLS in ~4′, sweep. **Chiusi lo stesso giorno (ok Mattia)**:
-`generate-logo.mjs` scarta il path a tutta tela di Recraft (il mark usciva
-come quadrato pieno; Cavaliere in produzione usa ancora il suo `mark.png`);
-`scripts/test-demo.ts` (banco `demoScaduta`/`isDemo`/`etichettaDemo`, ora in
-`portafoglio-shared.ts`); host demo dal **nome dell'azienda**
-(`cavaliere-build-srls.demo.consulbuild.com`); form: marchio →
-www.consulbuild.com, informativa breve/completa riviste dopo
-`analisi_base_giuridica` (6.1.b confermata, DPIA non dovuta): dichiarate la
-pubblicazione temporanea della demo e la licenza/garanzia su foto e logo,
-spunta = presa visione + accettazione condizioni; worker `sf-bozza`
-ridistribuito. **Obbligo operativo** finché non è automatizzato: cancellare
-a mano (home → Elimina) i clienti non convertiti entro 60 giorni dall'invio
-del modulo, come promesso nell'informativa (n8n cancella da solo solo la
-richiesta grezza su Drive).
+## Prossime schede (una per volta, sempre pianificando prima)
 
-**Piano 2 — report mensile al rinnovo (2026-09-06, piano in
-`~/.claude/plans/…zesty-swan.md` §Piano 2)**: Stripe è l'orologio (`invoice.upcoming`
-3 giorni prima, Stripe Trigger in n8n) → `sf-report-rinnovo` riconosce il cliente nel
-registro (id Stripe memorizzato → slug nei metadati → e-mail → nome), dedupe su tabella
-Report, legge Umami (visitatori/visite con confronto, eventi Chiama/WhatsApp/e-mail,
-sezioni viste, dispositivi, totali dall'inizio) + tabella Lead + Gatus (uptime e tempo
-di risposta a 30 gg, API pubbliche) → e-mail HTML da `report@notifiche.consulbuild.com`
-(Reply-To info@). Webhook `report-invia` (header segreto) per rimandare/anteprima
-(`to`, `dryRun`). Tabella **Lead** scritta da `sf-form-lead` DOPO l'e-mail (una riga =
-una richiesta recapitata). Renderer: `Base.astro` traccia i clic tel:/mailto:/wa.me
-come eventi Umami, di serie con lo script. Verificato su Cavaliere (dryRun, invio reale
-a info@, slug ignoto → Telegram, eventi visibili in Umami). **Niente WhatsApp** (deciso).
-**Chiuso il 2026-09-06 sera**: E2E in sandbox con test clock passato (evento → match
-per e-mail → id Stripe memorizzato → report; secondo evento fermato dalla dedupe),
-credenziale n8n sulla chiave live e webhook ricreato nell'account live, e-mail del lead
-al cliente rifatta con lo stesso impianto del report. Il primo report reale parte da
-solo al prossimo rinnovo di Cavaliere. **Resta a Mattia**: cancellare da UI n8n le
-righe di prova in `Lead` (zz-test-lead, zz-test-report) e in `Report` (tutte quelle
-del 6/9). Piano 3 possibile: eventi Chiama/WhatsApp nella dashboard, Brevo
-deliverability, Gatus cert/disco VPS.
-**Parte 5 — Dashboard clienti nell'editor (2026-09-06, piano vivo in
-`docs/piano-dashboard-clienti.md`)**: home con card-filtro **Da sviluppare · Attivi ·
-Siti down · In ritardo** (sottoriga = chi o composizione; «—» con la causa a fonte non
-configurata/non raggiungibile), riga Entrate (MRR, incassato lordo/netto, «Aggiorna»),
-banner di pagina (mai flottanti), riga cliente essenziale (abbonamento · sito su/giù ·
-lead 30 gg · 7 tacche con Legale, dominio cliccabile); hub con card Sito · Abbonamento
-· Lead · Visite (3 fatti e link Gatus/Stripe/Umami per colonna, chip telefono rosso a
-sito giù); Impostazioni con `STRIPE_API_KEY`/`GATUS_PASSWORD` e «Collegamenti Stripe»
-(«Collega…» con conferma scrive `metadata.slug`). Letture con cache in memoria
-(`lib/cache.ts`: live 2 min, orario 1 h) in `lib/portafoglio.ts` (Stripe `lib/stripe.ts`,
-Gatus `lib/gatus.ts`, lead/registro/Umami in `lib/integrazioni.ts`), 43 casi in
-`scripts/test-portafoglio.ts`. Verificato con le chiavi reali. **Resta a Mattia**: dare
-alla chiave ristretta il permesso «Balance read» (netto), collegare i 2 abbonamenti
-live «Futur Service» e «Design project» quando quei clienti entrano nell'editor,
-provare «Collega» dalla UI. Idee dopo: «ignora» per abbonamenti estranei, eventi
-Chiama/WhatsApp nell'hub.
-
-**Clienti di test** (`site-renderer/out/`):
-- `cavaliere-build-srls`: intake+contesto+palette verificati; **copy v2 appena rigenerato
-  (skill anti-ripetizione), stato da_verificare, SENZA review** — il run del critico fu
-  interrotto dal limite di sessione: alla ripresa aprire la scheda Copy e premere
-  «Ricontrolla col critico», poi revisione umana.
-- `costruzioni-generali-…`: contesto verificato; palette da_verificare; **copy v2 PASS
-  (round 2) da_verificare** con 2 finding minori da arbitrare in scheda (eco
-  subtitle/note nella CTA; target «entrambi» ma copy solo B2C).
-
-**Ciclo qualità copy appena concluso** (feedback Mattia: output troppo ripetitivo):
-skill copywriter +«Varietà e ritmo» (martello verbatim ≤2, tetto sequenze 3+ parole in
-≤2 slot, enumerazioni variate, zero eco intra-sezione, SEO locale a 3 piazzamenti),
-critic +C7 ripetitività (bloccante se sistemica), **norma di settore** (preventivo/
-sopralluogo gratuito = consentiti di default) in enricher+copywriter+critic e nei
-contesto.json dei 2 clienti. Risultato misurato: sequenze ripetute 32→8 (costruzioni).
-Metro: nessuna sequenza di 3+ parole in >2 slot — oggi è un gate deterministico IN REPO
-(`.claude/skills/copy-critic/scripts/check-slop.mjs`, spawnat da `lib/slop.ts`) eseguito
-automaticamente a ogni run copy, prima del critico.
-
-**Intake lead — ricerca chiusa (2026-09-07, `docs/ricerca-intake-lead-2026-09.md`)**:
-come raccogliere dati e foto del lead dopo il click sull'annuncio. Esito: form
-proprio multi-step su `bozza.consulbuild.com` (Astro + Worker + R2 + Turnstile,
-costo ~0), foto consigliate mai bloccanti, cellulare a un quarto del percorso,
-riepilogo, prenotazione chiamata nella pagina finale; editor fa pull da R2 come
-oggi da Tally (`intake-r2.ts`, stesso contratto di `intake-tally.ts`). Instant
-Form Meta (15 domande, zero upload) e Tally (niente dominio/ripresa/webview)
-scartati con limiti verificati. Prerequisiti e decisioni aperte in §6.5 del doc;
-l'elenco dei campi si decide in una sessione dedicata. **Foto e loghi rivisti lo
-stesso giorno** (`docs/ricerca-storage-foto-lead-2026-09.md`): foto in qualità
-originale, nessuna compressione sul telefono, massimo 15 foto chieste a metà
-form con upload in background (deciso da Mattia); destinazione Google Drive
-dell'agenzia via n8n (`_inbox/<lead-id>/`), import nell'editor dal filesystem
-con le versioni a 1600 px fatte dal Mac come oggi, VPS senza residui, pulizia
-`_inbox` a 60 giorni obbligatoria; frontend = input nativo + uploader proprio
-(mai `accept="image/*"` su iOS); MinIO e FileBrowser sono archiviati, non usarli.
-**Scheda Form bozza COSTRUITA (2026-09-07, `site-intake/`, piano vivo
-`docs/piano-form-bozza.md`)**: Astro statico, 21 domande in configurazione, motore con
-sipario/scaglioni, comuni ISTAT, disponibilità del nome via DoH, foto in originale con
-coda in background, presa visione privacy (art. 6.1.b), riepilogo, invio, «Fatto»;
-Playwright (controlli, percorso completo su 3 dispositivi, axe, schermate a 9
-larghezze), budget prestazioni 67 KB. In dev tutto finisce in `site-intake/.dev-inbox/`.
-**Scheda B FATTA (2026-09-07)**: workflow `sf-bozza` (tre route su
-`n8n.consulbuild.com/webhook/bozza`, id in query, controlli, cartella per lead in
-`Il mio Drive/site-factory-clienti/_inbox/<leadId>/` con `bozza.json`, `foto-NN-<nome>`,
-`logo.<ext>`, `lead.json`; stesso nome = aggiornamento; Telegram senza dati personali)
-e `sf-bozza-pulizia` (04:00, cestina oltre 60 giorni, allarme oltre 300 cartelle,
-prova a comando con la chiave dell'editor); credenziale Google OAuth fatta da Mattia;
-DNS di consulbuild.com spostato su Cloudflare (prerequisito del Worker con dominio
-custom); verifica end-to-end contro n8n vero. Guida: `docs/vps-integrazioni-setup.md`
-§10. Turnstile rimandato (si aggiunge se compare spam).
-**Form ONLINE su https://sito.consulbuild.com** (2026-09-07). **Scheda C FATTA lo
-stesso giorno**: `site-factory-editor/lib/inbox-form.ts` legge la cartella Drive
-sincronizzata, le richieste compaiono in home con quelle Tally, «Importa» crea
-`out/<slug>/` (brief con campi propri del form, intake, raw = lead.json, logo, originali
-in `foto-originali/`, `img/lavoro-N.jpg` a 1600 px + `lavori.json`, client.json) e
-toglie la cartella da `_inbox`; banco di prova `scripts/test-import-form.ts` (con
-guardia di deriva sulla tassonomia del form); skill `context-enricher` istruita sui
-brief dal form. Verificata la catena reale n8n → Drive → Mac → editor. Punti aperti in
-`docs/piano-form-bozza.md`: link dell'informativa completa da ripuntare (consulbuild.site
-non è più in uso) prima di riaccendere l'annuncio, test su iPhone in Instagram, Turnstile
-se serve, symlink `out/` → Drive (backup).
-
-## Prossime schede (ordine deciso: una per volta, SEMPRE pianificando prima)
-
-1. **Immagini** — multi-fase come il copy (`copyRun` in `lib/steps.ts` è il modello):
-   image-prompt-generator (Bash → `scripts/generate-image.mjs`, key `BFL_API_KEY` in
-   `site-renderer/.env`; pannello setup key come quello Tally se assente; timeout fase
-   ~20 min) → image-critic (Read multimodale) → rigenera SOLO gli scarti, max 3 round.
-   Skill da aggiornare a contesto.json come fonte primaria (mestiere/zona) — le
-   didascalie restano dal copy. `images.json` (slot flat per l'assembler) va DERIVATO
-   deterministicamente dall'editor alla conferma (trace + caption), non scritto dal
-   modello. UI: griglia hero/card/gallery, alt editabili, esito critico per immagine,
-   rigenerazione selettiva (`mode:"regen"` + lista file), thumbnail via route che
-   streamma da `out/<slug>/img/`. Gate: copy E palette verificati. Upstream staleness:
-   contesto+copy+palette. Logo (Recraft) RINVIATO a scheda propria.
-2. **Build** — 100% deterministico, niente claude: copia `img/` in
-   `site-renderer/public/media/<slug>/` → `assemble-site.ts` (blueprint
-   `conversione-locale-v1`, `--foto-reali 0` se niente gallery; «anteprima parziale»
-   con `--partial` come bottone separato) → `validate-site.ts` →
-   `SITE_JSON=<abs>/out/<slug>/site.json npx astro build --outDir <abs>/out/<slug>/dist`
-   (cwd site-renderer) → anteprima: **http.Server singleton nel processo Next, porta
-   4399**, serve UNA dist alla volta (niente route /api: i path assoluti della build
-   la rompono). Serve un runner `io.script` accanto a `io.claude` in `lib/run-step.ts`.
-3. Poi: scheda Logo (Recraft, `RECRAFT_API_KEY`), deploy Cloudflare Workers.
+1. **Crescita e lead** (ricerca 2026-09-07 in
+   `docs/archivio/ricerca-crescita-siti-2026-09.md`, sintesi nella memoria
+   `strategia-traffico-lead`): Piano A = SEO tecnica e misura al deploy (JSON-LD,
+   sitemap, Search Console, IndexNow) + scheda «Visibilità»; poi pagine servizio×zona,
+   Google Business assistito, recensioni, speed-to-lead.
+2. **Badge «da cancellare»** in home per i lead non convertiti a 60 gg (automatizza
+   l'obbligo operativo sopra).
+3. Idee minori: eventi Chiama/WhatsApp nell'hub; Gatus su scadenza certificati e disco
+   del VPS; «ignora» per gli abbonamenti Stripe estranei.
 
 ## Verifiche standard per ogni scheda
+
 `npx tsc --noEmit` + `npm run build` (editor) · parity dove c'è un contratto
-(`scripts/parity-copy.ts` è l'esempio) · run E2E sui clienti reali · passata
-/impeccable (shape PRIMA della UI, critique/polish dopo, entrambi i temi) ·
-DESIGN-BRIEF.md raccoglie gli studi UX per scheda. Commit autonomi a verifiche passate
-(regola 7 del CLAUDE.md, decisa 2026-07-11 — sostituisce «nulla si committa senza chiedere»).
-
-## Fabbrica design (piano 2026-07, COMPLETO M0–M9)
-
-La fabbrica dei preset è operativa: area editor `/fabbrica` (riferimenti con
-gate opt-out TDM, run con 5 fasi riprendibili, audit pairwise, pubblicazione
-one-click), assegnazione deterministica cliente→design nella scheda Palette
-(anti-collisione di mercato), varianti Hero D / ContactCTA B, layout e
-trattamento foto nei token, fotografia per-preset nelle skill immagini.
-Libreria a 7 preset (nuovo: «ferro», dal pilota). Contratto e retrospettiva:
-`docs/piano-fabbrica-design-2026-07.md`. Prossimo passo naturale: la prima
-run con riferimenti REALI scelti da Mattia dalle gallerie.
+(`scripts/parity-copy.ts`) · banchi di prova deterministici (`scripts/test-*.ts`) ·
+run E2E sui clienti reali · passata /impeccable (shape PRIMA della UI, critique/polish
+dopo, entrambi i temi; gli studi per scheda stanno in `DESIGN-BRIEF.md`) · commit +
+push a verifiche passate (regola 7 di CLAUDE.md).

@@ -59,8 +59,6 @@ Chi fa cosa a runtime:
    (coolify, n8n, umami). Prova dell'alert: chiedi a Claude di committare per un
    minuto un endpoint fittizio con `failure-threshold: 1` → arriva il messaggio
    Telegram → si rimuove.
-5. **Uptime Kuma**: appena ricevuto il primo alert da Gatus, elimina la risorsa
-   Uptime Kuma in Coolify (Projects → risorsa → Danger Zone) e il record DNS `status`.
 
 ## 3. Brevo (e-mail dei lead)
 
@@ -203,19 +201,14 @@ DNS consulbuild.com: su Cloudflare dal 07/09/2026 (nameserver anahi/elliott), n8
 Stripe: chiave ristretta "n8n report" (sandbox e live) in "Stripe restricted key n8n"; credenziale n8n "Stripe ConsulBuild"
 ```
 
-## 8. Verifica finale (con Claude) — fatta il 2026-09-05
+## 8. Come riverificare la catena (fatto il 2026-09-05)
 
-1. ✅ Cliente fittizio `zz-test-integrazione` → dominio di prova → Build: nel log compare
-   «Umami: sito … · modulo → …»; l'HTML ha lo script e l'action.
-2. ✅ Registro e monitor: riga nella Data table, file yaml committato e pushato,
-   Coolify ricostruisce Gatus, alert Telegram ricevuto.
-3. ✅ Lead di prova → e-mail a info@consulbuild.com via Brevo (nessun Telegram: per
-   scelta i lead non generano notifiche all'agenzia).
-4. ✅ Eliminazione del cliente → riga, sito Umami e file yaml spariscono.
-5. ✅ Cavaliere Build pubblicato con modulo reale + Umami; lead «TEST» dal sito reale →
-   n8n success, e-mail al cliente, pageview /grazie. (Resta la Conferma umana del legale.)
-6. ✅ Robustezza: workflow in errore → sf-errori → Telegram; reboot del VPS → tutti i
-   container tornano da soli (~50 s), volumi n8n/Gatus intatti.
+Cliente fittizio con dominio di prova → Build (nel log «Umami: sito … · modulo → …»,
+l'HTML ha script e action) → Deploy (riga nella Data table, yaml committato, Coolify
+ricostruisce Gatus, alert Telegram) → lead di prova (e-mail via Brevo; per scelta i lead
+non generano notifiche all'agenzia) → eliminazione del cliente (riga, sito Umami e yaml
+spariscono). Robustezza già provata: workflow in errore → sf-errori → Telegram; reboot
+del VPS → i container ripartono da soli (~50 s), volumi intatti.
 
 Se cambi un workflow in n8n: `node --experimental-strip-types scripts/n8n-import.ts export`
 da `site-factory-editor/` e commit di `infra/n8n/`.

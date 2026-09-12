@@ -1,64 +1,44 @@
 # Site Factory
 
-Strumento interno di ConsulBuild per **automatizzare la produzione di siti vetrina**
-di alta qualità per i clienti della web agency, in modo standardizzato e ripetibile.
+Strumento interno di ConsulBuild per **produrre siti vetrina di alta qualità per PMI
+italiane** in modo standardizzato e ripetibile: il lead compila il form, la pipeline AI
+costruisce una demo reale, Mattia la verifica una volta e la pubblica; all'abbonamento
+il sito va sul dominio del cliente con modulo, statistiche e monitor già collegati.
 
-## Visione (Fase 1 — demo pre-vendita)
-
-Generare velocemente un **sito-demo single-page già hostato** da mostrare ai lead in
-fase di vendita (forte leva di trust: "ecco già il tuo sito"). Niente legale/analytics/SEO
-in questa fase: solo un sito bello, credibile e online su un URL `*.pages.dev`.
-
-**Obiettivo guida: qualità prima di tutto.** La standardizzazione serve a rendere la
-qualità ripetibile per ogni cliente, non a tagliare gli angoli.
-
-## Principio architetturale
-
-> **L'AI non scrive mai codice: produce solo un file `site.json`** (sezioni scelte +
-> ordine + copy + palette + URL immagini). Un motore Astro lo trasforma in sito statico
-> mappando ogni voce al suo componente curato a mano.
-
-Risultato: output **deterministico, ripetibile, di qualità garantita** — la qualità vive
-nei componenti, non nell'imprevedibilità della generazione di codice.
+**Principio architetturale**: l'AI non scrive mai codice, produce solo un `site.json`
+(sezioni, copy, palette, immagini) che un renderer Astro trasforma in sito statico. La
+qualità vive nei componenti curati a mano.
 
 ## Struttura
 
 ```
 Site-factory/
-├── site-renderer/        ✅ Motore Astro data-driven + libreria sezioni (Fase A)
-│   ├── src/lib/schema.ts     ← CONTRATTO DATI (Zod): il site.json
-│   ├── src/lib/registry.ts   ← mappa type → componente
-│   ├── src/sections/         ← 13 sezioni curate a mano, data-driven
-│   ├── src/layouts/Base.astro← theming a token (palette inline da site.json)
-│   └── src/data/site.sample.json ← sito edilizia completo (fixture + golden example)
-└── site-factory-editor/  ⏳ App Next.js locale (Fase C) — da costruire
+├── site-renderer/         Motore Astro + libreria di sezioni + 7 preset (i siti generati)
+├── site-factory-editor/   Console locale Next.js: clienti, step AI, build, deploy, dashboard
+├── site-intake/           Form bozza su sito.consulbuild.com (unica sorgente dei lead)
+├── factory/               Fabbrica dei preset: riferimenti, calibrazione del critico, run
+├── logo-lab/              Banco di prova per la generazione dei loghi
+├── infra/                 Monitor Gatus per cliente + workflow n8n versionati
+├── docs/                  Guide operative e piani vivi (docs/archivio = storico)
+└── .claude/               Skill e agenti della pipeline, settings e hook di Claude Code
 ```
 
-## Stato
-
-- ✅ **Fase A — Libreria sezioni**: completa e validata. Build statica funzionante,
-  theming a token verificato, 13 tipi di sezione con varianti, no-JS safe, accessibile.
-- ⏳ **Fase B — Pipeline multi-agente** (Claude API): Intake → Strategist → Copywriter →
-  Brand/Palette → Art Director (fal.ai) → Assembler → QA, con checkpoint di approvazione.
-- ⏳ **Fase C — Editor Next.js locale**: review dati (Tally API), runner a checkpoint,
-  anteprima, deploy su Cloudflare Pages.
-
-## Come vederlo ora
+## Avvio rapido
 
 ```bash
-export PATH="$HOME/.local/bin:$PATH"
-cd site-renderer
-npm install        # solo la prima volta
-npm run dev        # → http://localhost:4321 (hot reload)
+export PATH="$HOME/.local/bin:$PATH"   # Node è in ~/.local, niente Homebrew
+cd site-factory-editor && npm install && npm run dev   # editor su http://localhost:3000
+cd site-renderer && npm install && npm run dev          # anteprima del renderer su :4321
 ```
 
-Per personalizzare: modifica `site-renderer/src/data/site.sample.json` (palette, copy,
-sezioni) e ricarica — vedrai il sito cambiare senza toccare una riga di codice.
+Prerequisiti dell'editor: login `claude` Max attivo (gli step AI girano via `claude -p`,
+nessuna API a pagamento) e Google Drive Desktop con l'account dell'agenzia (le richieste
+del form arrivano in `site-factory-clienti/_inbox/`).
 
-## Stack
+## Dove leggere
 
-- **Siti generati**: Astro 5 + Tailwind v4 (statico) → Cloudflare Pages
-- **AI** (prossima fase): Claude API (`@anthropic-ai/sdk`), output validato Zod
-- **Immagini**: fal.ai (Imagen 4 + Flux 2, layer swappabile)
-- **Dati cliente**: form Tally via API pull
-- **Editor**: Next.js locale
+- `CLAUDE.md` — regole di ingaggio, architettura, comandi, mappa del repo.
+- `docs/handoff-fase-c.md` — stato dei lavori, punti aperti, prossime schede.
+- `docs/DEBUG.md` — dove guardare quando una run si rompe.
+- `site-renderer/DESIGN.md` — lo standard di design dei siti; `site-factory-editor/DESIGN-SYSTEM.md` — quello dell'editor.
+- `docs/vps-integrazioni-setup.md` — n8n, Umami, Gatus, Brevo, Stripe.

@@ -27,7 +27,7 @@ nel seam `lib/run-step.ts` (`claudePhase`) e nel bus `lib/run-bus.ts`.
 | **Record curato** ⟵ leggi questo | 1 riga NDJSON **per fase** — il segnale qui sopra. **Con storia.** | `site-renderer/out/<slug>/logs/<step>/<timestamp>.ndjson` | `factory/runs/<runId>/record.ndjson` |
 | **Eventi live** | Stream distillato per la status bar (nome-tool + testo). **Ultimo tentativo, azzerato a ogni run.** | `site-renderer/out/<slug>/logs/run-<step>.ndjson` | `factory/runs/<runId>/run.ndjson` |
 
-`<step>` ∈ `contesto · palette · copy · images · legale · build`. Il record cliente più
+`<step>` ∈ `contesto · palette · logo · copy · images · legale · build`. Il record cliente più
 recente è il file col **nome numerico più alto** nella cartella `logs/<step>/`.
 
 > I dati cliente (`out/`) sono fuori da git (sync Google Drive); i log di fabbrica sono
@@ -77,6 +77,6 @@ jq -r 'select(.phase|test("critico")) | .prompt' "$F"  # il prompt esatto inviat
 
 Fuori dalla passata di osservabilità 2026-07 (per scelta): i **gate deterministici lato
 cliente** (slop/formato/copertura — il report pieno non è ancora durevole come i `gates/*.json`
-della fabbrica), l'**import intake/Tally**, **build/deploy**, e non c'è una pagina UI di
+della fabbrica), l'**import dal form** (`lib/inbox-form.ts`), **build/deploy**, e non c'è una pagina UI di
 dettaglio-run per i clienti (esiste per la fabbrica). Se un test tocca queste aree e serve più
 contesto, sono i primi follow-up.

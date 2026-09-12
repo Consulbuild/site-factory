@@ -1,6 +1,6 @@
 # Ricerca: dove e come ricevere le foto e i loghi dei lead — 2026-09-07
 
-Completa `docs/ricerca-intake-lead-2026-09.md` (che ha deciso: form proprio,
+Completa `docs/archivio/ricerca-intake-lead-2026-09.md` (che ha deciso: form proprio,
 brandizzato, multi-step). Qui la domanda è solo: **come il form riceve le foto dei
 lavori e il logo, dove li mette, come arrivano sul Mac e come spariscono** quando
 il lead non converte o il cliente disdice. Vincoli: VPS Hetzner CX33 con 80 GB

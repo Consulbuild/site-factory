@@ -1,8 +1,9 @@
 # Verifiche di fattibilità Fase B — decisioni (luglio 2026)
 
-ADR leggero: per ogni area, esito della verifica, decisione e stato. Fonte di verità
-operativa: `docs/agents-skills-plan.md` (riscritto in pari data). Verifiche eseguite
-il 2026-07-04.
+ADR leggero: per ogni area, esito della verifica, decisione e stato. Verifiche eseguite
+il 2026-07-04; il piano Fase B dell'epoca è in `docs/archivio/agents-skills-plan-2026-07.md`,
+lo stato attuale in `CLAUDE.md`. Restano vive le sezioni citate dal codice e dalle skill:
+§4 (BFL), §6 (Workers static assets), §6-bis (loghi).
 
 ## 1. Assembler deterministico — ✅ VERIFICATA (spike verde)
 
@@ -24,41 +25,12 @@ Enforcement dei constraint pre-merge nell'assembler + Zod come gate finale (i bu
 restano duplicati per design, regola 3 del README blueprint). Documentato in
 `site-renderer/blueprints/README.md`.
 
-## 2. Intake Tally — ✅ architettura chiusa, mapping in attesa dei campi reali
+## 2. Intake — parser deterministico, non agente LLM (Tally dismesso il 2026-09-08)
 
-**Decisione**: **parser deterministico, non agente LLM.** Gli 11 slot `intake` di
-`slots.json` sono tutti verbatim o meccanici (slug = kebab-case del nome, filtro dei
-social forniti, `logo: null` se assente, `tone` = aggettivi verbatim): nessun giudizio
-da modello, quindi niente costi né non-determinismo. Futuro
-`site-renderer/scripts/intake-tally.ts` con mapping dichiarativo
-`tally-field-key → path slot`.
-
-**Verifica payload webhook (2026-07-04)** — fonti: tally.so/help/webhooks,
-developers.tally.so (via snippet indicizzati: il proxy blocca il fetch diretto) +
-codice reale dell'integrazione npm `n8n-nodes-tallyforms`:
-
-- Payload `FORM_RESPONSE`: `{ eventId, eventType, data: { formId, fields: [{ key,
-  label, type, value, options? }] } }`. Tipi: `INPUT_TEXT/EMAIL/PHONE_NUMBER` (value
-  stringa); `MULTIPLE_CHOICE`/`DROPDOWN`/`CHECKBOXES` → **value = UUID opzione**, il
-  testo si risolve con lookup in `options[{id,text}]` (deterministico ma
-  obbligatorio); `FILE_UPLOAD` → array di oggetti con `url`.
-- Firma: header `Tally-Signature`, HMAC-SHA256; **due formati documentati** (base64
-  del body nei help doc; `t=<ts>,v1=<hex>` nei developer doc) → supportarli entrambi
-  e calcolare sempre sul raw body. Webhook + firma + API REST disponibili **anche sul
-  piano free**.
-- API REST: `GET api.tally.so/forms/{id}/submissions` (Bearer API key, free).
-  **Aggiornamento 2026-07-05: il pull API è la fonte PRIMARIA della Fase 1** (l'utente ha
-  la key e nessun endpoint pubblico); il webhook con firma HMAC diventa rilevante solo
-  con n8n sul VPS (retry webhook: 5 tentativi con backoff fino a 24h + retry via API).
-- Logo: l'URL nel webhook include un access token; **scadenza non documentata** →
-  scaricare e ri-ospitare subito, mai hot-linkare nel site.json.
-- Normalizzazioni deterministiche necessarie: telefono/WhatsApp in formato libero
-  (assumere country default IT), slug con translitterazione accenti, ancorare il
-  parsing alle `key` dei campi (stabili) e MAI alle `label` (modificabili).
-
-**Resta aperto**: il mapping definitivo richiede l'export dei campi reali del form
-Tally (input dell'utente) + una submission di prova con log del payload raw prima di
-congelare il parser.
+**Decisione che resta**: gli slot `intake` di `slots.json` sono tutti verbatim o
+meccanici (slug = kebab-case del nome, filtro dei social forniti, `logo: null` se
+assente): nessun giudizio da modello. Oggi li scrive `site-factory-editor/lib/inbox-form.ts`
+dalle richieste del form bozza; il dettaglio del vecchio payload Tally è nella storia git.
 
 ## 3. Selezione sezioni (post drop del Section Architect) — ✅ chiusa per v1
 
@@ -113,9 +85,9 @@ reachability è NON conclusivo — 403 del gateway, non dell'API):**
   e comunque non su Imagen 4.
 
 **Decisione**: BFL diretto, [pro] default + [max] hero; fal.ai fallback documentato.
-Probe pronto: `.claude/skills/image-prompt-generator/probe-bfl.mjs` (submit 512×512 +
-poll; senza `BFL_API_KEY` esce con istruzioni — exit 2 verificato). SKILL.md immagini
-corretta (endpoint verificati, no raw mode, no webp, scadenza URL, prezzi).
+Il provider in produzione è `site-renderer/scripts/generate-image.mjs` (submit + poll +
+download; senza `BFL_API_KEY` esce con istruzioni, exit 2), sondato dall'editor con
+`lib/images.ts probeBfl()` nel solo path di errore.
 
 ## 5. Orchestrazione — ✅ CONFERMATA su docs ufficiali (nessun vicolo cieco)
 
@@ -241,18 +213,12 @@ Catena completa: artifact golden → `assemble-site.ts` (50/50 slot) →
 `check-contrast.mjs` PASS (bianco/`#b0561a` = 5.01:1 ≥ 4.5). Più i 7 casi negativi
 dell'assembler correttamente rifiutati.
 
-## Scoperte collaterali (da sistemare / annotate)
+## Scoperte collaterali
 
-- **`docs/evals/generated-site-A.json` è INVALIDO contro lo schema attuale** (icona
-  `hard-hat` fuori enum, `desc` >110, `title` >40, `legalNote` >90) e usa un ordine
-  sezioni superato con `ProblemAgitation` (schema-only, senza componente). Lo schema
-  è evoluto dopo l'eval: il claim "Zod VALID" del fine-tuning report va letto come
-  storico. Non usarlo come fixture; gli artifact di test si estraggono dal blueprint.
-- **Ordine sezioni nel README blueprint corretto** (citava WhyChooseUs; il blueprint
-  reale ha ContactCTA-form a `sections[6]` e StickyCta in coda).
+- Gli artifact di test si estraggono dal blueprint, mai da fixture storiche (le eval
+  di giugno sono state rimosse perché non valide contro lo schema attuale).
 
 ## Dipendenze esterne residue
 
-1. `BFL_API_KEY` → eseguire `probe-bfl.mjs` e confermare endpoint/parametri live.
-2. Export dei campi reali del form Tally → completare il mapping di
-   `intake-tally.ts`.
+Nessuna: BFL è verificato live da `site-renderer/scripts/generate-image.mjs`; l'intake
+arriva dal form bozza.

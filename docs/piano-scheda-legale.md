@@ -1,9 +1,7 @@
 # Piano: scheda «Legale» dell'editor (Fase C) — step `legale` + catena avversariale
 
-> Nota per chi implementa: primo atto dopo l'approvazione = copiare questo piano in
-> `docs/piano-scheda-legale.md` e scrivere `.claude/scope.json` col perimetro elencato
-> in fondo (regola 8). Poi seguire la skill **harness-build** (piano come contratto
-> vivo, un passo alla volta, sezioni [viva] aggiornate a ogni arresto).
+> Contratto vivo dello step legale (citato da `lib/legale.ts`, `lib/steps.ts` e
+> `scripts/test-legale-gates.ts` come riferimento del design). Scheda chiusa il 2026-08-03.
 
 ## Scopo
 
@@ -20,57 +18,15 @@ di controllo È il progetto. Bar di qualità: l'output del flusso manuale Cavali
 
 ## Progress [viva]
 
-- [x] 2026-08-03 M0: COMPLETA — skill installate (02/08) + i 3 probe headless
-  passati dopo il login: (1) cerca_ufficio_giudiziario risolve Monza; (2)
-  genera_informativa_privacy restituisce testo regolare; (3) derivazione foro
-  Cologno Monzese → Monza via WebFetch con URL ufficiale
-  (tribunale-monza.giustizia.it/it/competenza_territoriale.page) ed evidenza
-  verbatim, confidenza alta. Criterio di promozione soddisfatto → M2 via.
-- 2026-08-03 E2E (primo run reale, zz-eval-cavaliere + zz-eval-ditta): pipeline
-  fluida fino alle lenti SENZA correzioni (conversione+gate+montaggio al primo
-  colpo; foro giusto per Cologno M. E Seregno con evidenza ufficiale). Poi DUE
-  bug veri trovati DALLA catena stessa: (a) la lente refusi ha beccato un
-  refuso nel template TS (`introTermini` appendeva «.» a «S.r.l.s.» → punto
-  doppio — il golden non ha il punto finale); (b) lo schema per-lente rifiutava
-  i finding TRASVERSALI legittimi (`"doc": "privacy/termini"`) facendo fallire
-  l'aggregazione dopo lenti tutte ok. Fix: intro senza doppio punto, doc come
-  stringa libera + `docCitati()` per estrarre i documenti del byte-check;
-  +3 casi di regressione (62/62). Recovery: mode critic sui due slug.
-- [x] 2026-08-02 M1: contratti e nucleo deterministico + integrazioni meccaniche —
-  VERIFICATA: `tsc` 0 errori; `npm run build` verde; `test-legale-gates.ts`
-  42/42 (piantati bocciati col messaggio atteso, caso «Via Milano 89» non
-  scatta, roundtrip converter sul golden riproduce i blocchi, golden passa il
-  gate coi dati reali); hub live su :3311 → Cavaliere «Apri legale»
-  (da_verificare), altro cliente «Genera documenti legali» (assente)
-- [x] 2026-08-03 M2: generate end-to-end — VERIFICATA su 2 fixture reali
-  (zz-eval-cavaliere clone + zz-eval-ditta sintetica): foro derivato con
-  evidenza ufficiale per Cologno M. E Seregno → Monza (confidenza alta),
-  privacy con outline identico al golden, conversione+gate+montaggio superati
-  al primo colpo su ENTRAMBI i run, formNotice = 593 char del template.
-- [x] 2026-08-03 M3: catena avversariale — VERIFICATA: 3 lenti PASS su
-  entrambe le fixture (avvisi pertinenti non bloccanti, review timbrata,
-  round progressivi in mode critic); col foro piantato «Milano» → FAIL con
-  bloccanti da DUE lenti indipendenti (anti-invenzione: «in contraddizione
-  con foro.json che deriva Monza») E rifiuto del gate deterministico in
-  validate() — difesa in profondità dimostrata. La catena ha inoltre trovato
-  due bug REALI nel codice della pipeline al primo run (vedi Sorprese).
-- [x] 2026-08-03 M4: scheda UI — VERIFICATA nel browser su entrambi i temi:
-  runner, striscia profilo (Foro di Monza + badge confidenza + fonte
-  linkata), banner staleness live con le 3 azioni, editor a blocchi, action
-  bar, status bar con identità lenti/giurista; route PUT/POST con conferma
-  condizionata riverificata server-side (conferma 200 → verificato +
-  upstream + fonte). Detector impeccable: 0 findings. tsc + build verdi.
-- [x] 2026-08-03 M5: staleness + update-mode — VERIFICATA: modifica sede →
-  banner «brief.json cambiato»; run update (19 min): foro ri-derivato,
-  privacy+termini rigenerati con l'indirizzo nuovo, formNotice BYTE-IDENTICA
-  (stessa sha), catena PASS, report col mode update, stato da_verificare.
-  `legale.json` nell'upstream della build (il badge stale della build si
-  osserverà al primo cliente reale con build attiva: meccanismo generico già
-  provato sugli altri step).
-- [x] 2026-08-03 M6: eval E2E + documentazione — fixture create, usate per
-  tutte le accettazioni sopra e rimosse da out/; banco deterministico a 62
-  casi; docs aggiornati (CLAUDE.md §Fase C parte 4, DEBUG.md righe legale,
-  handoff, DESIGN-SYSTEM §avviso di stato globale).
+M0–M6 chiuse il 2026-08-02/03 (accettazioni osservate nella storia git di questo
+file): probe MCP/WebFetch del foro (Cologno M. → Monza con evidenza ufficiale), nucleo
+deterministico + banco `scripts/test-legale-gates.ts`, generate E2E su 2 fixture (foro
+con evidenza, privacy sull'outline del golden, formNotice dal template), catena a 3
+lenti (col foro piantato «Milano» → FAIL da due lenti indipendenti E dal gate), scheda
+UI su entrambi i temi con conferma condizionata riverificata server-side, staleness +
+update-mode (formNotice byte-identica, run update ~19 min). Al primo run reale la
+catena ha trovato due bug veri nel codice della pipeline (vedi Sorprese), poi corretti
+con casi di regressione nel banco.
 
 ## Sorprese & Scoperte [viva]
 

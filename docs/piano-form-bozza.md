@@ -1,11 +1,10 @@
 # Piano — Form bozza (`site-intake/`, sito.consulbuild.com)
 
-Piano vivo della scheda. Il piano approvato sta in
-`~/.claude/plans/buzzing-swimming-lightning.md`; qui il decision log, lo stato e i punti
-aperti. Ricerca alla base: `docs/ricerca-intake-lead-2026-09.md` e
-`docs/ricerca-storage-foto-lead-2026-09.md`; domande approvate nel documento vivo
-«Domande del form bozza» (v4, 2026-09-07). Progetto: `site-intake/` (README con
-architettura e comandi, `PRODUCT.md` per il design).
+Piano vivo della scheda: decision log, lezioni e punti aperti. Ricerca alla base:
+`docs/ricerca-storage-foto-lead-2026-09.md` e, in archivio,
+`docs/archivio/ricerca-intake-lead-2026-09.md`; le domande approvate («Domande del form
+bozza» v4, 2026-09-07, non versionato) sono specchiate in `site-intake/src/data/`.
+Progetto: `site-intake/` (README con architettura e comandi, `PRODUCT.md` per il design).
 
 ## Decisioni (Mattia, 2026-09-07)
 
@@ -36,41 +35,14 @@ architettura e comandi, `PRODUCT.md` per il design).
 
 ## Stato
 
-- **M0 fatto** (commit 140e2db): scaffold, token, layout, font, inbox dev, comuni, budget.
-- **M1 fatto** (a1e33a9): motore, 21 domande in configurazione, scelte, testo/telefono/email,
-  sipario e scaglioni, progresso, autosalvataggio, ripresa, History.
-- **M2 in chiusura**: Partita IVA, sito attuale, nome del sito, sede, zone, stile, colori,
-  social, presa visione con dialog, riepilogo con «Modifica» e ritorno, invio, «Fatto».
-  Test Playwright: `controlli.spec.ts` (validators) e `flusso.spec.ts` (percorso completo
-  su telefono/tablet/computer + ripresa). Scoperto e corretto: un tocco nei 130 ms finali
-  della transizione veniva ignorato.
-- **M3 fatto** (0468cd1): foto e logo con coda in background (2 in parallelo, retry
-  0/1/3/5 s, miniature dal decoder, HEIC e foto piccole segnalate, max 15, 25 MB per
-  file), pannello di attesa con onde, rivelazione blu, «Fatto» rovesciato; test
-  end-to-end con caricamenti reali.
-- **M4 in corso**: craft-floor letto; detector impeccable su `dist` → tre rilievi
-  accettati e motivati in `site-intake/DESIGN.md` (bordo del sipario, ombra blu della
-  CTA, padding della card nei figli); contrasto errori alzato (rosso 700) e testi
-  secondari sulle scelte selezionate a ink-2 dopo axe; pannello di attesa ad altezza
-  normale; dialog privacy con testo scorrevole e bottone sempre visibile; schermate a 9
-  larghezze (`tests/schermate.spec.ts`), axe (`tests/a11y.spec.ts`), README e DESIGN.md
-  scritti, `wrangler.jsonc` pronto; finish review con agente separato (istruzioni del
-  finish reviewer di impeccable in modalità degradata: gli agenti nativi della skill non
-  sono installati in questo harness). **Esito «fix» con 8 correzioni materiali, tutte
-  applicate**: fondo chiaro di «Fatto» anche su `<html>`, card che si accorcia con
-  transizione all'invio, primo passo in 680 px (test `390x680-01`), niente etichette
-  impilate né eyebrow duplicata, spunta SVG, nomi presi non selezionabili, primo passo
-  statico senza animazione, card «Fatto» a misura e binario sticky. Verdict pass: 7
-  risolti, 1 parziale (card «Fatto» stirata a ≥1024 dallo stretch della scena) e una
-  regressione (righe della griglia disuguali a 390) → corretti con `align-self` sulla
-  card finale e `grid-auto-rows: 1fr` con spazi compensati sotto i 430 px; secondo
-  verdict pass sui due punti: **ship** (copre i fix punteggiati), nessuna regressione.
-- **Scheda chiusa il 2026-09-07.** File toccati rispetto al piano: tutto dentro
-  `site-intake/**` (come previsto), `docs/piano-form-bozza.md`, `docs/handoff-fase-c.md`;
-  nessun file fuori perimetro. Fuori scheda, come da piano: webhook n8n e Drive
-  (scheda B), import nell'editor (scheda C), deploy su `sito.consulbuild.com` (solo su ok
-  di Mattia), test su iPhone reale dentro Instagram, Lighthouse (non eseguito: il gate del
-  budget copre i pesi; da lanciare sul sito pubblicato).
+- **Scheda chiusa il 2026-09-07** (M0–M4, dettaglio nella storia git): motore e 21
+  domande in configurazione, foto e logo con coda in background (2 in parallelo, retry
+  0/1/3/5 s, miniature dal decoder, max 15, 25 MB per file), presa visione con dialog,
+  riepilogo con «Modifica», invio e «Fatto»; test Playwright (`controlli`, `flusso` su
+  3 dispositivi + ripresa, `a11y`, `schermate` a 9 larghezze); detector e finish review
+  impeccable con 8 correzioni applicate e verdetto ship; `wrangler.jsonc` pronto.
+  Lezione tecnica: un tocco nei 130 ms finali della transizione veniva ignorato (corretto).
+- Non eseguito: Lighthouse sul sito pubblicato (il gate del budget copre i pesi).
 
 ## Rilievi del detector accettati (2026-09-07)
 
@@ -131,9 +103,10 @@ Fuori scheda: symlink `out/` → Drive (backup, indipendente da questo import).
 
 ## Punti aperti
 
-1. **Link «informativa completa» del form**: punta a consulbuild.site/privacy-policy, sito
-   che Mattia non usa più. Prima di riaccendere l'annuncio va puntato a una pagina valida
-   (es. una pagina privacy su sito.consulbuild.com). Deciso il 2026-09-07 di non toccarlo ora.
-2. Test su iPhone reale dentro Instagram (Mattia, con il link pubblicato).
-3. Turnstile, se compare spam (`PUBLIC_TURNSTILE_SITE_KEY` già prevista nel form).
-4. Symlink `site-renderer/out` → Drive (strategia di backup, memoria `backup-strategia`).
+1. Test su iPhone reale dentro Instagram (Mattia, con il link pubblicato).
+2. Turnstile, se compare spam (da aggiungere insieme al codice che lo legge: nessuna
+   env predisposta).
+3. Symlink `site-renderer/out` → Drive (strategia di backup, memoria `backup-strategia`).
+
+Chiuso il 2026-09-08: il link «informativa completa» del form punta alla pagina
+`sito.consulbuild.com/privacy` (`src/pages/privacy.astro`).

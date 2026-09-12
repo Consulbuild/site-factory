@@ -1,9 +1,8 @@
 # Piano: Fabbrica di design — varietà e professionalità della pipeline Site-factory
 
-> **Nota per chi implementa**: al primo passo di implementazione, copiare questo piano nel
-> repo come `docs/piano-fabbrica-design-2026-07.md` (versionato, è il contratto vivo che la
-> skill `harness-build` terrà aggiornato). Fonte di ricerca a monte:
-> `docs/ricerca-varieta-design-2026-07.md` (1.731 righe, 165 finding verificati, 2026-07-10).
+> Contratto vivo della fabbrica (unico documento della fabbrica: non esiste un
+> `factory/README`). Fonte di ricerca a monte, storica:
+> `docs/archivio/ricerca-varieta-design-2026-07.md` (165 finding, 2026-07-10).
 
 ## Scopo
 
@@ -25,179 +24,22 @@ trattamento foto), mai da generazione libera.
 
 ## Progress [viva]
 
-- [x] 2026-07-10 M0a — Terrazzo PROMOSSO: round-trip fedele al 100% (0 divergenze su
-      49 custom property × 2 preset + 6 stili risolti di controllo), hackLines=10 ≤ 30,
-      repo ripristinato pulito. Cascata cliente>preset verificata intatta (le var()
-      restano verbatim nel CSS generato). Evidenza: scratchpad spikes/m0a/report.md.
-- [x] 2026-07-10 M0b — Dembrandt (v0.23.1) ADOTTATO: 4/4 estrazioni riuscite al primo
-      colpo, accuratezza 3/3 sui siti del criterio (4/4 col bonus) contro ground truth
-      da computed styles, DTCG valido; catena check opt-out provata (curl, pronta per
-      M5). Evidenza: scratchpad spikes/m0b/report.md.
-- [x] 2026-07-10 M0c — Runtime Python PROMOSSO: uv+Python 3.12.13, torch MPS ok, UIClip
-      0.25s/img a caldo offline e discrimina (0.679 sano vs 0.147 degradato —
-      riverificato di persona fuori dallo spike), CSD 768-dim 0.16s/img, Vendi ok.
-      Download totali 2.9GB (gitignorati). Infrastruttura REALE in factory/tools/
-      (pyproject pin 3.12, scripts/, report.md). Evidenza: factory/tools/report.md.
-- [x] 2026-07-10 M1 — VRT Playwright + gate deterministici L1. Accettazione osservata:
-      `npx playwright test --grep @visual` verde 12/12 (×2 run consecutivi, stabilità);
-      mutation test: `--brand-radius-card` di terra alterato → falliscono SOLO
-      terra-390/terra-1280 (10 passed), ripristino pulito; `gate:overflow` esce 0 sui 6
-      preset e 1 sulla fixture degradata (scrollWidth 1490>390); `gate:tokens` pulito
-      (statico + 4/4 computed per preset); `gate:impeccable` produce JSON filtrato
-      (3 regole whitelistate motivate, 4 residui overused-font → M4); suite @a11y
-      operativa (trova violazioni reali → M4). 144 baseline (47MB) in git.
-- [x] 2026-07-11 M2 — ponte DTCG: 6 preset serializzati + build Terrazzo + manifest
-      unico. Accettazione osservata: dump computed-vars pre/post = **0 divergenze**
-      (49 token × 6 preset + 6 stili risolti × 6); VRT 12/12 contro le baseline M1
-      PRE-migrazione (parità pixel-perfect); mutation via `terra.tokens.json`
-      (radius 18→2px) → falliscono solo le celle terra, ripristino verificato;
-      `astro check` invariato (1 errore atteso registry); editor `tsc --noEmit` +
-      `next build` verdi col nuovo presets.gen.json; diff della skill = soli marker
-      (tabella rigenerata byte-identica). global.css −312 righe; la terza copia dei
-      neutri è morta (editor importa il JSON generato). 4 trascrizioni via agenti
-      paralleli auto-verificate + confronto indipendente.
-- [x] 2026-07-11 M3 — font self-hosted + palette AA-by-construction (HCT).
-      Accettazione osservata: dist senza alcuna richiesta a
-      `fonts.googleapis|gstatic` (grep = 0; 24 WOFF2 in public/fonts, 1.0MB,
-      latin+latin-ext); VRT meridian 2/2 verde SENZA update (parità del
-      self-hosting in sé); `check-hct.ts` → 40/40 coppie corrette passano
-      check-contrast.mjs (autorità), deriva tinta max 0.88°; editor `tsc` +
-      `next build` verdi. In più (sorpresa → fix alla radice): pesi sintetici
-      eliminati su tutti i preset — censimento (famiglia,peso) usato vs
-      dichiarato, URL font corretti nei meta.json, token `w-strong`
-      (800; nova 700 perché Space Grotesk finisce a 700), classe `.font-strong`
-      al posto di `font-extrabold` hardcoded, gate "pesi orfani" in
-      lint-tokens + ban statico `font-(extrabold|black)`; baseline dei 5 preset
-      alternativi rigenerate consapevolmente dopo verifica visiva → VRT 12/12.
-      Nato `presets/font-whitelist.json` (10 famiglie, vincolo fabbrica M6).
-- [x] 2026-07-11 M4 — critico visivo calibrato + re-audit dei 5 preset.
-      Accettazione osservata: `calibrate-critic.mjs` → **κ di Cohen = 1.0,
-      recall(boccia) = 1.0** su 40/40 item validi, 0 errori (gate κ≥0.6 ∧
-      recall≥0.9 superato al primo colpo, nessuna iterazione di rubrica);
-      i degradati canary bocciati nominando sezione e difetto giusti
-      (spot-check: contrasto→D3, overflow→D5 con «RISTRUTTURAZIONE 16 glifi»,
-      slop→D4+D6, collisione→D4); re-audit = 5 review JSON valide
-      (`factory/calibration/reviews/preset-*.json`). Verdetti: atelier/canon/
-      terra/vita PASS con backlog, **nova FAIL** (D3=0, 3 bloccanti di
-      contrasto sull'hero e sulle fasce chiare — triangolato coi 29 nodi axe).
-      Deliverable: gold set 40 item (make-goldset.mjs, defect injection su
-      6 classi, basi miste), skill+agente design-critic (rubrica D1–D6,
-      congiunzione su soglie hard, blacklist AI-slop), canary.json (10 fissi),
-      report-critico.json, `docs/decisions/2026-07-re-audit-preset.md`
-      (backlog: bloccanti nova + display serif 390 + renderAccent).
-- [x] 2026-07-11 fix backlog re-audit (pre-M7, chiesti da Mattia): axe
-      color-contrast **0 nodi su 6 preset × 2 viewport** (@a11y 12/12), parole
-      spezzate **0** su h1/h2 a 390/768/1280, re-audit post-fix **5/5 PASS**
-      (nova sbloccata), canary critico 10/10 su gold set rigenerato, VRT
-      rigenerato e stabile ×2. Dettaglio in
-      docs/decisions/2026-07-re-audit-preset.md («Esito dei fix»).
-- [x] 2026-07-11 M5 — fabbrica: modello dati, riferimenti+opt-out+estrazione,
-      area editor. Accettazione osservata E2E nel browser (entrambi i temi):
-      fixture locale con TDMRep `tdm-reservation:1` → riferimento **BLOCCATO**
-      con motivo verbatim, badge rosso, NESSUNA estrazione eseguita, non
-      selezionabile; fixture pulita → `consentito` + extraction.tokens.json
-      (dtcg+raw dembrandt@0.23.1) + 2 screenshot su disco; run con 2 rif →
-      422 «servono ALMENO 3»; run con rif bloccato → 422 col motivo del gate;
-      run valida con 3 → creata, timeline 5 fasi «In attesa» renderizzata.
-      check-optout.mjs testato anche live (Guardian→bloccato per robots AI,
-      example.com→consentito, host morto→errore fail-closed). Deliverable:
-      scripts/factory/{check-optout,extract-tokens}.mjs, `export IO` (D5),
-      lib/factory/{paths,schemas,state,run}.ts, 3 route API (references
-      streaming NDJSON, references/[id]/run, runs), pagine /fabbrica,
-      /fabbrica/riferimenti, /fabbrica/run/[runId] (studio UX impeccable
-      prima della UI, vocabolario editor esistente), nav header. Screenshot
-      di terzi gitignorati. tsc+build verdi; dati di test rimossi.
-- [x] 2026-07-11 M6 — fabbrica: preset-designer + gate L1–L4, pipeline
-      completa. Accettazione osservata (le 5 del piano): (1) re-colour di
-      meridian → BOCCIATO L2 «clone strutturale (dHash 0 ≤2 E csd 0.0052 <
-      p10)» + tokenDiff sotto p5; (2) candidato quasi-identico a un
-      riferimento → BOCCIATO sull'asse fonte con motivazione in linguaggio
-      legale; (3) i 6 preset come pseudo-candidati passano L2 (sanity, vita
-      con warning ΔVS); (4) run E2E VERA con 3 fixture eterogenee: il
-      designer ha sintetizzato la corsia «ferro» (light freddo-industriale,
-      Space Grotesk+Karla+mono, slate-navy) → attraversa L1–L3 → critico
-      PASS round 1 (D6 distinzione=2) → stato **da_audire** (run
-      run-2026-07-11-43f47a in factory/runs/, con tutti i report); (5) ogni
-      fase fallita lascia il report col motivo e la run RIPARTE dalla fase
-      fallita — esercitato 3 volte per davvero (bug validator posizionamento
-      → fix → resume; L2 tokenDiff 0.198<p5 «troppo vicino a meridian» →
-      correzione designer automatica; L1 peso orfano «Space Grotesk 800» →
-      escalation umana + staleness reset che rifà build+gates). Deliverable:
-      build-presets --extra (candidato = 7° contesto nello stesso Terrazzo),
-      make-goldset --candidato, skill+agente preset-designer (zero-invenzioni,
-      ereditarietà sparsa documentata), validate-candidate.mjs (5 fixture),
-      novelty.mjs+calibrate-novelty.mjs (baseline 22 coppie), l1-candidato.mjs,
-      l3-uiclip.mjs (declassato a warning: calibrazione debole misurata),
-      lib/factory/fasi.ts (orchestrazione riprendibile, correzione unica per
-      gate, loop critico max 3 round), route run NDJSON + RunRunner UI.
-- [x] 2026-07-11 M7 — pilota end-to-end: **«ferro»@1.0.0 pubblicato, libreria
-      = 7**. Audit UI pairwise (contro il più vicino per tokenDiff = meridian,
-      doppio ordine AB/BA a lati anonimi, metadati prefillati dalle
-      motivazioni del designer, audit.json = prova di titolarità) esercitata
-      nel browser reale; decisione «approva» con 2 confronti «pari» (delega
-      autonoma di Mattia registrata in decisoDa). publish-preset.mjs:
-      tokens+meta+resolver → fetch-fonts → build:presets → baseline VRT delle
-      SOLE celle nuove + verifica → igiene TDM (screenshot riferimenti
-      eliminati) → run «pubblicata»; rollback tutta-o-niente PROVATO sul
-      campo (primo tentativo fallito dalla guardia → zero residui).
-      Accettazione: /anteprima/ferro renderizza (VRT ferro 2/2), card Ferro
-      nella scheda Palette dell'editor e riga nella skill palette-designer
-      (rigenerate), **VRT completo 14/14** (12 celle vecchie intatte), ΔVS
-      +0.003 registrato nel novelty report, gate tutti verdi con ferro
-      (a11y 14/14, overflow, lint-tokens 4/4+0 orfani, impeccable 0 residui),
-      misure {roundCritico: 1, correzioniUmane: 1}. Fonte-unica completata:
-      resolver.json governa anche build-presets, lint-tokens, check-overflow,
-      dump-vars e playwright.config (prima erano 5 liste hardcoded — il bug
-      è emerso proprio alla prima pubblicazione).
-- [x] 2026-07-11 M8 — assegnazione deterministica cliente→design +
-      anti-collisione. `lib/assign-design.ts` (puro TS, zero AI): Aaker del
-      cliente da `contesto.personalita_aaker` (skill context-enricher estesa,
-      punteggi tracciabili al form) o fallback deterministico DICHIARATO dal
-      tono; hard filter (stato, antiPatterns) → distanza Aaker (primaria ×2,
-      bonus settore consigliato) → anti-collisione sul registro
-      factory/assignments.json (stesso mercato = settore+comune: penalità sul
-      preset già usato + vincolo hue-bucket per il palette-designer, 12 bucket
-      da 30°) → tie-break seed=slug. Lo step palette ha la pre-fase che scrive
-      design.json e passa preset+vincoli alla skill; validate() rifiuta preset
-      ≠ assegnazione e primary nei bucket vietati; afterSuccess registra la
-      tinta scelta nel registro. Pannello «Assegnazione» nella scheda Palette
-      (motivo, alternative scartate, vincoli, override umano registrato — per
-      i clienti storici mostra «palette storica, pre-M8»). Accettazione
-      (check-assign.ts, deterministico): stessa assegnazione ×2 ✓; fixture
-      «impianti/Monza» → ferro (il preset del pilota, subito utile) e il
-      secondo cliente nello stesso mercato spostato su meridian
-      dall'anti-collisione ✓; override in design.json e registro ✓; clienti
-      esistenti intoccati (nessun design.json finché non si rigenera) ✓;
-      tsc+build verdi.
-- [x] 2026-07-11 M9 — varianti, layout per-preset, trattamento foto,
-      fotografia per-preset (tutte e 4 le fette). **Varianti**: Hero `D`
-      (big-number: badge numerici → statistiche grandi, sr-only per gli
-      screen reader) e ContactCTA `B` (gradual reassurance: 2 passi con
-      validazione del primo, fallback no-JS = form intero) — stessi slot Zod,
-      blocco `varianti` documentato in slots.json, fixture renderizzate e
-      verificate al passo 1 e 2 nel browser, Zod rifiuta variant fuori enum
-      (exit 1). Scoperta collaterale: schema.ts importava `./presets.gen`
-      senza estensione e validate-site.ts era rotto da M2 in node puro —
-      riparato (estensioni .ts + allowImportingTsExtensions). **Layout nei
-      token**: aree nominate `.area-testo`/`.area-focale` su contatti e hero
-      B, `grid-template-areas` da token raw su griglia a 12 colonne (default
-      = layout storico, pixel-parity; ferro inverte le aree) — **DOM identico
-      col flip acceso/spento** (diff HTML vuoto ad asset normalizzati),
-      screenshot diverso, baseline ferro rigenerate, VRT 14/14. **Trattamento
-      foto**: `--media-duotone`/`--media-grain` su .media-frame (default 0
-      ovunque; didascalia sopra i trattamenti con chip sempre AA — axe verde
-      anche con duotone 0.6), meccanismo provato nei due sensi (a 0.6 il VRT
-      fallisce la cella lavori; a 0.12 quantizza a zero sulle foto calde:
-      sotto la soglia percettiva, annotato). **Fotografia per-preset**:
-      photographySpec/fluxStyleFragment di ferro compilati; style bible
-      dell'image-prompt-generator ora parte dalla spec del preset; rubrica
-      image-critic +V7 (conformità alla spec, no doppio scurimento) e +V8
-      (trattamenti su volti = bloccante) — VERIFICATA sul serio: fixture
-      ritratto duotonato → FAIL su V8 con descrizione visiva corretta.
-      Regole di split e trattamenti documentate in DESIGN.md. Rinviato
-      dichiaratamente: la prova dei frammenti FLUX su hero+card+gallery
-      richiede la key BFL e avverrà alla prima run immagini reale.
-
+Tutte le milestone M0–M9 sono chiuse (2026-07-10/11); l'accettazione osservata di
+ciascuna è nella storia git di questo file e negli artifact citati. In sintesi:
+M0 spike (Terrazzo, Dembrandt, runtime Python UIClip/CSD/Vendi in `factory/tools/`) ·
+M1 VRT + gate L1 (`gate:overflow`, `gate:tokens`, @a11y) · M2 ponte DTCG
+(`presets/*.tokens.json` → `build:presets`, 0 divergenze) · M3 font self-hosted +
+palette AA-by-construction (HCT, `font-whitelist.json`, gate pesi orfani) · M4 critico
+visivo calibrato (κ=1.0, recall 1.0 su gold set 40; `factory/calibration/`) + re-audit
+dei 5 preset, 5/5 PASS dopo i fix · M5 riferimenti con opt-out TDM + estrazione + area
+`/fabbrica` · M6 preset-designer + gate L1–L4 (`lib/factory/fasi.ts`: riprendibile,
+correzione unica per gate, critico max 3 round) · M7 pilota: **«ferro»@1.0.0
+pubblicato, libreria = 7** (audit pairwise, `publish-preset.mjs` con rollback
+tutto-o-niente, `resolver.json` fonte unica) · M8 assegnazione deterministica
+cliente→design con anti-collisione (`lib/assign-design.ts`, `factory/assignments.json`)
+· M9 varianti Hero D / ContactCTA B, layout per-preset nei token, trattamento foto,
+fotografia per-preset nelle skill immagini. Rinviato dichiaratamente: la prova dei
+frammenti FLUX per-preset alla prima run immagini reale.
 ## Sorprese & Scoperte [viva]
 
 - 2026-07-10 (M0a) — **Terrazzo `makeCSSVar()` collassa `--step--1` in `--step-1` in
@@ -291,7 +133,7 @@ trattamento foto), mai da generazione libera.
   (meridian); i display SERIF di terra e canon spezzano «ristrutturazione» a
   metà parola a 390px → servono minimi per-preset nei token. E un bug vero di
   `renderAccent` (spazio spurio prima della virgola quando l'accent-word va a
-  capo). Backlog completo in docs/decisions/2026-07-re-audit-preset.md.
+  capo). Backlog completo (eseguito) in docs/archivio/2026-07-re-audit-preset.md.
 - 2026-07-11 (M4) — I 4 residui impeccable `overused-font` sono spariti coi
   fix font di M3: impeccable = 0 residui su tutti i 6 preset.
 - 2026-07-11 (M4) — Deviazione da D5: `calibrate-critic.mjs` NON passa dal
@@ -387,7 +229,7 @@ trattamento foto), mai da generazione libera.
   re-audit non rientra** (3 bloccanti di contrasto). I fix del backlog sono
   quasi tutti token/overlay per-preset; chiusura misurabile: axe
   color-contrast = 0 nodi su tutti i preset + canary del critico verde.
-  Dettaglio e criteri in docs/decisions/2026-07-re-audit-preset.md.
+  Dettaglio e criteri in docs/archivio/2026-07-re-audit-preset.md (chiuso: 5/5 PASS).
 - 2026-07-11 — **Pesi font: mai sintetici.** Ogni coppia (famiglia, peso,
   stile) usata nel render deve avere una @font-face vera: gate deterministico
   in lint-tokens (censimento su elementi visibili vs document.fonts), utility
@@ -580,7 +422,6 @@ factory/
                  critic-review.json, audit.json, shots/*.png}
   calibration/{baseline.json, goldset/(screenshot+labels.json), canary.json}
   assignments.json
-  impeccable-whitelist.json
   tools/{pyproject.toml, uv.lock, scripts/*.py}     # .cache/ (pesi HF) gitignorata
 ```
 
@@ -644,9 +485,9 @@ factory/
   (autorità WCAG invariata) · axe-core AA via Playwright · overflow orizzontale a 390px
   con parole lunghe maiuscole · `lint-tokens.mjs` (componenti usano solo classi
   semantiche/token; computed styles ∈ token del preset; nessun blocco `[data-preset]`
-  scritto a mano fuori dal generato) · impeccable detect con whitelist
-  (`factory/impeccable-whitelist.json`: es. la regola anti-all-caps confligge con l'H2
-  maiuscolo dello standard).
+  scritto a mano fuori dal generato). Il gate «impeccable detect con whitelist» è stato
+  rimosso il 2026-09-12: il detector della skill è cambiato (oggi `impeccable detect`
+  del binario) e il wrapper non girava più; se serve, va ricablato sul comando nuovo.
 - **Novelty gate (L2)**: due assi MAI fusi in un punteggio unico — un clone bellissimo
   deve essere bocciato. Vs libreria: DIVERSO (dHash → tokenDiff → CSD percentili → ΔVS>0).
   Vs riferimenti: LONTANO (dHash+CSD, soglia = percentile basso della distribuzione
@@ -718,9 +559,8 @@ la usa.
   `tests/a11y.spec.ts` (axe-core AA su ogni anteprima) ·
   `scripts/check-overflow.mjs` (scrollWidth>clientWidth a 390px) ·
   `scripts/lint-tokens.mjs` (grep statico su `src/sections/` per hex/inline-style fuori
-  allowlist + check Playwright computed-styles ∈ token del preset) ·
-  `scripts/run-impeccable.mjs` (prima azione: verificare l'invocazione esatta del
-  detector in `~/.claude/skills/impeccable/scripts/detector/`; wrapper con whitelist).
+  allowlist + check Playwright computed-styles ∈ token del preset). Il wrapper
+  `run-impeccable.mjs` di M1 è stato rimosso il 2026-09-12 (detector della skill cambiato).
 
 *Accettazione*: da `site-renderer/`: `npx playwright test --grep @visual` verde sui 6
 preset; alterando localmente un token (es. `--brand-radius-card` di terra) il run
@@ -791,7 +631,7 @@ standard meridian, gli altri preset mai riverificati).
   ancora sotto: meno criteri, ancore più concrete. **Canary** = 10 item fissi in
   `factory/calibration/canary.json`.
 - **Re-audit**: critico su `/anteprima/{atelier,nova,canon,terra,vita}` → 5 verdetti in
-  `docs/decisions/2026-XX-re-audit-preset.md` + backlog. I fix bloccanti dei COMPONENTI
+  `docs/archivio/2026-07-re-audit-preset.md` + backlog. I fix bloccanti dei COMPONENTI
   vanno chiusi prima del pilota M7 (i candidati renderizzano con gli stessi componenti:
   un difetto di componente farebbe bocciare candidati incolpevoli).
 
@@ -807,8 +647,8 @@ review JSON validi.
 - **Estrazione**: `scripts/factory/extract-tokens.mjs` (Dembrandt o fallback, esito M0b)
   → `extraction.tokens.json` (DTCG + confidence) + screenshot 390/1280 via Playwright.
 - **Seam**: `export const IO` in `lib/run-step.ts` (una riga); `lib/factory/paths.ts`,
-  `lib/factory/state.ts` (CRUD run.json, pattern `clients.ts`), `lib/factory/steps.ts`
-  (FactoryStepDef: `estrazione|designer|build|gates|critico`), `lib/factory/run.ts`.
+  `lib/factory/state.ts` (CRUD run.json, pattern `clients.ts`), `lib/factory/fasi.ts`
+  (le 5 fasi: `estrazione|designer|build|gates|critico`), `lib/factory/run.ts`.
 - **Editor**: `app/fabbrica/page.tsx` (libreria: card preset da manifest+meta,
   stato/versione, Vendi score, "nuova run"), `app/fabbrica/riferimenti/page.tsx`
   (URL → check opt-out immediato con esito visibile + checkbox attestazione),
@@ -834,7 +674,7 @@ confidence + 2 screenshot su disco; run con <3 riferimenti o non attestati → r
 - **Build candidato**: builder M2 con `--extra factory/runs/<id>/candidate.tokens.json` →
   anteprima `candidato-<runId>`; manifest con `stato:"candidato"` (renderizzabile su
   /anteprima, MAI offerto alla pipeline cliente).
-- **Gate orchestrati** in `lib/factory/steps.ts` (tutti `io.script`, report in `gates/`):
+- **Gate orchestrati** in `lib/factory/fasi.ts` (tutti `io.script`, report in `gates/`):
   L1 (riuso identico degli script M1 + check-contrast sulle coppie del candidato);
   L2 `scripts/factory/novelty.mjs` (dHash via sharp + tokenDiff pesato in casa + CSD via
   `uv run` con percentili da `factory/calibration/baseline.json`, generata da

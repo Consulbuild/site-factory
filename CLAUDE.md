@@ -37,10 +37,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    modificare file via shell (sed -i, redirect) invece di Edit/Write,
    `git add -A` (si stagiano path espliciti).
 
-Stato lavori e prossimi passi: **`docs/handoff-fase-c.md`**.
-
-Debug di una run (prompt/azioni/metriche/errori reali di ogni fase `claude -p`, clienti e
-fabbrica): **`docs/DEBUG.md`** — la mappa «sintomo → file → cosa leggere».
+Stato lavori, punti aperti e prossime schede: **`docs/handoff-fase-c.md`**.
+Debug di una run (`claude -p`, clienti e fabbrica): **`docs/DEBUG.md`** — la mappa
+«sintomo → file → cosa leggere».
 
 ## Comandi
 
@@ -50,47 +49,33 @@ Node è installato in `~/.local` (niente Homebrew): ogni shell deve prima fare
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-Tutti i comandi girano da `site-renderer/`:
-
-```bash
-npm run dev      # anteprima live su http://localhost:4321
-npm run build    # build statica in dist/
-npm run preview  # serve la build
-npm run check    # astro check (type-check)
-```
-
-Validare un site.json (o un blueprint) contro il contratto:
+**Renderer** (`site-renderer/`, Astro 5): `npm run dev` (:4321) · `npm run build` ·
+`npm run check` (astro check) · `npm run test:visual` (Playwright, snapshot 7 preset ×
+2 viewport) · `npm run test:a11y` (axe). Validare un site.json o un blueprint:
 
 ```bash
 node --experimental-strip-types scripts/validate-site.ts <path-al-site.json>
 ```
 
-Niente linter. I test del renderer sono Playwright (`tests/visual.spec.ts` snapshot
-6 preset × 2 viewport, `tests/a11y.spec.ts` axe): la verifica è `npm run build` verde
-+ `npm run check` + il validatore qui sopra, più `npm run test:visual` (ed eventuale
-`test:a11y`) quando si toccano componenti, layout o global.css.
+Niente linter. La verifica standard quando si toccano componenti, layout o
+`global.css` è `npm run build` verde + `npm run check` + validatore + `test:visual`.
 
-**Editor Fase C** (`site-factory-editor/`, Next.js 16 + React 19): il suo `CLAUDE.md`
-importa solo un warning su Next.js, quindi i comandi stanno qui.
+**Editor** (`site-factory-editor/`, Next.js 16 + React 19): `npm run dev` (:3000,
+spesso già attivo su :3311) · `npm run build` · `npx tsc --noEmit`. Verifica per
+scheda: `tsc --noEmit` + `npm run build` + parity check dove c'è un contratto
+(`scripts/parity-copy.ts`) + banchi di prova `scripts/test-*.ts` + run E2E sui clienti
+reali in `site-renderer/out/`. Attenzione: è una versione di Next.js con breaking
+changes rispetto ai dati di training — prima di scrivere codice editor leggi le guide
+in `node_modules/next/dist/docs/`.
 
-```bash
-cd site-factory-editor
-npm run dev      # editor su :3000 (spesso già attivo su :3311)
-npm run build    # build Next
-npx tsc --noEmit # type-check (la verifica standard per ogni scheda)
-```
+**Design della UI dell'editor**: il design system è `site-factory-editor/DESIGN-SYSTEM.md`
+(token, componenti in `components/ui.tsx`, status bar agenti, regole AA/motion,
+ricetta per una scheda nuova) — LEGGERLO prima di toccare qualunque scheda. È
+distinto dal design dei SITI generati (`site-renderer/DESIGN.md`).
 
-Attenzione: questa è una versione di Next.js con breaking changes rispetto ai dati di
-training — prima di scrivere codice editor leggi le guide in `node_modules/next/dist/docs/`.
-La verifica per scheda è `tsc --noEmit` + `npm run build` + eventuale parity check
-(`scripts/parity-copy.ts`) + run E2E sui clienti reali in `site-renderer/out/`.
-
-**Design della UI dell'editor**: il design system è
-`site-factory-editor/DESIGN-SYSTEM.md` — LEGGERLO prima di costruire o toccare
-qualunque scheda della dashboard (token, componenti condivisi in `components/ui.tsx`,
-utility `card`, status bar agenti, regole AA/motion, ricetta per una scheda nuova).
-È distinto da `docs/design-system.md` (che è il sistema dei 6 preset dei SITI
-generati, non dell'editor). Lo studio che l'ha prodotto: `site-factory-editor/DESIGN-REFACTOR-2026-07.md`.
+**Form bozza** (`site-intake/`, Astro): `npm run dev` · `npm run build` (con budget
+prestazioni) · `npm run check` · `npm test` (Playwright). In dev gli invii finiscono
+in `site-intake/.dev-inbox/`.
 
 ## Principio architetturale (non negoziabile)
 
@@ -107,15 +92,18 @@ nei componenti curati a mano, mai nella generazione di markup.
    (il golden example) e itera `sections[]`.
 3. `src/lib/registry.ts` mappa `type` → componente in `src/sections/`.
 4. `src/layouts/Base.astro` mette `data-preset` su `<html>`, inietta come CSS var inline
-   solo i colori forniti dal cliente, carica i font del preset.
+   solo i colori forniti dal cliente, carica i font del preset. Con lo script Umami
+   attivo (solo via env di build) conta da solo i clic su `tel:`/`mailto:`/`wa.me`.
 5. Sottopagine (`/privacy`, `/termini`, `/grazie`) passano da `src/layouts/SubPage.astro`:
-   niente navbar, striscia di servizio con "← Torna al sito" + marchio cliccabile → `/#top`.
-   Le pagine legali sono contenuti d'esempio (banner "Anteprima" rivolto al lead);
-   la pipeline le sostituirà in Fase 3.
+   niente navbar, striscia di servizio con «← Torna al sito».
 
 **Per aggiungere una sezione servono 4 tocchi**: schema in `schema.ts` (aggiungi alla
 union), componente in `src/sections/`, entry in `registry.ts`, esempio nel blueprint.
-Il componente riceve sempre `{ data, site, variant? }`.
+Il componente riceve sempre `{ data, site, variant? }`. Lo schema contiene 8 tipi
+SENZA componente né entry nel registry (ProblemAgitation, About, LogoBar,
+Certifications, Incentives, Guarantees, BeforeAfter, GoogleReviews): per questo
+`npm run check` segnala 1 errore atteso su `registry.ts` (`Record<SectionType, any>`
+incompleto) — è il guard voluto, si risolve creando i componenti, **non** con `Partial`.
 
 ## Blueprint + slot (il contratto con la pipeline AI)
 
@@ -124,20 +112,20 @@ Gli agenti NON generano un site.json da zero: riempiono gli SLOT di un blueprint
 golden example (valida e builda da solo); `slots.json` dichiara quali path ogni
 agente può toccare, con vincoli e guida. I budget di lunghezza del copy sono
 duplicati per design: in `slots.json` come guida e in `schema.ts` (Zod) come
-enforcement — se ne cambi uno, cambia l'altro.
+enforcement — se ne cambi uno, cambia l'altro. Sul lato editor lo specchio è
+`lib/slots.ts` (`validateCopyArtifact`), tenuto allineato da `scripts/parity-copy.ts`.
 
-Attenzione agli anchor di `ContactCTA`: con `showForm:true` la sezione ha
-`id="contatti"` (il form preventivo), con `showForm:false` ha `id="canali"`
-(la sezione contatti/canali diretti). La voce navbar "Contatti" punta a
-`#canali`; le CTA "Preventivo gratuito" puntano a `#contatti`.
+Anchor di `ContactCTA`: con `showForm:true` la sezione ha `id="contatti"` (il form
+preventivo), con `showForm:false` ha `id="canali"` (contatti diretti). La voce navbar
+«Contatti» punta a `#canali`; le CTA «Preventivo gratuito» puntano a `#contatti`.
 
 ## Lo standard ConsulBuild (la base di design)
 
 **`site-renderer/DESIGN.md` è la spec operativa del design standard** (con
-`site-renderer/PRODUCT.md` per il contesto strategico): distillato dai siti consegnati
-ai clienti reali, è la grammatica fissa che rende i siti riconoscibili — eyebrow con
-lineetta, H2 maiuscolo con UNA frase in accent (marcatore `**...**` nel JSON, convertito
-da `renderAccent()` in `src/lib/ui.ts`), ritmo scuro/chiaro (`.section-dark`), CTA
+`PRODUCT.md` per il contesto strategico): distillato dai siti consegnati ai clienti
+reali, è la grammatica fissa che rende i siti riconoscibili — eyebrow con lineetta,
+H2 maiuscolo con UNA frase in accent (marcatore `**...**` nel JSON, convertito da
+`renderAccent()` in `src/lib/ui.ts`), ritmo scuro/chiaro (`.section-dark`), CTA
 ricorrenti, processo numerato. Leggere DESIGN.md prima di toccare i componenti.
 
 ## Sistema di theming a token
@@ -148,26 +136,23 @@ Cascata definita in `src/styles/global.css`:
 :root (LO STANDARD, = preset "meridian")  <  [data-preset="x"]  <  style inline su <html> (palette cliente)
 ```
 
-- **6 style-preset** (stessi componenti, estetiche diverse, zero markup): `meridian`
-  (= lo standard, default), `atelier` (minimal), `nova` (dark/glass/glow), `canon`
-  (editoriale serif), `terra` (artigianale caldo), `vita` (friendly rounded).
-  `src/lib/presets.ts` elenca i preset e i font Google da caricare per ciascuno.
-  I 5 preset alternativi vanno ri-auditati dopo il redesign allo standard.
-- **Tutto è token**: radius (`--brand-radius-*`), ombre (`--brand-shadow-*`), motion
-  (`--brand-dur-*`, `--brand-ease`), spaziatura, scala tipografica fluida (`--step-*`
-  via clamp), cassa dei titoli (`--heading-case`: maiuscolo nello standard, `none`
-  negli altri preset). In fondo a global.css i re-skin per-preset delle classi semantiche.
+- **7 style-preset** (stessi componenti, estetiche diverse, zero markup): `meridian`
+  (= lo standard, default), `atelier`, `nova`, `canon`, `terra`, `vita`, `ferro`. I
+  token vivono in `presets/*.tokens.json` (DTCG); `npm run build:presets` genera
+  `presets.gen.css`/`presets.gen.ts` e la copia per l'editor (mai editarli a mano).
+  Il preset di un cliente è assegnato in modo deterministico dall'editor
+  (`lib/assign-design.ts`).
+- **Tutto è token**: radius, ombre, motion, spaziatura, scala tipografica fluida
+  (`--step-*` via clamp), cassa dei titoli (`--heading-case`).
 - **Classi semantiche da usare nei componenti**: `.t-display/.t-h1..h4/.t-lead/.t-caption`,
   `.eyebrow(--center)`, `.accent-word`, `.btn(-primary/-secondary/-ghost/-sm)` (via
-  `ctaClass()`), `.surface-card(--hover)`, `.section-pad`, `.section-dark(--deep)`
-  (fondo scuro che ricolora da solo eyebrow/lead/bottoni secondari), `.media-frame`,
-  `.media-caption`, `.container-site`, `.hero-overlay`. Le intestazioni di sezione
-  passano SEMPRE da `src/components/SectionHeader.astro`.
+  `ctaClass()`), `.surface-card(--hover)`, `.section-pad`, `.section-dark(--deep)`,
+  `.media-frame`, `.media-caption`, `.container-site`, `.hero-overlay`. Le intestazioni
+  di sezione passano SEMPRE da `src/components/SectionHeader.astro`.
 - Palette cliente: solo `primary` + `accent` obbligatori; i neutri appartengono al
-  preset. Guardrail AA automatici: `--accent-strong` (testo accent piccolo su chiaro),
-  schiarimento dell'eyebrow in `.section-dark`.
+  preset. Guardrail AA automatici (`--accent-strong`, eyebrow schiarito in `.section-dark`).
 - **Overflow tipografico**: i minimi di `--step-display/-4/-5` sono tarati su parole
-  italiane lunghe in maiuscolo a 390px ("RISTRUTTURAZIONE" = 16 glifi);
+  italiane lunghe in maiuscolo a 390px («RISTRUTTURAZIONE» = 16 glifi);
   `overflow-wrap: anywhere` sui titoli è la rete di sicurezza. Non alzare i minimi
   senza testare a 390px con parole lunghe.
 
@@ -176,148 +161,55 @@ l'estetica cambia senza toccare markup. Usala per verificare ogni modifica ai co
 
 ## Regole di qualità (anti-slop)
 
-Il riferimento completo è `docs/design-system.md` (rubrica a 24 punti, spec dei preset,
-tassonomia sezioni). Regole operative nei componenti:
-
 - **Mai valori estetici hardcoded**: niente `shadow-xl`, `rounded-full`, `text-2xl`,
   colori letterali — sempre token/classi semantiche, altrimenti i preset si rompono.
 - Niente emoji come icone: solo `src/components/Icon.astro` (Lucide inline).
-- Contrasto WCAG AA su tutti e 6 i preset (le opacità tipo `/70` vanno verificate).
+- Contrasto WCAG AA su tutti i preset (le opacità tipo `/70` vanno verificate).
 - Copy e commenti nel codice in italiano; i siti generati sono per PMI italiane.
 - I numeri 01–04 si usano SOLO dove c'è una sequenza reale (processo); l'eyebrow
   con lineetta è un sistema di brand deliberato, non scaffolding da aggiungere altrove.
-- **Motion (policy aggiornata 2026-07-14)**: AMMESSO il motion di *interazione*
-  (transizioni su hover/stato, navbar allo scroll) — tokenizzato, solo proprietà
-  compositor, azzerato da `prefers-reduced-motion`, mai gating della visibilità.
-  VIETATO il motion *decorativo* (reveal/entrance/parallax allo scroll). Resta il
-  cross-fade tra pagine (`@view-transition`). Vedi DESIGN.md §Motion.
+- **Motion**: AMMESSO il motion di *interazione* (hover/stato, navbar allo scroll) —
+  tokenizzato, solo proprietà compositor, azzerato da `prefers-reduced-motion`, mai
+  gating della visibilità. VIETATO il motion *decorativo* (reveal/parallax allo scroll).
+  Resta il cross-fade tra pagine (`@view-transition`). Vedi DESIGN.md §Motion.
 - Sample/fixture: foto Unsplash con ID VERIFICATI via curl (mai indovinati) e
   didascalie coerenti col contenuto reale; in produzione arrivano URL generati via API.
 
-## Stato e roadmap
+## Mappa del repo
 
-- **Fase A** (questo repo, `site-renderer/`): libreria di 15 componenti ridisegnata
-  sullo standard ConsulBuild (2026-07). Lo schema contiene 8 tipi aggiuntivi
-  (ProblemAgitation, About, LogoBar, Certifications, Incentives, Guarantees,
-  BeforeAfter, GoogleReviews) **senza componente né entry nel registry**:
-  sono il prossimo lavoro. Per questo `npm run check` segnala 1 errore atteso su
-  `registry.ts` (`Record<SectionType, any>` incompleto): è il guard voluto — si
-  risolve creando i componenti, **non** indebolendo il tipo con `Partial`.
-- **Fase B**: pipeline multi-agente Claude API che produce il `site.json`
-  (piano in `docs/agents-skills-plan.md`; immagini: FLUX.2 via BFL).
-- **Fase C**: editor Next.js locale (`site-factory-editor/`) — pull dati da Tally,
-  checkpoint di approvazione, deploy su Cloudflare Workers static assets (decisione
-  2026-07, vedi `docs/decisions/2026-07-verifiche-fase-b.md`).
-  - **Parte 1 fatta** (2026-07-06): lista clienti (ricerca per nome/referente/telefono +
-    refresh manuale da Tally con dedup; `intake-tally.ts --list-json` pagina tutte le
-    submission), setup key Tally, import, tema chiaro/scuro, guardia modifiche non salvate,
-    revisione intake (dual-write brief+intake, flag qualità, checksum P.IVA), e **context-enricher**
-    — nuovo step che via `claude -p` headless (login Max, no API a pagamento) distilla il
-    form in `out/<slug>/contesto.json` (identità, servizi atomizzati→macro, punti di forza
-    tracciabili, promesse consentite/vietate). Skill `context-enricher` + agente omonimo;
-    runner generico `lib/steps.ts` (seam per palette/copy/immagini). Gate di copertura
-    deterministico prima della conferma. Prerequisito: `claude login` attivo —
-    **sorvegliato dall'editor** (2026-08-03): `/api/claude-auth` interroga
-    `claude auth status` (cache 20s); a sessione scaduta compare un avviso di
-    stato globale (Banner flottante sopra la status bar) e un pannello in
-    Impostazioni, entrambi con «Apri il Terminale per il login» (osascript →
-    Terminal con `claude login`; l'OAuth resta nelle mani dell'operatore).
-    L'avviso sparisce da solo al login (poll 30s). `components/claude-auth.tsx`.
-    **Riconciliazione intake→contesto** (`lib/contesto-sync.ts`): correggere l'intake dopo
-    la generazione sincronizza automaticamente i campi meccanici (città, tono, colori…) e
-    segnala il drift semantico (settore, descrizione…) con **riallineo AI in modalità
-    update** (`RunMode`, sezione «Modalità aggiornamento» della skill) che rivede solo le
-    parti impattate e preserva la curatela umana — non rigenera da zero. Provenienza in
-    `client.json steps.contesto.fonte/drift`.
-  - **Parte 2 — scheda Palette fatta** (2026-07-07): step `palette` nel registry
-    (`claude -p` con Bash ristretto al solo `check-contrast.mjs`), input primario
-    `contesto.json` (skill palette-designer aggiornata), artifact flat `palette.json`,
-    gate contrasto rieseguito dall'editor (`lib/contrast.ts` spawna lo script della
-    skill — unica fonte del calcolo), scheda con mini-preview su neutri+font veri del
-    preset, tabella WCAG live e «Scurisci finché passa» (`lib/wcag.ts`, copia marcata),
-    e **staleness generica a valle** (`lib/staleness.ts`: hash upstream in
-    `steps.<key>.upstream`, banner/badge ⚠ + ack). Hook run generico `use-step-run`.
-  - **Parte 3 — scheda Copy fatta** (2026-07-07): **seam multi-fase** in
-    `lib/run-step.ts` (`io.claude()` per fase, evento `phase`, StepDef.run() =
-    orchestrazione TS) — contesto/palette convertiti in wrapper sottili; step `copy`
-    = copywriter → gate formato deterministico → copy-critic → correzioni solo sugli
-    slot bocciati (max 3 round, poi umano). Skill copywriter/copy-critic aggiornate a
-    `contesto.json` come verità primaria (macro=card, `promesse_vietate` = bloccante
-    automatico, martello già scelta) + sezione «Formato artifact» (copy.json flat +
-    copy-coverage.json). `lib/slots.ts validateCopyArtifact` = specchio dell'assembler
-    + bound Zod del renderer (parity check `scripts/parity-copy.ts`, helper client-safe
-    in `lib/slots-shared.ts`). Editor 32 slot in ordine di pagina, pannello critico con
-    anchor ai campi, contatori live, update-mode con estratto per-campo
-    (`steps.copy.fonte`). Ack staleness generalizzato
-    (`steps/[step]/ack-upstream`).
-  - **Parte 4 — scheda Legale fatta** (2026-08-03, piano vivo in
-    `docs/piano-scheda-legale.md`): step `legale` nel registry — profilo
-    deterministico dal brief (forma giuridica inferita; NIENTE raccolta
-    REA/PEC/capitale per decisione di nicchia), fase «foro» protocollata
-    (circondario del tribunale via MCP legal-it + fallback web con evidenza
-    verbatim e confidenza in `foro.json` — lezione Cavaliere istituzionalizzata),
-    privacy via `genera_informativa_privacy` riformattata sull'outline del
-    golden, termini via skill `tc-sito-it` (globali in ~/.claude/skills),
-    formNotice = template TS dal modello approvato, converter md→blocchi a
-    regole chiuse + gate unico deterministico (exact-match normalizzati sul
-    brief, foro verificato solo nella sezione giusta) + prova di montaggio con
-    l'assembler reale, catena avversariale a 3 lenti (anti-invenzione+
-    `verifica_citazioni`, conformità-skill, refusi) con correzioni per-documento
-    e byte-check (MAX 2 round), `legale-report.md` renderizzato in TS,
-    `legale-review.json` timbrata. Scheda con editor a blocchi, striscia
-    profilo (foro+evidenza), Conferma condizionata (review PASS corrente +
-    foro confidenza alta, override esplicito col dialog). Update-mode a 3 aree
-    (identità/sede e foro/recapiti → documenti impattati); `legale.json`
-    nell'upstream della build. Deploy: NESSUN interlock con lo stato legale
-    (decisione Mattia 2026-08-03) — solo staleness. Banco di prova:
-    `scripts/test-legale-gates.ts` (59 casi).
-  - **Parte 5 — dashboard clienti fatta** (2026-09-06, piano vivo in
-    `docs/piano-dashboard-clienti.md`): home con card-filtro Da sviluppare / Attivi /
-    Siti down / In ritardo, entrate, riga essenziale; hub con card Sito · Abbonamento ·
-    Lead · Visite; Impostazioni con chiavi Stripe/Gatus e «Collegamenti Stripe».
-    Letture da Stripe, Gatus, n8n (Lead, Clienti) e Umami in `lib/portafoglio.ts` con
-    cache in memoria (`lib/cache.ts`) e stato per fonte (mai uno «0» a fonte giù);
-    banco di prova `scripts/test-portafoglio.ts`. Niente avvisi flottanti: la card
-    rossa col nome è l'avviso.
-  - **Parte 6 — modalità demo fatta** (2026-09-08, piano
-    `~/.claude/plans/1-principalmente-si-ma-luminous-sifakis.md`, memoria
-    `demo-mode-decisioni`): ogni lead del form `sito.consulbuild.com` (unica
-    sorgente: **Tally eliminato**) nasce in `percorso: "demo"`. **Catena
-    automatica** (`lib/catena.ts`): contesto → palette → logo (solo se manca,
-    step `logo` = skill logo-designer in modalità pipeline) → copy (3 round di
-    critico) → alt foto lavori → immagini → build `noindex` → «demo pronta»;
-    nessun checkpoint umano (conferme condivise in `lib/conferme.ts`,
-    `steps.<k>.autoConferma`), si ferma al primo critico FAIL/errore,
-    idempotente («Riprendi»), coda a 2 con priorità completo > demo, attesa
-    e riprova sul limite del piano Max. Mattia verifica UNA volta e pubblica:
-    worker separato `<slug>-demo` su `<nome-azienda>.demo.consulbuild.com`
-    (`lib/deploy.ts deployDemo`), scadenza 15 gg spenta dal sweep orario
-    (`instrumentation.ts` → `lib/demo-sweep.ts`, solo `wrangler delete
-    <slug>-demo`, mai un abbonato/dominio). «Il cliente si è abbonato» →
-    percorso completo → legale → dominio → build reale → deploy → demo
-    spenta. UI: card «Catena» nell'hub (unica primaria in demo), home con
-    «Avvia demo» + «Importa soltanto», riga Logo con varianti.
+- **`site-renderer/`** — Fase A, la libreria di sezioni e i 7 preset (sopra). In
+  `scripts/` gli script della pipeline (assemble, validate, generate-image,
+  generate-logo) e della fabbrica (`scripts/factory/`), spawnati dall'editor per path.
+- **`site-factory-editor/`** — Fase C, console locale per un solo operatore. Registry
+  degli step AI in `lib/steps.ts` (contesto → palette → logo → copy → images → legale →
+  build): ogni step = skill in `.claude/skills/` eseguita da `claude -p` (`lib/run-step.ts`,
+  eventi live via `lib/run-bus.ts`), gate deterministici prima dei critici avversariali
+  (max 3 round, poi decide l'umano), conferme condivise (`lib/conferme.ts`), staleness a
+  valle con ack (`lib/staleness.ts`), catena demo automatica (`lib/catena.ts`), build
+  deterministica (`lib/build.ts`) e deploy su Cloudflare Workers (`lib/deploy.ts`),
+  dashboard clienti su Stripe/Gatus/n8n/Umami (`lib/portafoglio.ts`, cache e stato per
+  fonte: mai uno «0» a fonte giù). Il filesystem è il database: ogni cliente vive in
+  `site-renderer/out/<slug>/` (fuori da git), `client.json` è dell'editor. Manuale:
+  `site-factory-editor/README.md`.
+- **`site-intake/`** — il form bozza su sito.consulbuild.com, unica sorgente dei lead
+  (Tally dismesso il 2026-09-08): form → n8n `sf-bozza` → Google Drive
+  `site-factory-clienti/_inbox/<leadId>/` → «Importa» nell'editor (`lib/inbox-form.ts`).
+  Piano vivo: `docs/piano-form-bozza.md`.
+- **`factory/`** — la fabbrica dei preset: riferimenti, gold set e calibrazione del
+  design-critic, run con gate (`docs/piano-fabbrica-design-2026-07.md`).
+  **`logo-lab/`** — banco di prova per la generazione dei loghi (suo README).
+- **`infra/`** — monitor Gatus per cliente e workflow n8n versionati
+  (`scripts/n8n-import.ts export|import`; le credenziali restano nell'istanza). Guida:
+  `docs/vps-integrazioni-setup.md`. Regole: il sito pubblicato parla con
+  l'infrastruttura SOLO via env di build (`FORM_ACTION`, `UMAMI_HOST`,
+  `UMAMI_WEBSITE_ID`), mai in `site.json`; Stripe è l'unico orologio del rinnovo
+  (1 abbonamento = 1 sito); niente notifiche lead all'agenzia, niente WhatsApp.
+- **`.claude/`** — skill e agenti della pipeline (usati a runtime da `claude -p`),
+  `settings.json` con i deny e l'hook `scope-guard` (regola 8): si modificano solo a
+  mano da Mattia. **`docs/archivio/`** — ricerche e piani conclusi: storia, non guida.
 
-## Servizi del VPS (n8n, Umami, Gatus, Brevo, Stripe) — dal 2026-09-05
-
-Il sito pubblicato con dominio è l'unico che "parla" con l'infrastruttura, e solo via
-env di build (`FORM_ACTION`, `UMAMI_HOST`, `UMAMI_WEBSITE_ID`, passate da `lib/build.ts`
-come `SITE_URL`): mai in `site.json`. Senza env il form resta simulato e non c'è
-script: HTML identico a prima. In `Base.astro`, con lo script Umami attivo, un listener
-delegato conta i clic su `tel:`/`mailto:`/`wa.me` come eventi `chiama`/`email`/
-`whatsapp` — di serie, mai attributi per-componente.
-
-Al deploy `lib/integrazioni.ts` registra il cliente nel registro n8n (Data table
-`Clienti`) e committa il monitor Gatus (`infra/gatus/`). I workflow n8n sono la
-logica lato server e stanno versionati in `infra/n8n/` (`scripts/n8n-import.ts
-export|import`; le credenziali restano nell'istanza): `sf-form-lead` (lead → e-mail
-Brevo al cliente → riga in `Lead`, senza dati personali: una riga = una richiesta
-recapitata), `sf-registra-cliente`, `sf-errori` (→ Telegram), `sf-report-rinnovo`
-(Stripe `invoice.upcoming` 3 giorni prima del rinnovo → report mensile al cliente da
-`report@notifiche.consulbuild.com` con dati Umami/Lead/Gatus; tabella `Report` per la
-deduplica; webhook `report-invia` per prove e reinvii). Decisioni: niente notifiche
-lead all'agenzia, niente WhatsApp, Stripe è l'unico orologio del rinnovo (1 abbonamento
-= 1 sito; collegamento per e-mail del brief → nome → `metadata.slug`). Le e-mail ai
-clienti (lead e report) condividono lo stesso impianto HTML, che vive nei nodi Code.
-Guida operativa e lezioni (due sandbox Stripe, chiavi, tabelle):
-`docs/vps-integrazioni-setup.md`; stato lavori in `docs/handoff-fase-c.md`.
+**Ciclo di vita di un cliente**: lead dal form → `percorso: "demo"` → catena automatica
+senza checkpoint (si ferma al primo critico FAIL) → demo su
+`<nome-azienda>.demo.consulbuild.com` (15 gg, sweep orario) → «Il cliente si è
+abbonato» → `completo` → legale → dominio → build reale → deploy (che spegne la demo).
+Il deploy non ha interlock con lo stato legale (decisione Mattia 2026-08-03): solo staleness.

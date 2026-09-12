@@ -2,8 +2,8 @@
 
 Data: 2026-09-03. Fonti verificate: docs Hetzner Cloud (creazione server, FAQ, firewall,
 backup), docs Coolify (installazione, firewall, servizi), docs Bitwarden (SSH agent).
-Decisioni di contesto: sessione 2026-08-04 «VPS hardware adequacy» + docs/agents-skills-plan.md
-+ docs/decisions/2026-07-verifiche-fase-b.md.
+Decisioni di contesto: sessione 2026-08-04 «VPS hardware adequacy» +
+docs/decisions/2026-07-verifiche-fase-b.md. Runbook di ricostruzione del server: da tenere intero.
 
 ## 0. Cosa gira sul VPS (e cosa NO)
 
@@ -12,7 +12,7 @@ Sul VPS girano solo i servizi h24 che servono i siti pubblicati dei clienti:
 | Servizio | A cosa serve | Come si installa |
 |---|---|---|
 | **Coolify** | pannello web che gestisce tutto il resto (Docker, SSL, backup) | script ufficiale |
-| **n8n** | automazioni: riceve il form dei siti, webhook Tally, notifiche email | one-click da Coolify |
+| **n8n** | automazioni: riceve il form dei siti e il form bozza (sito.consulbuild.com), notifiche email | one-click da Coolify |
 | **Umami** | analytics dei siti clienti, senza cookie (niente banner) | one-click da Coolify |
 | **Gatus** (dal 2026-09-04, al posto di Uptime Kuma) | monitor dei siti e dei servizi, alert Telegram | Dockerfile in `infra/gatus/`, Coolify lo ricostruisce da GitHub |
 
