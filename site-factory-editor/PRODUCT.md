@@ -6,11 +6,11 @@ product
 
 ## Users
 
-Un solo operatore: Mattia (ConsulBuild), web agency per PMI locali italiane. Usa l'editor alla scrivania, di giorno, come strumento di lavoro quotidiano: rivede i dati che le PMI hanno compilato nel form Tally, li corregge, arricchisce il contesto e lo consegna agli agenti AI della pipeline. Ogni errore che gli sfugge qui diventa un sito sbagliato consegnato a un cliente pagante.
+Un solo operatore: Mattia (ConsulBuild), web agency per PMI locali italiane. Usa l'editor alla scrivania, di giorno, come strumento di lavoro quotidiano: rivede i dati che le PMI hanno compilato nel form bozza (sito.consulbuild.com), li corregge, arricchisce il contesto e lo consegna agli agenti AI della pipeline. Ogni errore che gli sfugge qui diventa un sito sbagliato consegnato a un cliente pagante.
 
 ## Product Purpose
 
-Console locale della pipeline Site-factory (Fase C, parte 1): lista clienti PMI, workspace persistente per cliente, revisione dei dati del form con flag di qualità, generazione e verifica del "contesto arricchito" (identità, servizi atomizzati, macro-categorie, punti di forza tracciabili) che è l'input primario degli agenti. Successo = zero dati sbagliati passati agli agenti, con il minimo di attrito per l'operatore.
+Console locale della pipeline Site-factory (Fase C): dashboard dei clienti PMI (abbonamenti, siti, lead), workspace persistente per cliente, revisione dei dati del form con flag di qualità, step AI con critici avversariali (contesto, palette, logo, copy, immagini, legale), build, deploy e catena demo automatica. Successo = zero dati sbagliati passati agli agenti e zero siti mediocri pubblicati, con il minimo di attrito per l'operatore.
 
 ## Brand Personality
 

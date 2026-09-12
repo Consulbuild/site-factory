@@ -15,8 +15,8 @@ import { useStepRun, RunLog } from "./use-step-run";
 import { BackBar } from "./back-bar";
 import { ConfirmDialog } from "./confirm-dialog";
 import { LavoriSection } from "./lavori-section";
+import { ALT_MAX } from "@/lib/slots-shared";
 
-const ALT_MAX = 140;
 type TraceEntry = ImagesTrace["immagini"][number];
 type ReviewEntry = NonNullable<ImageReview>["immagini"][number];
 

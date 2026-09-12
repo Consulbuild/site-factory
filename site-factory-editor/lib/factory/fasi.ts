@@ -53,7 +53,7 @@ function promptDesigner(run: FactoryRun, correzione?: { round: number }): string
     `Usa la skill preset-designer. Run di fabbrica «${run.runId}».\n` +
     `Riferimenti estratti (${run.references.length}):\n${refs}\n` +
     `Grammatica dello standard: ${path.join(SITE_RENDERER, "DESIGN.md")} (e PRODUCT.md accanto).\n` +
-    `Sintesi libreria (per trovare lo spazio LIBERO): ${path.join(PRESETS_DIR, "presets.manifest.json")} e i 6 file *.meta.json in ${PRESETS_DIR}.\n` +
+    `Sintesi libreria (per trovare lo spazio LIBERO): ${path.join(PRESETS_DIR, "presets.manifest.json")} e i file *.meta.json in ${PRESETS_DIR}.\n` +
     `Font ammessi: ${path.join(PRESETS_DIR, "font-whitelist.json")}.\n` +
     `Universo token e FORME esatte dei valori: ${path.join(PRESETS_DIR, "meridian.tokens.json")}.\n`;
   if (correzione) {

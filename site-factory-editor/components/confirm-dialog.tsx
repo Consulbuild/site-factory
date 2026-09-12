@@ -8,7 +8,7 @@
 import { useEffect, useRef } from "react";
 import { btnPrimary, btnSecondary } from "./ui";
 
-export interface ConfirmProps {
+interface ConfirmProps {
   open: boolean;
   title: string;
   message: React.ReactNode;

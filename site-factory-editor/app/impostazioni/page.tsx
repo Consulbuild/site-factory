@@ -14,7 +14,7 @@ export default function Impostazioni() {
         <p className="mt-1 text-sm text-muted">Login Claude, chiavi API e configurazione della pipeline.</p>
       </div>
       <ClaudeAuthPanel />
-      <ApiKeysPanel aperto />
+      <ApiKeysPanel />
       <CollegamentiStripe clienti={clienti} />
     </div>
   );

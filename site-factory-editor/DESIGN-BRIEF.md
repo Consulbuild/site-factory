@@ -1,7 +1,6 @@
-> **Refactoring 2026-07**: lo studio UX/UI completo del refactoring (gap per pagina,
-> sistema di coerenza, status bar agenti, piano Fase 2) è in
-> **`DESIGN-REFACTOR-2026-07.md`** — leggerlo PRIMA di toccare la UI dell'editor.
-> Gli shape storici qui sotto restano il riferimento delle singole schede.
+> Il manuale operativo della UI è **`DESIGN-SYSTEM.md`** (leggerlo PRIMA di toccare
+> l'editor); lo studio che l'ha prodotto è `DESIGN-REFACTOR-2026-07.md`. Qui restano
+> gli shape /impeccable delle singole schede, citati dai componenti che le realizzano.
 
 # Design brief — site-factory-editor, parte 1 (shape /impeccable)
 
@@ -269,7 +268,7 @@ revisione è una lettura narrativa, non una compilazione.
 # Scheda Immagini (shape /impeccable — 2026-07-08)
 
 Register: **product** (vocabolario esistente: badge pill, bordi sottili, mono per
-dati tecnici, teal per azione/selezione). Le immagini sono le protagoniste: chrome
+dati tecnici, blu royal per azione/selezione). Le immagini sono le protagoniste: chrome
 minimo intorno alle thumbnail. Fedeltà: production-ready, una pagina a due rami.
 
 ## Layout (editor, trace presente)

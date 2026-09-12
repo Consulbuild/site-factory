@@ -19,15 +19,15 @@ import { useSaveShortcut } from "@/components/use-save-shortcut";
 /* ---- tipi client-safe (specchio del contratto; la validazione vera è server) ---- */
 type Block = { type: "h2"; text: string } | { type: "p"; text: string } | { type: "ul"; items: string[] };
 type Doc = { intro: string; updatedAt: string; blocks: Block[] };
-export type LegaleData = { privacy: Doc; termini: Doc; formNotice: string };
+type LegaleData = { privacy: Doc; termini: Doc; formNotice: string };
 type Finding = { lente: string; doc: string; path: string; gravita: string; problema: string; fix: string };
-export type ReviewData = {
+type ReviewData = {
   verdict: "PASS" | "FAIL";
   round: number;
   lenti: Record<string, "PASS" | "FAIL">;
   findings: Finding[];
 } | null;
-export type ForoData = { foro: string; fonte: string; url: string; evidenza: string; confidenza: "alta" | "bassa" } | null;
+type ForoData = { foro: string; fonte: string; url: string; evidenza: string; confidenza: "alta" | "bassa" } | null;
 
 const NOME_LENTE: Record<string, string> = {
   antiInvenzione: "anti-invenzione",
@@ -150,7 +150,7 @@ function BlockField({ doc, i, block, onChange }: { doc: string; i: number; block
     return (
       <input
         id={anchorId(doc, i)}
-        className="w-full rounded-ctl border border-field bg-raise px-3 py-2 font-semibold"
+        className="w-full rounded-ctl border bg-raise px-3 py-2 font-semibold"
         value={block.text}
         onChange={(e) => onChange({ type: "h2", text: e.target.value })}
         aria-label={`Titolo di sezione ${i + 1}`}
@@ -161,7 +161,7 @@ function BlockField({ doc, i, block, onChange }: { doc: string; i: number; block
     return (
       <textarea
         id={anchorId(doc, i)}
-        className="mono w-full rounded-ctl border border-field bg-raise px-3 py-2 text-sm"
+        className="mono w-full rounded-ctl border bg-raise px-3 py-2 text-sm"
         rows={Math.max(2, block.items.length)}
         value={block.items.join("\n")}
         onChange={(e) => onChange({ type: "ul", items: e.target.value.split("\n") })}
@@ -172,7 +172,7 @@ function BlockField({ doc, i, block, onChange }: { doc: string; i: number; block
   return (
     <textarea
       id={anchorId(doc, i)}
-      className="w-full rounded-ctl border border-field bg-raise px-3 py-2 text-sm leading-relaxed"
+      className="w-full rounded-ctl border bg-raise px-3 py-2 text-sm leading-relaxed"
       rows={Math.max(2, Math.ceil(block.text.length / 90))}
       value={block.text}
       onChange={(e) => onChange({ type: "p", text: e.target.value })}
@@ -434,7 +434,7 @@ export function LegaleEditor(props: {
               Un solo paragrafo sotto il modulo di contatto; deve rinviare a [Informativa completa](/privacy).
             </p>
             <textarea
-              className="mt-3 w-full rounded-ctl border border-field bg-raise px-3 py-2 text-sm leading-relaxed"
+              className="mt-3 w-full rounded-ctl border bg-raise px-3 py-2 text-sm leading-relaxed"
               rows={5}
               value={data.formNotice}
               onChange={(e) => setData({ ...data, formNotice: e.target.value })}

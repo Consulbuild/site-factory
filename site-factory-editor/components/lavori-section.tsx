@@ -13,9 +13,9 @@ import type { Lavori } from "@/lib/schemas";
 import { Badge, btnPrimary, btnSecondary } from "./ui";
 import { useUnsavedGuard } from "./use-unsaved-guard";
 import { useStepRun, RunLog } from "./use-step-run";
+import { ALT_MAX } from "@/lib/slots-shared";
 
 const CAPTION_MAX = 28;
-const ALT_MAX = 140;
 const GALLERY_MIN = 4; // sotto 4 foto reali la sezione non compare (assembler)
 const LAVORI_MAX = 12;
 type Lavoro = Lavori[number];

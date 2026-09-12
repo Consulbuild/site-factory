@@ -347,7 +347,7 @@ function ColorField({ id, label, value, onChange }: { id: string; label: string;
           aria-label={`${label} (selettore)`}
           value={isHex6(value) ? value : "#888888"}
           onChange={(e) => onChange(e.target.value)}
-          className="h-9 w-12 shrink-0 cursor-pointer rounded-ctl border border-field bg-surface p-1"
+          className="h-9 w-12 shrink-0 cursor-pointer rounded-ctl border border-line bg-surface p-1"
         />
         <input id={id} value={value} onChange={(e) => onChange(e.target.value.trim())} className="mono" spellCheck={false} />
       </div>

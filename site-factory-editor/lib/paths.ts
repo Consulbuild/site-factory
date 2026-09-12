@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 import { homedir } from "node:os";
 
@@ -24,4 +25,14 @@ export function childEnv(extra: Record<string, string> = {}): NodeJS.ProcessEnv 
 export function clientDir(slug: string): string {
   if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) throw new Error(`slug non valido: ${slug}`);
   return path.join(OUT_DIR, slug);
+}
+
+/** Come clientDir, ma null se lo slug non è valido o il workspace non esiste (per le route). */
+export function clientDirEsistente(slug: string): string | null {
+  try {
+    const dir = clientDir(slug);
+    return fs.existsSync(dir) ? dir : null;
+  } catch {
+    return null;
+  }
 }

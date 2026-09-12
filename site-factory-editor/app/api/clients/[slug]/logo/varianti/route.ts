@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { clientDir, SITE_RENDERER, NODE_BIN, childEnv } from "@/lib/paths";
+import { clientDirEsistente as dirDi, SITE_RENDERER, NODE_BIN, childEnv } from "@/lib/paths";
 import { readPalette, patchClientState, writeJson } from "@/lib/clients";
 
 export const dynamic = "force-dynamic";
@@ -16,15 +16,6 @@ export const dynamic = "force-dynamic";
 const FILE_OK = /^(mark(-\d)?(-dark)?|favicon)\.svg$/;
 const VARIANTE_OK = /^mark-\d\.svg$/;
 const SCRIPT = path.join(SITE_RENDERER, "scripts", "generate-logo.mjs");
-
-function dirDi(slug: string): string | null {
-  try {
-    const d = clientDir(slug);
-    return fs.existsSync(d) ? d : null;
-  } catch {
-    return null;
-  }
-}
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
   const { slug } = await ctx.params;

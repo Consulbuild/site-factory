@@ -1,21 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "node:fs";
-import { clientDir } from "@/lib/paths";
+import { clientDirEsistente as ensureClient } from "@/lib/paths";
 import { writeCopy, patchClientState } from "@/lib/clients";
 import { validateCopyArtifact, type CopyArtifact } from "@/lib/slots";
 import { confermaCopy, rispostaConferma } from "@/lib/conferme";
 
 export const dynamic = "force-dynamic";
-
-function ensureClient(slug: string): string | null {
-  let dir: string;
-  try {
-    dir = clientDir(slug);
-  } catch {
-    return null;
-  }
-  return fs.existsSync(dir) ? dir : null;
-}
 
 /**
  * Salva il copy (modifica manuale). Il contratto di formato è un gate anche

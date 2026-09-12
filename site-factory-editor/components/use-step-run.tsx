@@ -11,6 +11,28 @@ export type LogLine = { kind: "tool" | "text" | "info" | "err" | "phase"; text: 
 
 const shorten = (p: string) => (p.length > 60 ? "…" + p.slice(-58) : p);
 
+/**
+ * Consuma uno stream NDJSON riga per riga: `onEvent` riceve ogni oggetto
+ * parsato. Il lettore è unico; ogni chiamante tiene il proprio switch sugli
+ * eventi (testi, refresh, stato).
+ */
+export async function leggiNdjson(body: ReadableStream<Uint8Array>, onEvent: (ev: any) => void): Promise<void> {
+  const reader = body.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let nl: number;
+    while ((nl = buf.indexOf("\n")) >= 0) {
+      const line = buf.slice(0, nl).trim();
+      buf = buf.slice(nl + 1);
+      if (line) onEvent(JSON.parse(line));
+    }
+  }
+}
+
 export function useStepRun(slug: string, step: string) {
   const router = useRouter();
   const [running, setRunning] = useState(false);
@@ -40,32 +62,19 @@ export function useStepRun(slug: string, step: string) {
         throw new Error(err?.error ?? `richiesta rifiutata (${res.status})`);
       }
       if (!res.body) throw new Error("nessuno stream");
-      const reader = res.body.getReader();
-      const dec = new TextDecoder();
-      let buf = "";
       let ok = false;
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += dec.decode(value, { stream: true });
-        let nl: number;
-        while ((nl = buf.indexOf("\n")) >= 0) {
-          const line = buf.slice(0, nl).trim();
-          buf = buf.slice(nl + 1);
-          if (!line) continue;
-          const ev = JSON.parse(line);
-          if (ev.type === "tool") append({ kind: "tool", text: `${ev.name}${ev.detail ? "  " + shorten(ev.detail) : ""}` });
-          else if (ev.type === "phase") append({ kind: "phase", text: ev.label });
-          else if (ev.type === "text") append({ kind: "text", text: ev.text });
-          else if (ev.type === "done") {
-            ok = true;
-            append({ kind: "info", text: "Fatto. Aggiorno la scheda…" });
-          } else if (ev.type === "error") {
-            setFailed(ev.message);
-            append({ kind: "err", text: ev.message });
-          }
+      await leggiNdjson(res.body, (ev) => {
+        if (ev.type === "tool") append({ kind: "tool", text: `${ev.name}${ev.detail ? "  " + shorten(ev.detail) : ""}` });
+        else if (ev.type === "phase") append({ kind: "phase", text: ev.label });
+        else if (ev.type === "text") append({ kind: "text", text: ev.text });
+        else if (ev.type === "done") {
+          ok = true;
+          append({ kind: "info", text: "Fatto. Aggiorno la scheda…" });
+        } else if (ev.type === "error") {
+          setFailed(ev.message);
+          append({ kind: "err", text: ev.message });
         }
-      }
+      });
       if (ok) {
         router.refresh();
         return;

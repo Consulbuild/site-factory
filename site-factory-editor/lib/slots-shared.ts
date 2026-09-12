@@ -36,6 +36,8 @@ export const ARRAY_BOUNDS: Record<string, { min: number; max: number; label: str
   "sections[7].props.items": { min: 3, max: 8, label: "domande FAQ" },
 };
 export const BULLETS_MAX = 5; // z.array(shortText(36)).max(5) — nessun minimo
+/** Budget dell'alt delle immagini (hero, card, foto dei lavori): UI, gate e prompt lo leggono da qui. */
+export const ALT_MAX = 140;
 
 /** Prefisso dell'array per gli slot wildcard (es. "sections[3].props.items"). */
 export const arrayPrefix = (slotPath: string) => slotPath.slice(0, slotPath.indexOf("[*]"));

@@ -229,7 +229,7 @@ export function CopyEditor({
   };
 
   // Operazioni di riga: mutano TUTTI i sibling insieme (coerenza garantita).
-  const addRow = (prefix: string, siblings: CopySlot[]) => {
+  const addRow = (siblings: CopySlot[]) => {
     setCopy((prev) => {
       const next = { ...prev };
       for (const s of siblings) {
@@ -241,7 +241,7 @@ export function CopyEditor({
     });
     setDirty(true);
   };
-  const removeRow = (prefix: string, siblings: CopySlot[], i: number) => {
+  const removeRow = (siblings: CopySlot[], i: number) => {
     setCopy((prev) => {
       const next = { ...prev };
       for (const s of siblings) {
@@ -473,8 +473,8 @@ export function CopyEditor({
                   arr[i] = v;
                   set(path, arr);
                 }}
-                onAdd={() => addRow(a.prefix, a.slots)}
-                onRemove={(i) => removeRow(a.prefix, a.slots, i)}
+                onAdd={() => addRow(a.slots)}
+                onRemove={(i) => removeRow(a.slots, i)}
               />
             ))}
             {g.key === "s3" && (

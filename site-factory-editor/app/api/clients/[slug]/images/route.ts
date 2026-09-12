@@ -1,21 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "node:fs";
-import { clientDir } from "@/lib/paths";
+import { clientDirEsistente as ensureClient } from "@/lib/paths";
 import { readImagesTrace, patchClientState } from "@/lib/clients";
 import { writeImagesTrace } from "@/lib/images";
 import { confermaImages, rispostaConferma } from "@/lib/conferme";
+import { ALT_MAX } from "@/lib/slots-shared";
 
 export const dynamic = "force-dynamic";
-
-function ensureClient(slug: string): string | null {
-  let dir: string;
-  try {
-    dir = clientDir(slug);
-  } catch {
-    return null;
-  }
-  return fs.existsSync(dir) ? dir : null;
-}
 
 /** Salva gli alt curati a mano: { alts: { "img/hero.jpg": "…" } } → trace aggiornato. */
 export async function PUT(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
@@ -38,7 +29,7 @@ export async function PUT(req: NextRequest, ctx: { params: Promise<{ slug: strin
       continue;
     }
     if (typeof alt !== "string" || !alt.trim()) errors.push(`${file}: alt vuoto`);
-    else if (alt.length > 140) errors.push(`${file}: alt oltre 140 caratteri (${alt.length})`);
+    else if (alt.length > ALT_MAX) errors.push(`${file}: alt oltre ${ALT_MAX} caratteri (${alt.length})`);
     else entry.alt = alt.trim();
   }
   if (errors.length) return NextResponse.json({ error: "alt non validi", errors }, { status: 422 });

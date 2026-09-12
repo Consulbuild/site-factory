@@ -298,7 +298,7 @@ stessa fonte. Nessun cambiamento alle skill o a `claude -p`.
 
 | Elemento UI | Fonte |
 |---|---|
-| Agente/skill corrente | evento `phase` (`lib/steps.ts:104,162,547,562,760…`, `lib/factory/fasi.ts:74-261`) |
+| Agente/skill corrente | evento `phase` (emesso da `StepDef.run` in `lib/steps.ts` e dalle fasi di `lib/factory/fasi.ts`) |
 | Sequenza segmenti | fasi note per step + append dinamico sui round |
 | Cliente/scheda | slug+step del run attivo (`client.json steps.<k>`) |
 | Tempo trascorso | `startedAt` (§6.1) |

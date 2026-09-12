@@ -7,7 +7,7 @@
 // (abbonamento · sito · lead · mini-pipeline a 7 tacche) col dominio cliccabile,
 // slug visibile sui nomi duplicati, ordinamento, menu azioni per riga con
 // eliminazione forte (digita il nome). La query di ricerca arriva dalla
-// topbar via URL (?q=) e filtra clienti importati E submission Tally.
+// topbar via URL (?q=) e filtra clienti importati E richieste del form in _inbox.
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";

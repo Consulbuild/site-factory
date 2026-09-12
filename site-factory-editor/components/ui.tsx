@@ -4,7 +4,7 @@
 
 import type { LucideIcon } from "lucide-react";
 
-export type BadgeTone = "warn" | "ok" | "brand" | "err" | "idle";
+type BadgeTone = "warn" | "ok" | "brand" | "err" | "idle";
 
 const TONES: Record<BadgeTone, string> = {
   warn: "bg-warn-bg text-warn",

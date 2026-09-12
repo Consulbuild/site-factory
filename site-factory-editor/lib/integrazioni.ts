@@ -94,7 +94,7 @@ export async function deleteUmamiWebsite(websiteId: string): Promise<void> {
 
 /* ---------------- n8n ---------------- */
 
-/** Prova della API key (usata solo dallo script di import dei workflow). */
+/** Prova della API key dal pannello Chiavi API (app/api/setup/keys/route.ts). */
 export async function n8nPing(apiKey: string): Promise<string | null> {
   const r = await http(`${N8N_HOST}/api/v1/workflows?limit=1`, { headers: { "X-N8N-API-KEY": apiKey } });
   return r.ok ? null : `n8n ha risposto ${r.status}: API key non valida`;

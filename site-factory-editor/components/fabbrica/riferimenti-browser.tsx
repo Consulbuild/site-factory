@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReferenceSummary } from "@/lib/factory/schemas";
 import { Badge, OptoutBadge, btnPrimary, btnGhost, formatDate } from "@/components/ui";
-import { RunLog, type LogLine } from "@/components/use-step-run";
+import { RunLog, leggiNdjson, type LogLine } from "@/components/use-step-run";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Trash2 } from "lucide-react";
 
@@ -38,28 +38,15 @@ export function RiferimentiBrowser({ references }: { references: ReferenceSummar
       const err = await res.json().catch(() => null);
       throw new Error(err?.error ?? `richiesta rifiutata (${res.status})`);
     }
-    const reader = res.body.getReader();
-    const dec = new TextDecoder();
-    let buf = "";
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf += dec.decode(value, { stream: true });
-      let nl: number;
-      while ((nl = buf.indexOf("\n")) >= 0) {
-        const line = buf.slice(0, nl).trim();
-        buf = buf.slice(nl + 1);
-        if (!line) continue;
-        const ev = JSON.parse(line);
-        if (ev.type === "phase") append({ kind: "phase", text: ev.label });
-        else if (ev.type === "text") append({ kind: "text", text: ev.text });
-        else if (ev.type === "done") append({ kind: "info", text: "Verifica completata." });
-        else if (ev.type === "error") {
-          setErrore(ev.message);
-          append({ kind: "err", text: ev.message });
-        }
+    await leggiNdjson(res.body, (ev) => {
+      if (ev.type === "phase") append({ kind: "phase", text: ev.label });
+      else if (ev.type === "text") append({ kind: "text", text: ev.text });
+      else if (ev.type === "done") append({ kind: "info", text: "Verifica completata." });
+      else if (ev.type === "error") {
+        setErrore(ev.message);
+        append({ kind: "err", text: ev.message });
       }
-    }
+    });
   }
 
   async function aggiungi(e: React.FormEvent) {

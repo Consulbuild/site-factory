@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
-import { clientDir } from "@/lib/paths";
+import { clientDirEsistente as resolveDir } from "@/lib/paths";
 import { writeJson } from "@/lib/clients";
 import { confermaLogo, rispostaConferma } from "@/lib/conferme";
 
@@ -26,15 +26,6 @@ const EXT_BY_MIME: Record<string, string> = {
 const MAX_BYTES = 5 * 1024 * 1024; // i loghi sono piccoli; 5MB è già abbondante
 
 const LOGO_RE = /^logo\.(png|jpe?g|svg|webp)$/i;
-
-function resolveDir(slug: string): string | null {
-  try {
-    const dir = clientDir(slug);
-    return fs.existsSync(dir) ? dir : null;
-  } catch {
-    return null;
-  }
-}
 
 /** Rimuove ogni file logo.* nella cartella (per non lasciare estensioni orfane). */
 function removeLogos(dir: string): void {

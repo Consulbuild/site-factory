@@ -69,7 +69,7 @@ produce. L'accento serve solo ad azioni/selezione/stato — **mai come decorazio
 **Regola AA (bloccante):** `text-warn`/`text-err`/`text-brand` su fondo tenue devono
 restare ≥4.5:1 su **entrambi** i temi. Non applicare mai opacità (`text-warn/90`)
 al testo su fondo tinta: fa scendere sotto AA (verificato: `/90` fallisce nel chiaro).
-Verifica una coppia nuova con `node .claude/skills/palette-designer/scripts/check-contrast.mjs "<fg>" "<bg>"`.
+Verifica una coppia nuova con `node .claude/skills/palette-designer/check-contrast.mjs "<fg>" "<bg>"`.
 
 ### Colori agente (`--agent-*`)
 Uno per ruolo, per le sfere della status bar (vedi §7). Generatori con hue proprio;
@@ -152,7 +152,7 @@ badge: ora sono tutti qui, un'unica fonte).
 - `<Banner tone="warn|ok|err|brand" title? actions?>…</Banner>` — banner di stato (staleness, conferme, errori di pagina).
 - `<EmptyState icon? title hint? action? />` — vuoto che spiega, non "nothing here".
 - `<Breadcrumb items={[{label,href?}]} onNavigate? />` — un solo breadcrumb per editor E runner.
-- `<ConfirmDialog open title message confirmLabel tone? confirmDisabled? children? … />` — conferme; `children` per input (es. "digita il nome"), `tone="danger"` per distruttive.
+- `<ConfirmDialog open title message confirmLabel tone? confirmDisabled? children? … />` (da `@/components/confirm-dialog`) — conferme; `children` per input (es. "digita il nome"), `tone="danger"` per distruttive.
 - `formatDate(iso)` — date in `it-IT`.
 
 ### Avviso di stato globale (pattern trasversale)
@@ -216,7 +216,7 @@ devi ricostruire nulla**: lancia col bus e la barra compare.
 - **Progresso onesto**: segmenti = **fasi reali** (dagli eventi `phase`) + **tempo
   trascorso** in mono. **Mai percentuali inventate.** Il «di solito ~N min» viene
   dalle durate storiche (`ultimaRun`).
-- Fonte dati: `RunProvider` fa polling di `/api/runs/active`; l'identità agente si
+- Fonte dati: `RunsProvider` (`components/run-provider.tsx`) fa polling di `/api/runs/active`; l'identità agente si
   deriva dalla fase con `lib/agenti.ts` (`agenteDaFase`).
 - Fase live anche nell'hub del cliente (`StepRunLive`).
 
@@ -247,7 +247,7 @@ inline. Il `ThemeToggle` scrive il cookie + aggiorna `document.documentElement`.
   con transizioni CSS.
 - **`prefers-reduced-motion`**: coperto globalmente in due modi — la regola CSS in
   `globals.css` azzera durate, e `<MotionConfig reducedMotion="user">` (in
-  `RunProvider`) fa rispettare la preferenza a **ogni** componente `motion`. Non
+  `RunsProvider`) fa rispettare la preferenza a **ogni** componente `motion`. Non
   serve gate-are a mano, ma se animi qualcosa di importante verifica in reduced-motion.
 - Solo `transform`/`opacity` (mai animare `width`/`height`/`top`/`left`).
 

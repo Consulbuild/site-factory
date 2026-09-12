@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { btnPrimary, btnSecondary, btnGhost } from "@/components/ui";
-import { RunLog, type LogLine } from "@/components/use-step-run";
+import { RunLog, leggiNdjson, type LogLine } from "@/components/use-step-run";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 // Audit pairwise (M7): candidato vs preset più vicino, stesso golden content,
@@ -132,28 +132,15 @@ export function AuditEditor({
           const err = await pub.json().catch(() => null);
           throw new Error(err?.error ?? `pubblicazione rifiutata (${pub.status})`);
         }
-        const reader = pub.body.getReader();
-        const dec = new TextDecoder();
-        let buf = "";
-        for (;;) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buf += dec.decode(value, { stream: true });
-          let nl: number;
-          while ((nl = buf.indexOf("\n")) >= 0) {
-            const line = buf.slice(0, nl).trim();
-            buf = buf.slice(nl + 1);
-            if (!line) continue;
-            const ev = JSON.parse(line);
-            if (ev.type === "phase") append({ kind: "phase", text: ev.label });
-            else if (ev.type === "text") append({ kind: "text", text: ev.text });
-            else if (ev.type === "done") append({ kind: "info", text: "Preset pubblicato." });
-            else if (ev.type === "error") {
-              setErrore(ev.message);
-              append({ kind: "err", text: ev.message });
-            }
+        await leggiNdjson(pub.body, (ev) => {
+          if (ev.type === "phase") append({ kind: "phase", text: ev.label });
+          else if (ev.type === "text") append({ kind: "text", text: ev.text });
+          else if (ev.type === "done") append({ kind: "info", text: "Preset pubblicato." });
+          else if (ev.type === "error") {
+            setErrore(ev.message);
+            append({ kind: "err", text: ev.message });
           }
-        }
+        });
       }
       router.refresh();
     } catch (e) {

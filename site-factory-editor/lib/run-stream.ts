@@ -1,5 +1,26 @@
 import { eventiDaBuffer, subscribe, type BusEvent } from "./run-bus";
 
+const NDJSON_HEADERS = { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store" };
+
+/** Risposta NDJSON che consuma un generatore di eventi (fabbrica: runReference). */
+export function rispostaStreamGenerator(gen: AsyncIterable<unknown>): Response {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        for await (const ev of gen) controller.enqueue(encoder.encode(JSON.stringify(ev) + "\n"));
+      } catch (e) {
+        controller.enqueue(
+          encoder.encode(JSON.stringify({ type: "error", message: e instanceof Error ? e.message : String(e) }) + "\n"),
+        );
+      } finally {
+        controller.close();
+      }
+    },
+  });
+  return new Response(stream, { headers: NDJSON_HEADERS });
+}
+
 // Risposta NDJSON che segue un run del bus: snapshot del buffer + live fino
 // alla fine. La chiusura dello stream (tab chiusa, navigazione) NON tocca il
 // run: si stacca solo il subscriber. Niente race snapshot→subscribe: emit è
@@ -36,7 +57,5 @@ export function rispostaStreamRun(id: string): Response {
       unsub?.();
     },
   });
-  return new Response(stream, {
-    headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store" },
-  });
+  return new Response(stream, { headers: NDJSON_HEADERS });
 }

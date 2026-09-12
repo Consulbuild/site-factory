@@ -1,8 +1,8 @@
 "use client";
 
-// Stato condiviso dei run in background: polling di /api/runs/active (2,5s,
-// in pausa a tab nascosta) consumato dalla status bar e dalla card sidebar
-// «Agenti al lavoro». Un solo poller per tutta l'app.
+// Stato condiviso dei run in background: polling di /api/runs/active ogni 2,5s
+// (sempre attivo, anche a tab nascosta) consumato dalla status bar e dalla card
+// sidebar «Agenti al lavoro». Un solo poller per tutta l'app.
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { MotionConfig } from "motion/react";

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { btnPrimary, btnDanger } from "@/components/ui";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { RunLog, type LogLine } from "@/components/use-step-run";
+import { RunLog, leggiNdjson, type LogLine } from "@/components/use-step-run";
 
 // Esecuzione di una run di fabbrica: un bottone, log streaming, refresh della
 // timeline a ogni evento di fase (run.json è la verità, la pagina la rilegge).
@@ -33,31 +33,18 @@ export function RunRunner({ runId, stato }: { runId: string; stato: string }) {
         const err = await res.json().catch(() => null);
         throw new Error(err?.error ?? `richiesta rifiutata (${res.status})`);
       }
-      const reader = res.body.getReader();
-      const dec = new TextDecoder();
-      let buf = "";
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += dec.decode(value, { stream: true });
-        let nl: number;
-        while ((nl = buf.indexOf("\n")) >= 0) {
-          const line = buf.slice(0, nl).trim();
-          buf = buf.slice(nl + 1);
-          if (!line) continue;
-          const ev = JSON.parse(line);
-          if (ev.type === "phase") {
-            append({ kind: "phase", text: ev.label });
-            router.refresh(); // la timeline rilegge run.json
-          } else if (ev.type === "tool") append({ kind: "tool", text: ev.name + (ev.detail ? `  ${ev.detail}` : "") });
-          else if (ev.type === "text") append({ kind: "text", text: ev.text });
-          else if (ev.type === "done") append({ kind: "info", text: "Run completata: da audire." });
-          else if (ev.type === "error") {
-            setErrore(ev.message);
-            append({ kind: "err", text: ev.message });
-          }
+      await leggiNdjson(res.body, (ev) => {
+        if (ev.type === "phase") {
+          append({ kind: "phase", text: ev.label });
+          router.refresh(); // la timeline rilegge run.json
+        } else if (ev.type === "tool") append({ kind: "tool", text: ev.name + (ev.detail ? `  ${ev.detail}` : "") });
+        else if (ev.type === "text") append({ kind: "text", text: ev.text });
+        else if (ev.type === "done") append({ kind: "info", text: "Run completata: da audire." });
+        else if (ev.type === "error") {
+          setErrore(ev.message);
+          append({ kind: "err", text: ev.message });
         }
-      }
+      });
       router.refresh();
     } catch (e) {
       setErrore(e instanceof Error ? e.message : String(e));

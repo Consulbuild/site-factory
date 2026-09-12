@@ -4,6 +4,7 @@ import { z } from "zod";
 import { referenceDir } from "@/lib/factory/paths";
 import { createReference, referenceIdFor } from "@/lib/factory/state";
 import { runReference } from "@/lib/factory/run";
+import { rispostaStreamGenerator } from "@/lib/run-stream";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 900; // opt-out + dembrandt + screenshot
@@ -34,23 +35,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `riferimento già registrato (${id})` }, { status: 409 });
   }
   createReference(url, meta);
-
-  const encoder = new TextEncoder();
-  const stream = new ReadableStream({
-    async start(controller) {
-      try {
-        for await (const ev of runReference(id))
-          controller.enqueue(encoder.encode(JSON.stringify(ev) + "\n"));
-      } catch (e) {
-        controller.enqueue(
-          encoder.encode(JSON.stringify({ type: "error", message: e instanceof Error ? e.message : String(e) }) + "\n"),
-        );
-      } finally {
-        controller.close();
-      }
-    },
-  });
-  return new Response(stream, {
-    headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store" },
-  });
+  return rispostaStreamGenerator(runReference(id));
 }

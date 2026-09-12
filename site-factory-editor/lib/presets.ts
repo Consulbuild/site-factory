@@ -4,7 +4,6 @@
 // `npm run build:presets` in site-renderer (fonte di verità: i file DTCG in
 // site-renderer/presets/). Qui restano solo i tipi, derivati dal JSON: un
 // preset nuovo pubblicato dalla fabbrica arriva qui senza toccare questo file.
-// La vecchia terza copia dei neutri è morta con la milestone M2.
 
 import gen from "./presets.gen.json" with { type: "json" };
 

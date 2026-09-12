@@ -6,11 +6,12 @@ import { clientDir, childEnv, NODE_BIN, SITE_RENDERER } from "./paths";
 import { getSecret } from "./secrets";
 import { type ImagesTrace } from "./schemas";
 import { readContesto, readCopy, readImagesTrace, writeJson } from "./clients";
+import { ALT_MAX } from "./slots-shared";
 
 // Contratti dello step Immagini. Il manifest (quali file, con che soggetto e
 // dimensioni) è DETERMINISTICO da copy.json+contesto.json: il modello riempie
-// prompt/alt, non decide i nomi. Gallery NON generata in AI (solo foto reali,
-// scheda futura): niente slot sections[4] finché non esistono foto del cliente.
+// prompt/alt, non decide i nomi. La Gallery viene dalle foto reali del cliente
+// (lavori.json, montata da lib/build.ts), mai da questo manifest.
 
 export interface ExpectedImage {
   file: string; // "img/hero.jpg" | "img/card-<i>.jpg"
@@ -52,7 +53,7 @@ export function expectedImages(slug: string): ExpectedImage[] | null {
 
 /**
  * Gate deterministico post-fase: il trace copre ESATTAMENTE il manifest,
- * ogni jpg esiste su disco (>10KB: scarta file troncati), alt presenti (≤140).
+ * ogni jpg esiste su disco (>10KB: scarta file troncati), alt presenti (≤ALT_MAX).
  */
 export function validateImagesTrace(slug: string): string[] {
   const errs: string[] = [];
@@ -69,7 +70,7 @@ export function validateImagesTrace(slug: string): string[] {
       continue;
     }
     if (!t.alt.trim()) errs.push(`${e.file}: alt vuoto`);
-    if (t.alt.length > 140) errs.push(`${e.file}: alt oltre 140 caratteri (${t.alt.length})`);
+    if (t.alt.length > ALT_MAX) errs.push(`${e.file}: alt oltre ${ALT_MAX} caratteri (${t.alt.length})`);
     const abs = path.join(clientDir(slug), t.file);
     let size = 0;
     try {
