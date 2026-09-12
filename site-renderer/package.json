@@ -13,7 +13,6 @@
     "test:a11y": "playwright test --grep @a11y",
     "gate:overflow": "node scripts/check-overflow.mjs",
     "gate:tokens": "node scripts/lint-tokens.mjs",
-    "gate:impeccable": "node scripts/run-impeccable.mjs",
     "build:presets": "node scripts/build-presets.mjs",
     "fetch:fonts": "node scripts/fetch-fonts.mjs",
     "make:goldset": "node scripts/make-goldset.mjs"

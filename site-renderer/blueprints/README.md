@@ -6,14 +6,14 @@ struttura, ordine delle sezioni, varianti, ritmo scuro/chiaro e microcopy fisso 
 della pipeline non generano mai un sito da zero: **riempiono gli slot** dichiarati
 in `slots.json`.
 
-## Come funziona (opzione C, decisione 2026-07)
+## Come funziona
 
 ```
 blueprint.json  = scheletro + valori d'oro (valida contro schema.ts, builda così com'è)
 slots.json      = contratto: quali path può toccare ogni agente, con vincoli e guida
      │
      ▼
-intake (Tally) → palette → copy → images        (ogni agente vede solo i SUOI slot)
+intake (form) → palette → copy → images        (ogni agente vede solo i SUOI slot)
      │
      ▼
 assembler (script deterministico, NON un agente): blueprint + slot → site.json
@@ -69,8 +69,9 @@ node --experimental-strip-types scripts/assemble-site.ts \
   contratto, Zod resta il gate finale.
 
 Il checkpoint umano tra gli step della pipeline = revisione (ed eventuale modifica)
-del file artifact prima di lanciare lo step successivo: identico in chat oggi e
-nell'editor di Fase C domani.
+dell'artifact nella scheda dell'editor prima dello step successivo; l'editor legge
+`slots.json` e `blueprint.json` (`site-factory-editor/lib/slots.ts`) per validare
+il copy con lo stesso contratto dell'assembler.
 
 ## Blueprint disponibili
 
@@ -78,6 +79,3 @@ nell'editor di Fase C domani.
   distillato da ssccostruzionisrls.it (ordine: Header, Hero, TrustBar, Services,
   Gallery, ProcessSteps, ContactCTA-form, FAQ, CtaBanner, ContactCTA-canali,
   Footer, StickyCta). Palette demo: charcoal + `#b0561a`.
-
-Varianti future già previste da DESIGN.md (da creare quando servono): la variante
-"Costruzioni Generali" (TrustBar a 4 voci, ProcessSteps timeline, CtaBanner chiaro).

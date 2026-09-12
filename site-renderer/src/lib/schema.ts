@@ -109,7 +109,7 @@ export const PresetEnum = z.enum(PRESETS);
 export type PresetName = z.infer<typeof PresetEnum>;
 
 export const BrandSchema = z.object({
-  preset: PresetEnum.default("meridian"), // estetica: minimal/professionale/futuristico/editoriale/artigianale/friendly
+  preset: PresetEnum.default("meridian"), // l'estetica: vedi presets/*.meta.json
   palette: PaletteSchema,
   fonts: z
     .object({
@@ -540,8 +540,6 @@ export const StickyCtaSection = z.object({
   ...base,
   type: z.literal("StickyCta"),
   props: z.object({
-    quoteLabel: z.string().default("Preventivo"),
-    quoteHref: z.string().default("#contatti"),
     showCall: z.boolean().default(true),
     showWhatsapp: z.boolean().default(true),
   }),

@@ -1,6 +1,6 @@
 ---
 name: context-enricher
-description: Distilla dal form Tally il contesto strutturato del cliente (contesto.json) — identità reale, servizi atomizzati, macro-categorie, target, punti di forza tracciabili, promesse consentite/vietate, promessa martello. Mai inventare: ogni voce tracciabile a un campo del form; ciò che non ha fonte non esiste. Usare dopo la verifica intake, prima di palette/copy/immagini; il suo output è l'input primario di tutti gli agenti a valle.
+description: Distilla dal brief del cliente (form bozza) il contesto strutturato (contesto.json) — identità reale, servizi atomizzati, macro-categorie, target, punti di forza tracciabili, promesse consentite/vietate, promessa martello. Mai inventare: ogni voce tracciabile a un campo del form; ciò che non ha fonte non esiste. Usare dopo la verifica intake, prima di palette/copy/immagini; il suo output è l'input primario di tutti gli agenti a valle.
 tools: Read, Skill, Write
 ---
 

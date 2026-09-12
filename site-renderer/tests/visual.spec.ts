@@ -8,8 +8,8 @@ import { test, expect } from "@playwright/test";
 test("@visual anteprima: sezioni e pagina intera", async ({ page }, testInfo) => {
   const preset = testInfo.project.name.replace(/-\d+$/, "");
   await page.goto(`/anteprima/${preset}/`, { waitUntil: "networkidle" });
-  // I font (oggi da Google CDN, self-host in M3) devono essere caricati prima
-  // dello shot, o le baseline flappano.
+  // I font del preset (self-hosted, @font-face in presets.gen.css) devono essere
+  // caricati prima dello shot, o le baseline flappano.
   await page.evaluate(() => document.fonts.ready);
   // Le immagini lazy (Gallery) si caricano allo scroll: senza forzarle, lo
   // screenshot per-sezione gareggia col decode → diff non deterministici.

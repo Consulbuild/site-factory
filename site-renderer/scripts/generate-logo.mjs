@@ -9,7 +9,7 @@
 //     # solo ricoloro (niente API): utile per varianti dark e per testare il ricoloro
 //
 // Il ricoloro produce anche <out>-dark.svg (mark bianco per le sezioni scure).
-// Senza key: exit 2 con istruzioni (stesso pattern di probe-bfl.mjs).
+// Senza key: exit 2 con istruzioni (stesso pattern di generate-image.mjs).
 // Exit 0 ok · 1 errore API/file · 2 uso/key mancante.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";

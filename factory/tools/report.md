@@ -43,7 +43,8 @@ uv run python -c "import torch; ..."   # → 2.13.0 True (MPS)
 # screenshot di prova (playwright CLI, Chromium già in cache condivisa)
 npx --yes playwright screenshot --viewport-size=1280,2000 https://www.ssccostruzionisrls.it samples/ssc.png
 npx --yes playwright screenshot --viewport-size=1280,2000 https://www.designprojectroma.it samples/designproject.png
-uv run python scripts/degrade.py samples/ssc.png samples/ssc_degraded.png
+# (ssc_degraded.png: contrasto crushed + saturazione + blur, prodotto da uno script
+#  usa-e-getta dello spike, rimosso; i «boccia» del gold set nascono da make-goldset.mjs)
 
 # UIClip (2 run + run offline)
 uv run python scripts/uiclip_score.py samples/ssc.png samples/ssc_degraded.png \

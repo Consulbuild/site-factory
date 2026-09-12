@@ -1,5 +1,5 @@
 /**
- * Manifest dei 6 style-preset. La fonte di verità sono i file DTCG in
+ * Manifest degli style-preset. La fonte di verità sono i file DTCG in
  * presets/*.tokens.json (+ *.meta.json): PRESETS e DEFAULT_PRESET sono
  * GENERATI da `npm run build:presets` in presets.gen.ts. I font di preset
  * sono self-hosted (@font-face in presets.gen.css, via fetch-fonts.mjs).

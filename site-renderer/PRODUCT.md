@@ -19,7 +19,7 @@ Due livelli di utente:
 ## Product Purpose
 
 Site Factory genera single-page di conversione per PMI locali italiane, partendo dai
-dati di un form (Tally). Il renderer trasforma un `site.json` in un sito statico usando
+dati del form bozza (sito.consulbuild.com). Il renderer trasforma un `site.json` in un sito statico usando
 una libreria di sezioni standardizzate. Successo = il lead firma dopo aver visto la
 demo; il visitatore finale chiama o compila il form.
 

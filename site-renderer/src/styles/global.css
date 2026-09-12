@@ -449,12 +449,7 @@
     box-shadow: var(--brand-shadow-hover);
   }
 
-  /* --- divisori / overlay / media --- */
-  .section-divider {
-    height: 1px;
-    border: 0;
-    background: linear-gradient(to right, transparent, var(--color-line), transparent);
-  }
+  /* --- overlay / media --- */
   .hero-overlay {
     background: linear-gradient(
       100deg,
@@ -566,13 +561,11 @@
 [data-preset="canon"] .btn { text-transform: none; letter-spacing: 0; font-size: 0.95rem; }
 [data-preset="canon"] .btn-primary { border-radius: 0; }
 
-/* Vita: card morbide senza bordo, hover in scala, bottoni non urlati */
+/* Vita: card senza bordo, bottoni non urlati */
 [data-preset="vita"] .surface-card { border: 0; }
-
 [data-preset="vita"] .btn { text-transform: none; letter-spacing: 0; font-size: 0.95rem; }
 
-/* Terra: hover lift morbido, bottoni non urlati */
-
+/* Terra: bottoni non urlati */
 [data-preset="terra"] .btn { text-transform: none; letter-spacing: 0; font-size: 0.95rem; }
 
 /* ===========================================================================

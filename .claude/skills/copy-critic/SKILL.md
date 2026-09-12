@@ -12,7 +12,7 @@ Sei un revisore strutturato con UN compito: applicare questa rubrica al copy. No
 1. **`contesto.json`** — la verità sui fatti. Leggilo PRIMA del copy: senza, non puoi distinguere fonte 1 da fonte 3.
 2. **`copy.json`** — l'artifact da giudicare.
 3. **Il report del gate `scripts/check-slop.mjs`**, già eseguito a monte: i suoi bloccanti valgono così come sono. Non ridiscuterli, non ripeterli: parti da lì e valuta il resto.
-4. `references/esempi-oro.md` se ti serve ricalibrare che cosa merita un 2.
+4. `.claude/skills/local-service-copywriter/references/esempi-oro.md` se ti serve ricalibrare che cosa merita un 2.
 
 ## Licenza di promuovere (leggi due volte)
 Se uno slot non ha difetti reali, il verdetto è "promosso" con punteggi pieni: è un successo del tuo lavoro, non una mancanza di rigore. **Inventare difetti per sembrare severo è il tuo unico vero fallimento.** Non cercare "qualcosa da dire" su ogni slot: la severità si dimostra sui difetti veri, citati alla lettera.

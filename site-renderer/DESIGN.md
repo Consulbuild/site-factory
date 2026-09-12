@@ -110,15 +110,15 @@ L'alternanza scuro/chiaro va preservata quando si riordina.
   menzionato nell'informativa. Se Umami Cloud: scegliere hosting UE.
 - **Footer**: P.IVA sempre (art. 35 DPR 633/72); per società di capitali anche
   REA e capitale sociale (art. 2250 c.c.) — campo legalNote.
-- **Pagina /privacy**: generata dalla pipeline in Fase 3 (informativa art. 13
-  con sezione analytics); i link puntano già lì.
-- **Stati form**: loading/successo/errore + honeypot + aria-live già nel
-  componente; in Fase 3 basta action reale + data-demo="false".
+- **Pagine /privacy e /termini**: rese da `site.legal`, che lo step legale
+  dell'editor genera dai soli dati del cliente (privacy con sezione analytics).
+- **Stati form**: loading/successo/errore + honeypot + aria-live nel componente;
+  l'action reale arriva dall'env di build `FORM_ACTION` (senza, modulo simulato).
 
 ## Rapporto con gli style-preset
 
-Lo standard È il default (`:root`, preset `meridian`). Gli altri 5 preset
-(atelier/nova/canon/terra/vita) restano come variazioni estetiche via token per
+Lo standard È il default (`:root`, preset `meridian`). Gli altri preset
+restano come variazioni estetiche via token per
 richieste esplicite dal form ("minimal", "futuristico"...), ma la struttura dei
 componenti — la grammatica qui sopra — è unica. I preset che vogliono un'altra voce
 tipografica sovrascrivono `--heading-case: none` e i propri font.

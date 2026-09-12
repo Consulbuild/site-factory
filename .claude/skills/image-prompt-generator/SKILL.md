@@ -106,20 +106,9 @@ arrotondamento dimensioni a multipli di 16 già gestiti — non riimplementare c
 node site-renderer/scripts/generate-image.mjs \
   --prompt "…" --width 1920 --height 1088 --model pro|max --out out/<slug>/img/<nome>.jpg [--seed n]
 ```
-Dettagli endpoint per riferimento (verificati sui docs BFL il 2026-07-04 — vedi
-`docs/decisions/2026-07-verifiche-fase-b.md`; conferma live con `probe-bfl.mjs` alla
-consegna della chiave):
-- Nome→endpoint: `flux-2 [pro]` → `/v1/flux-2-pro`, `flux-2 [max]` → `/v1/flux-2-max`.
-  Host: `api.bfl.ai` (globale); esiste `api.eu.bfl.ai` se serve elaborazione solo-EU (GDPR).
-- Env: `BFL_API_KEY` (o `FAL_KEY` se si usa il fallback fal.ai — stesso prezzo, code e retry gestiti).
-- Dimensioni: `width`/`height` multipli di 16, max 4MP. Reference: `input_image` … `input_image_8`.
-- **Niente raw mode su FLUX.2** (era di FLUX 1.1 ultra). `output_format`: solo `jpeg`/`png`.
-- **Gli URL firmati di consegna scadono in ~10 minuti**: scaricare l'immagine SUBITO e
-  servirla da storage proprio, mai riusare l'URL BFL.
-- Poll con backoff (es. ogni 1.5s, timeout ~60s); `status` = Pending/Ready/Error; rate limit
-  24 task concorrenti (429 oltre).
-- Tier consapevole del costo: [pro] default ($0.03 primo MP + $0.015/MP extra), [max] solo
-  hero/immagini chiave ($0.07 primo MP + $0.03/MP extra).
+Lo script rispetta già i vincoli dell'API (dimensioni multiple di 16 e max 4 MP, URL
+di consegna che scadono in ~10 minuti quindi download immediato, niente raw mode su
+FLUX.2); i dettagli e le fonti stanno in `docs/decisions/2026-07-verifiche-fase-b.md` §4.
 
 ## Formato artifact (pipeline editor — `claude -p`)
 

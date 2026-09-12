@@ -22,8 +22,8 @@
 //         <cartella-run> --refs <dir-rif> [--refs ...] [--escludi <preset-id>]
 //       - shots candidato: i 7 jpg nel formato dei preset (hero-390 … footer-1280);
 //       - dir riferimento: screenshot-390.png e/o screenshot-1280.png;
-//       - --escludi: toglie un preset dalla libreria (per sanity test: un preset
-//         esistente come pseudo-candidato si confronta con gli ALTRI 5).
+//       - --escludi: toglie un preset dalla libreria (sanity test della calibrazione:
+//         un preset esistente come pseudo-candidato si confronta con gli altri N-1).
 // Scrive <cartella-run>/gates/novelty.json (+ .npy di audit degli embedding).
 // Exit: 0 ok · 1 bocciato · 2 errore d'uso o di verifica.
 

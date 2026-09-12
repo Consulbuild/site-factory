@@ -1,6 +1,6 @@
 ---
 name: context-enricher
-description: Distilla dal form Tally di una PMI il contesto strutturato (contesto.json) che alimenta TUTTI gli agenti a valle — identità reale dell'azienda, servizi atomizzati, macro-categorie, target, punti di forza tracciabili, promesse consentite/vietate, promessa martello. Non è un copywriter: struttura fatti verificati, non scrive marketing. Regola assoluta: ogni voce è tracciabile a un campo del form; ciò che non ha fonte non esiste. Usare dopo la verifica intake, prima di palette/copy/immagini.
+description: Distilla dal brief di una PMI (form bozza) il contesto strutturato (contesto.json) che alimenta TUTTI gli agenti a valle — identità reale dell'azienda, servizi atomizzati, macro-categorie, target, punti di forza tracciabili, promesse consentite/vietate, promessa martello. Non è un copywriter: struttura fatti verificati, non scrive marketing. Regola assoluta: ogni voce è tracciabile a un campo del form; ciò che non ha fonte non esiste. Usare dopo la verifica intake, prima di palette/copy/immagini.
 ---
 
 # Context Enricher — il contesto di alta qualità che decide la qualità di tutto il resto
@@ -40,7 +40,8 @@ correzioni siano rifiniture, non riscritture.
 ### Brief dal form sito.consulbuild.com (`brief.fonte === "form"`, dal 2026-09-07)
 
 Il form a scelte (import in `site-factory-editor/lib/inbox-form.ts`) produce un brief con
-gli stessi campi di Tally più alcuni **campi propri**, che sono verità al pari degli altri:
+gli stessi campi dei brief storici (clienti importati prima del 2026-09-08, senza `fonte`)
+più alcuni **campi propri**, che sono verità al pari degli altri:
 - `servizi[]`: i lavori toccati dal cliente, già atomizzati (testi della tassonomia del
   form o testo libero «altro»). Sono la fonte primaria dei servizi: `settore` qui è solo
   il mestiere (es. «Ristrutturazioni»).

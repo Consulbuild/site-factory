@@ -20,7 +20,7 @@ novelty e da un critico visivo: ogni scorciatoia viene scoperta.
 2. `site-renderer/DESIGN.md` — la grammatica fissa dello standard (eyebrow,
    H2 accent, ritmo scuro/chiaro): il preset cambia l'estetica, MAI la
    grammatica.
-3. Sintesi della libreria: `presets.manifest.json` + i `*.meta.json` dei 6
+3. Sintesi della libreria: `presets.manifest.json` + i `*.meta.json` di tutti i
    preset (vettori Aaker, settori, neutri, font) — per trovare lo SPAZIO
    LIBERO.
 4. `site-renderer/presets/font-whitelist.json` — le uniche famiglie ammesse.
@@ -44,7 +44,7 @@ novelty e da un critico visivo: ogni scorciatoia viene scoperta.
    candidato riconoscibilmente derivato da UN sito viene bocciato
    («impressione generale», concorrenza sleale).
 3. **DIVERSO dalla libreria**: dichiara la corsia estetica scelta e perché
-   nessuno dei 6 preset la occupa (Aaker + neutri + tipografia). Un gate
+   nessun preset esistente la occupa (Aaker + neutri + tipografia). Un gate
    misura anche questa distanza.
 4. **Font**: SOLO famiglie della whitelist; il body con `corpoTesto: true`;
    pesi ⊆ pesi della famiglia in whitelist. La coppia heading/body deve avere
@@ -96,7 +96,7 @@ w-strong, heading-tracking, eyebrow-tracking, brand-space, brand-border-w.
   "posizionamento": {
     "corsia": "una frase: l'identità del preset",
     "aaker": { "sincerity": 0, "excitement": 0, "competence": 0, "sophistication": 0, "ruggedness": 0, "primaria": "…" },
-    "percheNuovo": "perché nessuno dei 6 preset occupa questa corsia",
+    "percheNuovo": "perché nessun preset esistente occupa questa corsia",
     "settoriConsigliati": ["…"]
   },
   "brand-bg": { "evidenza": [{ "ref": "<id-riferimento>", "valoreOsservato": "#hex" }], "motivo": "…" },
