@@ -48,6 +48,13 @@ Il rapporto 01 chiude con una checklist di 12 criteri verificabili: è il materi
 | Colori aziendali | 2 hex + neutro | se «aperto a proposte»: palette di settore (dati claudekit `industries.csv`: Construction #F97316/#CA8A04/#334155; Plumbing #0EA5E9/#F97316/#334155; Electrical #F97316/#FBBF24/#334155) o la palette del preset già scelta |
 | «Cosa non vuoi» | esclusioni in coda | più i cliché letterali del settore |
 
+**Ideazione del concetto, PRIMA del prompt (aggiunto il 2026-09-09 dopo il test v3-v4).** I generatori eseguono un'idea, non la inventano: cinque servizi con «goccia + piastrella» hanno dato cinque loghi corretti e intercambiabili. La «creatività» non è un parametro del modello (esistono solo `--chaos`/`--stylize` di Midjourney e il Magic Prompt di Ideogram, che però riscrive il testo): è il concetto che si mette nel prompt. Procedura:
+1. Elencare dal form i fatti che i concorrenti NON possono rivendicare: nome (significato, iniziali, suono), luogo (simbolo locale non turistico), promessa firmata (numeri, tempi, «pensiamo tutto noi»), servizio-firma (la lavorazione per cui li chiamano), tono dichiarato.
+2. Scrivere 3-5 candidati di concetto, uno per fatto, ognuno come **doppia lettura** (Haviv: appropriato + distintivo; brandkit: «monogram + meaning», «negative space»): «si legge come X e, a un secondo sguardo, come Y».
+3. Scartare quelli costruiti sul simbolo letterale di categoria (goccia, casa, saetta) e quelli che richiedono più di un elemento.
+4. Scegliere il candidato che passa il test «lo userebbe anche il concorrente accanto?» con un NO, e che si descrive in una frase.
+5. Nel prompt il concetto va come direzione con il suo verbo di fusione (merges, flows into, cut out of, hidden in) e la doppia lettura esplicita («reads as both A and B»); il resto del prompt resta invariato.
+
 **Direzioni di concetto per settore (2-3 alternative ciascuno, per non dare la stessa cazzuola a tutti):**
 - Ristrutturazioni/edilizia: profilo di facciata in negative space dentro un blocco; monogramma dell'iniziale costruito con mattoni/livelli; filo a piombo stilizzato.
 - Bagni/idraulica: goccia e piastrella fuse in una forma; tubo che diventa l'iniziale; miscelatore ridotto a due segni.
