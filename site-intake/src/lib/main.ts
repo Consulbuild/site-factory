@@ -184,7 +184,7 @@ async function inviaLead(): Promise<void> {
     const pendenti = coda.attive;
     attesa.aggiorna(
       pendenti ? "Stiamo salvando le tue foto…" : "Stiamo salvando le tue risposte…",
-      pendenti ? `${pendenti} ${pendenti === 1 ? "foto ancora in arrivo" : "foto ancora in arrivo"}: non chiudere la pagina.` : "Un momento.",
+      pendenti ? `${pendenti} foto ancora in arrivo: non chiudere la pagina.` : "Un momento.",
       pendenti ? coda.frazioneTotale * 0.9 : 0.95,
     );
   };

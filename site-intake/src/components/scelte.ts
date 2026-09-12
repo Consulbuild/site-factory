@@ -109,7 +109,6 @@ export function creaSceltaMultipla({ domanda, risposte, valore }: ArgomentiCompo
   const opzioni = opzioniDi(domanda, risposte);
   const nome = domanda.id;
   const layout = domanda.layout ?? "righe";
-  const max = domanda.max;
   const gruppoId = idUnico("gruppo");
   const scelti = new Set(valore?.ids ?? []);
   const griglia = h(
@@ -121,17 +120,6 @@ export function creaSceltaMultipla({ domanda, risposte, valore }: ArgomentiCompo
     altro: valore?.altro ?? "",
     certificazioni: valore?.certificazioni ?? "",
   });
-  let sulMassimo: (() => void) | null = null;
-  if (max) {
-    griglia.addEventListener("change", (e) => {
-      const inp = e.target as HTMLInputElement;
-      const n = griglia.querySelectorAll(".scelta__input:checked").length;
-      if (inp.checked && n > max) {
-        inp.checked = false;
-        sulMassimo?.();
-      }
-    });
-  }
   const ids = () => [...griglia.querySelectorAll<HTMLInputElement>(".scelta__input:checked")].map((i) => i.value);
   return {
     el: griglia,
@@ -155,14 +143,5 @@ export function creaSceltaMultipla({ domanda, risposte, valore }: ArgomentiCompo
       }
       return OK;
     },
-    // Esposto per chi vuole mostrare «Massimo N» (render.ts lo aggancia all'avviso del passo).
-    distruggi: () => {
-      sulMassimo = null;
-    },
-    ...({
-      alMassimo(fn: () => void) {
-        sulMassimo = fn;
-      },
-    } as object),
-  } as Componente<ValoreMultiplo> & { alMassimo?: (fn: () => void) => void };
+  };
 }

@@ -22,8 +22,6 @@ export interface VoceUpload {
   tentativi: number;
   /** URL blob della miniatura (foto) o dell'anteprima (logo); null se non disponibile. */
   miniatura: string | null;
-  /** Vero se la voce arriva dal manifesto salvato: il File non c'è più. */
-  ripristinata?: boolean;
   file?: File;
   ctrl?: AbortController;
 }
@@ -54,9 +52,6 @@ export class CodaUpload {
   }
 
   // ---------- lettura ----------
-  get tutte(): readonly VoceUpload[] {
-    return this.voci;
-  }
   di(kind: TipoFile): VoceUpload[] {
     return this.voci.filter((v) => v.kind === kind && v.stato !== "annullato");
   }
@@ -122,10 +117,6 @@ export class CodaUpload {
   onCambio(fn: () => void): () => void {
     this.ascoltatori.add(fn);
     return () => this.ascoltatori.delete(fn);
-  }
-
-  distruggi(): void {
-    for (const v of this.voci) if (v.miniatura) URL.revokeObjectURL(v.miniatura);
   }
 
   // ---------- motore ----------
@@ -205,7 +196,7 @@ export class CodaUpload {
       // solo ciò che era già arrivato: il File delle altre è perso con la pagina
       this.voci = salvate
         .filter((v) => v.stato === "fatto")
-        .map((v) => ({ ...v, frazione: 1, tentativi: 0, miniatura: null, ripristinata: true }));
+        .map((v) => ({ ...v, frazione: 1, tentativi: 0, miniatura: null }));
     } catch {
       this.voci = [];
     }

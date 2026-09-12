@@ -108,8 +108,6 @@ export interface Risposte {
   consenso?: boolean;
 }
 
-export const COLORI_OPZIONI: readonly Colore[] = COLORI;
-
 export const DOMANDE: readonly Domanda[] = [
   // ---- 1 · Il tuo lavoro ----
   {

@@ -2,8 +2,8 @@
  * Tassonomia del form: i riquadri e i chip che il lead tocca invece di scrivere.
  * Nicchia: edilizia e affini (decisione Mattia, 2026-09-07). I testi sono quelli
  * del documento «Domande del form bozza» v4. `valoreBrief` conserva, dove serve,
- * la stringa che il vecchio form Tally produceva, così l'import nell'editor
- * resta compatibile con contesto.json e palette.
+ * la stringa storica di brief.json (quella dei clienti importati prima di questo
+ * form), così l'import nell'editor resta compatibile con contesto.json e palette.
  *
  * Per aggiungere un mestiere: una voce in MESTIERI e la sua lista in LAVORI.
  */
@@ -168,7 +168,7 @@ export const CLIENTI: readonly Opzione[] = [
   { id: "altro", testo: "Altro", testoLibero: "Scrivi chi sono" },
 ];
 
-/** Le 6 atmosfere di sempre, con parole più semplici; valoreBrief = stringa del vecchio Tally. */
+/** Le 6 atmosfere di sempre, con parole più semplici; valoreBrief = stringa storica di brief.json. */
 export const STILI: readonly Opzione[] = [
   { id: "pulito", testo: "Pulito ed essenziale", valoreBrief: "Minimale e pulito" },
   { id: "allegro", testo: "Colorato e allegro", valoreBrief: "Colorato e vivace" },

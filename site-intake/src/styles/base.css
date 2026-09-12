@@ -6,7 +6,7 @@
 @import "./font.gen.css";
 
 /* Fallback metrico per il carattere: evita il salto di layout mentre il woff2 arriva.
-   Valori tarati in M4 misurando le larghezze (vedi README «Tipografia»). */
+   Valori tarati misurando le larghezze reali del carattere (vedi DESIGN.md «Tipografia»). */
 @font-face {
   font-family: "Atkinson Fallback";
   src: local("Helvetica Neue"), local("Arial"), local("Roboto");

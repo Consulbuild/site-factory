@@ -4,19 +4,14 @@
   (regola anti-slop del progetto). Origine dei colori: consulbuild.site, letto con
   getComputedStyle il 2026-09-07 (navy dell'hero, blu del brand, scala slate).
   Motion: tempi e curve ricavati dal video di riferimento e dai token M3/Carbon
-  (docs/ricerca-intake-lead-2026-09.md §5, piano «Form bozza»).
+  (docs/archivio/ricerca-intake-lead-2026-09.md §5, piano «Form bozza»).
 */
 :root {
   /* ---- Tavolozza (valori grezzi: usarli SOLO per definire i ruoli qui sotto) ---- */
   --c-navy-900: #0a0f1a;
   --c-navy-800: #0f172a;
-  --c-navy-700: #1e293b;
   --c-blue-700: #1d4ed8;
   --c-blue-600: #2563eb;
-  --c-blue-500: #3b82f6;
-  --c-blue-100: #dbeafe;
-  --c-blue-50: #eff6ff;
-  --c-slate-700: #334155;
   --c-slate-600: #475569;
   --c-slate-500: #64748b;
   --c-slate-400: #94a3b8;
@@ -71,7 +66,6 @@
   --fs-input: 18px;
   --fs-choice: 17px;
   --fs-h1: clamp(26px, 4.2vw + 14px, 30px);
-  --fs-display: clamp(30px, 6vw + 10px, 44px);
   --lh-tight: 1.15;
   --lh-snug: 1.3;
   --lh-body: 1.5;

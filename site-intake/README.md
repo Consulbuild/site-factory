@@ -2,10 +2,11 @@
 
 Il lead che clicca l'annuncio risponde qui a 21 domande in 7 sezioni e carica foto e
 logo; le risposte alimentano la pipeline Site-factory che produce il suo sito in 48 ore.
-Decisioni e ricerca: `docs/ricerca-intake-lead-2026-09.md`,
-`docs/ricerca-storage-foto-lead-2026-09.md`, piano vivo `docs/piano-form-bozza.md`,
-documento vivo «Domande del form bozza» (v4). Contesto prodotto per il design:
-`PRODUCT.md`; sistema visivo: `DESIGN.md`.
+Decisioni e ricerca: `docs/ricerca-storage-foto-lead-2026-09.md` (e, in archivio,
+`docs/archivio/ricerca-intake-lead-2026-09.md`), piano vivo `docs/piano-form-bozza.md`.
+Le domande approvate (documento «Domande del form bozza» v4, 2026-09-07, non versionato
+nel repo) sono specchiate in `src/data/domande.ts` e `src/data/tassonomia.ts`, che sono
+la fonte operativa. Contesto prodotto per il design: `PRODUCT.md`; sistema visivo: `DESIGN.md`.
 
 ## Comandi
 
@@ -103,9 +104,9 @@ la coda della transizione non blocca i tocchi.
 ## Prestazioni
 
 `scripts/check-budget.mjs` fallisce la build oltre: HTML+CSS 25 KB, JS 35 KB, font
-45 KB, totale 110 KB (gzip). Oggi: ~8,5 + 25 + 33 = 67 KB. Il primo passo è nell'HTML,
-il CSS è inline, il font è preloadato, i comuni si scaricano per lettera solo alla
-domanda «Dov'è la sede», Umami e Turnstile non stanno nel percorso critico.
+45 KB, totale 110 KB (gzip); `npm run budget` stampa i valori correnti. Il primo passo è
+nell'HTML, il CSS è inline, il font è preloadato, i comuni si scaricano per lettera solo
+alla domanda «Dov'è la sede», Umami non sta nel percorso critico.
 
 ## Accessibilità e dispositivi
 
@@ -126,8 +127,8 @@ consulbuild.com (zona su Cloudflare dal 2026-09-07; il record DNS lo crea wrangl
 Build con le env pubbliche, poi `npx wrangler deploy --config wrangler.jsonc` (token nel
 Keychain come per i siti clienti). Env alla build: `PUBLIC_INTAKE_URL`
 (`https://n8n.consulbuild.com/webhook/bozza`), `PUBLIC_UMAMI_HOST`/
-`PUBLIC_UMAMI_WEBSITE_ID` (statistiche), `PUBLIC_TURNSTILE_SITE_KEY` (Turnstile non è
-attivo: si aggiunge se compare spam). Prova contro n8n vero senza pubblicare:
+`PUBLIC_UMAMI_WEBSITE_ID` (statistiche). Turnstile non è attivo: si aggiunge, con il
+codice che lo legge, se compare spam. Prova contro n8n vero senza pubblicare:
 `PUBLIC_INTAKE_URL=… INTAKE_REALE=1 npx playwright test tests/flusso.spec.ts
 --project=telefono` (salta le asserzioni sull'inbox locale; i file si controllano su Drive).
 

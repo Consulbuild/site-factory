@@ -1,7 +1,7 @@
 /**
  * Statistiche senza cookie via Umami (stesso impianto dei siti clienti). Attivo
  * solo se Base.astro ha caricato lo script (env PUBLIC_UMAMI_*); altrimenti no-op.
- * Eventi: «passo» (id, sezione), «invio», «foto» (quante), «errore-invio».
+ * Eventi: «passo» (id, sezione), «invio» (con il numero di foto), «errore-invio».
  */
 declare global {
   interface Window {

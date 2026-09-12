@@ -43,7 +43,7 @@ Dopo il click sull'annuncio il lead compila il form; le risposte e i file vanno 
 pipeline (n8n → Google Drive → editor dell'agenzia) e la bozza gli viene mostrata in
 chiamata o su WhatsApp. Le domande, l'ordine, i testi e i controlli sono fissati dal
 documento vivo «Domande del form bozza» v4 (2026-09-07). La ricerca alla base:
-`docs/ricerca-intake-lead-2026-09.md`, `docs/ricerca-storage-foto-lead-2026-09.md`.
+`docs/archivio/ricerca-intake-lead-2026-09.md`, `docs/ricerca-storage-foto-lead-2026-09.md`.
 
 ## Capabilities and Constraints
 
@@ -55,7 +55,7 @@ documento vivo «Domande del form bozza» v4 (2026-09-07). La ricerca alla base:
   visibili (font self-hosted; comuni da elenco ISTAT locale; disponibilità del nome del
   sito via DNS-over-HTTPS con esito prudente).
 - Prestazioni: budget misurato (`scripts/check-budget.mjs`), primo passo nell'HTML.
-- Fuori scopo qui: il workflow n8n/Drive e l'import nell'editor (schede successive).
+- Fuori scopo qui: il workflow n8n/Drive (`infra/n8n/bozza.json`) e l'import nell'editor (`site-factory-editor/lib/inbox-form.ts`), che ricevono ciò che il form invia.
 
 ## Brand Commitments
 

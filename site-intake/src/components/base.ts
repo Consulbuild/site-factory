@@ -87,7 +87,6 @@ export interface OpzioniCampo {
   placeholder?: string;
   prefisso?: string;
   suffisso?: string;
-  aiuto?: string;
   valore?: string;
   maxlength?: number;
   /** Mostra la spunta verde quando `ok(true)` (solo campi complessi). */
@@ -116,7 +115,6 @@ export function campoTesto(o: OpzioniCampo): CampoTesto {
     value: o.valore ?? "",
     maxlength: o.maxlength,
     name: o.nome,
-    "aria-describedby": o.aiuto ? `${id}-aiuto` : undefined,
   });
   const cornice = h(
     "div",
@@ -136,7 +134,6 @@ export function campoTesto(o: OpzioniCampo): CampoTesto {
       o.facoltativo ? h("span", { class: "campo__facoltativo" }, " (facoltativo)") : null,
     ),
     cornice,
-    o.aiuto ? h("p", { class: "campo__aiuto", id: `${id}-aiuto` }, o.aiuto) : null,
   );
   return {
     el,

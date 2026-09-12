@@ -432,10 +432,6 @@
   border-color: var(--accent);
   box-shadow: 0 0 0 4px var(--accent-ring);
 }
-textarea.campo__input {
-  resize: vertical;
-  min-height: 120px;
-}
 /* Prefisso fisso (+39) e suffisso fisso (.it) dentro la cornice. */
 .campo__prefisso,
 .campo__suffisso {
@@ -503,10 +499,6 @@ textarea.campo__input {
 .avviso--attenzione {
   background: var(--warn-soft);
   color: var(--warn);
-}
-.avviso--ok {
-  background: var(--ok-soft);
-  color: var(--ok);
 }
 .avviso__azioni {
   display: flex;
@@ -748,14 +740,12 @@ textarea.campo__input {
   font-weight: 400;
 }
 .stato-dominio {
-  font-size: var(--fs-small);
-  font-weight: 600;
-  color: var(--ink-2);
-}
-.stato-dominio {
   display: inline-flex;
   align-items: center;
   gap: var(--s-1);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--ink-2);
 }
 .stato-dominio .icona {
   width: 16px;
@@ -1010,11 +1000,6 @@ dialog.informativa::backdrop {
   font-size: 20px;
   min-height: 64px;
 }
-.btn.is-attesa {
-  opacity: 0.7;
-  pointer-events: none;
-}
-
 /* ---------- Fatto: timeline ---------- */
 .tappe {
   list-style: none;

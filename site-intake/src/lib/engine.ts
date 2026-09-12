@@ -84,7 +84,6 @@ export function caricaOAvvia(url: URL): Stato {
 
 export class Motore {
   readonly stato: Stato;
-  private ascoltatori = new Set<(s: Stato) => void>();
 
   constructor(stato: Stato) {
     this.stato = stato;
@@ -136,16 +135,6 @@ export class Motore {
     if (this.puoIndietro) this.vaiA(this.stato.indice - 1);
   }
 
-  /** Le domande confermate finora, nell'ordine del form (per il riepilogo). */
-  get domandeConfermate(): Domanda[] {
-    return DOMANDE.filter((d) => this.stato.confermate.includes(d.id));
-  }
-
-  onCambio(fn: (s: Stato) => void): () => void {
-    this.ascoltatori.add(fn);
-    return () => this.ascoltatori.delete(fn);
-  }
-
   salva(): void {
     try {
       localStorage.setItem(CHIAVE(this.stato.leadId), JSON.stringify(this.stato));
@@ -153,7 +142,6 @@ export class Motore {
     } catch {
       /* storage pieno o vietato: il form funziona lo stesso, senza ripresa */
     }
-    for (const fn of this.ascoltatori) fn(this.stato);
   }
 
   /** Dopo l'invio: il lead è chiuso, un nuovo caricamento riparte da zero. */

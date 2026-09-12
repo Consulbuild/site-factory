@@ -12,7 +12,6 @@ import { creaFoto } from "../components/foto";
 import { creaLogo } from "../components/logo";
 import { creaNomeSito } from "../components/nome-sito";
 import { creaPiva } from "../components/piva";
-import { creaPlaceholder } from "../components/placeholder";
 import { creaSceltaMultipla, creaSceltaSingola } from "../components/scelte";
 import { creaSede } from "../components/sede";
 import { creaSito } from "../components/sito";
