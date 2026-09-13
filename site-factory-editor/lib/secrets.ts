@@ -13,7 +13,7 @@ const SERVICE = "site-factory";
 
 export const KNOWN_KEYS = [
   "BFL_API_KEY",
-  "RECRAFT_API_KEY",
+  "OPENAI_API_KEY",
   "CLOUDFLARE_API_TOKEN",
   "CLOUDFLARE_ACCOUNT_ID",
   // VPS sf-prod-01 (docs/vps-integrazioni-setup.md)
@@ -28,7 +28,7 @@ export type KeyName = (typeof KNOWN_KEYS)[number];
 
 export const KEY_LABELS: Record<KeyName, string> = {
   BFL_API_KEY: "Black Forest Labs (immagini FLUX.2)",
-  RECRAFT_API_KEY: "Recraft (logo vettoriale)",
+  OPENAI_API_KEY: "OpenAI (logo con GPT Image)",
   CLOUDFLARE_API_TOKEN: "Cloudflare (token deploy Workers)",
   CLOUDFLARE_ACCOUNT_ID: "Cloudflare (account ID)",
   UMAMI_PASSWORD: "Umami (password utente site-factory)",

@@ -16,8 +16,35 @@ import {
   readIntake,
   writeIntake,
   patchClientState,
+  readLogoBrief,
+  readLogoTrace,
+  readLogoReview,
+  writeLogoTrace,
   type Brief,
 } from "./clients";
+import { LogoMetricheSchema, type LogoTrace, type LogoVariante } from "./schemas";
+import {
+  LOGO_MODEL,
+  LOGO_SIZE,
+  LOGO_QUALITY,
+  LOGO_UPSTREAM,
+  VARIANTI_PER_ROUND,
+  MAX_ROUND_LOGO,
+  gateLogoBrief,
+  componiPromptLogo,
+  promptRound2,
+  generaArgs,
+  contattoArgs,
+  faviconArgs,
+  fondiReview,
+  applicaScelta,
+  validateLogoTrace,
+  conBrandMark,
+  testiConsentiti,
+  senzaFormaGiuridica,
+  type Verdetto,
+} from "./logo";
+import { PRESETS, type PresetKey } from "./presets";
 import { checkCoperturaCopy } from "./slots-shared";
 import { snapshotFonte, driftLabels } from "./contesto-sync";
 import { checkPalette } from "./contrast";
@@ -245,92 +272,44 @@ export const STEPS: Record<StepKey, StepDef> = {
     },
   },
 
-  // Step logo (2026-09-08): SOLO se il cliente non ha caricato un logo. La skill
-  // logo-designer genera 6 simboli vettoriali (Recraft), scarta i cliché e in
-  // modalità pipeline sceglie da sola; l'umano rivede (e può cambiare variante)
-  // nel controllo finale della demo. Kit alla radice del workspace: è lì che
-  // build.ts risolve «./mark.svg». Mai testo nel mark: il lockup lo fa l'Header.
+  // Step logo (GPT Image, 2026-09-13): SOLO se il cliente non ha caricato un
+  // logo. Il logo-designer scrive il brief (nome d'uso, mestiere, città), il
+  // prompt lo compone lib/logo.ts, GPT Image genera 3 lockup PNG completi (col
+  // nome), il logo-critic li guarda sul foglio di contatto e il verdetto lo
+  // calcola fondiReview(); un solo round in più se nessuna è usabile, poi
+  // decide l'umano nella riga Logo dell'hub (tutte le varianti restano salvate).
+  // Kit alla radice: mark.png (lockup, brand.mark.lockup=true) + favicon.png.
   logo: {
     stateKey: "logo",
-    artifact: "mark.svg",
-    upstream: ["palette.json"],
+    artifact: "logo-trace.json",
+    upstream: LOGO_UPSTREAM,
     gate(slug) {
       if (readClientState(slug).steps.palette.stato !== "verificato") {
-        return "Prima conferma la palette: il simbolo si ricolora sul primary curato.";
+        return "Prima conferma la palette: i colori del logo vengono dalla palette curata.";
       }
-      if (readIntake(slug)?.["brand.logo"]) return "Il cliente ha fornito un logo: il logo-designer non si usa.";
-      if (readContesto(slug)?.materiali.logo !== false) return "Il contesto dice che il cliente ha un logo: il logo-designer non si usa.";
-      if (!getSecret("RECRAFT_API_KEY")) return "RECRAFT_API_KEY non configurata: aggiungila dal pannello «Chiavi API».";
+      if (readIntake(slug)?.["brand.logo"]) return "Il cliente ha fornito un logo: non si genera.";
+      if (readContesto(slug)?.materiali.logo !== false) return "Il contesto dice che il cliente ha un logo: non si genera.";
+      if (!getSecret("OPENAI_API_KEY")) return "OPENAI_API_KEY non configurata: aggiungila dal pannello «Chiavi API».";
       return null;
     },
-    run: async function* (slug, _ctx, io) {
-      const palette = readPalette(slug);
-      if (!palette) return { ok: false, error: "palette.json assente: il mark si ricolora sul primary della palette" };
-      const primary = palette["brand.palette.primary"];
-      const base = `site-renderer/out/${slug}`;
-      const script = "node site-renderer/scripts/generate-logo.mjs";
-      return yield* io.claude({
-        phase: "logo-designer",
-        prompt:
-          `Usa la skill logo-designer per il cliente «${slug}» in MODALITÀ PIPELINE: nessun checkpoint umano, ` +
-          `scegli TU la variante migliore e motiva scelta e scarti nel trace.\n` +
-          `Input: ${base}/contesto.json (servizi reali, settore, identità — il soggetto viene da qui) e ` +
-          `${base}/palette.json (primary ${primary}).\n` +
-          `REGOLA SUI COMANDI (i permessi bloccano tutto il resto): ogni comando Bash deve iniziare ESATTAMENTE con ` +
-          `\`${script}\` — la cwd è già la root del repo e node è già nel PATH. NIENTE \`cd\`, NIENTE \`export PATH\`, ` +
-          `niente \`&&\`, niente percorso assoluto al binario node, niente \`--version\`: un comando diverso viene rifiutato e non va ritentato. ` +
-          `Ignora l'intestazione «Uso (da site-renderer/)» dello script: qui si lancia dalla root con il percorso site-renderer/scripts/….\n` +
-          `1) Genera 6 varianti, una per comando, con seed diversi e lo stesso soggetto: ` +
-          `\`${script} --prompt "<soggetto + formula tecnica della skill>" --color "${primary}" --out ${base}/logo/mark-N.svg\` ` +
-          `con N da 1 a 6 (lo script scrive anche mark-N-dark.svg).\n` +
-          `2) Applica l'auto-scarto della skill (lista nera dei cliché, colori residui, dettagli che spariscono a 32px) leggendo gli SVG.\n` +
-          `3) Scegli UNA variante sopravvissuta con i criteri della skill (punto 4, modalità pipeline).\n` +
-          `4) Materializza il kit finale alla RADICE del workspace col ricoloro offline: ` +
-          `\`${script} --recolor ${base}/logo/mark-N.svg --color "${primary}" --out ${base}/mark.svg\` (produce mark.svg e mark-dark.svg) ` +
-          `e \`${script} --recolor ${base}/logo/mark-N.svg --color "${primary}" --out ${base}/favicon.svg\`.\n` +
-          `5) Scrivi ${base}/logo-trace.json: {"prompt": "…", "model": "…", "scelta": "logo/mark-N.svg", "motivo": "…", ` +
-          `"varianti": [{"file": "logo/mark-N.svg", "esito": "scelta" | "scartata", "motivo": "…"}, …]} (tutte e 6).\n` +
-          `Nessun altro file. Chiudi con UNA riga: la variante scelta e perché.`,
-        allowed: [...READ_SKILL_WRITE, "Bash(node site-renderer/scripts/generate-logo.mjs:*)"],
-        disallowed: ["WebSearch", "WebFetch", "Edit", "Task"],
-        env: { RECRAFT_API_KEY: getSecret("RECRAFT_API_KEY") ?? "" },
-        timeoutMs: 15 * 60 * 1000,
-        maxTurns: 60,
-      });
-    },
+    run: logoRun,
     validate(slug) {
-      const dir = path.join(OUT_DIR, slug);
-      for (const f of ["mark.svg", "mark-dark.svg", "favicon.svg"]) {
-        let svg = "";
-        try {
-          svg = fs.readFileSync(path.join(dir, f), "utf8");
-        } catch {
-          return { ok: false, errore: `${f} non scritto alla radice del workspace` };
-        }
-        if (!svg.includes("<svg")) return { ok: false, errore: `${f} non è un SVG` };
-      }
-      let trace: { scelta?: unknown; varianti?: unknown };
-      try {
-        trace = JSON.parse(fs.readFileSync(path.join(dir, "logo-trace.json"), "utf8"));
-      } catch {
-        return { ok: false, errore: "logo-trace.json non scritto o non valido" };
-      }
-      if (typeof trace.scelta !== "string" || !Array.isArray(trace.varianti) || trace.varianti.length === 0) {
-        return { ok: false, errore: "logo-trace.json: servono «scelta» e «varianti[]»" };
-      }
-      return { ok: true };
+      const trace = readLogoTrace(slug);
+      if (!trace) return { ok: false, errore: "logo-trace.json non scritto o non valido" };
+      const errs = validateLogoTrace(path.join(OUT_DIR, slug), trace);
+      return errs.length ? { ok: false, errore: errs.slice(0, 3).join("; ") } : { ok: true };
     },
     afterSuccess(slug) {
-      // Il mark entra nello slot brand (pattern di logo/route.ts updateIntakeLogo):
-      // l'Header compone mark + nome; il favicon è il mark stesso.
+      // Con una scelta, il lockup entra nello slot brand.mark (lockup:true) e la
+      // favicon nel suo; senza scelta (FAIL) l'intake resta com'è finché
+      // l'operatore non sceglie una variante dalla riga Logo.
+      const trace = readLogoTrace(slug);
       const intake = readIntake(slug);
-      if (intake) {
-        intake["brand.mark"] = { src: "./mark.svg", alt: `Logo ${intake["meta.businessName"] ?? slug}` };
-        intake["brand.favicon"] = "./favicon.svg";
-        writeIntake(slug, intake);
+      if (trace?.scelta && intake) {
+        writeIntake(slug, conBrandMark(intake, readLogoBrief(slug)?.alt ?? `Logo ${String(intake["meta.businessName"] ?? slug)}`));
       }
       patchClientState(slug, (s) => {
-        s.steps.logo.upstream = computeUpstream(slug, ["palette.json"]);
+        s.steps.logo.upstream = computeUpstream(slug, LOGO_UPSTREAM);
       });
     },
   },
@@ -753,6 +732,212 @@ async function* copyRun(slug: string, ctx: RunCtx, io: StepIO): AsyncGenerator<R
     s = yield* slopGate(slug, io);
     if (!s.ok) return s;
   }
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Step logo: brief (claude) → GPT Image ×3 (script) → foglio di contatto +
+// metriche (script) → logo-critic (claude) → verdetto in TS (lib/logo.ts) →
+// favicon (script). Il prompt di generazione è codice, non output del modello;
+// il critico trascrive e osserva, fondiReview() decide. Max 2 round = 6 immagini.
+// La key OpenAI arriva dal Keychain come env del child: mai in argv né nel prompt.
+// ---------------------------------------------------------------------------
+
+const LOGO_SCRIPT_TIMEOUT = 3 * 60 * 1000;
+const LOGO_BRIEF_TIMEOUT = 5 * 60 * 1000;
+const LOGO_CRITIC_TIMEOUT = 10 * 60 * 1000;
+const openaiEnv = () => ({ OPENAI_API_KEY: getSecret("OPENAI_API_KEY") ?? "" });
+
+const LOGO_PATHS = (slug: string) => ({
+  dir: `site-renderer/out/${slug}`,
+  contesto: `site-renderer/out/${slug}/contesto.json`,
+  brief: `site-renderer/out/${slug}/brief.json`,
+  intake: `site-renderer/out/${slug}/intake.json`,
+  logoBrief: `site-renderer/out/${slug}/logo-brief.json`,
+  review: `site-renderer/out/${slug}/logo-review.json`,
+  metriche: `site-renderer/out/${slug}/logo/metriche.json`,
+  // relativi a site-renderer/ (cwd dello script)
+  outLogo: (n: number) => `out/${slug}/logo/mark-${n}.png`,
+  outContatto: (round: number) => `out/${slug}/logo/contatto${round > 1 ? `-${round}` : ""}.png`,
+});
+
+function promptLogoBrief(slug: string): string {
+  const p = LOGO_PATHS(slug);
+  return (
+    `Usa la skill logo-designer per il cliente «${slug}». ` +
+    `Input: ${p.contesto} (identità, settore, zona), ${p.brief} (città verbatim), ${p.intake} (meta.businessName). ` +
+    `Scrivi SOLO ${p.logoBrief} {"nome": "…", "mestiere_en": "…", "citta": "…", "regione": "…", "alt": "…"} ` +
+    `come da sezione «Formato output» della skill: il prompt di generazione lo compone il sistema, tu non descrivi stile né soggetto. ` +
+    `Nessun altro file, poi una riga di conferma.`
+  );
+}
+
+function promptLogoBriefFix(slug: string, errs: string[]): string {
+  const p = LOGO_PATHS(slug);
+  return (
+    `Il file ${p.logoBrief} del cliente «${slug}» non passa il gate. Errori (verbatim):\n- ${errs.join("\n- ")}\n` +
+    `Correggi in ${p.logoBrief} SOLO i campi citati, con le regole della skill logo-designer (sezione «Modalità correzione»). ` +
+    `Nessun altro file, poi una riga di conferma.`
+  );
+}
+
+function promptLogoCritic(slug: string, round: number, files: string[], scarti: Map<string, string>, nome: string, consentiti: string[]): string {
+  const p = LOGO_PATHS(slug);
+  const contatto = `${p.dir}/logo/contatto${round > 1 ? `-${round}` : ""}.png`;
+  const righeScarti = [...scarti.entries()].map(([f, m]) => `${f} (${m})`).join(", ");
+  return (
+    `Usa la skill logo-critic per il cliente «${slug}». ` +
+    `GUARDA con Read multimodale il foglio di contatto ${contatto}: una riga per variante, con il logo a 512 px, ` +
+    `nella striscia dell'header a 40 px sul fondo reale del preset, a 40 px su fondo scuro, a 96 e a 256 px; ` +
+    `i PNG originali sono in ${p.dir}/logo/ (aprili SOLO per una lettera dubbia). ` +
+    `Nome ESATTO che il logo deve mostrare: «${nome}». Testi consentiti oltre al nome (dal form del cliente): ${consentiti.map((t) => `«${t}»`).join(", ")}; ` +
+    `ogni altro numero, anno o claim è un fatto inventato. Contesto del cliente: ${p.contesto}. Metriche deterministiche: ${p.metriche}. ` +
+    (righeScarti ? `Già scartate dai gate deterministici (trascrivi i testi, non spendere bloccanti): ${righeScarti}. ` : "") +
+    `Varianti da giudicare: ${files.join(", ")}` +
+    (round > 1 ? ` (SOLO queste: il round precedente è già chiuso). ` : ". ") +
+    `Scrivi SOLO ${p.review} con "round": ${round} nel formato della skill: ` +
+    `{"round": ${round}, "varianti": [{"file": "logo/mark-N.png", "testi_letti": [{"testo": "…", "certo": true, "ruolo": "nome"|"descrittore"|"altro"}], ` +
+    `"punteggi": {"L1": 0-2, "L2": 0-2, "L3": 0-2, "L4": 0-2, "L5": 0-2, "P1": 0-2, "P2": 0-2, "P3": 0-2, "P4": 0-2, "P5": 0-2}, ` +
+    `"prove": {"L1": "…"}, "bloccanti": [{"codice": "…", "prova": "…"}], "preferenza_motivo": "…"}], "fix_prompt": "…"|null}. ` +
+    `Il verdetto e la scelta li calcola l'editor dai tuoi dati. Poi una riga di riepilogo.`
+  );
+}
+
+function promptLogoNome(slug: string, files: string[], nome: string): string {
+  const p = LOGO_PATHS(slug);
+  return (
+    `Nel file ${p.review} la trascrizione del nome per ${files.join(", ")} è incerta. ` +
+    `Apri i PNG originali in ${p.dir}/logo/ con Read, ritrascrivi lettera per lettera SOLO i testi con ruolo "nome" di quelle varianti ` +
+    `(nome atteso: «${nome}»; scrivi ciò che VEDI, con "certo": true solo se ogni lettera è inequivocabile) e riscrivi ${p.review} ` +
+    `cambiando solo quei "testi_letti". Nessun altro file, poi una riga di conferma.`
+  );
+}
+
+/** Brief del logo con UNA fase di correzione se il gate lo boccia (pattern formatGate). */
+async function* logoBriefGate(slug: string, io: StepIO): AsyncGenerator<RunEvent, PhaseResult> {
+  const businessName = String(readIntake(slug)?.["meta.businessName"] ?? "");
+  const check = () => {
+    const b = readLogoBrief(slug);
+    return b ? gateLogoBrief(b, businessName) : ["logo-brief.json assente o non valido (servono nome, mestiere_en, citta, regione, alt)"];
+  };
+  const w = yield* io.claude({ phase: "logo-designer (brief)", prompt: promptLogoBrief(slug), allowed: READ_SKILL_WRITE, disallowed: NO_NET_NO_BASH, timeoutMs: LOGO_BRIEF_TIMEOUT, maxTurns: 15 });
+  if (!w.ok) return w;
+  let errs = check();
+  if (!errs.length) return { ok: true };
+  const f = yield* io.claude({ phase: "correzioni brief", prompt: promptLogoBriefFix(slug, errs), allowed: READ_SKILL_WRITE, disallowed: NO_NET_NO_BASH, timeoutMs: LOGO_BRIEF_TIMEOUT, maxTurns: 10 });
+  if (!f.ok) return f;
+  errs = check();
+  return errs.length ? { ok: false, error: `brief del logo non conforme dopo la correzione: ${errs.slice(0, 3).join("; ")}` } : { ok: true };
+}
+
+/** Genera le varianti da..a con lo script (una fase per immagine: costo e usage nel record). */
+async function* generaVarianti(slug: string, io: StepIO, prompt: string, da: number, a: number, round: number): AsyncGenerator<RunEvent, PhaseResult & { varianti?: LogoVariante[] }> {
+  const p = LOGO_PATHS(slug);
+  const varianti: LogoVariante[] = [];
+  for (let n = da; n <= a; n++) {
+    const r = yield* io.script({ phase: `GPT Image — variante ${n}/${a}`, bin: NODE_BIN, args: generaArgs(prompt, p.outLogo(n)), cwd: SITE_RENDERER, env: openaiEnv(), timeoutMs: LOGO_SCRIPT_TIMEOUT });
+    if (!r.ok) return r;
+    if (!r.esito) return { ok: false, error: `lo script non ha stampato la riga ESITO per la variante ${n}` };
+    const m = LogoMetricheSchema.safeParse(r.esito.metriche);
+    varianti.push({
+      file: `logo/mark-${n}.png`,
+      round,
+      esito: "usabile",
+      usage: (r.esito.usage as Record<string, unknown> | undefined) ?? undefined,
+      costo_usd: typeof r.esito.costo_usd === "number" ? r.esito.costo_usd : undefined,
+      metriche: m.success ? m.data : undefined,
+    });
+  }
+  return { ok: true, varianti };
+}
+
+/** Un round completo: generazione → foglio → critico (+ ritrascrizione del nome se incerta) → verdetto. */
+async function* logoRound(slug: string, io: StepIO, prompt: string, round: number, nome: string, fonti: string, consentiti: string[], bg: string): AsyncGenerator<RunEvent, PhaseResult & { verdetto?: Verdetto; varianti?: LogoVariante[] }> {
+  const p = LOGO_PATHS(slug);
+  const da = (round - 1) * VARIANTI_PER_ROUND + 1;
+  const g = yield* generaVarianti(slug, io, prompt, da, da + VARIANTI_PER_ROUND - 1, round);
+  if (!g.ok || !g.varianti) return g;
+  const varianti = g.varianti;
+  const files = varianti.map((v) => v.file);
+  const c = yield* io.script({ phase: `foglio di contatto (round ${round})`, bin: NODE_BIN, args: contattoArgs(p.outContatto(round), files.map((f) => `out/${slug}/${f}`), bg), cwd: SITE_RENDERER, timeoutMs: LOGO_SCRIPT_TIMEOUT });
+  if (!c.ok) return c;
+  // gate duri già decisi: il critico non li ridiscute
+  const scarti = new Map<string, string>();
+  for (const g0 of fondiReview(varianti, null, { nomeAtteso: nome, fonti, bg }).giudizi) {
+    const gate = g0.bloccanti.filter((b) => b.codice !== "non_giudicata");
+    if (gate.length) scarti.set(g0.file, gate.map((b) => b.prova).join(", "));
+  }
+  const critica = async function* (): AsyncGenerator<RunEvent, PhaseResult> {
+    return yield* io.claude({ phase: `logo-critic (round ${round})`, prompt: promptLogoCritic(slug, round, files, scarti, nome, consentiti), allowed: READ_SKILL_WRITE, disallowed: NO_NET_NO_BASH, timeoutMs: LOGO_CRITIC_TIMEOUT, maxTurns: 20 });
+  };
+  let r = yield* critica();
+  if (!r.ok) return r;
+  if (!readLogoReview(slug)) {
+    // ponytail: un solo retry sul JSON non valido, poi decide l'umano
+    r = yield* critica();
+    if (!r.ok) return r;
+    if (!readLogoReview(slug)) return { ok: false, error: "logo-review.json non scritto o non valido" };
+  }
+  let verdetto = fondiReview(varianti, readLogoReview(slug), { nomeAtteso: nome, fonti, bg });
+  if (!verdetto.scelta && verdetto.incerti.length) {
+    const n = yield* io.claude({ phase: `ritrascrizione del nome (round ${round})`, prompt: promptLogoNome(slug, verdetto.incerti, nome), allowed: ["Read", "Write"], disallowed: NO_NET_NO_BASH, timeoutMs: LOGO_BRIEF_TIMEOUT, maxTurns: 10 });
+    if (!n.ok) return n;
+    verdetto = fondiReview(varianti, readLogoReview(slug), { nomeAtteso: nome, fonti, bg });
+  }
+  return { ok: true, verdetto, varianti };
+}
+
+/** Esiti del trace dai giudizi: scelta / usabile (pulita non scelta) / scartata (con i bloccanti come motivo). */
+function variantiGiudicate(varianti: LogoVariante[], v: Verdetto): LogoVariante[] {
+  return varianti.map((x) => {
+    const g = v.giudizi.find((j) => j.file === x.file);
+    if (!g) return x;
+    const esito = x.file === v.scelta ? "scelta" : g.bloccanti.length || g.incerto ? "scartata" : "usabile";
+    return { ...x, esito, motivo: g.motivo };
+  });
+}
+
+async function* logoRun(slug: string, _ctx: RunCtx, io: StepIO): AsyncGenerator<RunEvent, PhaseResult> {
+  const palette = readPalette(slug);
+  if (!palette) return { ok: false, error: "palette.json assente: i colori del logo vengono dalla palette" };
+  const b = yield* logoBriefGate(slug, io);
+  if (!b.ok) return b;
+  const brief = readLogoBrief(slug)!;
+  const intake = readIntake(slug);
+  const contesto = readContesto(slug);
+  const nome = senzaFormaGiuridica(brief.nome).toUpperCase();
+  const fonti = JSON.stringify(contesto ?? {}) + JSON.stringify(intake ?? {});
+  const consentiti = testiConsentiti(contesto as unknown as Record<string, unknown> | null, intake, brief);
+  const bg = PRESETS[palette["brand.preset"] as PresetKey]?.neutri.bg ?? "#ffffff";
+  const prompt = componiPromptLogo(brief, palette);
+  const dir = path.join(OUT_DIR, slug);
+
+  const trace: LogoTrace = { model: LOGO_MODEL, size: LOGO_SIZE, quality: LOGO_QUALITY, nome, prompt, round: 1, scelta: null, varianti: [], favicon: null };
+  let promptRound = prompt;
+  for (let round = 1; round <= MAX_ROUND_LOGO; round++) {
+    trace.round = round;
+    if (round > 1) trace.prompt_round2 = promptRound;
+    const r = yield* logoRound(slug, io, promptRound, round, nome, fonti, consentiti, bg);
+    // le varianti generate restano nel trace anche se la fase è fallita a metà
+    if (r.varianti) trace.varianti = [...trace.varianti, ...(r.verdetto ? variantiGiudicate(r.varianti, r.verdetto) : r.varianti)];
+    if (trace.varianti.length) writeLogoTrace(slug, trace);
+    if (!r.ok || !r.verdetto) return r;
+    if (r.verdetto.scelta) {
+      fs.copyFileSync(path.join(dir, r.verdetto.scelta), path.join(dir, "mark.png"));
+      const f = yield* io.script({ phase: "favicon dal simbolo", bin: NODE_BIN, args: faviconArgs(dir), cwd: SITE_RENDERER, env: openaiEnv(), timeoutMs: LOGO_SCRIPT_TIMEOUT });
+      if (!f.ok) return f;
+      const via = f.esito?.via === "edits" ? "edits" : "ritaglio";
+      const motivo = r.verdetto.giudizi.find((g) => g.file === r.verdetto!.scelta)?.motivo ?? "scelta del critico";
+      writeLogoTrace(slug, applicaScelta(trace, r.verdetto.scelta, `critico (round ${round}): ${motivo}`, { via, costo_usd: typeof f.esito?.costo_usd === "number" ? f.esito.costo_usd : 0 }));
+      yield { type: "text", text: `Scelta ${r.verdetto.scelta}: ${motivo}` };
+      return { ok: true };
+    }
+    promptRound = promptRound2(prompt, r.verdetto.fix_prompt);
+    yield { type: "text", text: `Round ${round}: nessuna variante usabile — ${r.verdetto.giudizi.map((g) => `${g.file}: ${g.motivo}`).join(" | ")}` };
+  }
+  trace.motivo = "nessuna variante usabile in 2 round: scegli a mano nella riga Logo o rigenera";
+  writeLogoTrace(slug, trace);
+  yield { type: "text", text: `Nessuna variante usabile in ${MAX_ROUND_LOGO} round: scegli a mano nella riga Logo del cliente (le ${trace.varianti.length} varianti restano salvate) o rigenera.` };
   return { ok: true };
 }
 

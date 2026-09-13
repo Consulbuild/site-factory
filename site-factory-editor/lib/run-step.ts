@@ -16,7 +16,12 @@ export type RunEvent =
   | { type: "done"; artifact: string }
   | { type: "error"; message: string };
 
-export type PhaseResult = { ok: boolean; error?: string };
+export type PhaseResult = {
+  ok: boolean;
+  error?: string;
+  /** Fasi script: JSON dell'ultima riga `ESITO {…}` di stdout, se lo script la stampa (es. usage/costo di un'API). */
+  esito?: Record<string, unknown>;
+};
 
 export interface StepIO {
   /**
@@ -209,7 +214,11 @@ async function* claudePhase(
 
 const SCRIPT_TIMEOUT_MS = 2 * 60 * 1000;
 
-/** Fase deterministica: stesso scaffold streaming di claudePhase, senza parse JSON. */
+/**
+ * Fase deterministica: stesso scaffold streaming di claudePhase, senza parse
+ * JSON. Nel record finisce il comando, le ultime righe di output e il costo
+ * letto dalla riga `ESITO {…}` (le fasi che chiamano API a pagamento la stampano).
+ */
 async function* scriptPhase(
   opts: {
     phase: string;
@@ -220,8 +229,21 @@ async function* scriptPhase(
     timeoutMs?: number;
   },
   signal?: AbortSignal,
+  sink?: RecordSink,
 ): AsyncGenerator<RunEvent, PhaseResult> {
   yield { type: "phase", label: opts.phase };
+
+  const rec: PhaseRecord = { phase: opts.phase, prompt: [opts.bin, ...opts.args].join(" "), actions: [], ok: false, startedAt: Date.now(), endedAt: 0 };
+  const ultime: string[] = [];
+  let esito: Record<string, unknown> | undefined;
+  const finalize = (r: PhaseResult): PhaseResult => {
+    rec.endedAt = Date.now();
+    rec.ok = r.ok;
+    rec.testo = ultime.join("\n");
+    rec.metrics = { durationMs: rec.endedAt - rec.startedAt, ...(typeof esito?.costo_usd === "number" ? { costUsd: esito.costo_usd } : {}) };
+    sink?.(rec);
+    return r;
+  };
 
   // NO_COLOR: il log va nella UI, i codici ANSI sarebbero rumore.
   const child = spawn(opts.bin, opts.args, { cwd: opts.cwd ?? REPO_ROOT, env: childEnv({ NO_COLOR: "1", ...opts.env }) });
@@ -255,11 +277,31 @@ async function* scriptPhase(
       }
     };
   };
-  child.stdout.on("data", lineReader((l) => push({ type: "text", text: l })));
+  const ricorda = (l: string) => {
+    ultime.push(l.slice(0, 500));
+    if (ultime.length > 20) ultime.shift();
+  };
+  child.stdout.on(
+    "data",
+    lineReader((l) => {
+      ricorda(l);
+      const m = /^ESITO (\{.*\})\s*$/.exec(l);
+      if (m) {
+        try {
+          esito = JSON.parse(m[1]) as Record<string, unknown>;
+        } catch {
+          /* riga malformata: la fase resta senza esito strutturato */
+        }
+        return; // la riga ESITO è per il record/trace, non per il log live
+      }
+      push({ type: "text", text: l });
+    }),
+  );
   child.stderr.on(
     "data",
     lineReader((l) => {
       stderr += l + "\n";
+      ricorda(l);
       push({ type: "text", text: l });
     }),
   );
@@ -290,21 +332,22 @@ async function* scriptPhase(
   signal?.removeEventListener("abort", onAbort);
   const code = await closed;
 
-  if (signal?.aborted) return { ok: false, error: "run interrotto" };
-  if (spawnError) return { ok: false, error: spawnError };
+  const errore = (message: string, classe: PhaseClasse): PhaseResult => {
+    rec.error = { message, classe, stderr: stderr || undefined, code };
+    return finalize({ ok: false, error: message });
+  };
+  if (signal?.aborted) return errore("run interrotto", "abort");
+  if (spawnError) return errore(spawnError, "spawn");
   if (code !== 0) {
-    return {
-      ok: false,
-      error: stderr.trim().split("\n").slice(-3).join(" ") || `uscito con codice ${code} (fase «${opts.phase}»)`,
-    };
+    return errore(stderr.trim().split("\n").slice(-3).join(" ") || `uscito con codice ${code} (fase «${opts.phase}»)`, "exit");
   }
-  return { ok: true };
+  return finalize({ ok: true, esito });
 }
 
 /** IO legato a un AbortSignal: l'abort (stop esplicito dal bus) ammazza i child in corso. */
 export const ioWithSignal = (signal?: AbortSignal, sink?: RecordSink): StepIO => ({
   claude: (opts) => claudePhase(opts, signal, sink),
-  script: (opts) => scriptPhase(opts, signal),
+  script: (opts) => scriptPhase(opts, signal, sink),
 });
 
 /** Il seam delle fasi, riusato dal runner della fabbrica (lib/factory/run.ts, D5). */

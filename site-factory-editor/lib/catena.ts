@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { clientDir } from "./paths";
-import { readClientState, patchClientState, readCopyReview, readImageReview, readLavori, readContesto, readIntake, listClients } from "./clients";
+import { readClientState, patchClientState, readCopyReview, readImageReview, readLogoTrace, readLavori, readContesto, readIntake, listClients } from "./clients";
 import { STEPS, motivoGate, type StepKey, type RunMode } from "./steps";
 import { startClientRun, attendiRun, stopRun, busIdCliente } from "./run-bus";
 import { isErroreLimite } from "./run-step";
@@ -167,6 +167,12 @@ const PASSI: Record<Exclude<StepKey, "build">, Passo> & { build: Passo } = {
   logo: {
     key: "logo",
     salta: (s) => (readIntake(s)?.["brand.logo"] || readContesto(s)?.materiali.logo !== false ? "il cliente ha fornito il logo" : null),
+    // Nessuna variante usabile in 2 round: la catena si ferma, l'operatore sceglie
+    // a mano nella riga Logo (il trace ha «scelta») e «Riprendi» passa.
+    verdetto: (s) => {
+      const t = readLogoTrace(s);
+      return t && !t.scelta ? "critico del logo: nessuna variante usabile — scegline una nella riga Logo del cliente o rigenera" : null;
+    },
     conferma: (s) => confermaLogo(s, { auto: true }),
   },
   copy: {

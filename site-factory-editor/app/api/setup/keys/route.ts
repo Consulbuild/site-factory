@@ -20,11 +20,11 @@ export async function GET() {
 
 /** Prova reale della key prima di salvarla. Ritorna null se ok, il motivo se no. */
 async function provaKey(name: KeyName, key: string): Promise<string | null> {
-  if (name === "RECRAFT_API_KEY") {
-    const r = await fetch("https://external.api.recraft.ai/v1/users/me", {
-      headers: { Authorization: `Bearer ${key}` },
-    });
-    return r.ok ? null : `Recraft ha risposto ${r.status}`;
+  if (name === "OPENAI_API_KEY") {
+    // Gratuita: dimostra che la key è valida, non che l'organizzazione è
+    // verificata per gpt-image (quello lo dice il primo run, con l'errore verbatim).
+    const r = await fetch("https://api.openai.com/v1/models", { headers: { Authorization: `Bearer ${key}` } });
+    return r.ok ? null : `OpenAI ha risposto ${r.status}${r.status === 401 ? ": key non valida" : ""}`;
   }
   if (name === "CLOUDFLARE_API_TOKEN") {
     const r = await fetch("https://api.cloudflare.com/client/v4/user/tokens/verify", {

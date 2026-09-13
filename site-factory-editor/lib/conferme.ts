@@ -2,7 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { clientDir } from "./paths";
 import { checkCopertura, type ClientState } from "./schemas";
-import { readContesto, writeContesto, readPalette, readCopy, readClientState, patchClientState, writeJson } from "./clients";
+import { readContesto, writeContesto, readPalette, readCopy, readClientState, patchClientState, writeJson, readLogoTrace } from "./clients";
+import { LOGO_UPSTREAM } from "./logo";
 import { checkPalette } from "./contrast";
 import { validateCopyArtifact } from "./slots";
 import { validateImagesTrace, deriveImagesArtifact } from "./images";
@@ -86,15 +87,16 @@ export function confermaPalette(slug: string, o: OpzioniConferma = {}): EsitoCon
   return { ok: true, client };
 }
 
-/** Logo (kit del logo-designer): verificato + snapshot sulla palette. */
+/** Logo (GPT Image): serve una variante scelta nel trace, poi verificato + snapshot a monte. */
 export function confermaLogo(slug: string, o: OpzioniConferma = {}): EsitoConferma {
   const st = readClientState(slug).steps.logo;
   if (st.stato !== "da_verificare") return no(409, `logo in stato «${st.stato}»: nulla da confermare`);
+  if (!readLogoTrace(slug)?.scelta) return no(409, "nessuna variante scelta: scegline una nella riga Logo");
   const client = patchClientState(slug, (s) => {
     s.steps.logo.stato = "verificato";
     delete s.steps.logo.errore;
     marca(s.steps.logo, o.auto);
-    s.steps.logo.upstream = computeUpstream(slug, ["palette.json"]);
+    s.steps.logo.upstream = computeUpstream(slug, LOGO_UPSTREAM);
   });
   return { ok: true, client };
 }
