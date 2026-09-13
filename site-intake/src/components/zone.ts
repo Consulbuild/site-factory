@@ -49,6 +49,6 @@ export function creaZone({ risposte, valore }: ArgomentiComponente<string[]>): C
     el,
     focus: () => griglia.querySelector<HTMLInputElement>(".scelta__input")?.focus(),
     leggi: () => (lette().length ? lette() : undefined),
-    valida: () => (lette().length ? OK : blocco("Tocca almeno una zona per andare avanti.")),
+    valida: () => (lette().length ? OK : blocco("Per andare avanti ci serve almeno una zona: tocca quelle dove lavori.")),
   };
 }

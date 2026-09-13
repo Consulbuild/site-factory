@@ -79,7 +79,7 @@ export function creaLogo({ coda, valore }: ArgomentiComponente<ValoreLogo>): Com
     },
     valida: (forza) => {
       const v = coda.di("logo")[0];
-      if (v?.stato === "errore" && !forza) return avviso("Il logo non si è caricato: tocca «Riprova» oppure toglilo.");
+      if (v?.stato === "errore" && !forza) return avviso("Il logo non si è caricato: puoi toccare «Riprova» oppure toglierlo.");
       return OK;
     },
     distruggi: () => stacca(),

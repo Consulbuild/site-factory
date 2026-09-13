@@ -37,7 +37,7 @@ export function creaTesto({ domanda, valore }: ArgomentiComponente<string>): Com
       }
       if (domanda.obbligatoria && !v.trim()) {
         c.errore(true);
-        return blocco("Serve una risposta per andare avanti.");
+        return blocco("Questa risposta ci serve per andare avanti.");
       }
       return OK;
     },

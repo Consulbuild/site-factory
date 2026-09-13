@@ -107,7 +107,7 @@ export function creaNomeSito({ risposte, valore }: ArgomentiComponente<ValoreNom
     valida: (forza) => {
       const g = giudicaNomeSito(nomeScelto());
       if (!g.ok) return g.livello === "blocco" ? blocco(g.messaggio) : forza ? OK : avviso(g.messaggio);
-      if (esiti.get(g.valore) === "preso" && !forza) return avviso("Questo nome è già preso: tocca un altro o scrivine uno tuo.");
+      if (esiti.get(g.valore) === "preso" && !forza) return avviso("Questo nome è già in uso: puoi toccarne un altro o scriverne uno tuo.");
       return OK;
     },
   };

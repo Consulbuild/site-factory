@@ -68,7 +68,7 @@ export function creaColori({ valore }: ArgomentiComponente<ValoreColori>): Compo
     },
     valida: (forza) => {
       if (sceltoSi() && ids().length === 0 && !pulisci(cTesto.input.value) && !forza) {
-        return avviso("Tocca almeno un colore o scrivilo nella casella. Oppure tocca «No, scegliete voi».");
+        return avviso("Manca il colore: puoi toccarne uno, scriverlo nella casella, oppure toccare «No, scegliete voi».");
       }
       return OK;
     },

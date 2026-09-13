@@ -96,9 +96,9 @@ export function creaSceltaSingola({ domanda, risposte, valore, radice, avanti }:
     },
     valida: (forza) => {
       const id = scelto();
-      if (!id) return blocco("Tocca una risposta per andare avanti.");
+      if (!id) return blocco("Per andare avanti ci serve una risposta: tocca quella giusta per te.");
       const c = caselle.get(id);
-      if (c && !pulisci(c.input.value) && !forza) return avviso("Scrivi che cos'è, anche in due parole.");
+      if (c && !pulisci(c.input.value) && !forza) return avviso("Ci bastano due parole nella casella per capire di cosa si tratta.");
       return OK;
     },
   };
@@ -136,10 +136,10 @@ export function creaSceltaMultipla({ domanda, risposte, valore }: ArgomentiCompo
     },
     valida: (forza) => {
       const v = ids();
-      if (v.length === 0 && domanda.obbligatoria) return blocco("Tocca almeno una risposta per andare avanti.");
+      if (v.length === 0 && domanda.obbligatoria) return blocco("Per andare avanti ci serve almeno una risposta.");
       for (const id of v) {
         const c = caselle.get(id);
-        if (c && !pulisci(c.input.value) && !forza) return avviso("Scrivi che cos'è, anche in due parole.");
+        if (c && !pulisci(c.input.value) && !forza) return avviso("Ci bastano due parole nella casella per capire di cosa si tratta.");
       }
       return OK;
     },

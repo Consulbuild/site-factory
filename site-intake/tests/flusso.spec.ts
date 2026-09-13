@@ -26,7 +26,7 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
 
   // vuoto → blocco che spiega
   await page.getByRole("button", { name: "Continua" }).click();
-  await expect(page.getByRole("alert")).toContainText("Scrivi come si chiama la tua azienda.");
+  await expect(page.getByRole("alert")).toContainText("Manca il nome dell'azienda");
   await page.getByRole("textbox").fill("Cavaliere Build Srls");
   await continua(page, "Come vuoi che si chiami il tuo sito?");
 

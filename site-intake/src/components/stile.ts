@@ -53,6 +53,6 @@ export function creaStile({ domanda, risposte, valore }: ArgomentiComponente<str
     el,
     focus: () => griglia.querySelector<HTMLInputElement>(".scelta__input")?.focus(),
     leggi: () => (ids().length ? ids() : undefined),
-    valida: () => (ids().length ? OK : blocco("Tocca uno stile per andare avanti.")),
+    valida: () => (ids().length ? OK : blocco("Per andare avanti ci serve uno stile: tocca quello che ti piace di più.")),
   };
 }

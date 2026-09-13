@@ -68,20 +68,20 @@ export function creaFoto({ coda }: ArgomentiComponente): Componente<number> {
     messaggi.replaceChildren();
     const posto = MAX_FOTO - coda.di("foto").length;
     const lista = [...files];
-    if (lista.length > posto) messaggio(`Massimo ${MAX_FOTO} foto: ne ho tenute ${Math.max(posto, 0)}. Tieni le migliori.`);
+    if (lista.length > posto) messaggio(`Il massimo è ${MAX_FOTO} foto: abbiamo tenuto le prime ${Math.max(posto, 0)}.`);
     for (const file of lista.slice(0, Math.max(posto, 0))) {
       if (!file.type.startsWith("image/")) {
-        messaggio(`«${file.name}» non è una foto: scegli un'immagine.`);
+        messaggio(`«${file.name}» non è una foto: possiamo caricare solo immagini.`);
         continue;
       }
       if (file.size > MAX_BYTES) {
-        messaggio(`«${file.name}» pesa ${formattaMB(file.size)}: il massimo è 25 MB per foto.`);
+        messaggio(`«${file.name}» supera i 25 MB (pesa ${formattaMB(file.size)}): se puoi, prova con una versione più leggera.`);
         continue;
       }
       if (coda.doppione(file)) continue; // stessa foto due volte: la seconda non si aggiunge
       const info = await ispeziona(file);
       if (info.heic) {
-        messaggio(`«${file.name}» è in formato HEIC: scattala o esportala in JPEG e ricaricala.`);
+        messaggio(`«${file.name}» è in formato HEIC, che non possiamo usare: se puoi, esportala in JPEG e ricaricala.`);
         continue;
       }
       const url = await miniatura(file); // una per volta: la memoria del telefono ringrazia
@@ -129,9 +129,14 @@ export function creaFoto({ coda }: ArgomentiComponente): Componente<number> {
       const foto = coda.di("foto");
       const errori = coda.inErrore.filter((v) => v.kind === "foto");
       if (errori.length && !forza) {
-        return avviso(`${errori.length === 1 ? "Una foto non si è caricata" : `${errori.length} foto non si sono caricate`}: tocca «Riprova» oppure toglile.`, [
-          { testo: "Riprova tutte", esegui: () => errori.forEach((v) => coda.riprova(v)) },
-        ]);
+        return avviso(
+          errori.length === 1
+            ? "Una foto non si è caricata: puoi toccare «Riprova» oppure toglierla."
+            : `${errori.length} foto non si sono caricate: puoi toccare «Riprova» oppure toglierle.`,
+          [
+            { testo: "Riprova tutte", esegui: () => errori.forEach((v) => coda.riprova(v)) },
+          ],
+        );
       }
       if (foto.length === 0 && !forza && !avvisoZeroMostrato) {
         avvisoZeroMostrato = true;

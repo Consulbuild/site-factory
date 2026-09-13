@@ -49,7 +49,7 @@ export function creaConsenso({ valore }: ArgomentiComponente<boolean>): Componen
     valida: () => {
       if (input.checked) return OK;
       casella.classList.add("is-errore");
-      return blocco("Serve la spunta per proseguire: conferma di aver letto l'informativa e le condizioni.");
+      return blocco("Per proseguire ti chiediamo di confermare con la spunta di aver letto l'informativa e le condizioni.");
     },
     distruggi: () => {
       if (dialogo.open) dialogo.close();

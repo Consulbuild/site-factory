@@ -121,19 +121,19 @@ export function creaSede({ valore }: ArgomentiComponente<ValoreSede>): Component
       const testoComune = pulisci(cComune.input.value);
       if (!testoComune) {
         cComune.errore(true);
-        return blocco("Scrivi il comune della sede.");
+        return blocco("Manca il comune della sede.");
       }
       cComune.errore(false);
       if (!comune && !forza) {
-        return avviso(`Non trovo «${testoComune}» nell'elenco dei comuni: controlla come è scritto, o tocca il suggerimento.`);
+        return avviso(`«${testoComune}» non risulta tra i comuni: prova a controllare come è scritto, oppure tocca il suggerimento.`);
       }
       if (!via()) {
         cVia.errore(true);
-        return blocco("Scrivi via e numero civico.");
+        return blocco("Mancano la via e il numero civico.");
       }
       cVia.errore(false);
       if (!/\d/.test(via()) && !senzaCivico && !forza) {
-        return avviso("Manca il numero civico. Aggiungilo, oppure tocca «Non c'è il numero».", [
+        return avviso("Manca il numero civico: puoi aggiungerlo, oppure toccare «Non c'è il numero».", [
           {
             testo: "Non c'è il numero",
             esegui: () => {

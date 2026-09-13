@@ -36,7 +36,7 @@ test.describe("@controlli validators", () => {
     expect(checksumPiva("14763170968")).toBe(false);
     expect(giudicaPiva("IT 14763170967")).toEqual({ ok: true, valore: "14763170967" });
     expect(giudicaPiva("RSSMRA80A01H501U")).toMatchObject({ ok: false, messaggio: expect.stringContaining("codice fiscale") });
-    expect(giudicaPiva("1476317096")).toMatchObject({ ok: false, messaggio: "Mancano 1 numeri: la Partita IVA ne ha 11." });
+    expect(giudicaPiva("1476317096")).toMatchObject({ ok: false, messaggio: "Sembra manchi un numero: la Partita IVA ne ha 11." });
     expect(giudicaPiva("14763170968")).toMatchObject({ ok: false, livello: "avviso" });
   });
 

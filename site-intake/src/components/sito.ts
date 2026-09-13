@@ -48,7 +48,7 @@ export function creaSito({ valore }: ArgomentiComponente<string>): Componente<st
     valida: (forza) => {
       if (scelto() !== "si") return OK;
       const g = giudicaSito(c.input.value);
-      if (!c.input.value.trim()) return forza ? OK : avviso("Scrivi l'indirizzo del sito, oppure tocca «No».");
+      if (!c.input.value.trim()) return forza ? OK : avviso("Manca l'indirizzo del sito: puoi scriverlo qui, oppure toccare «No».");
       if (!g.ok && !forza) return avviso(g.messaggio);
       return OK;
     },

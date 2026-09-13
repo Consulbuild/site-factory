@@ -28,10 +28,10 @@ export function normalizzaTelefono(grezzo: string): string {
 
 export function giudicaTelefono(grezzo: string): Giudizio {
   const n = normalizzaTelefono(grezzo);
-  if (n.length === 0) return blocco("Scrivi il tuo numero di cellulare.", n);
-  if (n.length < 9) return avviso("Sembra manchi una cifra: controlla il numero.", n);
-  if (n.length > 10) return avviso("Sembra ci sia una cifra in più: controlla il numero.", n);
-  if (n.startsWith("0")) return avviso("Sembra un numero fisso: la domanda chiede il cellulare. Va bene lo stesso?", n);
+  if (n.length === 0) return blocco("Manca il numero di cellulare: ci serve per ricontattarti.", n);
+  if (n.length < 9) return avviso("Sembra manchi una cifra: vuoi ricontrollare il numero?", n);
+  if (n.length > 10) return avviso("Sembra ci sia una cifra in più: vuoi ricontrollare il numero?", n);
+  if (n.startsWith("0")) return avviso("Sembra un numero fisso: se puoi, meglio il cellulare. Va bene lo stesso?", n);
   return ok(n);
 }
 
@@ -79,10 +79,10 @@ export function suggerisciDominioEmail(email: string): string | null {
 
 export function giudicaEmail(grezzo: string): Giudizio {
   const e = grezzo.replace(/\s+/g, "").toLowerCase();
-  if (!e) return blocco("Scrivi l'email dell'azienda.", e);
+  if (!e) return blocco("Manca l'email dell'azienda: ci serve per scriverti.", e);
   const parti = e.split("@");
   if (parti.length !== 2 || !parti[0] || !parti[1] || !parti[1].includes(".") || parti[1].endsWith(".")) {
-    return avviso("Controlla l'email: manca qualcosa (di solito è tipo nome@azienda.it).", e);
+    return avviso("L'email sembra incompleta: di solito è come nome@azienda.it.", e);
   }
   const proposta = suggerisciDominioEmail(e);
   if (proposta) return avviso(`Forse intendevi ${proposta}?`, e);
@@ -111,14 +111,20 @@ export function checksumPiva(cifre: string): boolean {
 
 export function giudicaPiva(grezzo: string): Giudizio {
   const p = normalizzaPiva(grezzo);
-  if (!p) return blocco("Scrivi la Partita IVA: sono 11 numeri.", p);
+  if (!p) return blocco("Manca la Partita IVA: sono 11 numeri.", p);
   if (/^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/i.test(p)) {
-    return avviso("Questo è un codice fiscale: serve la Partita IVA, 11 numeri.", p);
+    return avviso("Questo sembra un codice fiscale: qui serve la Partita IVA, 11 numeri.", p);
   }
-  if (/\D/.test(p)) return avviso("La Partita IVA ha solo numeri: togli le lettere.", p);
-  if (p.length < 11) return avviso(`Mancano ${11 - p.length} numeri: la Partita IVA ne ha 11.`, p);
-  if (p.length > 11) return avviso(`Ci sono ${p.length - 11} numeri di troppo: la Partita IVA ne ha 11.`, p);
-  if (!checksumPiva(p)) return avviso("Controlla: sembra esserci un numero sbagliato.", p);
+  if (/\D/.test(p)) return avviso("La Partita IVA è fatta solo di numeri: sembra ci sia qualche lettera.", p);
+  if (p.length < 11) {
+    const k = 11 - p.length;
+    return avviso(`Sembra ${k === 1 ? "manchi un numero" : `manchino ${k} numeri`}: la Partita IVA ne ha 11.`, p);
+  }
+  if (p.length > 11) {
+    const k = p.length - 11;
+    return avviso(`Sembra ${k === 1 ? "ci sia un numero di troppo" : `ci siano ${k} numeri di troppo`}: la Partita IVA ne ha 11.`, p);
+  }
+  if (!checksumPiva(p)) return avviso("Sembra ci sia un numero non corretto: vuoi ricontrollare?", p);
   return ok(p);
 }
 
@@ -140,7 +146,7 @@ export function giudicaSito(grezzo: string): Giudizio {
   const s = normalizzaSito(grezzo);
   if (!s) return ok("");
   const host = s.replace(/^https?:\/\//, "").split("/")[0] ?? "";
-  if (!host.includes(".")) return avviso("Sembra incompleto: di solito è tipo nomeazienda.it.", s);
+  if (!host.includes(".")) return avviso("L'indirizzo sembra incompleto: di solito è come nomeazienda.it.", s);
   return ok(s);
 }
 
@@ -176,22 +182,22 @@ export function proponiNomiSito(azienda: string, mestiere?: string): string[] {
 
 export function giudicaNomeSito(grezzo: string): Giudizio {
   const n = pulisciNomeSito(grezzo);
-  if (!n) return blocco("Scegli un nome per il tuo sito, o toccane uno proposto.", n);
-  if (n.length < 3) return avviso("Il nome deve avere almeno 3 caratteri.", n);
+  if (!n) return blocco("Manca il nome del sito: puoi toccarne uno proposto o scriverne uno tuo.", n);
+  if (n.length < 3) return avviso("Il nome è un po' corto: servono almeno 3 caratteri.", n);
   return ok(n);
 }
 
 // ---------- Nomi ----------
 export function giudicaReferente(grezzo: string): Giudizio {
   const s = pulisci(grezzo);
-  if (!s) return blocco("Scrivi nome e cognome.", s);
-  if (s.split(" ").length < 2) return avviso("Scrivi anche il cognome, per favore.", s);
+  if (!s) return blocco("Manca il nome di chi compila: ci serve per sapere con chi parliamo.", s);
+  if (s.split(" ").length < 2) return avviso("Se puoi, aggiungi anche il cognome.", s);
   return ok(s);
 }
 
 export function giudicaAzienda(grezzo: string): Giudizio {
   const s = pulisci(grezzo);
-  if (!s) return blocco("Scrivi come si chiama la tua azienda.", s);
+  if (!s) return blocco("Manca il nome dell'azienda: è quello che comparirà sul sito.", s);
   return ok(s);
 }
 
