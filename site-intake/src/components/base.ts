@@ -92,30 +92,40 @@ export interface OpzioniCampo {
   /** Mostra la spunta verde quando `ok(true)` (solo campi complessi). */
   conSpunta?: boolean;
   nome?: string;
+  /** Casella grande su più righe (diventa una <textarea>): per elenchi e testi liberi. */
+  righe?: number;
 }
 
-export interface CampoTesto {
+export interface CampoTesto<I extends HTMLInputElement | HTMLTextAreaElement = HTMLInputElement> {
   el: HTMLElement;
-  input: HTMLInputElement;
+  input: I;
   ok(si: boolean): void;
   errore(si: boolean): void;
 }
 
-export function campoTesto(o: OpzioniCampo): CampoTesto {
+export function campoTesto(o: OpzioniCampo & { righe: number }): CampoTesto<HTMLTextAreaElement>;
+export function campoTesto(o: OpzioniCampo): CampoTesto<HTMLInputElement>;
+export function campoTesto(o: OpzioniCampo): CampoTesto<HTMLInputElement | HTMLTextAreaElement> {
   const id = idUnico("campo");
-  const input = h("input", {
-    class: "campo__input",
+  const comuni = {
     id,
-    type: o.tipo ?? "text",
-    inputmode: o.inputmode,
     autocomplete: o.autocomplete ?? "off",
-    autocapitalize: o.tipo === "email" ? "off" : undefined,
     spellcheck: "false",
     placeholder: o.placeholder,
-    value: o.valore ?? "",
     maxlength: o.maxlength,
     name: o.nome,
-  });
+  };
+  const input = o.righe
+    ? h("textarea", { ...comuni, class: "campo__input campo__input--area", rows: o.righe })
+    : h("input", {
+        ...comuni,
+        class: "campo__input",
+        type: o.tipo ?? "text",
+        inputmode: o.inputmode,
+        autocapitalize: o.tipo === "email" ? "off" : undefined,
+        value: o.valore ?? "",
+      });
+  if (o.righe) input.value = o.valore ?? "";
   const cornice = h(
     "div",
     { class: "campo__cornice" },

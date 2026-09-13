@@ -35,7 +35,8 @@ if (!motore.risposte.mestiere) {
 
 let corrente: PassoMontato | null = null;
 let riepilogo: RiepilogoMontato | null = null;
-let ultimoAvviso: string | null = null;
+/** L'avviso mostrato e il valore che l'ha causato: il secondo «Continua» forza solo se il valore non è cambiato. */
+let ultimoAvviso: { messaggio: string; valore: string } | null = null;
 let ultimaSezione = 0;
 /** Dopo «Modifica» dal riepilogo, il prossimo «Continua» torna al riepilogo invece di andare oltre. */
 let tornaAlRiepilogo = false;
@@ -120,6 +121,10 @@ let inTransizione = false;
 async function vai(indice: number, direzione: "avanti" | "indietro", spingi = true): Promise<void> {
   if (inTransizione) return;
   inTransizione = true;
+  // Lasciando una domanda (indietro, tasto del browser, «Salva» dopo Modifica) si tiene
+  // ciò che c'è nel campo adesso, anche vuoto: quel che il titolare cancella non ricompare.
+  const lasciata = motore.passo;
+  if (corrente && lasciata.tipo === "domanda") motore.annota(lasciata.domanda.id, corrente.comp.leggi());
   corrente?.comp.distruggi?.();
   motore.vaiA(indice);
   if (spingi) history.pushState({ indice: motore.indice }, "");
@@ -136,9 +141,10 @@ function continua(forza: boolean): void {
   if (!corrente || inTransizione) return;
   const passo = motore.passo;
   if (passo.tipo !== "domanda") return;
-  const esito = corrente.comp.valida(forza || ultimoAvviso !== null);
+  const valoreOra = JSON.stringify(corrente.comp.leggi() ?? null);
+  const esito = corrente.comp.valida(forza || ultimoAvviso?.valore === valoreOra);
   if (!esito.ok) {
-    ultimoAvviso = esito.messaggio;
+    ultimoAvviso = { messaggio: esito.messaggio, valore: valoreOra };
     corrente.mostraEsito(esito, esito.livello === "avviso" ? [{ testo: "Va bene così, continua", esegui: () => continua(true) }] : []);
     return;
   }
@@ -153,7 +159,7 @@ function continua(forza: boolean): void {
   }
 }
 
-/** Il lead completo che parte con «Voglio vedere il mio sito». */
+/** Il lead completo che parte con «Costruite il mio nuovo sito». */
 function componiLead() {
   const foto = coda.manifesto("foto");
   const logo = coda.manifesto("logo")[0] ?? null;

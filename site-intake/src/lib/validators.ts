@@ -29,10 +29,18 @@ export function normalizzaTelefono(grezzo: string): string {
 export function giudicaTelefono(grezzo: string): Giudizio {
   const n = normalizzaTelefono(grezzo);
   if (n.length === 0) return blocco("Manca il numero di cellulare: ci serve per ricontattarti.", n);
-  if (n.length < 9) return avviso("Sembra manchi una cifra: vuoi ricontrollare il numero?", n);
-  if (n.length > 10) return avviso("Sembra ci sia una cifra in più: vuoi ricontrollare il numero?", n);
-  if (n.startsWith("0")) return avviso("Sembra un numero fisso: se puoi, meglio il cellulare. Va bene lo stesso?", n);
-  return ok(n);
+  // Cellulare italiano: inizia con 3 e ha 10 cifre. Fisso: inizia con 0, da 6 a 11 cifre.
+  if (n.startsWith("3")) {
+    const k = 10 - n.length;
+    if (k > 0) return avviso(`Sembra ${k === 1 ? "manchi una cifra" : `manchino ${k} cifre`}: un cellulare ne ha 10.`, n);
+    if (k < 0) return avviso(`Sembra ${k === -1 ? "ci sia una cifra di troppo" : `ci siano ${-k} cifre di troppo`}: un cellulare ne ha 10.`, n);
+    return ok(n);
+  }
+  if (n.startsWith("0")) {
+    if (n.length < 6 || n.length > 11) return avviso("Il numero fisso sembra incompleto: vuoi ricontrollarlo?", n);
+    return avviso("Sembra un numero fisso: se puoi, meglio il cellulare. Va bene lo stesso?", n);
+  }
+  return avviso("Non sembra un numero italiano: i cellulari iniziano con 3.", n);
 }
 
 /** Formato leggibile per il riepilogo: +39 388 893 7188. */
@@ -165,19 +173,39 @@ export function pulisciNomeSito(grezzo: string): string {
     .slice(0, 63);
 }
 
-/** Tre proposte dal nome dell'azienda, senza sigle: unito, con trattino, con «impresa». */
+/** Per mestiere: la parola che precede il nome e quella che lo segue («idraulicorossi», «rossiidraulica»). */
+const AFFISSI: Record<string, [string, string]> = {
+  "impresa-edile": ["impresa", "costruzioni"],
+  ristrutturazioni: ["ristrutturazioni", "ristrutturazioni"],
+  idraulico: ["idraulico", "idraulica"],
+  elettricista: ["elettricista", "impianti"],
+  cartongesso: ["cartongesso", "interni"],
+  serramenti: ["serramenti", "infissi"],
+  imbianchino: ["imbianchino", "tinteggiature"],
+};
+
+/**
+ * Cinque proposte dal nome dell'azienda (senza sigle) e dal mestiere, in ordine di
+ * naturalezza: unito, con trattino, mestiere+nome, nome+mestiere, mestiere-nome.
+ */
 export function proponiNomiSito(azienda: string, mestiere?: string): string[] {
   const base = pulisci(azienda.replace(SIGLE, " "));
   const parole = base
     .split(" ")
     .map((p) => pulisciNomeSito(p))
     .filter(Boolean);
-  if (parole.length === 0) return [];
-  const unito = pulisciNomeSito(parole.join(""));
-  const trattino = pulisciNomeSito(parole.join("-"));
-  const prefisso = mestiere && mestiere !== "altro" ? pulisciNomeSito(mestiere.split("-")[0] ?? "") : "impresa";
-  const conPrefisso = pulisciNomeSito(`${prefisso}${parole[0]}`);
-  return [...new Set([unito, trattino, conPrefisso])].filter((n) => n.length >= 3);
+  const primo = parole[0];
+  if (!primo) return [];
+  const [prefisso, suffisso] = AFFISSI[mestiere ?? ""] ?? ["impresa", "servizi"];
+  const unito = parole.join("");
+  const trattino = parole.join("-");
+  // Niente doppioni goffi tipo «impiantiimpianti» se il nome contiene già la parola.
+  const conPrefisso = parole.includes(prefisso) ? [] : [`${prefisso}${primo}`, `${prefisso}-${trattino}`];
+  const conSuffisso = parole.includes(suffisso) ? [] : [`${primo}${suffisso}`, `${primo}-${suffisso}`];
+  const candidati = [unito, trattino, conPrefisso[0], conSuffisso[0], conPrefisso[1], conSuffisso[1]]
+    .filter((c): c is string => !!c)
+    .map(pulisciNomeSito);
+  return [...new Set(candidati)].filter((n) => n.length >= 3).slice(0, 5);
 }
 
 export function giudicaNomeSito(grezzo: string): Giudizio {

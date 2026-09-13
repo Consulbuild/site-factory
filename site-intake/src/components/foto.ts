@@ -9,14 +9,11 @@ import type { CodaUpload, VoceUpload } from "../lib/upload";
 import { OK, avviso, h, svgIcona, type ArgomentiComponente, type Componente } from "./base";
 
 const MAX_FOTO = 15;
-const MAX_BYTES = 25 * 1024 * 1024;
-const MIN_LATO = 1200;
 // Mai `image/*`: su iPhone farebbe arrivare HEIC invece di JPEG (docs storage §2, regola 1).
 const ACCETTA = "image/jpeg,image/png,image/webp";
-
-function formattaMB(b: number): string {
-  return `${(b / 1024 / 1024).toFixed(b >= 10 * 1024 * 1024 ? 0 : 1)} MB`;
-}
+// Niente controlli su peso o risoluzione (decisione Mattia 2026-09-13: la pipeline gestisce
+// tutto): si guarda solo il formato. Un file che il server rifiuta passa dalla via «non si
+// è caricata → Riprova / togli».
 
 export function creaFoto({ coda }: ArgomentiComponente): Componente<number> {
   if (!coda) throw new Error("creaFoto: manca la coda di caricamento");
@@ -25,7 +22,6 @@ export function creaFoto({ coda }: ArgomentiComponente): Componente<number> {
   const griglia = h("div", { class: "foto-griglia", role: "list", "aria-label": "Foto scelte" });
   const contatore = h("p", { class: "foto-contatore", "aria-live": "polite" });
   const messaggi = h("div", { class: "foto-messaggi", "aria-live": "polite" });
-  const piccole = new Set<number>();
 
   const messaggio = (testo: string) => {
     const m = h("p", { class: "avviso avviso--attenzione is-nuovo" }, svgIcona("attenzione"), h("span", {}, testo));
@@ -48,7 +44,6 @@ export function creaFoto({ coda }: ArgomentiComponente): Componente<number> {
           v.stato === "errore"
             ? h("button", { class: "foto-voce__riprova", type: "button", "aria-label": `Riprova a caricare ${v.nome}`, onclick: () => coda.riprova(v) }, "Riprova")
             : null,
-          piccole.has(v.n) ? h("span", { class: "foto-voce__nota" }, "Piccola") : null,
           h("button", { class: "foto-voce__togli", type: "button", "aria-label": `Togli ${v.nome}`, onclick: () => coda.rimuovi(v) }, svgIcona("x")),
         ),
       ),
@@ -74,10 +69,6 @@ export function creaFoto({ coda }: ArgomentiComponente): Componente<number> {
         messaggio(`«${file.name}» non è una foto: possiamo caricare solo immagini.`);
         continue;
       }
-      if (file.size > MAX_BYTES) {
-        messaggio(`«${file.name}» supera i 25 MB (pesa ${formattaMB(file.size)}): se puoi, prova con una versione più leggera.`);
-        continue;
-      }
       if (coda.doppione(file)) continue; // stessa foto due volte: la seconda non si aggiunge
       const info = await ispeziona(file);
       if (info.heic) {
@@ -85,12 +76,7 @@ export function creaFoto({ coda }: ArgomentiComponente): Componente<number> {
         continue;
       }
       const url = await miniatura(file); // una per volta: la memoria del telefono ringrazia
-      const voce: VoceUpload = coda.aggiungi("foto", file, url);
-      if (info.larghezza && info.altezza && Math.max(info.larghezza, info.altezza) < MIN_LATO) {
-        piccole.add(voce.n);
-        messaggio("Una foto è piccola: se hai l'originale, meglio quello. Puoi tenerla lo stesso.");
-        rendi();
-      }
+      coda.aggiungi("foto", file, url);
     }
   };
   input.addEventListener("change", () => {

@@ -423,6 +423,13 @@
     box-shadow var(--d-base) var(--e-standard);
   appearance: none;
 }
+/* Casella grande (textarea): per elenchi, cresce a mano, mai di lato. */
+.campo__input--area {
+  min-height: calc(var(--tap-lg) * 2);
+  line-height: var(--lh-body);
+  resize: vertical;
+  font-family: inherit;
+}
 .campo__input::placeholder {
   color: var(--ink-3);
   opacity: 1;
@@ -528,6 +535,19 @@
 }
 .piede a {
   color: var(--on-bg-2);
+}
+/* Sulla schermata «Fatto» non ci sono più bottoni: la pagina lo dice, tra la card e la P.IVA. */
+.piede__chiudi {
+  display: none;
+  margin: 0 auto var(--s-3);
+  max-width: 44ch;
+  font-size: var(--fs-help);
+  line-height: var(--lh-snug);
+  color: var(--ink-2);
+  text-wrap: balance;
+}
+.is-fatto .piede__chiudi {
+  display: block;
 }
 
 /* ---------- Telefoni stretti: il primo passo (8 riquadri + Continua) sta in 680 px,
@@ -1032,6 +1052,11 @@ dialog.informativa::backdrop {
   color: var(--ink-2);
   font-size: var(--fs-help);
   line-height: var(--lh-snug);
+}
+.fatto__nota a {
+  color: inherit;
+  font-weight: 700;
+  white-space: nowrap;
 }
 .fatto__nota {
   display: flex;

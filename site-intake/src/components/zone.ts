@@ -1,8 +1,9 @@
 /**
  * Zone di lavoro: riquadri creati dal comune della sede (comune, provincia, regione,
- * Italia) più «Aggiungi una zona» con suggerimenti di province e comuni. Il lead non
- * scrive nomi di posti: li tocca.
+ * regione con le vicine, Italia) più «Aggiungi una zona» con suggerimenti di regioni,
+ * province e comuni. Il lead non scrive nomi di posti: li tocca.
  */
+import { zoneDellaRegione } from "../data/regioni";
 import { cercaZone } from "../lib/comuni";
 import { pulisci } from "../lib/validators";
 import { OK, blocco, campoTesto, h, svgIcona, type ArgomentiComponente, type Componente } from "./base";
@@ -14,7 +15,7 @@ export function creaZone({ risposte, valore }: ArgomentiComponente<string[]>): C
   if (sede?.comune) proposte.push(`${sede.comune} e dintorni`);
   if (sede?.provinciaNome && sede.provinciaNome !== sede.comune) proposte.push(`${sede.provinciaNome} e provincia`);
   else if (sede?.provinciaNome) proposte.push(`Provincia di ${sede.provinciaNome}`);
-  if (sede?.regione) proposte.push(`Tutta la regione ${sede.regione}`);
+  if (sede?.regione) proposte.push(...zoneDellaRegione(sede.regione));
   proposte.push("Tutta Italia");
   const scelte = new Set(valore ?? []);
   for (const z of scelte) if (!proposte.includes(z)) proposte.push(z);
@@ -29,7 +30,7 @@ export function creaZone({ risposte, valore }: ArgomentiComponente<string[]>): C
     );
   for (const p of proposte) griglia.append(chip(p, scelte.has(p)));
 
-  const c = campoTesto({ etichetta: "Aggiungi una zona", placeholder: "es. Bergamo", autocomplete: "off", nome: "zona_extra", maxlength: 80 });
+  const c = campoTesto({ etichetta: "Aggiungi una zona", placeholder: "es. Bergamo, Lombardia", autocomplete: "off", nome: "zona_extra", maxlength: 80 });
   c.el.classList.add("zone__aggiungi");
   const aggiungi = (testo: string) => {
     const t = pulisci(testo);

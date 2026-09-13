@@ -7,7 +7,11 @@
 import type { Opzione } from "../data/tassonomia";
 import { opzioniDi } from "../data/domande";
 import { pulisci } from "../lib/validators";
-import { OK, avviso, blocco, campoTesto, h, idUnico, svgIcona, type ArgomentiComponente, type Componente } from "./base";
+import { OK, avviso, blocco, campoTesto, h, idUnico, svgIcona, type ArgomentiComponente, type CampoTesto, type Componente } from "./base";
+
+/** Avviso per una casella lasciata vuota: la casella grande chiede un elenco, quella piccola due parole. */
+const caselleVuota = (o: Opzione | undefined) =>
+  avviso(o?.testoLungo ? "Scrivi qui gli altri lavori: anche un elenco veloce va bene." : "Ci bastano due parole nella casella per capire di cosa si tratta.");
 
 interface ValoreSingolo {
   id: string;
@@ -33,10 +37,11 @@ function rigaScelta(o: Opzione, tipo: "radio" | "checkbox", nome: string, layout
 
 /** Casella che si apre sotto la griglia quando l'opzione con testo libero è selezionata. */
 function caselleLibere(griglia: HTMLElement, opzioni: readonly Opzione[], valori: Record<string, string>) {
-  const caselle = new Map<string, ReturnType<typeof campoTesto>>();
+  const caselle = new Map<string, CampoTesto<HTMLInputElement | HTMLTextAreaElement>>();
   for (const o of opzioni) {
     if (!o.testoLibero) continue;
-    const c = campoTesto({ etichetta: o.testoLibero, valore: valori[o.id] ?? "", maxlength: 120 });
+    const base = { etichetta: o.testoLibero, valore: valori[o.id] ?? "", placeholder: o.segnaposto };
+    const c = o.testoLungo ? campoTesto({ ...base, maxlength: 400, righe: 3 }) : campoTesto({ ...base, maxlength: 120 });
     c.el.classList.add("scelta-testo");
     c.el.hidden = true;
     griglia.append(c.el);
@@ -98,7 +103,7 @@ export function creaSceltaSingola({ domanda, risposte, valore, radice, avanti }:
       const id = scelto();
       if (!id) return blocco("Per andare avanti ci serve una risposta: tocca quella giusta per te.");
       const c = caselle.get(id);
-      if (c && !pulisci(c.input.value) && !forza) return avviso("Ci bastano due parole nella casella per capire di cosa si tratta.");
+      if (c && !pulisci(c.input.value) && !forza) return caselleVuota(opzioni.find((o) => o.id === id));
       return OK;
     },
   };
@@ -139,7 +144,7 @@ export function creaSceltaMultipla({ domanda, risposte, valore }: ArgomentiCompo
       if (v.length === 0 && domanda.obbligatoria) return blocco("Per andare avanti ci serve almeno una risposta.");
       for (const id of v) {
         const c = caselle.get(id);
-        if (c && !pulisci(c.input.value) && !forza) return avviso("Ci bastano due parole nella casella per capire di cosa si tratta.");
+        if (c && !pulisci(c.input.value) && !forza) return caselleVuota(opzioni.find((o) => o.id === id));
       }
       return OK;
     },

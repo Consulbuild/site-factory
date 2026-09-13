@@ -115,11 +115,25 @@ export class Motore {
     return !prima || prima.tipo !== "domanda" || prima.domanda.sezione !== p.domanda.sezione;
   }
 
+  /** Risposta confermata con «Continua». */
   rispondi(id: string, valore: unknown): void {
+    this.annota(id, valore);
+    if (!this.stato.confermate.includes(id)) this.stato.confermate.push(id);
+    this.salva();
+  }
+
+  /**
+   * Salva il valore com'è adesso senza segnarlo tra le confermate: tornando indietro a
+   * metà, ciò che il titolare ha cancellato o cambiato non deve ricomparire.
+   * `undefined` = campo vuoto → la risposta sparisce.
+   */
+  annota(id: string, valore: unknown): void {
     const r = this.stato.risposte as Record<string, unknown>;
+    // ponytail: unica dipendenza tra domande, cablata qui: i lavori proposti nascono dal
+    // mestiere, quindi un mestiere diverso azzera i lavori scelti (e il loro «altro»).
+    if (id === "mestiere" && (valore as { id?: string } | undefined)?.id !== this.stato.risposte.mestiere?.id) delete r["lavori"];
     if (valore === undefined) delete r[id];
     else r[id] = valore;
-    if (!this.stato.confermate.includes(id)) this.stato.confermate.push(id);
     this.salva();
   }
 

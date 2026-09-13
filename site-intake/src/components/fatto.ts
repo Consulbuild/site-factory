@@ -6,8 +6,14 @@ import type { Risposte } from "../data/domande";
 import { formattaTelefono } from "../lib/validators";
 import { h, svgIcona } from "./base";
 
+/** «mattia» / «MATTIA» → «Mattia»: il nome proprio con la maiuscola, come lo si scrive a mano. */
+const nomeProprio = (s: string): string => s.charAt(0).toLocaleUpperCase("it") + s.slice(1).toLocaleLowerCase("it");
+
+const TELEFONO_AGENZIA = { testo: "+39 351 4079287", href: "tel:+393514079287" };
+
 export function montaFatto(risposte: Risposte): HTMLElement {
   const tel = risposte.telefono ? formattaTelefono(risposte.telefono) : "";
+  const nome = risposte.referente?.trim().split(" ")[0];
   const canale = risposte.ricontatto?.id === "telefonata" ? "Ti chiamiamo" : "Ti scriviamo su WhatsApp";
   const tappa = (n: string, titolo: string, testo: string) =>
     h("li", { class: "tappa" }, h("span", { class: "tappa__n", "aria-hidden": "true" }, n), h("div", {}, h("strong", {}, titolo), h("p", {}, testo)));
@@ -16,14 +22,19 @@ export function montaFatto(risposte: Risposte): HTMLElement {
     { class: "passo passo--fatto", "data-passo": "fatto", "aria-labelledby": "domanda" },
     // niente eyebrow: la testata dice già «Fatto»
     h("h1", { class: "passo__titolo", id: "domanda", tabindex: "-1" }, "Il tuo nuovo sito è in lavorazione"),
-    h("p", { class: "passo__aiuto" }, `Grazie${risposte.referente ? `, ${risposte.referente.split(" ")[0]}` : ""}. Ecco cosa succede adesso.`),
+    h("p", { class: "passo__aiuto" }, `Grazie${nome ? `, ${nomeProprio(nome)}` : ""}. Ecco cosa succede adesso.`),
     h(
       "ol",
       { class: "tappe" },
       tappa("1", "Oggi", "Abbiamo ricevuto le tue risposte" + (risposte.azienda ? ` per ${risposte.azienda}` : "") + "."),
-      tappa("2", "Entro 48 ore", "Prepariamo il tuo sito: testi, colori e le tue foto."),
+      tappa("2", "Entro 48 ore", "Progettiamo il tuo sito su misura per la tua azienda: design curato, testi pensati per i tuoi clienti, le tue foto in primo piano."),
       tappa("3", "Poi", `${canale}${tel ? ` al ${tel}` : ""} per mostrartelo. Se ti piace, lo attiviamo insieme.`),
     ),
-    h("p", { class: "fatto__nota" }, svgIcona("fotocamera"), "Hai altre foto dei lavori? Puoi mandarcele quando ti contattiamo."),
+    h(
+      "p",
+      { class: "fatto__nota" },
+      svgIcona("telefono"),
+      h("span", {}, "Hai domande? Chiamaci o scrivici pure al ", h("a", { href: TELEFONO_AGENZIA.href }, TELEFONO_AGENZIA.testo), "."),
+    ),
   );
 }

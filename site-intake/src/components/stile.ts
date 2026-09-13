@@ -1,5 +1,6 @@
 /**
- * Stile del sito: sei card con una mini-anteprima disegnata (SVG), massimo due.
+ * Stile del sito: sei card con una mini-anteprima disegnata (SVG); `max` in domande.ts
+ * (oggi 1: toccare un'altra card sostituisce la scelta).
  * Le anteprime sono illustrazioni: i loro colori sono contenuto, non token della UI.
  */
 import { opzioniDi } from "../data/domande";
@@ -41,8 +42,17 @@ export function creaStile({ domanda, risposte, valore }: ArgomentiComponente<str
   );
   griglia.addEventListener("change", (e) => {
     const inp = e.target as HTMLInputElement;
-    const n = griglia.querySelectorAll(".scelta__input:checked").length;
-    if (inp.checked && n > max) {
+    const altri = [...griglia.querySelectorAll<HTMLInputElement>(".scelta__input:checked")].filter((i) => i !== inp);
+    if (!inp.checked) {
+      nota.textContent = "";
+      return;
+    }
+    if (max === 1) {
+      // Una sola scelta: toccarne un'altra sostituisce la precedente, senza rimproveri.
+      altri.forEach((i) => (i.checked = false));
+      return;
+    }
+    if (altri.length >= max) {
       inp.checked = false;
       nota.textContent = `Massimo ${max}: togline uno per sceglierne un altro.`;
     } else nota.textContent = "";

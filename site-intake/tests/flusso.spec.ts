@@ -33,9 +33,10 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
   await continua(page, "Come vuoi che si chiami il tuo sito?");
 
   // proposte dal nome + disponibilità dal vivo
-  await expect(page.locator(".dominio__nome", { hasText: "cavalierebuild.it" })).toBeVisible();
+  // filtri esatti: tra le 5 proposte ci sono anche «ristrutturazionicavalierebuild» e «ristrutturazioni-cavaliere-build»
+  await expect(page.locator(".dominio__nome", { hasText: /^cavalierebuild\.it$/ })).toBeVisible();
   await expect(page.locator(".stato-dominio").first()).not.toHaveText("Controllo…", { timeout: 6_000 });
-  await page.locator(".scelta--dominio", { hasText: "cavaliere-build.it" }).click();
+  await page.locator(".scelta--dominio", { hasText: /^cavaliere-build\.it/ }).click();
   await continua(page, "Dov'è la sede?");
 
   // comune dall'elenco, via a mano, civico mancante → avviso con uscita
@@ -70,17 +71,17 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
   await expect(page.getByText("Bene, il grosso è fatto.")).toBeVisible();
   await expect(page.locator("#progresso-eti")).toHaveText("Sezione 4 di 7");
 
-  // foto: due buone e una piccola, caricate in background; poi il logo
+  // foto: tre (anche una piccola: nessun avviso, la pipeline gestisce tutto), caricate in background; poi il logo
   await page.locator("#foto-input").setInputFiles([
     join(process.cwd(), "tests/fixtures/lavoro-1.jpg"),
     join(process.cwd(), "tests/fixtures/lavoro-2.jpg"),
     join(process.cwd(), "tests/fixtures/piccola.png"),
   ]);
   await expect(page.locator(".foto-voce")).toHaveCount(3);
-  await expect(page.getByText("Una foto è piccola")).toBeVisible();
+  await expect(page.locator(".foto-messaggi")).toBeEmpty();
   await expect(page.locator(".foto-voce.is-fatto")).toHaveCount(3, { timeout: 15_000 });
   await expect(page.locator(".foto-contatore")).toHaveText("3 di 15 foto · 3 caricate");
-  await page.locator(".foto-voce", { has: page.locator(".foto-voce__nota") }).getByRole("button", { name: /^Togli/ }).click();
+  await page.locator(".foto-voce").nth(2).getByRole("button", { name: /^Togli/ }).click();
   await expect(page.locator(".foto-voce")).toHaveCount(2);
   await continua(page, "Hai un logo? Caricalo qui");
 
@@ -99,11 +100,11 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
   await page.getByText("Agenzie immobiliari", { exact: true }).click();
   await continua(page, "Che stile vuoi che abbia il tuo sito?");
 
+  // uno solo: la seconda card sostituisce la prima, senza avvisi
   await page.getByText("Elegante", { exact: true }).click();
   await page.getByText("Tecnico e professionale", { exact: true }).click();
-  await page.getByText("Moderno e deciso", { exact: true }).click();
-  await expect(page.getByText("Massimo 2: togline uno")).toBeVisible();
-  await expect(page.getByRole("checkbox", { name: "Moderno e deciso" })).not.toBeChecked();
+  await expect(page.getByRole("checkbox", { name: "Elegante" })).not.toBeChecked();
+  await expect(page.getByRole("checkbox", { name: "Tecnico e professionale" })).toBeChecked();
   await continua(page, "Hai dei colori della tua azienda?");
 
   await page.getByText("Sì, ho dei colori").click();
@@ -154,7 +155,7 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
 
   // invio
   const leadId = await page.evaluate(() => localStorage.getItem("bozza:corrente"));
-  await page.getByRole("button", { name: "Voglio vedere il mio sito" }).click();
+  await page.getByRole("button", { name: "Costruite il mio nuovo sito" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Il tuo nuovo sito è in lavorazione", { timeout: 15_000 });
   await expect(page.locator("#progresso-eti")).toHaveText("Fatto");
   await expect(page.locator(".card")).toHaveClass(/is-fatto/);
@@ -181,7 +182,7 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
   expect(lead.risposte.zone).toEqual(expect.arrayContaining(["Milano e provincia", "Bergamo e provincia"]));
   expect(lead.risposte.telefono).toBe("3888937188");
   expect(lead.risposte.punti_di_forza).toEqual({ ids: ["referente-unico", "certificazioni"], certificazioni: "SOA OG1" });
-  expect(lead.risposte.stile).toEqual(["elegante", "tecnico"]);
+  expect(lead.risposte.stile).toEqual(["tecnico"]);
   expect(lead.risposte.colori).toEqual({ ids: ["oro", "nero"] }); // ordine della tavolozza, non del tocco
   expect(lead.risposte.email).toBe("fares@gmail.com");
   expect(lead.risposte.partita_iva).toEqual({ valore: "14763170967" });

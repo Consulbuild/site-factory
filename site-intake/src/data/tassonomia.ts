@@ -17,6 +17,9 @@ export interface Opzione {
   icona?: NomeIcona;
   /** Se presente, la scelta apre una casella di testo con questa etichetta. */
   testoLibero?: string;
+  /** La casella è grande (più righe): per elenchi, non per due parole. */
+  testoLungo?: boolean;
+  segnaposto?: string;
   valoreBrief?: string;
 }
 
@@ -131,7 +134,13 @@ export const LAVORI: Record<string, readonly Opzione[]> = {
   altro: lavori(["Ristrutturazioni", "Costruzioni", "Impianti", "Finiture", "Esterni e giardini", "Manutenzioni"]),
 };
 
-export const ALTRO_LAVORO: Opzione = { id: "altro", testo: "Altro", testoLibero: "Scrivi che lavoro è, anche in due parole" };
+export const ALTRO_LAVORO: Opzione = {
+  id: "altro",
+  testo: "Altro",
+  testoLibero: "Altri lavori o servizi che offri e che non trovi qui sopra",
+  testoLungo: true,
+  segnaposto: "es. Piscine, recinzioni, tettoie",
+};
 
 export const ANNI: readonly Opzione[] = [
   { id: "meno-1", testo: "Meno di 1 anno", valoreBrief: "<1" },
@@ -150,7 +159,7 @@ export const PUNTI_DI_FORZA: readonly Opzione[] = [
   { id: "tempi", testo: "Rispettiamo i tempi" },
   { id: "garanzia", testo: "Garanzia scritta" },
   { id: "certificazioni", testo: "Certificazioni", testoLibero: "Quali certificazioni?" },
-  { id: "cantiere-pulito", testo: "Puliamo il cantiere ogni giorno" },
+  { id: "assistenza-dopo", testo: "Assistenza anche dopo i lavori" },
   { id: "altro", testo: "Altro", testoLibero: "Scrivi cosa ti distingue" },
 ];
 

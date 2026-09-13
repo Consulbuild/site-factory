@@ -144,7 +144,7 @@ export function montaRiepilogo(a: ArgomentiRiepilogo): RiepilogoMontato {
     );
   });
   const slot = h("div", { class: "passo__esito", "aria-live": "assertive" });
-  const btnInvia = h("button", { class: "btn btn--primario btn--blocco btn--invia", type: "button" }, "Voglio vedere il mio sito", svgIcona("destra"));
+  const btnInvia = h("button", { class: "btn btn--primario btn--blocco btn--invia", type: "button" }, "Costruite il mio nuovo sito", svgIcona("destra"));
   const btnIndietro = h("button", { class: "btn btn--ghost", type: "button", hidden: !a.puoIndietro, onclick: a.indietro }, svgIcona("sinistra"), "Indietro");
   btnInvia.addEventListener("click", a.invia);
   const el = h(
@@ -152,7 +152,7 @@ export function montaRiepilogo(a: ArgomentiRiepilogo): RiepilogoMontato {
     { class: "passo passo--riepilogo", "data-passo": "riepilogo", "aria-labelledby": "domanda" },
     h("p", { class: "passo__sezione" }, "Per finire"),
     h("h1", { class: "passo__titolo", id: "domanda", tabindex: "-1" }, "Controlla le tue risposte"),
-    h("p", { class: "passo__aiuto" }, "Tocca «Modifica» se vuoi cambiare qualcosa. Poi chiedi il tuo sito: lo prepariamo in 48 ore."),
+    h("p", { class: "passo__aiuto" }, "Tocca «Modifica» se vuoi cambiare qualcosa. Poi dai il via: il tuo sito è pronto da vedere entro 48 ore."),
     h("div", { class: "passo__campo riepilogo" }, ...gruppi.filter((g): g is HTMLElement => g !== null)),
     slot,
     h("footer", { class: "passo__azioni passo__azioni--colonna" }, btnInvia, btnIndietro),

@@ -4,6 +4,7 @@
  * public/data/comuni/<iniziale>.json (generati da scripts/build-comuni.mjs) e si
  * scaricano solo quando l'utente inizia a scrivere, una lettera per volta.
  */
+import { nomeBreveRegione, REGIONI, zoneDellaRegione } from "../data/regioni";
 import { distanza } from "./validators";
 
 export interface Comune {
@@ -101,12 +102,13 @@ export async function trovaComune(testo: string, sigla?: string): Promise<Comune
 
 export const etichettaComune = (c: Comune): string => `${c.nome} (${c.sigla})`;
 
-/** Suggerimenti misti per le zone: province e comuni. */
+/** Suggerimenti misti per le zone: regioni, province e comuni. */
 export async function cercaZone(query: string, max = 8): Promise<string[]> {
   const q = normalizza(query);
   if (q.length < 2) return [];
   const [prov, comuni] = await Promise.all([caricaProvince(), cercaComuni(query, max)]);
+  const regioniTrovate = REGIONI.filter((r) => normalizza(nomeBreveRegione(r)).startsWith(q)).flatMap(zoneDellaRegione);
   const provinceTrovate = prov.filter((p) => normalizza(p.nome).startsWith(q)).map((p) => `${p.nome} e provincia`);
   const comuniTrovati = comuni.map((c) => `${c.nome} (${c.sigla})`);
-  return [...new Set([...provinceTrovate, ...comuniTrovati])].slice(0, max);
+  return [...new Set([...regioniTrovate, ...provinceTrovate, ...comuniTrovati])].slice(0, max);
 }

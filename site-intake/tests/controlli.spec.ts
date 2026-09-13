@@ -17,9 +17,12 @@ test.describe("@controlli validators", () => {
   test("telefono: pulizia, cifre, fisso", () => {
     expect(giudicaTelefono("+39 388 893 7188")).toEqual({ ok: true, valore: "3888937188" });
     expect(giudicaTelefono("0039388.893.7188").ok).toBe(true);
-    expect(giudicaTelefono("38889371")).toMatchObject({ ok: false, livello: "avviso" });
-    expect(giudicaTelefono("38889371889")).toMatchObject({ ok: false, livello: "avviso" });
-    expect(giudicaTelefono("0444 123456")).toMatchObject({ ok: false, livello: "avviso" });
+    expect(giudicaTelefono("38889371")).toMatchObject({ ok: false, livello: "avviso", messaggio: "Sembra manchino 2 cifre: un cellulare ne ha 10." });
+    expect(giudicaTelefono("388893718")).toMatchObject({ ok: false, messaggio: "Sembra manchi una cifra: un cellulare ne ha 10." });
+    expect(giudicaTelefono("38889371889")).toMatchObject({ ok: false, messaggio: "Sembra ci sia una cifra di troppo: un cellulare ne ha 10." });
+    expect(giudicaTelefono("0444 123456")).toMatchObject({ ok: false, livello: "avviso", messaggio: expect.stringContaining("numero fisso") });
+    expect(giudicaTelefono("0444")).toMatchObject({ ok: false, messaggio: expect.stringContaining("incompleto") });
+    expect(giudicaTelefono("+41 79 123 4567")).toMatchObject({ ok: false, messaggio: expect.stringContaining("Non sembra un numero italiano") });
     expect(giudicaTelefono("")).toMatchObject({ ok: false, livello: "blocco" });
   });
 
@@ -41,8 +44,10 @@ test.describe("@controlli validators", () => {
   });
 
   test("nome del sito: proposte senza sigle e pulizia", () => {
-    expect(proponiNomiSito("Cavaliere Build Srls", "impresa-edile")).toEqual(["cavalierebuild", "cavaliere-build", "impresacavaliere"]);
-    expect(proponiNomiSito("Rossi & Figli S.n.c.", "idraulico")).toEqual(["rossifigli", "rossi-figli", "idraulicorossi"]);
+    expect(proponiNomiSito("Cavaliere Build Srls", "impresa-edile")).toEqual(["cavalierebuild", "cavaliere-build", "impresacavaliere", "cavalierecostruzioni", "impresa-cavaliere-build"]);
+    expect(proponiNomiSito("Rossi & Figli S.n.c.", "idraulico")).toEqual(["rossifigli", "rossi-figli", "idraulicorossi", "rossiidraulica", "idraulico-rossi-figli"]);
+    expect(proponiNomiSito("Rossi", "elettricista")).toEqual(["rossi", "elettricistarossi", "rossiimpianti", "elettricista-rossi", "rossi-impianti"]);
+    expect(proponiNomiSito("Impianti Rossi", "elettricista")).toEqual(["impiantirossi", "impianti-rossi", "elettricistaimpianti", "elettricista-impianti-rossi"]);
     expect(pulisciNomeSito("Impresa Città  Nuova!")).toBe("impresacittanuova");
     expect(pulisciNomeSito("--a--b--")).toBe("a-b");
   });
