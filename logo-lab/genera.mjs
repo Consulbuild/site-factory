@@ -11,7 +11,7 @@
 //   GEMINI_API_KEY (aistudio.google.com) · IDEOGRAM_API_KEY (ideogram.ai/manage-api)
 // Exit 0 ok · 1 errore API · 2 uso/chiave mancante. Stampa su stdout una riga
 // "OK — <file> (<servizio>/<modello>)". Nessuna dipendenza.
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname } from "node:path";
 
@@ -21,10 +21,15 @@ const servizio = flag("--servizio");
 const prompt = flag("--prompt");
 const out = flag("--out");
 const modelFlag = flag("--model");
+// --input <png|jpg>: immagine di partenza (schizzo/struttura o riferimento di
+// stile) passata al servizio come base64 → workflow «schizzo → resa».
+const inputPath = flag("--input");
 if (!servizio || !prompt || !out) {
-  console.error('uso: genera.mjs --servizio bfl|openai|gemini|ideogram --prompt "…" --out file.png [--model …]');
+  console.error('uso: genera.mjs --servizio bfl|openai|gemini|ideogram --prompt "…" --out file.png [--model …] [--input schizzo.png]');
   process.exit(2);
 }
+const inputB64 = inputPath ? readFileSync(inputPath).toString("base64") : null;
+const inputMime = inputPath?.endsWith(".jpg") || inputPath?.endsWith(".jpeg") ? "image/jpeg" : "image/png";
 
 function chiave(nome, dove) {
   if (process.env[nome]) return process.env[nome];
@@ -48,7 +53,7 @@ const SERVIZI = {
     const model = modelFlag ?? "pro";
     const s = await fetch(`https://api.bfl.ai/v1/flux-2-${model}`, {
       method: "POST", headers: { "x-key": key, "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, width: 1024, height: 1024, output_format: "png" }),
+      body: JSON.stringify({ prompt, width: 1024, height: 1024, output_format: "png", ...(inputB64 ? { input_image: inputB64 } : {}) }),
     });
     if (!s.ok) fail(`BFL submit: HTTP ${s.status} — ${(await s.text()).slice(0, 300)}`);
     const task = await s.json();
@@ -84,7 +89,7 @@ const SERVIZI = {
     const model = modelFlag ?? "gemini-2.5-flash-image";
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST", headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseModalities: ["IMAGE"] } }),
+      body: JSON.stringify({ contents: [{ parts: [...(inputB64 ? [{ inlineData: { mimeType: inputMime, data: inputB64 } }] : []), { text: prompt }] }], generationConfig: { responseModalities: ["IMAGE"] } }),
     });
     if (!r.ok) fail(`Gemini: HTTP ${r.status} — ${(await r.text()).slice(0, 300)}`);
     const j = await r.json();

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Scheletro v2 (Claude): monogramma L+C su una base condivisa, C = cronometro con
+       lancetta sulle 8, wordmark e payoff entro i margini. Il generatore rende, non reinventa. -->
+  <rect width="1024" height="1024" fill="#ffffff"/>
+  <!-- targa -->
+  <rect x="212" y="96" width="600" height="520" rx="56" fill="#1E3A8A"/>
+  <!-- L: asta + base che prosegue sotto la C (base condivisa del monogramma) -->
+  <path d="M 312 200 L 312 512 L 712 512" fill="none" stroke="#ffffff" stroke-width="60" stroke-linecap="butt" stroke-linejoin="miter"/>
+  <!-- C: anello aperto a destra, centrato sulla base; apertura tra le 2 e le 4 -->
+  <path d="M 660 246 A 156 156 0 1 0 660 452" fill="none" stroke="#ffffff" stroke-width="60" stroke-linecap="butt"/>
+  <!-- corona del cronometro sopra la C -->
+  <rect x="540" y="146" width="64" height="48" rx="8" fill="#ffffff"/>
+  <rect x="558" y="120" width="28" height="30" rx="6" fill="#ffffff"/>
+  <!-- lancetta sulle 8 (dal centro 572,349 verso il basso-sinistra) -->
+  <line x1="572" y1="349" x2="504" y2="416" stroke="#F97316" stroke-width="26" stroke-linecap="round"/>
+  <circle cx="572" cy="349" r="24" fill="#F97316"/>
+  <!-- wordmark -->
+  <text x="512" y="742" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="900" font-size="126" letter-spacing="8" fill="#1E3A8A">LA CECILIA</text>
+  <!-- payoff, entro i margini -->
+  <text x="512" y="822" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="36" letter-spacing="10" fill="#F97316">BAGNI CHIAVI IN MANO · PUGLIA</text>
+</svg>
