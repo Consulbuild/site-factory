@@ -14,6 +14,8 @@ Rasterizzazione dello scheletro: Playwright (script in scratchpad, `svg2png.mjs`
 | v2 fedele | scheletro corretto | «render… keeping composition… refine with custom lettering, two-tone flat shading» | testo perfetto (due righe), craft due-tonalità, ma il cronometro è diventato un orologio con tre corone e linee spurie: il modello aggiunge dettaglio dove non serve |
 | **v2 libera** | scheletro corretto | «use this sketch only as the concept brief… redesign freely the way a senior branding designer would: characterful emblem, custom letterforms, layered two-tone flat shapes with flat shadow, distinctive silhouette» | **il primo risultato che somiglia a un logo da studio**: L+C due tonalità, cronometro leggibile, testo e payoff esatti, silhouette netta. Difetti: due lancette (orologio, non cronometro sulle 8), ombra grigia sfumata sotto il mark, terza tonalità rosso-arancio |
 
+| v3 libera | scheletro con UNA lancetta sulle 8, due tinte esplicite per colore, niente targa | «concept brief… exactly two tints per color… flat offset shadow… hard-edged» | ombre piatte nette e testo esatto come chiesto, ma la C si è CHIUSA in un cerchio (persa la lettura «C») e la lancetta è a mezzogiorno: senza vincolo di fedeltà il modello non conta né posiziona; terza tinta grigia sotto il wordmark |
+
 ## Cosa ho imparato
 
 1. **Lo schizzo trasferisce il controllo**: lettere e composizione arrivano intatte anche
@@ -27,8 +29,15 @@ Rasterizzazione dello scheletro: Playwright (script in scratchpad, `svg2png.mjs`
    offset shadow in a darker tint of the same color»), la terza tonalità (dichiarare le
    due tonalità di ogni colore in hex).
 
+5. **Fedeltà e libertà sono una manopola, non un interruttore**: «fedele» copia i
+   difetti e decora; «libera» perde il concetto (C → cerchio, lancetta a 12). FLUX.2
+   non ha un parametro di forza: la via di mezzo va ottenuta col prompt («keep the
+   open C shape and the single hand at eight o clock exactly as sketched; redesign
+   everything else freely») o con un servizio che ha `image_weight`/`strength`
+   (Ideogram remix, Recraft i2i).
+
 ## Prossimo passo
 
-Combinare: scheletro v3 con UNA lancetta sulle 8 e le due tonalità esplicite → prompt
-«libera» con i quattro punti corretti → confronto su GPT Image / Gemini / Ideogram
-(stesso schizzo, stesso prompt) quando ci sono le chiavi o a mano su arena.ai.
+Prompt a fedeltà mista (elementi da conservare nominati uno per uno, il resto libero)
+sullo scheletro v3; poi lo stesso schizzo + stesso prompt su GPT Image / Gemini /
+Ideogram quando ci sono le chiavi, o a mano su arena.ai.

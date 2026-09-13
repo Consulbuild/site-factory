@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Scheletro v3 (Claude): come v2 ma con le correzioni emerse dal probe:
+       UNA sola lancetta sulle 8, due tonalità esplicite per colore (ombra piatta
+       nella tinta scura dello stesso colore), niente targa (il monogramma sta da solo). -->
+  <rect width="1024" height="1024" fill="#ffffff"/>
+  <!-- ombra piatta della L (tinta scura del blu) -->
+  <path d="M 336 224 L 336 536 L 736 536" fill="none" stroke="#14275E" stroke-width="60" stroke-linecap="butt" stroke-linejoin="miter"/>
+  <!-- L -->
+  <path d="M 312 200 L 312 512 L 712 512" fill="none" stroke="#1E3A8A" stroke-width="60" stroke-linecap="butt" stroke-linejoin="miter"/>
+  <!-- ombra piatta della C (tinta scura dell'arancio) -->
+  <path d="M 684 270 A 156 156 0 1 0 684 476" fill="none" stroke="#C2410C" stroke-width="60" stroke-linecap="butt"/>
+  <!-- C = cronometro, arancio -->
+  <path d="M 660 246 A 156 156 0 1 0 660 452" fill="none" stroke="#F97316" stroke-width="60" stroke-linecap="butt"/>
+  <!-- corona -->
+  <rect x="540" y="146" width="64" height="48" rx="8" fill="#F97316"/>
+  <rect x="558" y="120" width="28" height="30" rx="6" fill="#F97316"/>
+  <!-- UNA lancetta sulle 8, blu, dal centro (572,349) -->
+  <line x1="572" y1="349" x2="504" y2="416" stroke="#1E3A8A" stroke-width="26" stroke-linecap="round"/>
+  <circle cx="572" cy="349" r="24" fill="#1E3A8A"/>
+  <!-- wordmark -->
+  <text x="512" y="742" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="900" font-size="126" letter-spacing="8" fill="#1E3A8A">LA CECILIA</text>
+  <!-- payoff -->
+  <text x="512" y="822" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="36" letter-spacing="10" fill="#F97316">BAGNI CHIAVI IN MANO · PUGLIA</text>
+</svg>
