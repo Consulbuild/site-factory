@@ -29,7 +29,10 @@ const umamiId = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID;
     <meta name="description" content={descrizione} />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#0f172a" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {/* Stessa favicon del sito ConsulBuild (repo Consulbuild_Vercel): ico multi-size + PNG. */}
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32" type="image/x-icon" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png" />
     <link
       rel="preload"
       href="/fonts/atkinson-hyperlegible-next-normal-latin.woff2"
