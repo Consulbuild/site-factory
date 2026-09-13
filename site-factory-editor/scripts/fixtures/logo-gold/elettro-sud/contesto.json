@@ -1,0 +1,11 @@
+{
+  "identita": { "frase": "Elettro Sud, impianti elettrici e domotica a Catania: impianti civili e industriali, fotovoltaico, videosorveglianza e domotica per case e negozi della provincia etnea." },
+  "settore_normalizzato": "Impianti elettrici",
+  "sottosettore": "Impianti civili, fotovoltaico e domotica",
+  "zona": { "sede": "Catania", "area_intervento": "Catania e provincia" },
+  "macro_categorie": [
+    { "nome": "Impianti elettrici", "servizi": ["Impianti civili", "Impianti industriali"] },
+    { "nome": "Energia e sicurezza", "servizi": ["Fotovoltaico", "Videosorveglianza", "Domotica"] }
+  ],
+  "materiali": { "logo": false }
+}

@@ -1,0 +1,10 @@
+{
+  "brief": {
+    "nome": "GIARDINI VALSECCHI",
+    "mestiere_en": "landscaping and garden maintenance company",
+    "citta": "Lecco",
+    "regione": "Lombardia",
+    "alt": "Logo di Giardini Valsecchi, progettazione e manutenzione del verde a Lecco"
+  },
+  "palette": { "brand.preset": "vita", "brand.palette.primary": "#2f5d3a", "brand.palette.accent": "#9bbf45" }
+}

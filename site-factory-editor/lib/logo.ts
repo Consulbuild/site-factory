@@ -83,8 +83,10 @@ export function componiPromptLogo(b: LogoBrief, palette: PaletteArtifact): strin
   const primary = palette["brand.palette.primary"];
   const accent = palette["brand.palette.accent"] ?? primary;
   const colori = accent && accent !== primary ? `${primary} and ${accent}` : primary;
+  const mestiere = b.mestiere_en.trim();
+  const articolo = /^[aeiou]/i.test(mestiere) ? "an" : "a";
   return [
-    `Logo for the website landing page of "${b.nome}", a ${b.mestiere_en.trim()} in ${b.citta.trim()}, ${b.regione.trim()}, Italy.`,
+    `Logo for the website landing page of "${b.nome}", ${articolo} ${mestiere} in ${b.citta.trim()}, ${b.regione.trim()}, Italy.`,
     RIGA_DESIGNER,
     RIGA_NOME,
     `Brand colors to use: ${colori}.`,

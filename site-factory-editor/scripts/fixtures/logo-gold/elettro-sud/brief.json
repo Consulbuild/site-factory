@@ -1,0 +1,10 @@
+{
+  "brief": {
+    "nome": "ELETTRO SUD",
+    "mestiere_en": "electrical installations and home automation company",
+    "citta": "Catania",
+    "regione": "Sicilia",
+    "alt": "Logo di Elettro Sud, impianti elettrici e domotica a Catania"
+  },
+  "palette": { "brand.preset": "meridian", "brand.palette.primary": "#12395e", "brand.palette.accent": "#f0a500" }
+}

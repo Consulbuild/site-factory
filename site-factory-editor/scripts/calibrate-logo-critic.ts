@@ -34,7 +34,8 @@ const ONLY = argv.includes("--only") ? argv[argv.indexOf("--only") + 1] : null;
 const RUNS = argv.includes("--runs") ? Number(argv[argv.indexOf("--runs") + 1]) : 2;
 const FORCE = argv.includes("--force");
 
-type Atteso = { nome: string; bg?: string; label: "passa" | "boccia"; scelta_umana?: string; codici?: Record<string, string[]>; note?: string };
+// consentiti: ciò che in pipeline arriva da brief/intake (città, regione, mestiere) oltre al contesto.
+type Atteso = { nome: string; bg?: string; label: "passa" | "boccia"; scelta_umana?: string; codici?: Record<string, string[]>; consentiti?: string[]; note?: string };
 type Item = { id: string; dir: string; atteso: Atteso; files: string[] };
 
 const items: Item[] = fs.existsSync(GOLD)
@@ -67,7 +68,7 @@ function varianti(item: Item, metriche: Record<string, unknown>): LogoVariante[]
 
 function promptCritico(item: Item): string {
   const rel = path.relative(REPO_ROOT, item.dir);
-  const consentiti = [item.atteso.nome];
+  const consentiti = [item.atteso.nome, ...(item.atteso.consentiti ?? [])];
   return (
     `Usa la skill logo-critic per il cliente «${item.id}». ` +
     `GUARDA con Read multimodale il foglio di contatto ${rel}/logo/contatto.png: una riga per variante, con il logo a 512 px, ` +

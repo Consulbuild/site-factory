@@ -1,0 +1,11 @@
+{
+  "identita": { "frase": "Falegnameria Bettini, laboratorio artigiano di Lucca: mobili su misura, cucine, porte e infissi in legno per case e botteghe della Lucchesia." },
+  "settore_normalizzato": "Falegnameria",
+  "sottosettore": "Mobili su misura e infissi in legno",
+  "zona": { "sede": "Lucca", "area_intervento": "Lucca e Versilia" },
+  "macro_categorie": [
+    { "nome": "Arredo su misura", "servizi": ["Cucine", "Armadi", "Librerie"] },
+    { "nome": "Infissi", "servizi": ["Porte interne", "Finestre in legno"] }
+  ],
+  "materiali": { "logo": false }
+}

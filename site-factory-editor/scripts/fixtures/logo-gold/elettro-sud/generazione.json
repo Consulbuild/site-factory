@@ -1,0 +1,182 @@
+{
+  "data": "2026-09-13",
+  "model": "gpt-image-2.5-sunburst",
+  "size": "1536x1024",
+  "quality": "high",
+  "prompt": "Logo for the website landing page of \"ELETTRO SUD\", a electrical installations and home automation company in Catania, Sicilia, Italy.\nDesign it as a senior brand designer would for a paying client: think the concept through before drawing, so it is distinctive and still clear at small size in the site header.\nThe logo shows also the name.\nBrand colors to use: #12395e and #f0a500.",
+  "varianti": [
+    {
+      "file": "logo/mark-1.png",
+      "usage": {
+        "input_tokens": 94,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 94
+        },
+        "output_tokens": 1372,
+        "output_tokens_details": {
+          "image_tokens": 1372,
+          "text_tokens": 0
+        },
+        "total_tokens": 1466
+      },
+      "costo_usd": 0.0416,
+      "metriche": {
+        "alpha": true,
+        "copertura": 0.204,
+        "bordo_opaco": false,
+        "width": 1296,
+        "height": 761,
+        "ratio": 1.7,
+        "larghezza_a_40px": 68,
+        "colori_dominanti": [
+          {
+            "hex": "#143c5c",
+            "quota": 0.319
+          },
+          {
+            "hex": "#ec9404",
+            "quota": 0.218
+          },
+          {
+            "hex": "#ec9c04",
+            "quota": 0.16
+          },
+          {
+            "hex": "#0c345c",
+            "quota": 0.135
+          },
+          {
+            "hex": "#0c3454",
+            "quota": 0.12
+          },
+          {
+            "hex": "#0c3c5c",
+            "quota": 0.017
+          }
+        ],
+        "n_colori": 6,
+        "ink40": 0.234,
+        "ink256": 0.215,
+        "dettaglio": 1.09,
+        "bbox_simbolo": {
+          "x": 381,
+          "y": 0,
+          "w": 535,
+          "h": 426
+        }
+      }
+    },
+    {
+      "file": "logo/mark-2.png",
+      "usage": {
+        "input_tokens": 94,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 94
+        },
+        "output_tokens": 1372,
+        "output_tokens_details": {
+          "image_tokens": 1372,
+          "text_tokens": 0
+        },
+        "total_tokens": 1466
+      },
+      "costo_usd": 0.0416,
+      "metriche": {
+        "alpha": true,
+        "copertura": 0.212,
+        "bordo_opaco": false,
+        "width": 1231,
+        "height": 778,
+        "ratio": 1.58,
+        "larghezza_a_40px": 63,
+        "colori_dominanti": [
+          {
+            "hex": "#143c5c",
+            "quota": 0.482
+          },
+          {
+            "hex": "#ec9c04",
+            "quota": 0.404
+          },
+          {
+            "hex": "#0c3c5c",
+            "quota": 0.047
+          },
+          {
+            "hex": "#143c64",
+            "quota": 0.019
+          }
+        ],
+        "n_colori": 4,
+        "ink40": 0.231,
+        "ink256": 0.224,
+        "dettaglio": 1.03,
+        "bbox_simbolo": {
+          "x": 305,
+          "y": 0,
+          "w": 623,
+          "h": 437
+        }
+      }
+    },
+    {
+      "file": "logo/mark-3.png",
+      "usage": {
+        "input_tokens": 94,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 94
+        },
+        "output_tokens": 1372,
+        "output_tokens_details": {
+          "image_tokens": 1372,
+          "text_tokens": 0
+        },
+        "total_tokens": 1466
+      },
+      "costo_usd": 0.0416,
+      "metriche": {
+        "alpha": true,
+        "copertura": 0.211,
+        "bordo_opaco": false,
+        "width": 1387,
+        "height": 358,
+        "ratio": 3.87,
+        "larghezza_a_40px": 155,
+        "colori_dominanti": [
+          {
+            "hex": "#143c5c",
+            "quota": 0.367
+          },
+          {
+            "hex": "#ec9c04",
+            "quota": 0.318
+          },
+          {
+            "hex": "#0c3c5c",
+            "quota": 0.234
+          },
+          {
+            "hex": "#143c64",
+            "quota": 0.018
+          },
+          {
+            "hex": "#0c345c",
+            "quota": 0.016
+          },
+          {
+            "hex": "#f4a404",
+            "quota": 0.015
+          }
+        ],
+        "n_colori": 6,
+        "ink40": 0.247,
+        "ink256": 0.225,
+        "dettaglio": 1.1,
+        "bbox_simbolo": null
+      }
+    }
+  ]
+}

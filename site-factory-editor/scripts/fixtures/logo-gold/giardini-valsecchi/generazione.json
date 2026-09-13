@@ -1,0 +1,203 @@
+{
+  "data": "2026-09-13",
+  "model": "gpt-image-2.5-sunburst",
+  "size": "1536x1024",
+  "quality": "high",
+  "prompt": "Logo for the website landing page of \"GIARDINI VALSECCHI\", a landscaping and garden maintenance company in Lecco, Lombardia, Italy.\nDesign it as a senior brand designer would for a paying client: think the concept through before drawing, so it is distinctive and still clear at small size in the site header.\nThe logo shows also the name.\nBrand colors to use: #2f5d3a and #9bbf45.",
+  "varianti": [
+    {
+      "file": "logo/mark-1.png",
+      "usage": {
+        "input_tokens": 97,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 97
+        },
+        "output_tokens": 1372,
+        "output_tokens_details": {
+          "image_tokens": 1372,
+          "text_tokens": 0
+        },
+        "total_tokens": 1469
+      },
+      "costo_usd": 0.0416,
+      "metriche": {
+        "alpha": true,
+        "copertura": 0.179,
+        "bordo_opaco": false,
+        "width": 965,
+        "height": 729,
+        "ratio": 1.32,
+        "larghezza_a_40px": 53,
+        "colori_dominanti": [
+          {
+            "hex": "#345c3c",
+            "quota": 0.549
+          },
+          {
+            "hex": "#94b444",
+            "quota": 0.156
+          },
+          {
+            "hex": "#3c5c3c",
+            "quota": 0.098
+          },
+          {
+            "hex": "#94ac44",
+            "quota": 0.095
+          },
+          {
+            "hex": "#34543c",
+            "quota": 0.027
+          },
+          {
+            "hex": "#94ac3c",
+            "quota": 0.026
+          },
+          {
+            "hex": "#9cb444",
+            "quota": 0.01
+          }
+        ],
+        "n_colori": 7,
+        "ink40": 0.203,
+        "ink256": 0.188,
+        "dettaglio": 1.08,
+        "bbox_simbolo": {
+          "x": 184,
+          "y": 0,
+          "w": 570,
+          "h": 392
+        }
+      }
+    },
+    {
+      "file": "logo/mark-2.png",
+      "usage": {
+        "input_tokens": 97,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 97
+        },
+        "output_tokens": 1372,
+        "output_tokens_details": {
+          "image_tokens": 1372,
+          "text_tokens": 0
+        },
+        "total_tokens": 1469
+      },
+      "costo_usd": 0.0416,
+      "metriche": {
+        "alpha": true,
+        "copertura": 0.182,
+        "bordo_opaco": false,
+        "width": 1017,
+        "height": 715,
+        "ratio": 1.42,
+        "larghezza_a_40px": 57,
+        "colori_dominanti": [
+          {
+            "hex": "#345c3c",
+            "quota": 0.538
+          },
+          {
+            "hex": "#94b444",
+            "quota": 0.364
+          },
+          {
+            "hex": "#3c6444",
+            "quota": 0.023
+          },
+          {
+            "hex": "#9cbc4c",
+            "quota": 0.015
+          },
+          {
+            "hex": "#3c5c3c",
+            "quota": 0.011
+          }
+        ],
+        "n_colori": 5,
+        "ink40": 0.195,
+        "ink256": 0.193,
+        "dettaglio": 1.01,
+        "bbox_simbolo": {
+          "x": 179,
+          "y": 0,
+          "w": 677,
+          "h": 371
+        }
+      }
+    },
+    {
+      "file": "logo/mark-3.png",
+      "usage": {
+        "input_tokens": 97,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 97
+        },
+        "output_tokens": 1372,
+        "output_tokens_details": {
+          "image_tokens": 1372,
+          "text_tokens": 0
+        },
+        "total_tokens": 1469
+      },
+      "costo_usd": 0.0416,
+      "metriche": {
+        "alpha": true,
+        "copertura": 0.187,
+        "bordo_opaco": false,
+        "width": 892,
+        "height": 754,
+        "ratio": 1.18,
+        "larghezza_a_40px": 47,
+        "colori_dominanti": [
+          {
+            "hex": "#345c3c",
+            "quota": 0.59
+          },
+          {
+            "hex": "#8ca43c",
+            "quota": 0.127
+          },
+          {
+            "hex": "#94ac44",
+            "quota": 0.083
+          },
+          {
+            "hex": "#94ac3c",
+            "quota": 0.034
+          },
+          {
+            "hex": "#8cac3c",
+            "quota": 0.033
+          },
+          {
+            "hex": "#2c543c",
+            "quota": 0.031
+          },
+          {
+            "hex": "#34543c",
+            "quota": 0.021
+          },
+          {
+            "hex": "#8cac44",
+            "quota": 0.016
+          }
+        ],
+        "n_colori": 8,
+        "ink40": 0.226,
+        "ink256": 0.202,
+        "dettaglio": 1.12,
+        "bbox_simbolo": {
+          "x": 222,
+          "y": 0,
+          "w": 443,
+          "h": 433
+        }
+      }
+    }
+  ]
+}

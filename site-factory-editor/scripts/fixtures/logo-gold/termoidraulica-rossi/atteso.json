@@ -1,0 +1,8 @@
+{
+  "nome": "TERMOIDRAULICA ROSSI",
+  "bg": "#fbfaf7",
+  "label": "boccia",
+  "consentiti": ["Bergamo", "Lombardia", "Padre e figlio", "Termoidraulica"],
+  "codici": { "logo/mark-1.png": ["fatto_inventato"] },
+  "note": "Grafica approvata da Mattia, ma «DAL 1985» è inventato dal modello (il form non lo dice): per la regola del 13/9 i fatti inventati escludono la variante dalla scelta automatica. Atteso: FAIL con fatto_inventato; il resto pulito (PADRE E FIGLIO e BERGAMO sono nel contesto)."
+}

@@ -1,0 +1,11 @@
+{
+  "identita": { "frase": "Giardini Valsecchi, giardinieri a Lecco da tre generazioni: progettazione giardini, manutenzione del verde, potature e impianti di irrigazione per ville e condomini sul lago." },
+  "settore_normalizzato": "Giardinaggio",
+  "sottosettore": "Progettazione e manutenzione del verde",
+  "zona": { "sede": "Lecco", "area_intervento": "Lecco e lago di Como" },
+  "macro_categorie": [
+    { "nome": "Giardini", "servizi": ["Progettazione giardini", "Manutenzione del verde", "Potature"] },
+    { "nome": "Irrigazione", "servizi": ["Impianti di irrigazione"] }
+  ],
+  "materiali": { "logo": false }
+}

@@ -1,0 +1,7 @@
+{
+  "nome": "ELETTRO SUD",
+  "bg": "#fbfaf7",
+  "label": "passa",
+  "consentiti": ["Catania", "Sicilia"],
+  "note": "Cliente fittizio per l'allenamento del critico (generato dalla pipeline con GPT Image, prompt v9b). scelta_umana: da compilare con la variante indicata da Mattia."
+}

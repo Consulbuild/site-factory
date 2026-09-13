@@ -1,0 +1,8 @@
+{
+  "nome": "COPERTURE MARINI",
+  "bg": "#fbfaf7",
+  "label": "passa",
+  "scelta_umana": "logo/mark-1.png",
+  "consentiti": ["Treviso", "Veneto", "Tetti", "Impermeabilizzazioni"],
+  "note": "Approvato da Mattia il 2026-09-13. Descrittori veri: TETTI · IMPERMEABILIZZAZIONI, TREVISO. Sfondo bianco rimosso con sharp per la taratura (in pipeline arriva già trasparente)."
+}

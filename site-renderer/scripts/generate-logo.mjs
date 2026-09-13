@@ -73,7 +73,9 @@ async function rgba(buf) {
 }
 
 /** Ritaglia i margini trasparenti e misura: copertura, bbox, colori, ink a 40/256 px, simbolo. */
-async function analizza(buf) {
+// `ritagliato`: il PNG è già senza margini (mark-N.png salvato), quindi il contenuto
+// tocca il bordo per definizione e il test «mozzato» ha senso solo sulla tela originale.
+async function analizza(buf, { ritagliato = false } = {}) {
   const meta = await sharp(buf).metadata();
   const { data, w, h } = await rgba(buf);
   const alpha = (x, y) => data[(y * w + x) * 4 + 3];
@@ -95,8 +97,8 @@ async function analizza(buf) {
   const alphaOk = meta.hasAlpha === true && opachi < w * h * 0.98;
   if (maxX < 0) return { png: buf, metriche: { alpha: alphaOk, copertura: 0, bordo_opaco: false, width: w, height: h, ratio: 1, larghezza_a_40px: 40, colori_dominanti: [], n_colori: 0, ink40: 0, ink256: 0, dettaglio: 0, bbox_simbolo: null } };
   let bordo = false;
-  for (let x = 0; x < w && !bordo; x++) if (alpha(x, 0) > 200 || alpha(x, h - 1) > 200) bordo = true;
-  for (let y = 0; y < h && !bordo; y++) if (alpha(0, y) > 200 || alpha(w - 1, y) > 200) bordo = true;
+  for (let x = 0; x < w && !bordo && !ritagliato; x++) if (alpha(x, 0) > 200 || alpha(x, h - 1) > 200) bordo = true;
+  for (let y = 0; y < h && !bordo && !ritagliato; y++) if (alpha(0, y) > 200 || alpha(w - 1, y) > 200) bordo = true;
   const bw = maxX - minX + 1, bh = maxY - minY + 1;
   const png = await sharp(buf).extract({ left: minX, top: minY, width: bw, height: bh }).png().toBuffer();
   const tot = [...conta.values()].reduce((s, n) => s + n, 0) || 1;
@@ -194,7 +196,7 @@ async function foglioContatto(outFile, files) {
   const metriche = {};
   const righe = [];
   for (const f of files) {
-    const a = await analizza(readFileSync(f));
+    const a = await analizza(readFileSync(f), { ritagliato: true });
     const m = a.metriche;
     metriche[`logo/${basename(f)}`] = m;
     const lockup = a.png;

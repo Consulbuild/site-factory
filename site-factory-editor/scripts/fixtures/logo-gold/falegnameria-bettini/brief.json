@@ -1,0 +1,10 @@
+{
+  "brief": {
+    "nome": "FALEGNAMERIA BETTINI",
+    "mestiere_en": "artisan joinery and custom furniture workshop",
+    "citta": "Lucca",
+    "regione": "Toscana",
+    "alt": "Logo di Falegnameria Bettini, falegnameria artigiana a Lucca"
+  },
+  "palette": { "brand.preset": "terra", "brand.palette.primary": "#4a3421", "brand.palette.accent": "#c9903a" }
+}

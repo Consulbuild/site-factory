@@ -1,0 +1,11 @@
+{
+  "identita": { "frase": "Coperture Marini, impresa di Treviso specializzata in tetti e impermeabilizzazioni: rifacimento tetti, isolamento sottotetti, impermeabilizzazione di terrazzi, grondaie, su case coloniche e ville della pianura veneta." },
+  "settore_normalizzato": "Coperture",
+  "sottosettore": "Tetti e impermeabilizzazioni",
+  "zona": { "sede": "Treviso", "area_intervento": "Provincia di Treviso e pianura veneta" },
+  "macro_categorie": [
+    { "nome": "Tetti", "servizi": ["Rifacimento tetti", "Isolamento sottotetti", "Grondaie"] },
+    { "nome": "Impermeabilizzazioni", "servizi": ["Impermeabilizzazione terrazzi"] }
+  ],
+  "materiali": { "logo": false }
+}

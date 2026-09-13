@@ -1,0 +1,11 @@
+{
+  "identita": { "frase": "Termoidraulica Rossi, impresa di padre e figlio a Bergamo: caldaie, pompe di calore, bagni e impianti per le case delle valli, con pronto intervento 24 ore." },
+  "settore_normalizzato": "Termoidraulica",
+  "sottosettore": "Impianti termici e idraulici, pronto intervento",
+  "zona": { "sede": "Bergamo", "area_intervento": "Bergamo e valli" },
+  "macro_categorie": [
+    { "nome": "Riscaldamento", "servizi": ["Caldaie", "Pompe di calore"] },
+    { "nome": "Idraulica", "servizi": ["Bagni", "Impianti idraulici", "Pronto intervento 24 ore"] }
+  ],
+  "materiali": { "logo": false }
+}

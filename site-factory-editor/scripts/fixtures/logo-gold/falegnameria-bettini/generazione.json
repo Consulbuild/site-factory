@@ -1,0 +1,207 @@
+{
+  "data": "2026-09-13",
+  "model": "gpt-image-2.5-sunburst",
+  "size": "1536x1024",
+  "quality": "high",
+  "prompt": "Logo for the website landing page of \"FALEGNAMERIA BETTINI\", a artisan joinery and custom furniture workshop in Lucca, Toscana, Italy.\nDesign it as a senior brand designer would for a paying client: think the concept through before drawing, so it is distinctive and still clear at small size in the site header.\nThe logo shows also the name.\nBrand colors to use: #4a3421 and #c9903a.",
+  "varianti": [
+    {
+      "file": "logo/mark-1.png",
+      "usage": {
+        "input_tokens": 98,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 98
+        },
+        "output_tokens": 1372,
+        "output_tokens_details": {
+          "image_tokens": 1372,
+          "text_tokens": 0
+        },
+        "total_tokens": 1470
+      },
+      "costo_usd": 0.0417,
+      "metriche": {
+        "alpha": true,
+        "copertura": 0.182,
+        "bordo_opaco": false,
+        "width": 991,
+        "height": 756,
+        "ratio": 1.31,
+        "larghezza_a_40px": 52,
+        "colori_dominanti": [
+          {
+            "hex": "#5c3c1c",
+            "quota": 0.313
+          },
+          {
+            "hex": "#bc8434",
+            "quota": 0.193
+          },
+          {
+            "hex": "#c48434",
+            "quota": 0.111
+          },
+          {
+            "hex": "#54341c",
+            "quota": 0.109
+          },
+          {
+            "hex": "#5c3c24",
+            "quota": 0.051
+          },
+          {
+            "hex": "#5c341c",
+            "quota": 0.049
+          },
+          {
+            "hex": "#bc842c",
+            "quota": 0.031
+          },
+          {
+            "hex": "#543c1c",
+            "quota": 0.029
+          }
+        ],
+        "n_colori": 8,
+        "ink40": 0.227,
+        "ink256": 0.195,
+        "dettaglio": 1.16,
+        "bbox_simbolo": {
+          "x": 269,
+          "y": 0,
+          "w": 428,
+          "h": 438
+        }
+      }
+    },
+    {
+      "file": "logo/mark-2.png",
+      "usage": {
+        "input_tokens": 98,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 98
+        },
+        "output_tokens": 1372,
+        "output_tokens_details": {
+          "image_tokens": 1372,
+          "text_tokens": 0
+        },
+        "total_tokens": 1470
+      },
+      "costo_usd": 0.0417,
+      "metriche": {
+        "alpha": true,
+        "copertura": 0.179,
+        "bordo_opaco": false,
+        "width": 1016,
+        "height": 774,
+        "ratio": 1.31,
+        "larghezza_a_40px": 52,
+        "colori_dominanti": [
+          {
+            "hex": "#4c341c",
+            "quota": 0.584
+          },
+          {
+            "hex": "#bc843c",
+            "quota": 0.072
+          },
+          {
+            "hex": "#b47c3c",
+            "quota": 0.066
+          },
+          {
+            "hex": "#b47c34",
+            "quota": 0.032
+          },
+          {
+            "hex": "#4c2c1c",
+            "quota": 0.027
+          },
+          {
+            "hex": "#4c3424",
+            "quota": 0.017
+          },
+          {
+            "hex": "#543424",
+            "quota": 0.016
+          },
+          {
+            "hex": "#b4843c",
+            "quota": 0.016
+          }
+        ],
+        "n_colori": 8,
+        "ink40": 0.229,
+        "ink256": 0.191,
+        "dettaglio": 1.2,
+        "bbox_simbolo": {
+          "x": 271,
+          "y": 0,
+          "w": 444,
+          "h": 432
+        }
+      }
+    },
+    {
+      "file": "logo/mark-3.png",
+      "usage": {
+        "input_tokens": 98,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 98
+        },
+        "output_tokens": 1372,
+        "output_tokens_details": {
+          "image_tokens": 1372,
+          "text_tokens": 0
+        },
+        "total_tokens": 1470
+      },
+      "costo_usd": 0.0417,
+      "metriche": {
+        "alpha": true,
+        "copertura": 0.213,
+        "bordo_opaco": false,
+        "width": 952,
+        "height": 778,
+        "ratio": 1.22,
+        "larghezza_a_40px": 49,
+        "colori_dominanti": [
+          {
+            "hex": "#54341c",
+            "quota": 0.54
+          },
+          {
+            "hex": "#c48434",
+            "quota": 0.235
+          },
+          {
+            "hex": "#4c341c",
+            "quota": 0.034
+          },
+          {
+            "hex": "#bc8434",
+            "quota": 0.034
+          },
+          {
+            "hex": "#c48c34",
+            "quota": 0.029
+          }
+        ],
+        "n_colori": 5,
+        "ink40": 0.26,
+        "ink256": 0.23,
+        "dettaglio": 1.13,
+        "bbox_simbolo": {
+          "x": 219,
+          "y": 0,
+          "w": 512,
+          "h": 446
+        }
+      }
+    }
+  ]
+}
