@@ -1,68 +1,65 @@
-# Prompt di prova corrente (v5, 2026-09-12)
+# Prompt di prova corrente (v6, 2026-09-13) — kit a 4 dispositivi
 
-Cliente reale dal form: COSTRUZIONI GENERALI A. L. DI LA CECILIA GIOVANNI, San Severo (Foggia),
-edilizia; «ristrutturazioni vasche in doccia in 8 ore o bagno completo in 5 giorni in tutta la
-Puglia»; «pensiamo tutto noi: scelta del materiale, impianto elettrico e idraulico»; tono
-«minimale e pulito»; colori «aperto a proposte». Nome del lockup «LA CECILIA» (da confermare).
+Cliente reale dal form: COSTRUZIONI GENERALI A. L. DI LA CECILIA GIOVANNI, San Severo (Foggia);
+«vasche in doccia in 8 ore o bagno completo in 5 giorni in tutta la Puglia»; «pensiamo tutto
+noi»; tono «minimale e pulito»; colori aperti. Nome del lockup «LA CECILIA» (da confermare).
 
-## Perché v5: il problema di v3/v4 era l'assenza di ideazione
+## Cosa cambia rispetto a v1–v5
 
-Mattia (9/9): «i loghi hanno la grafica dei loghi ma sono troppo semplici e poco originali e
-personalizzati per la ditta». Non esiste un parametro «creatività» nelle API (solo `--chaos`
-e `--stylize` di Midjourney, e il Magic Prompt di Ideogram che però riscrive il testo): i
-generatori eseguono il concetto che ricevono. L'originalità si decide PRIMA del prompt, con
-la procedura in `../ricerca/00-sintesi.md` §3 («Ideazione del concetto»). Qui applicata.
+Metodo v2 (`../ricerca/08-metodo-v2.md`): la varietà va cercata tra DISPOSITIVI DI CRAFT, non
+tra seed; il prompt nomina il dispositivo col lessico del mestiere e non usa più «flat vector /
+minimal / uniform stroke». A, B, C sono già stati generati su FLUX.2 pro (`../runs/vocab/`):
+nessuno è un'icona. Da provare tal quali su GPT Image, Gemini, Ideogram, Seedream per il confronto
+tra servizi; D è il quarto dispositivo, non ancora testato.
 
-### 1. Fatti che i concorrenti non possono rivendicare
-
-| fatto (dal form) | perché è loro |
-|---|---|
-| vasca → doccia in **8 ore** | promessa firmata con un numero; nessun concorrente locale la scrive |
-| bagno completo in **5 giorni** | idem |
-| «pensiamo tutto noi» (materiali, impianti) | chiavi in mano, un solo interlocutore |
-| nome **LA CECILIA**, iniziali L C | il nome è l'unica cosa che nessun altro ha |
-| San Severo, Puglia | luogo: da usare solo con un simbolo non turistico (niente trulli) |
-| tono minimale e pulito | vincolo di stile, non concetto |
-
-### 2. Candidati (doppia lettura) e scarto
-
-- **A — la C cronometro**: la C di CECILIA come quadrante aperto con una sola lancetta sulle 8 → «si legge come C e come cronometro». Lega nome + promessa delle 8 ore. Una forma, favicon ok. Rischio: somigliare a un'icona «power» o a uno spinner.
-- **B — la L doccia**: la L di LA come colonna doccia che in basso diventa il piatto → «L e doccia». Lega nome + servizio firma. Rischio: la doccia è vicina al simbolo di categoria (goccia): scartato per il criterio 7 del critico.
-- **C — le 5 piastrelle**: cinque quadrati in fila = 5 giorni = pavimento → troppo astratto, non si descrive in una frase: scartato.
-- **D — l'8 come scarico/infinito**: due gocce impilate → simbolo di categoria: scartato.
-- **E — «tutto noi»**: check dentro un quadrato → cliché (scudo con spunta): scartato.
-
-Scelta: **A**. Test «lo userebbe il concorrente accanto?» → no, perché il concetto vive sulla lettera C e sul numero 8 che sono solo loro.
-
-## Prompt v5 (concetto A, nome integrato)
+## A — Lettering su misura (wordmark, tono «minimale e pulito»)
 
 ```text
-Logo for "LA CECILIA", a bathroom renovation company in Puglia, Italy: the name "LA CECILIA" on one line in heavy geometric sans-serif capitals with even letter spacing, to the right of a mark where the letter C doubles as a stopwatch, an open ring in #1E3A8A (deep blue) with a short crown stub on top and one bold hand in #F97316 (orange) pointing to eight o'clock, so it reads as both the letter C and a stopwatch. Uniform stroke weight, solid filled shapes, on a uniform pure white #FFFFFF background, centered with generous margin, clean flat vector style.
+Hand-crafted wordmark logo reading "LA CECILIA" for a bathroom renovation company in Puglia, Italy. Letterforms drawn, not typeset: a sturdy low-contrast serif with gently flared terminals and softly curved joins, optically balanced so every letter carries even visual weight. One quiet signature only: the two C letters share a drawn ligature whose inner counter reads, at a second glance, as a single water drop. Deep blue #1E3A8A lettering on flat white, no symbol beside it, centered with generous margin, rendered verbatim.
 ```
 
-(86 parole)
+Esito FLUX.2: serif con legatura, «da studio»; la legatura è uno svolazzo, non la goccia.
 
-## Variante solo simbolo
+## B — Two-tone con ombra piatta (combination mark, tono «solido»)
 
-Sostituire fino a «to the right of» con `Logo mark for a bathroom renovation company in Puglia, Italy:` e chiudere con `… clean flat vector style, text-free composition.`
+```text
+Combination-mark logo for "LA CECILIA", bathroom renovation company in Puglia, Italy. Mark: a freestanding bathtub seen from the side, simplified to one confident silhouette with softly rounded corners, drawn as a two-tone flat illustration, a lighter tint of blue for the tub and a darker tint of the same hue for a hard-edged 45-degree flat shadow clipped inside a rounded square, solid fills, no outlines. Name "LA CECILIA" beside the mark in a sturdy rounded sans-serif, uppercase, dark blue #1E3A8A. Flat white background, centered, rendered verbatim.
+```
+
+Esito FLUX.2: vasca in due tinte con ombra lunga, testo esatto; soggetto letterale (vasca).
+
+## C — Badge inciso con gerarchia (emblema, tono «artigiano/storico»)
+
+```text
+Circular one-color stamp badge for "LA CECILIA", bathroom renovation company in Puglia, Italy. Upper ring: the name "LA CECILIA" in sturdy uppercase lettering along the arc; a ribbon across the lower half reading "BAGNI IN 5 GIORNI"; tiny "PUGLIA" text below the ribbon. Center: a shower head and a single tile drawn in engraved line style with fine, evenly spaced hatching, calm and precise. Ink blue #1E3A8A on flat white, clean vector edges, rendered verbatim, centered with generous margin.
+```
+
+Esito FLUX.2: il più convincente; tutto il testo esatto; serve la versione ridotta per favicon.
+
+## D — Monolinea illustrata con doppia lettura (nuovo, non testato)
+
+Concetto dall'ideazione: la vasca che diventa doccia (il servizio-firma «in 8 ore»), un solo
+tratto continuo.
+
+```text
+Combination-mark logo for "LA CECILIA", bathroom renovation company in Puglia, Italy. Mark: a monoline illustrated emblem drawn as one continuous stroke with rounded line caps and flowing joins: the profile of a bathtub whose far rim rises and curls into a shower head, so the single line reads as both tub and shower. Controlled detail, generous negative space, the stroke in deep blue #1E3A8A with a single orange #F97316 dot where the water falls. Name "LA CECILIA" to the right in a sturdy geometric sans-serif, uppercase, deep blue. Flat white background, centered, rendered verbatim.
+```
 
 ## Regolazioni per servizio
 
-- **FLUX.2**: modello `flex`; `prompt_upsampling: false`.
-- **Ideogram**: Magic Prompt OFF.
+- **Ideogram**: Design mode, Magic Prompt OFF.
+- **FLUX.2 pro**: `prompt_upsampling: false` (già così in `genera.mjs`).
 - **GPT Image**: `transparent background` se serve il PNG senza fondo.
 - **Seedream / Gemini**: così com'è.
 
 ## Cosa segnalare dopo il test
 
-la doppia lettura funziona (si vede una C? si vede il cronometro? la lancetta punta alle 8?) · riduzione a 32 px · esecuzione (anello con spessore uniforme, lancetta e stub allineati) · colore (due campiture piatte, fondo uniforme) · tipografia (nome esatto, una riga, peso) · distinzione (lo userebbe il concorrente accanto?) · tell da AI.
-
-Se A non regge, il prossimo candidato è B con la doccia rielaborata (L come colonna + piatto), poi si cambia asse: il luogo.
+dispositivo riconoscibile ed eseguito (legatura? ombra piatta? incisione? tratto unico?) · testo esatto · un solo concetto · riduzione a 32 px (il badge C e la monolinea D sono i più a rischio) · tell da AI · quale servizio rende meglio ciascun dispositivo.
 
 ## Storico
 
-- v1 (8/9): descriveva per intero il logo Cavaliere Build → scartato (copiava il riferimento).
-- v2 (8/9): «emblem or mascot… in the spirit of local graphic studios» → scartato (stile dai riferimenti, soggetto vago).
-- v2b (8/9): un concetto come direzione, hex, esclusioni negative → superato dalle regole BFL.
-- v3 (8/9): «drop merged with a square tile» → 5 servizi, tutti ritoccabili o bocciati; il migliore GPT Image 12/16. Limite: soggetto letterale di categoria.
-- v4 (8/9): monogramma LC con goccia in negative space → Mattia: corretti ma «troppo semplici, poco originali, non personalizzati». Limite: nessuna ideazione dal form.
+- v1–v2 (8/9): copia del riferimento / stile vago → scartati.
+- v3 (8/9): goccia + piastrella, 5 servizi → tutti «goccia su quadrato», icone corrette e intercambiabili.
+- v4 (8/9): monogramma LC con goccia → «troppo semplice».
+- v5 (12/9): C cronometro sulle 8 → corretto ma icona; probe schizzo→resa (13/9): FLUX conserva testo e composizione, non la geometria fine.
+- v6 (13/9): kit a 4 dispositivi di craft; A/B/C validati su FLUX.2 pro.

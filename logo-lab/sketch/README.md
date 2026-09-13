@@ -20,6 +20,8 @@ Rasterizzazione dello scheletro: Playwright (script in scratchpad, `svg2png.mjs`
 
 | v3 mista 2 | scheletro v3 | come sopra ma «stopwatch pointer needle… eight o clock position», «small crown on top» | C aperta ✓, L sotto la C ✓, due tinte ✓, testo ✓; ma «crown» → CORONA reale sopra la C, e le lancette sono a 12 e 3: FLUX.2 in edit non rispetta la geometria fine (posizioni orarie, numero di elementi) neanche se lo schizzo la mostra |
 
+| v3 flex | scheletro v3, stesso prompt di «mista 2» | modello `flex` (tipografia) | peggio di pro: resa semi-3D con bagliori e bordi sfumati, due lancette; flex non aiuta la geometria e allontana dal flat |
+
 ## Cosa ho imparato
 
 1. **Lo schizzo trasferisce il controllo**: lettere e composizione arrivano intatte anche
