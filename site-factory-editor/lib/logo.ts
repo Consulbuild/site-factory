@@ -183,7 +183,11 @@ export function numeriInventati(testi: TestoLetto[], fonti: string): string[] {
 /* ---------------- verdetto ---------------- */
 
 export type Bloccante = { codice: string; prova: string };
-export type Giudizio = { file: string; bloccanti: Bloccante[]; preferenza: number; motivo: string; incerto: boolean };
+export type Giudizio = { file: string; bloccanti: Bloccante[]; preferenza: number; classifica: number; motivo: string; incerto: boolean };
+// P1–P6 × 4, con P2 («cosa c'è di questo cliente») contato doppio: nelle scelte umane
+// del 13/9 il monogramma dell'iniziale, intero, ha battuto ogni simbolo generico di mestiere.
+export const PREFERENZA_MAX = 28;
+const PESO_P: Record<"P1" | "P2" | "P3" | "P4" | "P5" | "P6", number> = { P1: 1, P2: 2, P3: 1, P4: 1, P5: 1, P6: 1 };
 export type Verdetto = { verdict: "PASS" | "FAIL"; scelta: string | null; giudizi: Giudizio[]; incerti: string[]; fix_prompt: string };
 
 const CRITERIO_BLOCCANTE: Record<string, string> = { L1: "illeggibile", L2: "artefatto_testo", L3: "mockup", L4: "fatto_inventato" };
@@ -205,6 +209,7 @@ export function fondiReview(
     const r = review?.varianti.find((x) => x.file === v.file || x.file === v.file.replace(/^logo\//, ""));
     let incerto = false;
     let pref = 0;
+    let classifica = 99;
     if (!r) {
       b.push({ codice: "non_giudicata", prova: "il critico non ha giudicato questa variante" });
     } else {
@@ -222,17 +227,20 @@ export function fondiReview(
         const ok = (CODICI_CRITICO_LOGO as readonly string[]).includes(x.codice) && x.prova.trim().length >= 20;
         if (ok && !b.some((y) => y.codice === x.codice)) b.push({ codice: x.codice, prova: x.prova.trim() });
       }
-      pref = (["P1", "P2", "P3", "P4", "P5"] as const).reduce((s, k) => s + Math.max(0, Math.min(2, p[k] ?? 0)), 0);
+      pref = (Object.keys(PESO_P) as Array<keyof typeof PESO_P>).reduce((s, k) => s + PESO_P[k] * Math.max(0, Math.min(4, p[k] ?? 0)), 0);
+      if (Number.isInteger(r.classifica) && (r.classifica as number) >= 1) classifica = r.classifica as number;
     }
-    const motivo = b.length ? b.map((x) => `${x.codice}: ${x.prova}`).join("; ") : (r?.preferenza_motivo ?? `preferenza ${pref}/10`);
-    return { file: v.file, bloccanti: b, preferenza: pref, motivo, incerto };
+    const motivo = b.length ? b.map((x) => `${x.codice}: ${x.prova}`).join("; ") : (r?.preferenza_motivo ?? `preferenza ${pref}/${PREFERENZA_MAX}`);
+    return { file: v.file, bloccanti: b, preferenza: pref, classifica, motivo, incerto };
   });
   const pulite = giudizi.filter((g) => !g.bloccanti.length && !g.incerto);
   const idx = (f: string) => Number(/mark-(\d)/.exec(f)?.[1] ?? 9);
   const met = (f: string) => varianti.find((v) => v.file === f)?.metriche;
+  // ordine: totale di preferenza → classifica comparativa del critico → meno colori → più dettaglio → indice
   pulite.sort(
     (a, b) =>
       b.preferenza - a.preferenza ||
+      a.classifica - b.classifica ||
       (met(a.file)?.n_colori ?? 99) - (met(b.file)?.n_colori ?? 99) ||
       (met(b.file)?.dettaglio ?? 0) - (met(a.file)?.dettaglio ?? 0) ||
       idx(a.file) - idx(b.file),

@@ -2,6 +2,7 @@
   "nome": "GIARDINI VALSECCHI",
   "bg": "#fbfaf7",
   "label": "passa",
+  "scelta_umana": "logo/mark-3.png",
   "consentiti": ["Lecco", "Lombardia"],
-  "note": "Cliente fittizio per l'allenamento del critico (generato dalla pipeline con GPT Image, prompt v9b). scelta_umana: da compilare con la variante indicata da Mattia."
+  "note": "Cliente fittizio (pipeline, GPT Image, prompt v9b). Scelta di Mattia 2026-09-13: mark-3. Il critico v1 concordava (10/10, unico senza pari merito). Lo slogan «PROGETTA · CURA · VALORIZZA» è inventato ma non è un fatto: il critico lo ha pesato in L4 = 1 senza bloccare."
 }

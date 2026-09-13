@@ -2,6 +2,7 @@
   "nome": "ELETTRO SUD",
   "bg": "#fbfaf7",
   "label": "passa",
+  "scelta_umana": "logo/mark-1.png",
   "consentiti": ["Catania", "Sicilia"],
-  "note": "Cliente fittizio per l'allenamento del critico (generato dalla pipeline con GPT Image, prompt v9b). scelta_umana: da compilare con la variante indicata da Mattia."
+  "note": "Cliente fittizio (pipeline, GPT Image, prompt v9b). Scelta di Mattia 2026-09-13: mark-1 «più chiaro graficamente, le iniziali ES scritte in modo completo e chiaro»; mark-2 scartato perché «la S ha un disegno incompleto o non chiaro». Il critico v1 aveva preso mark-2 per spareggio sui colori (pari merito 8/10)."
 }

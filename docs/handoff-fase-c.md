@@ -40,9 +40,20 @@ prossime schede.
   `gpt-image-2.5-sunburst` (≈0,24 $ a cliente, demo incluse) → foglio di contatto +
   metriche → logo-critic (trascrive e osserva) → verdetto in TS → favicon dal
   simbolo; un round in più al massimo, poi decide l'umano. Ricerca in
-  `docs/logo-ricerca/`; banco `scripts/test-logo-gates.ts`. Da fare: taratura del
-  critico sui loghi approvati da Mattia (`scripts/calibrate-logo-critic.mjs`) e
-  la prima run reale.
+  `docs/logo-ricerca/`; banco `scripts/test-logo-gates.ts`. **Critico tarato il
+  2026-09-13** (`scripts/calibrate-logo-critic.ts`, report in
+  `factory/calibration/report-logo-critic.json`): 6 item oro in
+  `scripts/fixtures/logo-gold/` (3 loghi ChatGPT approvati da Mattia + 3 clienti
+  fittizi × 3 varianti generate dalla pipeline con `scripts/genera-logo-gold.ts`,
+  costo reale 0,042 $ a immagine), 2 run ciascuno: gate superato, stabilità 1,
+  scelta = umana 10/10, zero pari merito. Logica di selezione emersa dalle scelte
+  di Mattia e portata nella skill: monogramma dell'iniziale INTERA del cliente
+  batte il simbolo generico di mestiere (P2 doppio, P6 forme complete con test
+  sul PNG nativo), tra monogrammi vince la resa più piatta (P5 senza texture);
+  scala 0–4, classifica comparativa come spareggio. Per allenare ancora: nuova
+  cartella con `brief.json` + `contesto.json` + `atteso.json`, `genera-logo-gold`
+  (max 9 immagini a run), Mattia indica `scelta_umana`, calibratore con
+  `--force`. Da fare: la prima run reale su un cliente senza logo.
 
 ## Clienti in `site-renderer/out/` (fuori git)
 

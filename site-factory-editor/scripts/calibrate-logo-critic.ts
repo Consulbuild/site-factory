@@ -80,8 +80,8 @@ function promptCritico(item: Item): string {
     `Varianti da giudicare: ${item.files.map((f) => `logo/${f}`).join(", ")}. ` +
     `Scrivi SOLO ${rel}/logo-review.json con "round": 1 nel formato della skill ` +
     `({"round": 1, "varianti": [{"file": "logo/mark-N.png", "testi_letti": [{"testo": "…", "certo": true, "ruolo": "nome"|"descrittore"|"altro"}], ` +
-    `"punteggi": {"L1": 0-2, "L2": 0-2, "L3": 0-2, "L4": 0-2, "L5": 0-2, "P1": 0-2, "P2": 0-2, "P3": 0-2, "P4": 0-2, "P5": 0-2}, ` +
-    `"prove": {"L1": "…"}, "bloccanti": [{"codice": "…", "prova": "…"}], "preferenza_motivo": "…"}], "fix_prompt": null}). ` +
+    `"punteggi": {"L1": 0-2, "L2": 0-2, "L3": 0-2, "L4": 0-2, "L5": 0-2, "P1": 0-4, "P2": 0-4, "P3": 0-4, "P4": 0-4, "P5": 0-4, "P6": 0-4}, ` +
+    `"prove": {"L1": "…"}, "bloccanti": [{"codice": "…", "prova": "…"}], "preferenza_motivo": "…", "classifica": 1, "classifica_motivo": "…"}], "fix_prompt": null}). ` +
     `Il verdetto lo calcola l'editor. Poi una riga di riepilogo.`
   );
 }

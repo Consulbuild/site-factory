@@ -52,7 +52,13 @@ senza tessera e senza descrizione di ciò che si vede non esiste: l'editor lo sc
    e. L4 testi ammessi (confronta con i testi consentiti; i numeri li controlla
       anche l'editor, tu segnali i claim verbali).
    f. L5 simbolo riconoscibile ridotto (96 px; 32 px se c'è).
-   g. Punteggi di preferenza P1–P5, con una prova per ciascuno in `prove`.
+   g. Punteggi di preferenza P1–P6 (scala 0–4), con una prova per ciascuno in `prove`.
+   h. **Classifica comparativa**: dopo aver giudicato TUTTE le varianti, ordina
+      quelle senza bloccanti da 1 (la consegneresti al cliente) a N, senza pari
+      merito, e per ciascuna scrivi in `classifica_motivo` una riga che la
+      confronta con le altre («rispetto a mark-2: …»). Se due varianti hanno lo
+      stesso totale P1–P6, non è un pareggio: è una lettura troppo grossolana —
+      torna alle tessere, trova la differenza e correggi il punteggio con la prova.
 2. Bloccanti: SOLO dalla lista chiusa, SOLO quando il criterio corrispondente è 0,
    sempre con `prova` (≥ 20 caratteri: tessera + cosa hai visto). Un codice fuori
    lista non conta.
@@ -86,24 +92,53 @@ senza tessera e senza descrizione di ciò che si vede non esiste: l'editor lo sc
   diventa una macchia. 0: nessuna forma dominante nemmeno a 96 px. MAI bloccante:
   la favicon si ricava dopo; pesa nella preferenza.
 
-## Preferenza P1–P5 (SOLO per ordinare, mai per bocciare)
+## Preferenza P1–P6 (SOLO per ordinare, mai per bocciare) — scala 0–4, totale su 28 (P2 doppio)
 
-- **P1 riduzione**: 2 = una forma dominante + nome, poche parti; 1 = più elementi
-  ma ordinati; 0 = affollato.
-- **P2 distinzione oggettivabile**: 2 = il simbolo contiene qualcosa che è SOLO di
-  questo cliente (nome o iniziali, città riconoscibile, un fatto del contesto:
-  padre e figlio, lo skyline del paese); 1 = simbolo di mestiere rielaborato
-  (goccia e fiamma fuse, tetto con onda); 0 = icona nuda di categoria (goccia
-  sola, casetta sola). Il test è «cosa c'è di questo cliente», non «è bello».
-- **P3 gerarchia tipografica**: 2 = nome dominante, descrittore subordinato, al
-  massimo due caratteri, nome su ≤ 2 righe; 1 = uno scarto (tre caratteri,
+Ancore: **4** = pienamente, **2** = a metà, **0** = no. I gradini dispari servono
+a distinguere: **3** = merita 4 ma la prova nomina UN difetto minore visibile;
+**1** = quasi 0 ma con un elemento che si salva. Usa tutta la scala: due
+varianti diverse hanno totali diversi, e la differenza sta scritta nelle prove.
+
+- **P1 riduzione**: 4 = una forma dominante + nome, poche parti; 2 = più elementi
+  ma ordinati; 0 = affollato. Conta le FORME, non i dettagli: una lettera o una
+  sagoma che ingloba altri elementi nel suo controforma (la G con le foglie
+  dentro, la B con la pialla) è UNA forma; sono «più elementi» gli oggetti
+  accostati e separati (foglia + montagna + base).
+- **P2 distinzione oggettivabile** (l'editor la conta DOPPIA: è il criterio che
+  ha deciso tutte le scelte del titolare): 4 = il simbolo contiene qualcosa che
+  è SOLO di questo cliente (nome o iniziali, città riconoscibile, un fatto del
+  contesto: padre e figlio, lo skyline del paese); 2 = simbolo di mestiere
+  rielaborato (goccia e fiamma fuse, tetto con onda); 0 = icona nuda di
+  categoria (goccia sola, casetta sola). Il test è «cosa c'è di questo
+  cliente», non «è bello». Un'iniziale vale 4 solo se è intera (vedi P6).
+- **P3 gerarchia tipografica**: 4 = nome dominante, descrittore subordinato, al
+  massimo due caratteri, nome su ≤ 2 righe; 2 = uno scarto (tre caratteri,
   descrittore grande quanto il nome); 0 = nome subordinato al descrittore.
-- **P4 presenza nell'header**: 2 = a 40 px il nome è nitido e il lockup occupa
-  tra 40 e 120 px di larghezza (l'etichetta lo dice); 1 = leggibile ma piccolo o
+- **P4 presenza nell'header**: 4 = a 40 px il nome è nitido e il lockup occupa
+  tra 40 e 120 px di larghezza (l'etichetta lo dice); 2 = leggibile ma piccolo o
   molto stretto/largo; 0 = a 40 px si vede solo il simbolo.
-- **P5 pulizia di resa**: 2 = campiture piatte, bordi netti, pochi colori; 1 =
-  una sfumatura leggera o un'ombra piatta; 0 = gloss, 3D, metallico, foto (è un
-  tell da AI, ma resta usabile: pesa, non boccia).
+- **P5 pulizia di resa**: 4 = campiture piatte, bordi netti, nessun disegno
+  dentro le forme; 2 = una sfumatura leggera, un'ombra piatta o una texture
+  interna (venature, tratteggi, lumeggiature, linee incise dentro una lettera
+  o una sagoma: a 40 px diventano rumore); 0 = gloss, 3D, metallico, foto (è
+  un tell da AI, ma resta usabile: pesa, non boccia). NON usare il numero di colori delle
+  metriche come prova: conta l'antialiasing e lo usa già l'editor per lo
+  spareggio.
+- **P6 forme complete del simbolo**: 4 = ogni forma del simbolo si chiude e si
+  nomina in una parola, e se il simbolo contiene lettere (monogramma, iniziali)
+  ognuna è una lettera INTERA e inequivocabile a 256 px; 2 = una forma o una
+  lettera che si capisce solo dal contesto (la S che è anche un cavo: si intuisce
+  ma non è intera; una foglia che è anche una fiamma); 0 = una lettera del
+  monogramma incompleta o deformata, o una forma di cui non si sa dire cosa sia.
+  **Se il simbolo contiene lettere, apri SEMPRE il PNG nativo** (la tessera a
+  256 px non basta) e per ogni lettera applica questo test: coprendo col pensiero
+  tutto il resto, la lettera ha ancora TUTTI i suoi tratti? Un tratto sostituito
+  da un oggetto (cavo, spina, fulmine, foglia, tetto) = lettera incompleta (0 o
+  2); un oggetto che sta nello spazio vuoto tra i tratti o accanto alla lettera
+  non la tocca = lettera intera (4). Prova: nomina la lettera, il tratto e la
+  tessera. È il criterio che ha deciso Elettro Sud (13/9): il titolare ha
+  scartato la S fatta di cavo senza il tratto superiore e scelto le iniziali
+  intere con il fulmine nel vuoto tra E ed S.
 
 ## Bloccanti (lista chiusa)
 
@@ -117,9 +152,10 @@ sull'header) li emette l'editor: non ripeterli.
 ## Cosa NON fare
 
 - Non bocciare per cliché, poca originalità, «è un'icona non un logo», gradiente,
-  due soggetti, composizione, kerning del descrittore: vanno in P1–P5.
+  due soggetti, composizione, kerning del descrittore: vanno in P1–P6.
 - Non «correggere» la trascrizione con il nome atteso: scrivi ciò che vedi.
-- Non scegliere la variante: proponi punteggi e prove, l'editor ordina.
+- Non decidere il verdetto: la classifica è il tuo ordine comparativo, ma
+  PASS/FAIL e la scelta li calcola l'editor (totale P1–P6, poi la classifica).
 - Non stimare numeri (contrasto, pixel, colori): li hai in metriche.json.
 - Round 2: giudica SOLO i file elencati nel prompt; il round 1 è già chiuso.
 
@@ -146,14 +182,18 @@ dubbio su una LETTERA, apri il PNG nativo e usa `certo: false`.
         { "testo": "ROSSI", "certo": true, "ruolo": "nome" },
         { "testo": "PADRE E FIGLIO · DAL 1985 · BERGAMO", "certo": true, "ruolo": "descrittore" }
       ],
-      "punteggi": { "L1": 2, "L2": 2, "L3": 2, "L4": 0, "L5": 1, "P1": 1, "P2": 2, "P3": 2, "P4": 2, "P5": 2 },
+      "punteggi": { "L1": 2, "L2": 2, "L3": 2, "L4": 0, "L5": 1, "P1": 2, "P2": 4, "P3": 4, "P4": 3, "P5": 3, "P6": 4 },
       "prove": {
         "L1": "header 40 px: le due righe del nome si leggono, il descrittore è una riga grigia",
         "L4": "512 px: «DAL 1985» non è tra i testi consentiti",
-        "P2": "512 px: due figure padre e figlio e la skyline con la torre, elementi del contesto"
+        "P2": "512 px: due figure padre e figlio e la skyline con la torre, elementi del contesto",
+        "P4": "header 40 px: nome leggibile, 44 px di larghezza, ma piccolo sotto l'illustrazione",
+        "P6": "256 px: figure, torre, goccia e fiamma sono forme chiuse e nominabili"
       },
       "bloccanti": [{ "codice": "fatto_inventato", "prova": "512 px: riga «DAL 1985» sotto il nome, anno assente dal form" }],
-      "preferenza_motivo": "concetto proprio del cliente (padre e figlio, skyline), nome dominante su due righe"
+      "preferenza_motivo": "concetto proprio del cliente (padre e figlio, skyline), nome dominante su due righe",
+      "classifica": 2,
+      "classifica_motivo": "rispetto a mark-2: concetto più proprio del cliente, ma composizione più affollata e nome più piccolo nell'header"
     }
   ],
   "fix_prompt": "one English line to add to the generation prompt for the next round, or null"

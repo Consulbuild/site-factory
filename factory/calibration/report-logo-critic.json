@@ -1,0 +1,252 @@
+{
+  "data": "2026-09-13",
+  "misuratoContro": {
+    "skillHash": "7ad2266a5b65",
+    "modello": "claude-opus-4-8"
+  },
+  "item": 6,
+  "run": 2,
+  "falsiBocciati": [],
+  "falsiPromossi": [],
+  "codiciSbagliati": [],
+  "stabilita": 1,
+  "concordanzaSceltaUmana": 1,
+  "gate": {
+    "superato": true,
+    "regola": "oro PASS 100%, negativi FAIL col codice atteso, stabilità ≥ 0.9; la concordanza con la scelta umana è informativa"
+  },
+  "dettaglio": [
+    {
+      "id": "coperture-marini",
+      "run": 1,
+      "verdict": "PASS",
+      "scelta": "logo/mark-1.png",
+      "motivi": [],
+      "giudizi": [
+        {
+          "file": "logo/mark-1.png",
+          "bloccanti": [],
+          "preferenza": 21
+        }
+      ]
+    },
+    {
+      "id": "coperture-marini",
+      "run": 2,
+      "verdict": "PASS",
+      "scelta": "logo/mark-1.png",
+      "motivi": [],
+      "giudizi": [
+        {
+          "file": "logo/mark-1.png",
+          "bloccanti": [],
+          "preferenza": 22
+        }
+      ]
+    },
+    {
+      "id": "elettro-sud",
+      "run": 1,
+      "verdict": "PASS",
+      "scelta": "logo/mark-1.png",
+      "motivi": [],
+      "giudizi": [
+        {
+          "file": "logo/mark-1.png",
+          "bloccanti": [],
+          "preferenza": 27
+        },
+        {
+          "file": "logo/mark-2.png",
+          "bloccanti": [],
+          "preferenza": 24
+        },
+        {
+          "file": "logo/mark-3.png",
+          "bloccanti": [],
+          "preferenza": 21
+        }
+      ]
+    },
+    {
+      "id": "elettro-sud",
+      "run": 2,
+      "verdict": "PASS",
+      "scelta": "logo/mark-1.png",
+      "motivi": [],
+      "giudizi": [
+        {
+          "file": "logo/mark-1.png",
+          "bloccanti": [],
+          "preferenza": 27
+        },
+        {
+          "file": "logo/mark-2.png",
+          "bloccanti": [],
+          "preferenza": 22
+        },
+        {
+          "file": "logo/mark-3.png",
+          "bloccanti": [],
+          "preferenza": 21
+        }
+      ]
+    },
+    {
+      "id": "falegnameria-bettini",
+      "run": 1,
+      "verdict": "PASS",
+      "scelta": "logo/mark-3.png",
+      "motivi": [],
+      "giudizi": [
+        {
+          "file": "logo/mark-1.png",
+          "bloccanti": [],
+          "preferenza": 24
+        },
+        {
+          "file": "logo/mark-2.png",
+          "bloccanti": [],
+          "preferenza": 25
+        },
+        {
+          "file": "logo/mark-3.png",
+          "bloccanti": [],
+          "preferenza": 26
+        }
+      ]
+    },
+    {
+      "id": "falegnameria-bettini",
+      "run": 2,
+      "verdict": "PASS",
+      "scelta": "logo/mark-3.png",
+      "motivi": [],
+      "giudizi": [
+        {
+          "file": "logo/mark-1.png",
+          "bloccanti": [],
+          "preferenza": 22
+        },
+        {
+          "file": "logo/mark-2.png",
+          "bloccanti": [],
+          "preferenza": 20
+        },
+        {
+          "file": "logo/mark-3.png",
+          "bloccanti": [],
+          "preferenza": 24
+        }
+      ]
+    },
+    {
+      "id": "giardini-valsecchi",
+      "run": 1,
+      "verdict": "PASS",
+      "scelta": "logo/mark-3.png",
+      "motivi": [],
+      "giudizi": [
+        {
+          "file": "logo/mark-1.png",
+          "bloccanti": [],
+          "preferenza": 24
+        },
+        {
+          "file": "logo/mark-2.png",
+          "bloccanti": [],
+          "preferenza": 21
+        },
+        {
+          "file": "logo/mark-3.png",
+          "bloccanti": [],
+          "preferenza": 25
+        }
+      ]
+    },
+    {
+      "id": "giardini-valsecchi",
+      "run": 2,
+      "verdict": "PASS",
+      "scelta": "logo/mark-3.png",
+      "motivi": [],
+      "giudizi": [
+        {
+          "file": "logo/mark-1.png",
+          "bloccanti": [],
+          "preferenza": 23
+        },
+        {
+          "file": "logo/mark-2.png",
+          "bloccanti": [],
+          "preferenza": 24
+        },
+        {
+          "file": "logo/mark-3.png",
+          "bloccanti": [],
+          "preferenza": 28
+        }
+      ]
+    },
+    {
+      "id": "la-cecilia",
+      "run": 1,
+      "verdict": "PASS",
+      "scelta": "logo/mark-1.png",
+      "motivi": [],
+      "giudizi": [
+        {
+          "file": "logo/mark-1.png",
+          "bloccanti": [],
+          "preferenza": 20
+        }
+      ]
+    },
+    {
+      "id": "la-cecilia",
+      "run": 2,
+      "verdict": "PASS",
+      "scelta": "logo/mark-1.png",
+      "motivi": [],
+      "giudizi": [
+        {
+          "file": "logo/mark-1.png",
+          "bloccanti": [],
+          "preferenza": 18
+        }
+      ]
+    },
+    {
+      "id": "termoidraulica-rossi",
+      "run": 1,
+      "verdict": "FAIL",
+      "scelta": null,
+      "motivi": [],
+      "giudizi": [
+        {
+          "file": "logo/mark-1.png",
+          "bloccanti": [
+            "fatto_inventato"
+          ],
+          "preferenza": 21
+        }
+      ]
+    },
+    {
+      "id": "termoidraulica-rossi",
+      "run": 2,
+      "verdict": "FAIL",
+      "scelta": null,
+      "motivi": [],
+      "giudizi": [
+        {
+          "file": "logo/mark-1.png",
+          "bloccanti": [
+            "fatto_inventato"
+          ],
+          "preferenza": 21
+        }
+      ]
+    }
+  ]
+}

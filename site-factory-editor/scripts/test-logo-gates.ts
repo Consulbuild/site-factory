@@ -107,14 +107,23 @@ caso("«BAGNI IN 5 GIORNI» con fonte → ok", numeriInventati([T("BAGNI IN 5 GI
 
 console.log("\nfondiReview:");
 const V = (n: number, m: Partial<LogoMetriche> = {}): LogoVariante => ({ file: `logo/mark-${n}.png`, round: 1, esito: "usabile", costo_usd: 0.08, metriche: { ...buona, ...m } });
-const R = (file: string, over: Record<string, unknown> = {}) => ({ file, testi_letti: [T("LA CECILIA"), T("RISTRUTTURAZIONI BAGNI", "descrittore")], punteggi: { L1: 2, L2: 2, L3: 2, L4: 2, L5: 1, P1: 2, P2: 2, P3: 2, P4: 2, P5: 2 }, prove: { L1: "40 px: nome leggibile" }, bloccanti: [], preferenza_motivo: "pulita", ...over });
+const P = (P1: number, P2: number, P3: number, P4: number, P5: number, P6: number) => ({ L1: 2, L2: 2, L3: 2, L4: 2, L5: 1, P1, P2, P3, P4, P5, P6 });
+const R = (file: string, over: Record<string, unknown> = {}) => ({ file, testi_letti: [T("LA CECILIA"), T("RISTRUTTURAZIONI BAGNI", "descrittore")], punteggi: P(4, 4, 4, 4, 4, 4), prove: { L1: "40 px: nome leggibile" }, bloccanti: [], preferenza_motivo: "pulita", ...over });
 const opts = { nomeAtteso: "LA CECILIA", fonti: "ristrutturazioni bagni San Severo", bg: BG };
-const review1 = rev({ round: 1, varianti: [R("logo/mark-1.png"), R("logo/mark-2.png", { punteggi: { L1: 2, L2: 2, L3: 2, L4: 2, L5: 2, P1: 2, P2: 2, P3: 2, P4: 2, P5: 1 } }), R("logo/mark-3.png")], fix_prompt: null });
+const review1 = rev({ round: 1, varianti: [R("logo/mark-1.png"), R("logo/mark-2.png", { punteggi: P(4, 4, 4, 4, 3, 4) }), R("logo/mark-3.png")], fix_prompt: null });
 const v1 = fondiReview([V(1), V(2), V(3)], review1, opts);
 caso("tre pulite → PASS", v1.verdict === "PASS");
-caso("scelta = preferenza massima (mark-1 e mark-3 a 10, spareggio indice → mark-1)", v1.scelta === "logo/mark-1.png", v1.scelta);
+caso("scelta = preferenza massima (mark-1 e mark-3 a 28, spareggio indice → mark-1)", v1.scelta === "logo/mark-1.png" && v1.giudizi[0].preferenza === 28, v1.scelta);
 const v1b = fondiReview([V(1, { n_colori: 4 }), V(2), V(3, { n_colori: 2 })], review1, opts);
 caso("spareggio: meno colori vince", v1b.scelta === "logo/mark-3.png", v1b.scelta);
+const reviewClassifica = rev({ round: 1, varianti: [R("logo/mark-1.png", { classifica: 2 }), R("logo/mark-3.png", { classifica: 1 })], fix_prompt: null });
+caso("a pari totale la classifica del critico batte i colori", fondiReview([V(1, { n_colori: 2 }), V(3, { n_colori: 6 })], reviewClassifica, opts).scelta === "logo/mark-3.png");
+const reviewTotale = rev({ round: 1, varianti: [R("logo/mark-1.png", { classifica: 2, punteggi: P(4, 4, 4, 4, 4, 4) }), R("logo/mark-2.png", { classifica: 1, punteggi: P(4, 4, 4, 4, 4, 2) })], fix_prompt: null });
+caso("il totale P1–P6 batte la classifica (P6 forme incomplete: mark-2 a 26)", fondiReview([V(1), V(2)], reviewTotale, opts).scelta === "logo/mark-1.png");
+const reviewClamp = rev({ round: 1, varianti: [R("logo/mark-1.png", { punteggi: { ...P(4, 4, 4, 4, 4, 4), P1: 9, P2: -3 } })], fix_prompt: null });
+caso("punteggi fuori scala → clamp 0–4 (9 e -3 → 4 e 0 = 20)", fondiReview([V(1)], reviewClamp, opts).giudizi[0].preferenza === 20);
+const reviewP2 = rev({ round: 1, varianti: [R("logo/mark-1.png", { punteggi: P(4, 2, 4, 4, 4, 4) }), R("logo/mark-3.png", { punteggi: P(2, 4, 4, 4, 4, 4) })], fix_prompt: null });
+caso("P2 pesa doppio: iniziale intera (P2 4, P1 2) batte simbolo generico (P2 2, P1 4)", fondiReview([V(1), V(3)], reviewP2, opts).scelta === "logo/mark-3.png");
 const reviewFail = rev({ round: 1, varianti: [R("logo/mark-1.png", { verdict: "FAIL", bloccanti: [{ codice: "cliche", prova: "è una goccia, troppo comune e banale" }] })], fix_prompt: "Try again" });
 const v2 = fondiReview([V(1)], reviewFail, opts);
 caso("bloccante con codice fuori lista (cliché) → ignorato, PASS", v2.verdict === "PASS" && v2.giudizi[0].bloccanti.length === 0);

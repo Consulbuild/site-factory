@@ -797,8 +797,8 @@ function promptLogoCritic(slug: string, round: number, files: string[], scarti: 
     (round > 1 ? ` (SOLO queste: il round precedente è già chiuso). ` : ". ") +
     `Scrivi SOLO ${p.review} con "round": ${round} nel formato della skill: ` +
     `{"round": ${round}, "varianti": [{"file": "logo/mark-N.png", "testi_letti": [{"testo": "…", "certo": true, "ruolo": "nome"|"descrittore"|"altro"}], ` +
-    `"punteggi": {"L1": 0-2, "L2": 0-2, "L3": 0-2, "L4": 0-2, "L5": 0-2, "P1": 0-2, "P2": 0-2, "P3": 0-2, "P4": 0-2, "P5": 0-2}, ` +
-    `"prove": {"L1": "…"}, "bloccanti": [{"codice": "…", "prova": "…"}], "preferenza_motivo": "…"}], "fix_prompt": "…"|null}. ` +
+    `"punteggi": {"L1": 0-2, "L2": 0-2, "L3": 0-2, "L4": 0-2, "L5": 0-2, "P1": 0-4, "P2": 0-4, "P3": 0-4, "P4": 0-4, "P5": 0-4, "P6": 0-4}, ` +
+    `"prove": {"L1": "…"}, "bloccanti": [{"codice": "…", "prova": "…"}], "preferenza_motivo": "…", "classifica": 1, "classifica_motivo": "…"}], "fix_prompt": "…"|null}. ` +
     `Il verdetto e la scelta li calcola l'editor dai tuoi dati. Poi una riga di riepilogo.`
   );
 }

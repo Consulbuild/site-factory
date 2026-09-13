@@ -338,6 +338,9 @@ export type LogoTrace = z.infer<typeof LogoTraceSchema>;
 // I codici ammessi per i bloccanti (lista chiusa) stanno in lib/logo.ts: qui il
 // campo è una stringa libera, è fondiReview() a scartare gli sconosciuti.
 const Punteggio = z.number().min(0).max(2);
+// Preferenza P1–P6 su scala 0–4 (totale su 24): scala più ampia per evitare i pari
+// merito che il critico v1 produceva (2 clienti su 3 decisi dallo spareggio sui colori).
+const Preferenza = z.number().min(0).max(4);
 export const LogoReviewSchema = z
   .object({
     round: z.number(),
@@ -350,12 +353,15 @@ export const LogoReviewSchema = z
               .array(z.object({ testo: z.string(), certo: z.boolean().default(true), ruolo: z.enum(["nome", "descrittore", "altro"]).default("altro") }))
               .default([]),
             punteggi: z
-              .object({ L1: Punteggio, L2: Punteggio, L3: Punteggio, L4: Punteggio, L5: Punteggio, P1: Punteggio, P2: Punteggio, P3: Punteggio, P4: Punteggio, P5: Punteggio })
+              .object({ L1: Punteggio, L2: Punteggio, L3: Punteggio, L4: Punteggio, L5: Punteggio, P1: Preferenza, P2: Preferenza, P3: Preferenza, P4: Preferenza, P5: Preferenza, P6: Preferenza })
               .partial()
               .default({}),
             prove: z.record(z.string(), z.string()).default({}),
             bloccanti: z.array(z.object({ codice: z.string(), prova: z.string().default("") })).default([]),
             preferenza_motivo: z.string().optional(),
+            // ordine comparativo del critico (1 = la consegnerebbe): spareggio a parità di totale.
+            classifica: z.number().int().min(1).optional(),
+            classifica_motivo: z.string().optional(),
           })
           .passthrough(),
       )
