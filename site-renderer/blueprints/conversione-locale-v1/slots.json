@@ -72,12 +72,12 @@
     {
       "path": "brand.mark",
       "agent": "intake",
-      "note": "SOLO il simbolo (kit logo-designer, './mark.svg' nel workspace): l'Header compone il lockup col nome. null se c'è brand.logo o nessun kit generato"
+      "note": "Logo generato: {src, alt, lockup}. lockup:true = logo completo GPT Image ('./mark.png', contiene già il nome, l'Header mostra solo l'immagine); lockup:false = solo il simbolo storico ('./mark.svg'), l'Header compone il lockup col nome. null se c'è brand.logo o nessun logo generato"
     },
     {
       "path": "brand.favicon",
       "agent": "intake",
-      "note": "'./favicon.svg' dal kit logo-designer; null se non generato"
+      "note": "'./favicon.png' (solo il simbolo, ritagliato dal logo generato); null se non generato"
     },
     {
       "path": "sections[3].variant",

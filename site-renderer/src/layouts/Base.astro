@@ -77,7 +77,8 @@ const umamiDomains = Astro.site?.host;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {noindex && <meta name="robots" content="noindex" />}
-    {site.brand.favicon && <link rel="icon" href={site.brand.favicon} type="image/svg+xml" />}
+    {/* niente type: la favicon può essere PNG (simbolo dal logo GPT Image) o SVG storico */}
+    {site.brand.favicon && <link rel="icon" href={site.brand.favicon} />}
     <meta name="description" content={description} />
     {canonical && <link rel="canonical" href={canonical} />}
     <meta property="og:title" content={title} />

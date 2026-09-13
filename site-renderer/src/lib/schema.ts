@@ -119,11 +119,13 @@ export const BrandSchema = z.object({
     })
     .default({}),
   logo: ImageSchema.nullable().default(null),
-  // SOLO il simbolo del logo (kit logo-designer): l'Header compone il lockup
-  // mark + nome con la tipografia del preset. Ignorato se c'è brand.logo
-  // (logo completo fornito dal cliente, che resta la verità).
-  mark: ImageSchema.nullable().default(null),
-  // path del favicon (di norma il mark del logo ottimizzato per la tab: /media/<slug>/favicon.svg)
+  // Logo generato dalla pipeline. Con lockup:false (storico, es. Cavaliere) è
+  // SOLO il simbolo e l'Header compone mark + nome con la tipografia del
+  // preset; con lockup:true (GPT Image, dal 2026-09) è il logo COMPLETO che
+  // contiene già il nome e l'Header non lo ripete. Ignorato se c'è brand.logo
+  // (logo fornito dal cliente, che resta la verità).
+  mark: ImageSchema.extend({ lockup: z.boolean().default(false) }).nullable().default(null),
+  // path del favicon: il solo simbolo del logo per la tab (/media/<slug>/favicon.png, o .svg storico)
   favicon: z.string().min(1).nullable().default(null),
   tone: z.string().default(""), // es. "professionale, rassicurante"
 });
