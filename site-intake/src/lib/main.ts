@@ -17,7 +17,6 @@ import { CodaUpload } from "./upload";
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const stage = $("stage");
-const sipario = $("sipario");
 const card = $("card");
 const etichetta = $("progresso-eti");
 const barra = $("progresso");
@@ -124,7 +123,7 @@ async function vai(indice: number, direzione: "avanti" | "indietro", spingi = tr
   corrente?.comp.distruggi?.();
   motore.vaiA(indice);
   if (spingi) history.pushState({ indice: motore.indice }, "");
-  const nuovo = await transizione(direzione, stage, sipario, () => monta());
+  const nuovo = await transizione(direzione, stage, () => monta());
   aggiornaProgresso();
   focusTitolo(nuovo);
   const p = motore.passo;

@@ -47,7 +47,8 @@ offset 10 px. Target minimo 48 px (`--tap`), CTA e campi 56 px. Spazi su base 4 
 ## Componenti (`components.css`, `upload.css`)
 
 - **Card** = il dispositivo: testata (marchio + «Sezione N di 7»), barra di progresso 6 px,
-  `.stage` con un solo `.passo`, `.sipario` per le transizioni. Altezza minima stabile
+  `.stage` con un solo `.passo` (due durante il cambio: quello in uscita è fuori flusso,
+  vedi Motion). Altezza minima stabile
   (680 px o l'altezza dello schermo) così i bottoni non saltano tra un passo e l'altro;
   due eccezioni volute: all'invio la card si accorcia con una transizione di altezza
   (350 ms) fino al pannello di attesa, e la card «Fatto», senza bottoni, è alta quanto il
@@ -60,7 +61,7 @@ offset 10 px. Target minimo 48 px (`--tap`), CTA e campi 56 px. Spazi su base 4 
   verde di incoraggiamento prende il posto dell'eyebrow; su «Fatto» l'eyebrow non c'è (la
   testata dice già «Fatto»); da 1024 px, col binario in vista, l'eyebrow è nascosta.
 - **Primo passo**: già nell'HTML e visibile al primo paint, senza animazione d'ingresso;
-  gli scaglioni valgono solo per i passi montati dopo il sipario.
+  gli scaglioni valgono solo per i passi montati dopo.
 - **Scelte** in tre layout: riquadri con icona (2 colonne, 108 px min), righe (1 colonna),
   chip (pillole). Selezionata = bordo blu + fondo blu 8 % + spunta a molla in alto a
   destra (chip: fondo blu pieno). Input nativi nascosti ma accessibili.
@@ -85,12 +86,18 @@ offset 10 px. Target minimo 48 px (`--tap`), CTA e campi 56 px. Spazi su base 4 
 
 ## Motion (`motion.css`, `motion.ts`)
 
-Tempi: 120 / 200 / 300 / 450 / 500 / 550 ms; curve standard `cubic-bezier(.2,0,0,1)`,
-decel `(.05,.7,.1,1)`, accel `(.3,0,1,1)`, molla `(.34,1.56,.64,1)`. Un solo momento
-autoriale ricorrente (il sipario con bordo blu di 6 px, scelta deliberata dal video di
-riferimento: non è un «side-tab» decorativo) e uno finale (la rivelazione). Tutto su
-`transform`/`opacity`, interrompibile, e con `prefers-reduced-motion` tutto diventa una
-dissolvenza da 120 ms.
+Tempi: 120 / 140 / 200 / 360 / 500 / 550 ms; curve standard `cubic-bezier(.2,0,0,1)`,
+decel `(.05,.7,.1,1)`, accel `(.3,0,1,1)`, expo `(.16,1,.3,1)`, molla `(.34,1.56,.64,1)`.
+Un solo momento autoriale ricorrente, la **sequenza** tra i passi (scelta 2026-09-13 al
+posto del sipario con bordo blu, che copriva invece di trasformare): i cinque elementi del
+passo (sezione, titolo, aiuto, campo, azioni) escono in onda verso l'alto (140 ms,
+scaglione 25 ms, accel) e i nuovi entrano dal basso nello stesso ordine (360 ms dopo 80 ms
+di anticipo, scaglione 45 ms, expo: uscita breve e accelerata, ingresso lungo e
+decelerato); tornando indietro il verso si inverte; l'altezza dello stage si interpola
+(360 ms). Un solo asse, spostamenti di 16–20 px, mai occlusione. E un momento finale (la
+rivelazione). Tutto su `transform`/`opacity` (più l'altezza dello stage, un elemento
+solo), interrompibile, e con `prefers-reduced-motion` tutto diventa una dissolvenza da
+120 ms.
 
 ## Superfici del browser
 
@@ -100,6 +107,5 @@ offset 3 px.
 
 ## Rilievi del detector impeccable accettati (2026-09-07)
 
-`side-tab` sul `.sipario::before` (è il bordo del sipario, non un accento su card);
 `dark-glow` sull'ombra blu della CTA (ha offset e sfocatura, sta sulla card bianca);
 `cramped-padding` sulla `.card` (il padding vive nei figli: testata, progresso, passo).

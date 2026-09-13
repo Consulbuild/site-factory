@@ -11,6 +11,8 @@ const INBOX = join(process.cwd(), ".dev-inbox");
 async function continua(page: Page, atteso: string) {
   await page.getByRole("button", { name: /^(Continua|Salva e torna al riepilogo)$/ }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(atteso);
+  // Onda d'uscita finita: da qui i selettori CSS vedono solo il passo nuovo (i ruoli già la ignorano).
+  await expect(page.locator(".passo.is-uscita")).toHaveCount(0);
 }
 
 test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
@@ -89,7 +91,7 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
   await page.getByText("Un solo referente", { exact: true }).click();
   await page.getByText("Certificazioni", { exact: true }).click();
   await page.getByRole("button", { name: "Continua" }).click();
-  await expect(page.getByRole("alert")).toContainText("Scrivi che cos'è");
+  await expect(page.getByRole("alert")).toContainText("Ci bastano due parole");
   await page.getByLabel("Quali certificazioni?").fill("SOA OG1");
   await continua(page, "Chi sono i tuoi clienti?");
 
@@ -111,7 +113,7 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
 
   await page.getByRole("textbox").fill("Fares");
   await page.getByRole("button", { name: "Continua" }).click();
-  await expect(page.getByRole("alert")).toContainText("Scrivi anche il cognome");
+  await expect(page.getByRole("alert")).toContainText("aggiungi anche il cognome");
   await page.getByRole("textbox").fill("Fares Elwan");
   await continua(page, "L'email dell'azienda");
 
@@ -132,7 +134,7 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
   await page.getByText("WhatsApp", { exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ho letto l'informativa sulla privacy");
   await page.getByRole("button", { name: "Continua" }).click();
-  await expect(page.getByRole("alert")).toContainText("Serve la spunta");
+  await expect(page.getByRole("alert")).toContainText("con la spunta");
   await page.getByRole("button", { name: "Leggi tutta l'informativa" }).click();
   await expect(page.getByRole("dialog")).toContainText("ConsulBuild di Vecchiato Edoardo");
   await page.getByRole("button", { name: "Ho capito, chiudi" }).click();

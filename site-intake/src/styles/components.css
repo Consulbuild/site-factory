@@ -1,7 +1,7 @@
 /*
   Componenti del form. Ogni classe usa solo i token di tokens.css.
   Struttura della pagina:
-    .pagina > .scena > (.binario | .card > .card__testata + .progresso + .stage + .sipario) + .piede
+    .pagina > .scena > (.binario | .card > .card__testata + .progresso + .stage) + .piede
   Un passo dentro .stage:
     .passo > .passo__titolo + .passo__aiuto + .passo__campo + .passo__errore + .passo__azioni
 */
@@ -36,7 +36,7 @@
   color: var(--ink);
   border-radius: var(--r-card);
   box-shadow: var(--shadow-card);
-  overflow: hidden; /* il sipario e la rivelazione restano dentro gli angoli */
+  overflow: hidden; /* l'interpolazione d'altezza dello stage e la rivelazione restano dentro gli angoli */
 }
 
 .card__testata {

@@ -126,15 +126,16 @@ test.describe("@schermate", () => {
     if (!cta || cta.y + cta.height > 680) throw new Error(`«Continua» sotto la piega a 390×680: fondo a ${cta ? cta.y + cta.height : "?"}px`);
   });
 
-  test("sipario a metà corsa e ingresso a scaglioni (390px)", async ({ page }) => {
+  test("sequenza: onda d'uscita e ingresso a scaglioni (390px)", async ({ page }) => {
     mkdirSync(OUT, { recursive: true });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
     await page.waitForTimeout(400);
     await page.getByText("Idraulico", { exact: true }).click();
-    await page.waitForTimeout(320 + 220);
-    await page.screenshot({ path: join(OUT, "motion-sipario.png") });
-    await page.waitForTimeout(320);
+    await page.getByRole("button", { name: "Continua", exact: true }).click();
+    await page.waitForTimeout(140); // i primi figli sono usciti, il titolo nuovo sta entrando
+    await page.screenshot({ path: join(OUT, "motion-sequenza.png") });
+    await page.waitForTimeout(300);
     await page.screenshot({ path: join(OUT, "motion-ingresso.png") });
   });
 });

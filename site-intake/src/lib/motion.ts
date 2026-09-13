@@ -1,14 +1,21 @@
 /**
  * Orchestratore del motion (tempi e curve in tokens.css, forme in motion.css).
- * - transizione(): il sipario copre la card, sotto si scambia il passo, il nuovo
- *   passo entra a scaglioni. Con prefers-reduced-motion: solo dissolvenza.
+ * - transizione(): cambio passo «a sequenza». I figli del passo che se ne va escono in
+ *   onda (verso l'alto andando avanti, verso il basso tornando indietro); il nuovo passo
+ *   si monta subito e i suoi figli entrano dal lato opposto a scaglioni (is-entrata,
+ *   motion.css); l'altezza dello stage si interpola dalla vecchia alla nuova. Uscita e
+ *   altezza con Web Animations API (la pulizia aspetta `finished`, niente tempi a mano);
+ *   ingresso in CSS, così vale anche per il primo paint. Con prefers-reduced-motion:
+ *   solo dissolvenza del nuovo passo.
  * - scuoti(): scossa breve su un elemento che ha un errore.
- * Tutto interrompibile: una nuova transizione mentre una è in corso la sostituisce.
+ * Interrompibile: un nuovo cambio durante l'ingresso funziona, perché le animazioni
+ * d'uscita (script) prevalgono su quelle CSS d'ingresso ancora in corso.
  */
 import { riduciMotion } from "./a11y";
 
+const token = (nome: string): string => getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
 const durata = (nome: string): number => {
-  const v = getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
+  const v = token(nome);
   return v.endsWith("ms") ? parseFloat(v) : v.endsWith("s") ? parseFloat(v) * 1000 : 0;
 };
 
@@ -19,60 +26,60 @@ export function scaglioni(passo: HTMLElement): void {
   [...passo.children].forEach((figlio, i) => (figlio as HTMLElement).style.setProperty("--i", String(i)));
 }
 
-let inCorso = 0;
+/** Dal sesto figlio in poi niente scaglione (il riepilogo ne ha molti): stesso limite di motion.css. */
+const MAX_SCAGLIONE = 5;
 
 export async function transizione(
   direzione: "avanti" | "indietro",
   stage: HTMLElement,
-  sipario: HTMLElement,
   monta: () => HTMLElement,
 ): Promise<HTMLElement> {
-  const mia = ++inCorso;
-  const ridotto = riduciMotion() || durata("--d-wipe") === 0;
+  // Il passo corrente è quello in flusso: un cambio rapido può trovare ancora in scena
+  // l'onda d'uscita del passo precedente (is-uscita), che si pulisce da sola.
+  const vecchio = stage.querySelector<HTMLElement>(".passo:not(.is-uscita)");
+  const h0 = stage.offsetHeight;
+  const nuovo = monta();
+  scaglioni(nuovo);
+  nuovo.classList.toggle("is-indietro", direzione === "indietro");
+  if (vecchio) {
+    // Fuori flusso sopra il nuovo, ma solo come immagine: niente focus, niente lettori di
+    // schermo, e l'id «domanda» (unico nella pagina) passa subito al nuovo titolo.
+    vecchio.classList.add("is-uscita");
+    vecchio.setAttribute("aria-hidden", "true");
+    vecchio.setAttribute("inert", "");
+    vecchio.querySelector("#domanda")?.removeAttribute("id");
+  }
+  stage.append(nuovo);
+  nuovo.classList.add("is-entrata");
+  if (!vecchio) return nuovo;
 
+  const ridotto = riduciMotion() || durata("--d-exit") === 0;
   if (ridotto) {
-    const vecchio = stage.firstElementChild as HTMLElement | null;
-    if (vecchio) {
-      vecchio.style.transition = `opacity ${durata("--d-fast")}ms`;
-      vecchio.style.opacity = "0";
-      await attendi(durata("--d-fast"));
-    }
-    if (mia !== inCorso) return stage.firstElementChild as HTMLElement;
-    const nuovo = monta();
-    scaglioni(nuovo);
-    stage.replaceChildren(nuovo);
-    nuovo.classList.add("is-entrata");
+    vecchio.remove();
     return nuovo;
   }
 
-  // 1. il sipario entra dal lato giusto e copre la card
-  sipario.style.transition = "none";
-  sipario.classList.remove("is-chiuso", "is-uscita");
-  sipario.classList.toggle("is-indietro", direzione === "indietro");
-  void sipario.offsetWidth; // reflow: la posizione di partenza si applica senza transizione
-  sipario.style.transition = "";
-  sipario.classList.add("is-chiuso");
-  await attendi(durata("--d-wipe") + 20);
-  if (mia !== inCorso) return stage.firstElementChild as HTMLElement;
-
-  // 2. sotto il sipario si scambia il passo (il sipario è bianco come la card: nessun salto)
-  const nuovo = monta();
-  scaglioni(nuovo);
-  stage.replaceChildren(nuovo);
-
-  // 3. il sipario sparisce in dissolvenza e il nuovo passo entra a scaglioni.
-  //    Da qui il passo è già usabile: la coda non blocca i tocchi (un «Continua»
-  //    rapido non va perso). Se nel frattempo parte un'altra transizione, la
-  //    pulizia la fa lei (controllo su `mia`).
-  sipario.classList.add("is-uscita");
-  nuovo.classList.add("is-entrata");
-  void attendi(durata("--d-fast") + 10).then(() => {
-    if (mia !== inCorso) return;
-    sipario.style.transition = "none";
-    sipario.classList.remove("is-chiuso", "is-uscita", "is-indietro");
-    void sipario.offsetWidth;
-    sipario.style.transition = "";
-  });
+  const h1 = stage.offsetHeight;
+  if (h1 !== h0) {
+    const altezza = stage.animate([{ height: `${h0}px` }, { height: `${h1}px` }], {
+      duration: durata("--d-enter"),
+      easing: token("--e-standard"),
+      fill: "both",
+    });
+    altezza.finished.then(() => altezza.cancel()).catch(() => {});
+  }
+  const verso = direzione === "avanti" ? -16 : 16;
+  const uscite = [...vecchio.children].map((figlio, i) =>
+    figlio.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: `translateY(${verso}px)` }], {
+      duration: durata("--d-exit"),
+      delay: Math.min(i, MAX_SCAGLIONE) * durata("--stagger-out"),
+      easing: token("--e-accel"),
+      fill: "forwards",
+    }),
+  );
+  // Il nuovo passo è già usabile: un «Continua» rapido non va perso. Il vecchio si toglie
+  // da solo a onda finita.
+  void Promise.allSettled(uscite.map((a) => a.finished)).then(() => vecchio.remove());
   return nuovo;
 }
 

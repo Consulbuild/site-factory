@@ -42,7 +42,7 @@ compare prima del JavaScript. Poi il motore prende il controllo:
 | `src/lib/validators.ts` | Controlli puri (telefono, email, Partita IVA, nome del sito, social). Provati in `tests/controlli.spec.ts`. |
 | `src/lib/comuni.ts` · `dominio.ts` | Elenco ISTAT a pezzi con ricerca tollerante; disponibilità del nome del sito via DNS-over-HTTPS. |
 | `src/lib/upload.ts` · `immagini.ts` | Coda di caricamento (2 in parallelo, retry 0/1/3/5 s) e ispezione leggera delle immagini (HEIC, dimensioni, miniature dal decoder). |
-| `src/lib/motion.ts` | Sipario tra i passi, ingresso a scaglioni, scossa d'errore, pannello di attesa, rivelazione blu. |
+| `src/lib/motion.ts` | Sequenza tra i passi (onda d'uscita, ingresso a scaglioni, altezza interpolata), scossa d'errore, pannello di attesa, rivelazione blu. |
 | `src/lib/transport.ts` | Le tre route HTTP verso il backend (dev: `dev/inbox.mjs`; prod: webhook n8n). |
 | `src/lib/main.ts` | L'unico modulo che conosce gli id di `index.astro`: collega tutto, progresso, History, invio. |
 | `src/lib/a11y.ts` · `analytics.ts` | Annunci per screen reader e focus; eventi Umami (no-op senza env). |
@@ -93,9 +93,9 @@ visivo: fondo navy dell'hero di consulbuild.site con bagliore blu, card bianca, 
 Hyperlegible Next (variabile 200-800, self-hosted, 33 KB). Un solo tema. Dettagli e
 motivazioni in `DESIGN.md`.
 
-Motion (dal video di riferimento): sipario 450 ms `cubic-bezier(.2,0,0,1)` che copre la
-card, scambio del passo sotto, ingresso a scaglioni 300 ms con 60 ms di ritardo per
-figlio; selezioni con spunta a molla 200 ms; barra `scaleX` 500 ms; errore = comparsa +
+Motion: sequenza tra i passi (i figli del passo escono in onda, 140 ms a scaglioni di
+25, e i nuovi entrano dal lato opposto, 360 ms a scaglioni di 45 dopo 80 ms, curva expo;
+altezza dello stage interpolata in 360 ms); selezioni con spunta a molla 200 ms; barra `scaleX` 500 ms; errore = comparsa +
 scossa 4 px; invio = pannello con logo e onde; rivelazione = cerchio blu dal logo che
 copre lo schermo, poi card blu su fondo chiaro. `prefers-reduced-motion` azzera tutto a
 dissolvenze da 120 ms. Solo `transform`/`opacity`; le transizioni sono interrompibili e

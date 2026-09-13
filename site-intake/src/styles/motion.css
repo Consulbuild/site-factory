@@ -1,48 +1,17 @@
 /*
-  Motion del form (dal video di riferimento, tempi in tokens.css).
+  Motion del form (tempi in tokens.css).
   Regole: solo transform/opacity, interrompibile, mai gating del contenuto,
   prefers-reduced-motion azzera le durate (tokens.css) e qui toglie le forme.
 */
 
-/* ---- Sipario: pannello bianco con bordo blu che copre la card tra un passo e l'altro ---- */
-.sipario {
-  position: absolute;
-  inset: 0;
-  background: var(--surface);
-  transform: translateX(101%);
-  pointer-events: none;
-  will-change: transform;
-}
-.sipario::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 6px;
-  background: var(--accent);
-}
-.sipario.is-indietro {
-  transform: translateX(-101%);
-}
-.sipario.is-indietro::before {
-  left: auto;
-  right: 0;
-}
-.sipario.is-chiuso {
-  transform: translateX(0);
-  transition: transform var(--d-wipe) var(--e-standard);
-}
-.sipario.is-uscita {
-  opacity: 0;
-  transition: opacity var(--d-fast) var(--e-accel);
-}
-
-/* ---- Ingresso a scaglioni dei figli del passo ---- */
+/* ---- Sequenza tra i passi: i figli del nuovo passo entrano a scaglioni dal basso
+   (avanti) o dall'alto (indietro); l'onda d'uscita del passo precedente e l'altezza
+   dello stage le anima motion.ts (Web Animations API). `--i` = indice del figlio
+   (scaglioni()); dal sesto in poi entrano insieme. ---- */
 @keyframes entra-su {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(var(--dy, 20px));
   }
   to {
     opacity: 1;
@@ -50,8 +19,17 @@
   }
 }
 .passo.is-entrata > * {
-  animation: entra-su var(--d-enter) var(--e-decel) both;
-  animation-delay: calc(var(--i, 0) * var(--stagger));
+  animation: entra-su var(--d-enter) var(--e-expo) both;
+  animation-delay: calc(var(--d-lead) + min(var(--i, 0), 5) * var(--stagger));
+}
+.passo.is-entrata.is-indietro {
+  --dy: -20px;
+}
+/* Il passo che se ne va resta sopra il nuovo, fuori flusso, finché la sua onda d'uscita non finisce. */
+.passo.is-uscita {
+  position: absolute;
+  inset: 0 0 auto 0;
+  pointer-events: none;
 }
 
 /* ---- Errore: comparsa + scossa breve (4 px, due oscillazioni) ---- */
@@ -99,9 +77,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sipario,
   .btn--primario::after {
     display: none;
+  }
+  .passo.is-entrata > * {
+    --dy: 0px; /* solo dissolvenza, nessuno spostamento */
   }
   .is-scossa {
     animation: none;
