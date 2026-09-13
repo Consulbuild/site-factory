@@ -16,6 +16,10 @@ Rasterizzazione dello scheletro: Playwright (script in scratchpad, `svg2png.mjs`
 
 | v3 libera | scheletro con UNA lancetta sulle 8, due tinte esplicite per colore, niente targa | «concept brief… exactly two tints per color… flat offset shadow… hard-edged» | ombre piatte nette e testo esatto come chiesto, ma la C si è CHIUSA in un cerchio (persa la lettura «C») e la lancetta è a mezzogiorno: senza vincolo di fedeltà il modello non conta né posiziona; terza tinta grigia sotto il wordmark |
 
+| v3 mista | scheletro v3 | «keep exactly as sketched: open C, the single blue hand at eight… redesign everything else» | il wordmark è diventato bicolore estruso (craft buono), payoff esatto, ma «hand» è stato letto come MANO umana che afferra la C: il modello interpreta alla lettera, la parola giusta è «pointer needle» |
+
+| v3 mista 2 | scheletro v3 | come sopra ma «stopwatch pointer needle… eight o clock position», «small crown on top» | C aperta ✓, L sotto la C ✓, due tinte ✓, testo ✓; ma «crown» → CORONA reale sopra la C, e le lancette sono a 12 e 3: FLUX.2 in edit non rispetta la geometria fine (posizioni orarie, numero di elementi) neanche se lo schizzo la mostra |
+
 ## Cosa ho imparato
 
 1. **Lo schizzo trasferisce il controllo**: lettere e composizione arrivano intatte anche
