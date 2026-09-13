@@ -1,9 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { readClientBundle, listClients } from "@/lib/clients";
-import { clientDir } from "@/lib/paths";
+import { readClientBundle, listClients, readLogoTrace } from "@/lib/clients";
 import { STEPS, motivoGate, type StepKey } from "@/lib/steps";
 import { staleFiles } from "@/lib/staleness";
 import { leggiStatoCliente } from "@/lib/portafoglio";
@@ -14,7 +11,7 @@ import { ClienteAzioni } from "@/components/cliente-azioni";
 import { ClienteStato } from "@/components/cliente-stato";
 import { StepRunLive } from "@/components/step-run-live";
 import { CatenaCard } from "@/components/catena-card";
-import { LogoVarianti, type VarianteLogo } from "@/components/logo-varianti";
+import { LogoVarianti } from "@/components/logo-varianti";
 
 export const dynamic = "force-dynamic";
 
@@ -42,15 +39,6 @@ type Riga = {
   labelApri: string;
 };
 
-type LogoTrace = { scelta?: string; varianti?: VarianteLogo[] };
-function leggiLogoTrace(slug: string): LogoTrace | null {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(clientDir(slug), "logo-trace.json"), "utf8"));
-  } catch {
-    return null;
-  }
-}
-
 export default async function ClientePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   let bundle;
@@ -77,7 +65,7 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
     staleFiles(slug, STEPS[k].upstream, (client.steps[k] as { upstream?: Record<string, string> }).upstream).length > 0;
   const gate = (k: StepKey) => motivoGate(slug, k) ?? undefined;
   const logoFornito = !!intake["brand.logo"] || contesto?.materiali.logo !== false;
-  const logoTrace = leggiLogoTrace(slug);
+  const logoTrace = readLogoTrace(slug);
 
   const righe: Riga[] = [
     {
@@ -125,11 +113,13 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
       errore: client.steps.logo.errore,
       ultimaRun: client.steps.logo.ultimaRun,
       stale: !logoFornito && stale("logo"),
+      // run finito senza una variante usabile: il badge «critico: FAIL» e le varianti aperte
+      fail: !logoFornito && client.steps.logo.stato === "da_verificare" && !!logoTrace && !logoTrace.scelta,
       auto: client.steps.logo.autoConferma,
       abilitato: !logoFornito && !gate("logo"),
       motivoGate: gate("logo"),
       nota: logoFornito ? "fornito dal cliente" : undefined,
-      labelGenera: "Genera simbolo",
+      labelGenera: "Genera logo",
       labelApri: "Varianti",
     },
     {
