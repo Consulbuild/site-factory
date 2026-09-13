@@ -87,6 +87,30 @@ Il seam esiste già: `logo-lab/genera.mjs` ha l'adapter `openai` (endpoint gener
    risoluzione basta); se un cliente chiede l'SVG per stampa, Vectorizer.AI (€0,05-0,18).
 6. **Trace**: salvare `usage` (token) e costo per immagine in `logo-trace.json`.
 
+## Decisioni di Mattia (13/9 sera) e cosa dicono le fonti sulla qualità
+
+- **Modello: `gpt-image-2.5-sunburst`** (precisione sugli edit > velocità). Costo identico a
+  flare a ogni livello ([CellCog](https://cellcog.ai/blog/gpt-image-2-5-release-date/)).
+- **3 generazioni per cliente**, il critico sceglie, **tutte e tre restano salvate nella
+  scheda logo** (`out/<slug>/logo/mark-1..3.png` + trace): se la scelta non piace, Mattia
+  ne prende un'altra a mano senza rigenerare. La UI «riga Logo con varianti» esiste già.
+- **Qualità: `high`** (che è anche il default dell'API). Le fonti: il livello di qualità è la
+  leva principale del costo e alza dettaglio e latenza; «the extra headroom is aimed at fine
+  print detail»; a low/medium la tipografia è «more conventional», a high/max «more considered
+  typographic hierarchy» ([WaveSpeed](https://wavespeed.ai/blog/ai-news/gpt-image-2-5-what-we-know/),
+  [NightCafe](https://nightcafe.studio/blogs/blog/gpt-image-2-low-vs-medium-vs-high-nightcafe)).
+  Nota di scala: «GPT Image 2.5's high spends what gpt-image-2's medium spent» — i due gradini
+  nuovi (xhigh, max) stanno SOPRA, quindi high 2.5 è il vecchio medio, non un lusso. Per un
+  logo con nome grande medium può bastare, ma i descrittori piccoli («RISTRUTTURAZIONI BAGNI ·
+  SAN SEVERO») sono «fine print»: high è il livello minimo sicuro per il testo. «A higher
+  setting does not guarantee a better result for every prompt»: xhigh/max non servono.
+- **Costo per cliente** a 1024×1024, 3 × high ≈ **0,16 $** (≈ 0,15 €); a 1536×1024 i token
+  crescono di ~1,5× → ≈ 0,24 $. Vale anche per le demo (ogni demo senza logo del cliente
+  paga 3 immagini): 100 demo ≈ 16-24 $. Recraft costava 6 × 0,08 = 0,48 $ a cliente.
+- Leva ulteriore senza perdere qualità: la favicon e la versione per fondo scuro si
+  ricavano dal PNG scelto (ritaglio e `edits` a medium, ≈ 0,013 $) invece di nuove
+  generazioni a high.
+
 Cosa cambia nello step `logo` di `steps.ts`: lo script chiamato (da `generate-logo.mjs`
 Recraft a un `generate-logo-openai.mjs` o a `genera.mjs`), la skill (prompt v9b invece di
 «solo pittogramma, mai testo»), la validazione (PNG + OCR invece di SVG), l'`afterSuccess`
