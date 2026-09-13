@@ -3,7 +3,7 @@
 Ai sensi dell'art. 13 del Regolamento (UE) 2016/679 (GDPR), ti informiamo che i dati
 inseriti in questo modulo sono trattati da **ConsulBuild di Vecchiato Edoardo**, Strada
 Cul de Ola 254 P int. 1, 36100 Vicenza (VI), P.IVA 04594370241 (Titolare del
-trattamento), contattabile a consulbuildev@gmail.com.
+trattamento), contattabile a info@consulbuild.com.
 
 - **Finalità:** preparare la versione dimostrativa (demo) del tuo nuovo sito web con i
   dati, le foto e il logo che ci fornisci; pubblicarla per 15 giorni su un indirizzo web
@@ -26,7 +26,7 @@ trattamento), contattabile a consulbuildev@gmail.com.
   legge successivi.
 - **Diritti:** puoi esercitare i diritti previsti dagli artt. 15-22 GDPR (accesso,
   rettifica, cancellazione, limitazione, opposizione, portabilità) scrivendo a
-  consulbuildev@gmail.com, e proporre reclamo al Garante per la protezione dei dati personali
+  info@consulbuild.com, e proporre reclamo al Garante per la protezione dei dati personali
   (www.garanteprivacy.it).
 
 > I dati possono essere trattati da fornitori tecnici del Titolare (conservazione dei

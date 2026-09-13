@@ -11,7 +11,7 @@ e questo file insieme.
 ## 1. Titolare del trattamento
 
 ConsulBuild di Vecchiato Edoardo, Strada Cul de Ola 254 P int. 1, 36100 Vicenza (VI),
-P.IVA 04594370241, e-mail consulbuildev@gmail.com. Nessun Responsabile della
+P.IVA 04594370241, e-mail info@consulbuild.com. Nessun Responsabile della
 protezione dei dati (DPO) è stato nominato.
 
 ## 2. Finalità e basi giuridiche
@@ -90,7 +90,7 @@ rapporto e poi per i termini di legge sulla documentazione fiscale e contabile
 ## 7. Diritti dell'interessato
 
 Accesso (art. 15), rettifica (art. 16), cancellazione (art. 17), limitazione (art. 18),
-portabilità (art. 20), opposizione (art. 21) — scrivendo a consulbuildev@gmail.com;
+portabilità (art. 20), opposizione (art. 21) — scrivendo a info@consulbuild.com;
 risposta entro un mese, prorogabile di due (art. 12, par. 3). Reclamo al Garante per
 la protezione dei dati personali (art. 77): www.garanteprivacy.it, garante@gpdp.it,
 Piazza Venezia 11, 00187 Roma.

@@ -16,7 +16,7 @@ export const TITOLARE = {
   denominazione: "ConsulBuild di Vecchiato Edoardo",
   sede: "Strada Cul de Ola 254 P int. 1, 36100 Vicenza (VI)",
   piva: "04594370241",
-  email: "consulbuildev@gmail.com",
+  email: "info@consulbuild.com",
 } as const;
 
 /** Due righe sotto la casella: il minimo per capire, con il rinvio al testo completo. */
