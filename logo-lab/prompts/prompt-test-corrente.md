@@ -1,4 +1,8 @@
-# Prompt di prova corrente (v9, 2026-09-13) — contesto generale + guardrail + ragionamento
+# Prompt di prova corrente (v9b, 2026-09-13) — contesto generale + ragionamento + nome
+
+Modifica di Mattia su v9: tolto «simple» (non vincolare la ricchezza del design) e il guardrail
+diventa «The logo shows also the name» (il simbolo è ammesso, il nome è obbligatorio, il resto del
+testo no).
 
 Richiesta di Mattia: guardrail «the logo shows only the name»; un fattore che chieda un design
 professionale e faccia RAGIONARE il modello sul design prima di disegnare; contesto più
@@ -15,24 +19,24 @@ size in the site header»), non come stile.
 
 ```text
 Logo for the website landing page of "LA CECILIA", a family-run bathroom renovation company in San Severo, Puglia, Italy.
-Design it as a senior brand designer would for a paying client: think the concept through before drawing, so it is distinctive, simple and still clear at small size in the site header.
-The logo shows only the name.
+Design it as a senior brand designer would for a paying client: think the concept through before drawing, so it is distinctive and still clear at small size in the site header.
+The logo shows also the name.
 ```
 
 ## 2 — Termoidraulica Rossi
 
 ```text
 Logo for the website landing page of "TERMOIDRAULICA ROSSI", a father-and-son plumbing and heating business in Bergamo, Italy.
-Design it as a senior brand designer would for a paying client: think the concept through before drawing, so it is distinctive, simple and still clear at small size in the site header.
-The logo shows only the name.
+Design it as a senior brand designer would for a paying client: think the concept through before drawing, so it is distinctive and still clear at small size in the site header.
+The logo shows also the name.
 ```
 
 ## 3 — Coperture Marini
 
 ```text
 Logo for the website landing page of "COPERTURE MARINI", a roofing and waterproofing contractor in Treviso, Italy.
-Design it as a senior brand designer would for a paying client: think the concept through before drawing, so it is distinctive, simple and still clear at small size in the site header.
-The logo shows only the name.
+Design it as a senior brand designer would for a paying client: think the concept through before drawing, so it is distinctive and still clear at small size in the site header.
+The logo shows also the name.
 ```
 
 ---
