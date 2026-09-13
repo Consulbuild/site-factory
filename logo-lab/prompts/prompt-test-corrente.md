@@ -36,7 +36,9 @@ Circular one-color stamp badge for "LA CECILIA", bathroom renovation company in 
 
 Esito FLUX.2: il più convincente; tutto il testo esatto; serve la versione ridotta per favicon.
 
-## D — Monolinea illustrata con doppia lettura (nuovo, non testato)
+## D — Monolinea illustrata con doppia lettura (testato su FLUX.2: il più debole dei quattro)
+
+Esito FLUX.2: vasca a linea con braccio doccia e goccia arancio, tratto pulito e testo esatto, ma la doppia lettura non c'è (la doccia è aggiunta, non nasce dal bordo della vasca), l'illustrazione domina e il nome galleggia piccolo: resta un'illustrazione monolinea, non un marchio. Dispositivo da usare solo con un soggetto che si fonde davvero in un tratto.
 
 Concetto dall'ideazione: la vasca che diventa doccia (il servizio-firma «in 8 ore»), un solo
 tratto continuo.
