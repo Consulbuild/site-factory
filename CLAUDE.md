@@ -179,7 +179,8 @@ l'estetica cambia senza toccare markup. Usala per verificare ogni modifica ai co
 
 - **`site-renderer/`** — Fase A, la libreria di sezioni e i 7 preset (sopra). In
   `scripts/` gli script della pipeline (assemble, validate, generate-image,
-  generate-logo) e della fabbrica (`scripts/factory/`), spawnati dall'editor per path.
+  generate-logo con GPT Image) e della fabbrica (`scripts/factory/`), spawnati
+  dall'editor per path.
 - **`site-factory-editor/`** — Fase C, console locale per un solo operatore. Registry
   degli step AI in `lib/steps.ts` (contesto → palette → logo → copy → images → legale →
   build): ogni step = skill in `.claude/skills/` eseguita da `claude -p` (`lib/run-step.ts`,
@@ -197,7 +198,9 @@ l'estetica cambia senza toccare markup. Usala per verificare ogni modifica ai co
   Piano vivo: `docs/piano-form-bozza.md`.
 - **`factory/`** — la fabbrica dei preset: riferimenti, gold set e calibrazione del
   design-critic, run con gate (`docs/piano-fabbrica-design-2026-07.md`).
-  **`logo-lab/`** — banco di prova per la generazione dei loghi (suo README).
+  **`docs/logo-ricerca/`** — la ricerca che ha portato ai loghi con GPT Image
+  (principi del logo design, prompt engineering, metodo, costi API); il banco
+  `logo-lab/` è stato chiuso il 2026-09-13.
 - **`infra/`** — monitor Gatus per cliente e workflow n8n versionati
   (`scripts/n8n-import.ts export|import`; le credenziali restano nell'istanza). Guida:
   `docs/vps-integrazioni-setup.md`. Regole: il sito pubblicato parla con

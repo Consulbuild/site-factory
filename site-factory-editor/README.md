@@ -13,7 +13,7 @@ operatore: importa le PMI dal form di sito.consulbuild.com, revisiona i dati, ge
 - **Google Drive Desktop** attivo con l'account dell'agenzia: le richieste del form
   arrivano (via n8n) nella cartella sincronizzata `site-factory-clienti/_inbox/`,
   che l'editor legge da disco (`lib/inbox-form.ts`; override con `SF_INBOX_DIR`).
-- Le altre API key (BFL, Recraft, Cloudflare, VPS, Stripe) si incollano in
+- Le altre API key (BFL, OpenAI, Cloudflare, VPS, Stripe) si incollano in
   Impostazioni → «Chiavi API» e vivono nel Keychain macOS.
 
 ## Avvio

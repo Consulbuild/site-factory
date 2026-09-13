@@ -52,5 +52,6 @@ mai editare i file `.gen.*` a mano.
 (`slots.json` dichiara gli slot per agente) e il golden example: vedi
 `blueprints/README.md`. In `scripts/`: `assemble-site.ts` (blueprint + artifact →
 site.json), `validate-site.ts`, `generate-image.mjs` (FLUX.2 via BFL),
-`generate-logo.mjs`, i gate della libreria (`check-overflow.mjs`, `lint-tokens.mjs`) e in
+`generate-logo.mjs` (logo con GPT Image via OpenAI: lockup PNG, favicon, foglio di
+contatto + metriche), i gate della libreria (`check-overflow.mjs`, `lint-tokens.mjs`) e in
 `scripts/factory/` gli script della fabbrica dei preset, tutti spawnati dall'editor.

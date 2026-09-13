@@ -8,7 +8,9 @@ prossime schede.
 ## Stato (tutto verificato E2E)
 
 - **Editor**: schede Intake, Contesto, Palette (+ assegnazione deterministica del
-  preset), Logo (riga con varianti; il simbolo si genera nella catena), Copy (3 round di
+  preset), Logo (riga con le 3-6 varianti PNG di GPT Image e il motivo del critico;
+  il lockup col nome si genera nella catena, la scelta si cambia a mano senza
+  rigenerare), Copy (3 round di
   critico dopo il gate anti-slop `check-slop.mjs`), Immagini (+ «I nostri lavori» da
   foto reali), Legale (foro con evidenza, catena a 3 lenti, conferma condizionata),
   Build (deterministica, anteprima :4399), Deploy su Cloudflare Workers con dominio
@@ -33,8 +35,14 @@ prossime schede.
 - **Fabbrica dei preset**: completa (M0–M9), libreria a 7 preset con «ferro» dal
   pilota (`docs/piano-fabbrica-design-2026-07.md`). Prossimo passo naturale: la prima
   run con riferimenti reali scelti da Mattia.
-- **Logo-lab** (`logo-lab/`, in corso): banco di prova per sostituire Recraft nella
-  generazione dei loghi; ciclo «Claude dà un prompt, Mattia testa a mano».
+- **Logo con GPT Image** (2026-09-13, sostituisce Recraft): step `logo` = brief dal
+  logo-designer → prompt di solo contesto composto in `lib/logo.ts` → 3 varianti
+  `gpt-image-2.5-sunburst` (≈0,24 $ a cliente, demo incluse) → foglio di contatto +
+  metriche → logo-critic (trascrive e osserva) → verdetto in TS → favicon dal
+  simbolo; un round in più al massimo, poi decide l'umano. Ricerca in
+  `docs/logo-ricerca/`; banco `scripts/test-logo-gates.ts`. Da fare: taratura del
+  critico sui loghi approvati da Mattia (`scripts/calibrate-logo-critic.mjs`) e
+  la prima run reale.
 
 ## Clienti in `site-renderer/out/` (fuori git)
 

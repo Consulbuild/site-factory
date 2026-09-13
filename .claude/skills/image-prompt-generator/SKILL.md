@@ -56,11 +56,11 @@ corrispondente e chiediti: «questa scena mostra ESATTAMENTE questo servizio?»
   posa, consegna chiavi), sempre di spalle/senza volti riconoscibili. [pro].
 
 **FAVICON / icona tab browser**
-- NON è un task di generazione immagini: il favicon È il mark del logo
-  (`out/<slug>/logo/favicon.svg`, dal logo-designer), quadrato, leggibile a 16–32px,
-  un colore. La pipeline lo copia in `/media/<slug>/favicon.svg` e lo collega via
-  `brand.favicon` nel site.json (il renderer lo mette nel `<head>`). Se il mark ha
-  dettagli che spariscono a 32px, chiedi al logo-designer una variante semplificata.
+- NON è un task di generazione immagini: il favicon È il solo simbolo del logo
+  (`out/<slug>/favicon.png`, ritagliato dal lockup generato con GPT Image nello
+  step logo), quadrato, senza scritte. La pipeline lo copia in
+  `/media/<slug>/favicon.png` e lo collega via `brand.favicon` nel site.json (il
+  renderer lo mette nel `<head>`). Non lo generi tu.
 
 ## Modelli (solo FLUX.2)
 - **flux-2 [pro]** — default per la maggior parte delle sezioni (~$0.03/MP).

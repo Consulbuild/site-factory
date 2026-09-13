@@ -174,6 +174,14 @@ adapter né codice Worker:
 
 ## 6-bis. Loghi: mai raster AI, simbolo vettoriale Recraft + tipografia del preset (2026-07-05)
 
+> **Superata il 2026-09-13.** Il logo è ora un lockup completo PNG (col nome)
+> generato da GPT Image (`gpt-image-2.5-sunburst`, 3 varianti + logo-critic con
+> verdetto calcolato in TS, favicon dal simbolo), con un prompt di solo contesto e
+> senza indicazioni di stile: i loghi Recraft erano icone monocrome inutilizzabili
+> per un cliente reale. Motivazioni e prove in `docs/logo-ricerca/` (in particolare
+> `08-metodo-v2.md` e `09-openai-images-api.md`). Cavaliere resta col simbolo +
+> lockup testuale dell'Header (`brand.mark.lockup` assente).
+
 **Problema**: i loghi generati con modelli raster (FLUX/Imagen/Claude che "disegna") sono
 AI-slop riconoscibile — lettere storpiate, gradienti/3D, cliché, colori fuori palette,
 output non vettoriale. Inadatti a rappresentare una PMI reale.

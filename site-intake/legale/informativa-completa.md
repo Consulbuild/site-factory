@@ -129,5 +129,6 @@ del 10 luglio 2023 (EU-US Data Privacy Framework).
   caso. Da ricontrollare sul registro dataprivacyframework.gov quando serve.
 - Il Titolare invia ai servizi Anthropic i dati del modulo (compresi nome, contatti
   e sede) per produrre i testi del sito: per questo Anthropic è nominata tra i
-  destinatari. Le immagini generate (BFL) e il logo (Recraft) usano solo prompt
-  senza dati personali e non compaiono.
+  destinatari. Le immagini generate (BFL) usano prompt senza dati personali; il
+  logo (OpenAI) riceve solo la ragione sociale, il mestiere e la città, mai
+  contatti o dati del referente: per questo non compaiono tra i destinatari.
