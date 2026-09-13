@@ -9,6 +9,9 @@ import {
   CopyCoverageSchema,
   ImagesTraceSchema,
   ImageReviewSchema,
+  LogoBriefSchema,
+  LogoTraceSchema,
+  LogoReviewSchema,
   LavoriSchema,
   type ClientState,
   type Contesto,
@@ -17,6 +20,9 @@ import {
   type CopyCoverage,
   type ImagesTrace,
   type ImageReview,
+  type LogoBrief,
+  type LogoTrace,
+  type LogoReview,
   type Lavori,
 } from "./schemas";
 import { validateCopyArtifact, type CopyArtifact } from "./slots";
@@ -248,6 +254,31 @@ export function readImageReview(slug: string): ImageReview | null {
   const raw = readJson<unknown>(path.join(clientDir(slug), "image-review.json"));
   if (!raw) return null;
   const parsed = ImageReviewSchema.safeParse(raw);
+  return parsed.success ? parsed.data : null;
+}
+
+export function readLogoBrief(slug: string): LogoBrief | null {
+  const raw = readJson<unknown>(path.join(clientDir(slug), "logo-brief.json"));
+  if (!raw) return null;
+  const parsed = LogoBriefSchema.safeParse(raw);
+  return parsed.success ? parsed.data : null;
+}
+
+export function readLogoTrace(slug: string): LogoTrace | null {
+  const raw = readJson<unknown>(path.join(clientDir(slug), "logo-trace.json"));
+  if (!raw) return null;
+  const parsed = LogoTraceSchema.safeParse(raw);
+  return parsed.success ? parsed.data : null;
+}
+
+export function writeLogoTrace(slug: string, trace: LogoTrace): void {
+  writeJson(path.join(clientDir(slug), "logo-trace.json"), trace);
+}
+
+export function readLogoReview(slug: string): LogoReview | null {
+  const raw = readJson<unknown>(path.join(clientDir(slug), "logo-review.json"));
+  if (!raw) return null;
+  const parsed = LogoReviewSchema.safeParse(raw);
   return parsed.success ? parsed.data : null;
 }
 

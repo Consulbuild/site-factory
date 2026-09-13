@@ -51,7 +51,8 @@ export const ClientStateSchema = z.object({
         ultimaRun: UltimaRun,
       })
       .default({ stato: "assente" }),
-    // Simbolo del logo generato (logo-designer) quando il cliente non ne fornisce uno.
+    // Logo generato (GPT Image: lockup completo con il nome, 3 varianti + critico)
+    // quando il cliente non ne fornisce uno.
     logo: z
       .object({
         stato: StatoStep,
@@ -267,6 +268,102 @@ export const ImageReviewSchema = z
   })
   .passthrough();
 export type ImageReview = z.infer<typeof ImageReviewSchema>;
+
+// ---------------------------------------------------------------------------
+// Step logo (GPT Image, 2026-09): logo-brief.json (scritto dal logo-designer),
+// logo-trace.json (scritto dall'editor), logo-review.json (scritto dal
+// logo-critic: osservazioni, MAI il verdetto — lo calcola lib/logo.ts).
+// ---------------------------------------------------------------------------
+
+export const LogoBriefSchema = z.object({
+  nome: z.string().min(2).max(40),
+  mestiere_en: z.string().min(1),
+  citta: z.string().min(1),
+  regione: z.string().min(1),
+  alt: z.string().min(1).max(140),
+});
+export type LogoBrief = z.infer<typeof LogoBriefSchema>;
+
+// Misure deterministiche di una variante (le calcola generate-logo.mjs con sharp).
+export const LogoMetricheSchema = z
+  .object({
+    alpha: z.boolean(),
+    copertura: z.number(), // frazione di pixel opachi sull'immagine ritagliata
+    bordo_opaco: z.boolean(), // contenuto opaco sul bordo PRIMA del ritaglio (logo mozzato)
+    width: z.number(),
+    height: z.number(),
+    ratio: z.number(), // width/height dopo il ritaglio
+    larghezza_a_40px: z.number(),
+    colori_dominanti: z.array(z.object({ hex: z.string(), quota: z.number() })).default([]),
+    n_colori: z.number(),
+    ink40: z.number(),
+    ink256: z.number(),
+    dettaglio: z.number(), // ink40/ink256: sotto 0.6 le forme perdono massa rimpicciolendo
+    bbox_simbolo: z.object({ x: z.number(), y: z.number(), w: z.number(), h: z.number() }).nullable().default(null),
+  })
+  .passthrough();
+export type LogoMetriche = z.infer<typeof LogoMetricheSchema>;
+
+export const LogoVarianteSchema = z
+  .object({
+    file: z.string().regex(/^logo\/mark-[1-6]\.png$/),
+    round: z.number(),
+    esito: z.enum(["scelta", "usabile", "scartata"]),
+    motivo: z.string().optional(),
+    usage: z.record(z.string(), z.unknown()).optional(),
+    costo_usd: z.number().optional(),
+    metriche: LogoMetricheSchema.optional(),
+  })
+  .passthrough();
+export type LogoVariante = z.infer<typeof LogoVarianteSchema>;
+
+export const LogoTraceSchema = z
+  .object({
+    model: z.string(),
+    size: z.string().optional(),
+    quality: z.string().optional(),
+    nome: z.string(),
+    prompt: z.string(),
+    prompt_round2: z.string().optional(),
+    round: z.number(),
+    scelta: z.string().nullable(),
+    motivo: z.string().optional(),
+    varianti: z.array(LogoVarianteSchema).min(1).max(6),
+    favicon: z.object({ via: z.enum(["edits", "ritaglio"]), costo_usd: z.number().optional() }).passthrough().nullable().default(null),
+    costo_usd_totale: z.number().optional(),
+  })
+  .passthrough();
+export type LogoTrace = z.infer<typeof LogoTraceSchema>;
+
+// I codici ammessi per i bloccanti (lista chiusa) stanno in lib/logo.ts: qui il
+// campo è una stringa libera, è fondiReview() a scartare gli sconosciuti.
+const Punteggio = z.number().min(0).max(2);
+export const LogoReviewSchema = z
+  .object({
+    round: z.number(),
+    varianti: z
+      .array(
+        z
+          .object({
+            file: z.string(),
+            testi_letti: z
+              .array(z.object({ testo: z.string(), certo: z.boolean().default(true), ruolo: z.enum(["nome", "descrittore", "altro"]).default("altro") }))
+              .default([]),
+            punteggi: z
+              .object({ L1: Punteggio, L2: Punteggio, L3: Punteggio, L4: Punteggio, L5: Punteggio, P1: Punteggio, P2: Punteggio, P3: Punteggio, P4: Punteggio, P5: Punteggio })
+              .partial()
+              .default({}),
+            prove: z.record(z.string(), z.string()).default({}),
+            bloccanti: z.array(z.object({ codice: z.string(), prova: z.string().default("") })).default([]),
+            preferenza_motivo: z.string().optional(),
+          })
+          .passthrough(),
+      )
+      .default([]),
+    fix_prompt: z.string().nullable().default(null),
+  })
+  .passthrough();
+export type LogoReview = z.infer<typeof LogoReviewSchema>;
 
 // ---------------------------------------------------------------------------
 // lavori.json — foto REALI dei lavori del cliente (sezione Gallery del sito).
