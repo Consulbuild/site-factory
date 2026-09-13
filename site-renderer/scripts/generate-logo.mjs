@@ -1,152 +1,240 @@
-// generate-logo.mjs — genera il SIMBOLO del logo (mark SVG, senza testo) via Recraft
-// e lo ricolora deterministicamente sulla palette. Il lockup completo (mark + nome)
-// lo compone l'Header con la tipografia del preset: l'AI non tocca mai il testo.
+// generate-logo.mjs — logo completo (simbolo + nome) via OpenAI Images API, PNG
+// trasparente; favicon dal solo simbolo; foglio di contatto + metriche per il
+// critico. L'AI riceve SOLO il prompt composto dall'editor (lib/logo.ts).
 //
-// Uso (da site-renderer/, RECRAFT_API_KEY in env o in .env):
-//   node scripts/generate-logo.mjs --prompt "<soggetto>" --color "#90711c" --out out/x/logo/mark-1.svg
-//     [--model recraftv3_vector] [--style icon --substyle outline]   # default: recraftv3_vector, nessuno style
-//   node scripts/generate-logo.mjs --recolor <file.svg> --color "#90711c" --out <out.svg>
-//     # solo ricoloro (niente API): utile per varianti dark e per testare il ricoloro
+// Uso (da site-renderer/, OPENAI_API_KEY in env o nel Keychain macOS):
+//   node scripts/generate-logo.mjs --prompt "…" --out out/x/logo/mark-1.png [--size 1536x1024] [--quality high] [--model gpt-image-2.5-sunburst]
+//   node scripts/generate-logo.mjs --favicon-da out/x/mark.png --out out/x/favicon.png   # edits (medium) → fallback ritaglio
+//   node scripts/generate-logo.mjs --contatto out/x/logo/contatto.png --bg "#fff" out/x/logo/mark-1.png …   # + metriche.json accanto
 //
-// Il ricoloro produce anche <out>-dark.svg (mark bianco per le sezioni scure).
-// Senza key: exit 2 con istruzioni (stesso pattern di generate-image.mjs).
-// Exit 0 ok · 1 errore API/file · 2 uso/key mancante.
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+// Ultima riga di stdout: `ESITO {json}` (usage, costo_usd stimato, metriche) —
+// l'editor la legge (parseEsito) e la mette nel trace. Exit 0 ok · 1 API/file · 2 uso/key.
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { dirname } from "node:path";
+import { dirname, basename, join } from "node:path";
+// ponytail: sharp è transitiva di astro in site-renderer/node_modules; se sparisce, `npm i sharp`.
+import sharp from "sharp";
 
 const args = process.argv.slice(2);
 const flag = (name) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : null; };
 const prompt = flag("--prompt");
-const color = flag("--color");
 const out = flag("--out");
-const recolorSrc = flag("--recolor");
-const model = flag("--model") ?? "recraftv3_vector";
-const substyle = flag("--substyle");
-// --style: Recraft accetta un substyle SOLO insieme al suo style (es. style
-// "icon" + substyle "outline"; style "vector_illustration" + "line_art").
-// Senza --style, i modelli non-vector usano vector_illustration come prima.
-const style = flag("--style");
-// --colors "#hex,#hex,…": palette imposta a Recraft (controls.colors) — il modello
-// genera già nei colori di marca. --keep-colors: NON appiattire al monocromo,
-// tenere i colori generati (solo lo sfondo a tutta tela viene tolto); la
-// variante -dark è allora una copia (i mark a 2–3 colori con un neutro chiaro
-// reggono da soli sul fondo scuro, come i riferimenti in logo-lab/riferimenti).
-const colors = (flag("--colors") ?? "").split(",").map((c) => c.trim()).filter(Boolean);
-const keepColors = args.includes("--keep-colors");
+const faviconDa = flag("--favicon-da");
+const contatto = flag("--contatto");
+const size = flag("--size") ?? "1536x1024";
+const quality = flag("--quality") ?? "high";
+const model = flag("--model") ?? "gpt-image-2.5-sunburst";
+const bg = flag("--bg") ?? "#ffffff";
+const SCURO = "#1a1a1a"; // fondo scuro di riferimento per la tessera «su scuro»
 
-if (!out || !color || (!prompt && !recolorSrc)) {
-  console.error('uso: generate-logo.mjs (--prompt "…" | --recolor file.svg) --color "#rrggbb" --out mark.svg [--model …] [--substyle …]');
-  process.exit(2);
-}
-if (!/^#[0-9a-fA-F]{6}$/.test(color)) {
-  console.error(`--color "${color}" non è un hex #rrggbb`);
-  process.exit(2);
+const esito = (o) => console.log(`ESITO ${JSON.stringify(o)}`);
+const fail = (msg, code = 1) => { console.error(msg); process.exit(code); };
+
+if (!contatto && (!out || (!prompt && !faviconDa))) {
+  fail('uso: generate-logo.mjs (--prompt "…" | --favicon-da mark.png | --contatto out.png …) --out file.png', 2);
 }
 
-/* ---------------- ricoloro deterministico ---------------- */
-// Il modello genera monocromo "quasi nero" su fondo bianco. Regola universale:
-// i bianchi diventano TRASPARENTI (sfondo via, knockout interni = superficie
-// sottostante), tutto il resto diventa il colore di marca. Così lo stesso mark
-// funziona su header chiaro e su sezioni scure senza casi speciali.
-const WHITEISH = /^(#fff(?:fff)?|#f[e-f]{5}|white|transparent)$/i;
+/* ---------------- OpenAI ---------------- */
+function apiKey() {
+  if (process.env.OPENAI_API_KEY) return process.env.OPENAI_API_KEY;
+  // Le key vivono nel Keychain macOS (servizio site-factory), mai in chiaro su disco.
+  const r = spawnSync("/usr/bin/security", ["find-generic-password", "-s", "site-factory", "-a", "OPENAI_API_KEY", "-w"], { encoding: "utf8" });
+  if (r.status === 0 && r.stdout.trim()) return r.stdout.trim();
+  fail(`OPENAI_API_KEY mancante.
+Aggiungila dal pannello «Chiavi API» dell'editor (Keychain) o passala come env:
+  OPENAI_API_KEY=xxx node scripts/generate-logo.mjs …
+Crea la chiave su https://platform.openai.com (serve la verifica dell'organizzazione per i modelli gpt-image).`, 2);
+}
 
-// Recraft apre ogni SVG con un path rettangolare a TUTTA TELA (lo sfondo), di un
-// bianco «quasi» (#f9f9f9 &c.) che la regola cromatica non riconosce: ricolorato
-// diventava un quadrato pieno del colore di marca con il soggetto invisibile
-// (visto il 2026-09-08: Cavaliere in produzione usava un mark.png fatto a mano).
-// Lo sfondo si riconosce dalla GEOMETRIA, non dal colore: un path che copre
-// tutto il viewBox va tolto, qualunque sia il suo fill.
-function stripBackground(svg) {
-  const vb = /viewBox="\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*"/i.exec(svg);
-  if (!vb) return svg;
-  const [w, hgt] = [Number(vb[1]), Number(vb[2])];
-  const num = "\\s*-?[\\d.]+\\s*";
-  const fullCanvas = new RegExp(`^M${num}${num}[LH]`, "i");
-  return svg.replace(/<path\b[^>]*\bd="([^"]+)"[^>]*\/?>(?:<\/path>)?/gi, (tag, d) => {
-    if (!fullCanvas.test(d.trim())) return tag;
-    const xs = [...d.matchAll(/-?\d+(?:\.\d+)?/g)].map(Number);
-    // un rettangolo a tutta tela cita gli estremi 0 e W/H e nient'altro in mezzo
-    const soloEstremi = xs.every((n) => Math.abs(n) < 1 || Math.abs(n - w) < 1 || Math.abs(n - hgt) < 1);
-    return soloEstremi && xs.some((n) => Math.abs(n - w) < 1) && xs.some((n) => Math.abs(n - hgt) < 1) ? "" : tag;
+// Listino 2026-09 ($/M token): il costo è una stima dai token restituiti nella risposta.
+const PREZZI = { text_in: 5, image_in: 8, image_out: 30 };
+const costo = (u) =>
+  Math.round((((u?.input_tokens_details?.text_tokens ?? 0) * PREZZI.text_in + (u?.input_tokens_details?.image_tokens ?? 0) * PREZZI.image_in + (u?.output_tokens ?? 0) * PREZZI.image_out) / 1e6) * 10000) / 10000;
+
+async function openai(path, body) {
+  const key = apiKey();
+  const isForm = body instanceof FormData;
+  const res = await fetch(`https://api.openai.com/v1/images/${path}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, ...(isForm ? {} : { "Content-Type": "application/json" }) },
+    body: isForm ? body : JSON.stringify(body),
   });
+  if (!res.ok) throw new Error(`OpenAI: HTTP ${res.status} — ${(await res.text()).slice(0, 300)}`);
+  const json = await res.json();
+  const b64 = json?.data?.[0]?.b64_json;
+  if (!b64) throw new Error(`OpenAI: risposta senza immagine ${JSON.stringify(json).slice(0, 300)}`);
+  return { png: Buffer.from(b64, "base64"), usage: json.usage ?? null };
 }
 
-function recolor(svg, hex) {
-  const map = (val) => (val.trim() === "none" ? "none" : WHITEISH.test(val.trim()) ? "none" : hex);
-  return stripBackground(svg)
-    .replace(/(fill|stroke)="([^"]+)"/gi, (_, attr, val) => `${attr}="${map(val)}"`)
-    .replace(/(fill|stroke):\s*([^;"'}]+)/gi, (_, attr, val) => `${attr}:${map(val)}`);
+/* ---------------- metriche (sharp) ---------------- */
+async function rgba(buf) {
+  const { data, info } = await sharp(buf).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  return { data, w: info.width, h: info.height };
 }
-function writeKit(svg, outPath, hex) {
-  mkdirSync(dirname(outPath) || ".", { recursive: true });
-  const dark = outPath.replace(/\.svg$/, "-dark.svg");
-  if (keepColors) {
-    const pulito = stripBackground(svg);
-    writeFileSync(outPath, pulito);
-    writeFileSync(dark, pulito);
-    console.log(`OK — ${outPath} (colori generati conservati) + ${dark} (copia)`);
-    return;
+
+/** Ritaglia i margini trasparenti e misura: copertura, bbox, colori, ink a 40/256 px, simbolo. */
+async function analizza(buf) {
+  const meta = await sharp(buf).metadata();
+  const { data, w, h } = await rgba(buf);
+  const alpha = (x, y) => data[(y * w + x) * 4 + 3];
+  let minX = w, minY = h, maxX = -1, maxY = -1, opachi = 0;
+  const conta = new Map();
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      const a = data[i + 3];
+      if (a <= 16) continue;
+      if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y;
+      if (a > 200) {
+        opachi++;
+        const k = ((data[i] >> 3) << 10) | ((data[i + 1] >> 3) << 5) | (data[i + 2] >> 3);
+        conta.set(k, (conta.get(k) ?? 0) + 1);
+      }
+    }
   }
-  writeFileSync(outPath, recolor(svg, hex));
-  writeFileSync(dark, recolor(svg, "#ffffff"));
-  console.log(`OK — ${outPath} (su ${hex}) + ${dark} (variante per sezioni scure)`);
+  const alphaOk = meta.hasAlpha === true && opachi < w * h * 0.98;
+  if (maxX < 0) return { png: buf, metriche: { alpha: alphaOk, copertura: 0, bordo_opaco: false, width: w, height: h, ratio: 1, larghezza_a_40px: 40, colori_dominanti: [], n_colori: 0, ink40: 0, ink256: 0, dettaglio: 0, bbox_simbolo: null } };
+  let bordo = false;
+  for (let x = 0; x < w && !bordo; x++) if (alpha(x, 0) > 200 || alpha(x, h - 1) > 200) bordo = true;
+  for (let y = 0; y < h && !bordo; y++) if (alpha(0, y) > 200 || alpha(w - 1, y) > 200) bordo = true;
+  const bw = maxX - minX + 1, bh = maxY - minY + 1;
+  const png = await sharp(buf).extract({ left: minX, top: minY, width: bw, height: bh }).png().toBuffer();
+  const tot = [...conta.values()].reduce((s, n) => s + n, 0) || 1;
+  const colori = [...conta.entries()].map(([k, n]) => ({ hex: "#" + [(k >> 10) & 31, (k >> 5) & 31, k & 31].map((q) => ((q << 3) + 4).toString(16).padStart(2, "0")).join(""), quota: Math.round((n / tot) * 1000) / 1000 })).filter((c) => c.quota >= 0.01).sort((a, b) => b.quota - a.quota).slice(0, 8);
+  const ink = async (H) => {
+    const { data: d, w: rw, h: rh } = await rgba(await sharp(png).resize({ height: H }).flatten({ background: "#ffffff" }).png().toBuffer());
+    let n = 0;
+    for (let i = 0; i < d.length; i += 4) if (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2] < 200) n++;
+    return Math.round((n / (rw * rh)) * 1000) / 1000;
+  };
+  const ink40 = await ink(40), ink256 = await ink(256);
+  // simbolo: la fascia trasparente più alta (≥2% dell'altezza) che separa un blocco superiore ≥30%
+  let simbolo = null;
+  let gapStart = -1;
+  for (let y = minY; y <= maxY + 1; y++) {
+    let vuota = true;
+    if (y <= maxY) for (let x = minX; x <= maxX; x++) if (alpha(x, y) > 16) { vuota = false; break; }
+    if (vuota && gapStart < 0) gapStart = y;
+    if (!vuota && gapStart >= 0) {
+      const top = gapStart - minY;
+      if (y - gapStart >= bh * 0.02 && top >= bh * 0.3 && top <= bh * 0.7) {
+        let sx = w, ex = -1;
+        for (let yy = minY; yy < gapStart; yy++) for (let x = minX; x <= maxX; x++) if (alpha(x, yy) > 16) { if (x < sx) sx = x; if (x > ex) ex = x; }
+        simbolo = { x: sx - minX, y: 0, w: ex - sx + 1, h: top };
+        break;
+      }
+      gapStart = -1;
+    }
+  }
+  const ratio = Math.round((bw / bh) * 100) / 100;
+  return {
+    png,
+    metriche: { alpha: alphaOk, copertura: Math.round((opachi / (bw * bh)) * 1000) / 1000, bordo_opaco: bordo, width: bw, height: bh, ratio, larghezza_a_40px: Math.round(40 * ratio), colori_dominanti: colori, n_colori: colori.length, ink40, ink256, dettaglio: ink256 ? Math.round((ink40 / ink256) * 100) / 100 : 0, bbox_simbolo: simbolo },
+  };
 }
 
-if (recolorSrc) {
-  if (!existsSync(recolorSrc)) { console.error(`file non trovato: ${recolorSrc}`); process.exit(1); }
-  writeKit(readFileSync(recolorSrc, "utf8"), out, color);
+/* ---------------- generazione ---------------- */
+if (prompt) {
+  let r;
+  try {
+    r = await openai("generations", { model, prompt, size, quality, background: "transparent", output_format: "png", n: 1 });
+  } catch (e) {
+    fail(e.message);
+  }
+  const { png, metriche } = await analizza(r.png);
+  mkdirSync(dirname(out) || ".", { recursive: true });
+  writeFileSync(out, png);
+  console.log(`OK — ${out} (${model}, ${size}, ${quality}, ${metriche.width}x${metriche.height}${metriche.alpha ? "" : ", SENZA trasparenza"})`);
+  esito({ file: out, model, size, quality, usage: r.usage, costo_usd: costo(r.usage), metriche });
   process.exit(0);
 }
 
-/* ---------------- generazione Recraft ---------------- */
-function apiKey() {
-  if (process.env.RECRAFT_API_KEY) return process.env.RECRAFT_API_KEY;
-  // Le key vivono nel Keychain macOS (servizio site-factory), mai in chiaro su disco.
-  const r = spawnSync("/usr/bin/security", ["find-generic-password", "-s", "site-factory", "-a", "RECRAFT_API_KEY", "-w"], { encoding: "utf8" });
-  if (r.status === 0 && r.stdout.trim()) return r.stdout.trim();
-  console.error(`RECRAFT_API_KEY mancante.
-Aggiungila dal pannello «Chiavi API» dell'editor (Keychain) o passala come env:
-  RECRAFT_API_KEY=xxx node scripts/generate-logo.mjs …
-Crea la chiave su https://www.recraft.ai (piano PAID obbligatorio: il free
-non dà diritti commerciali sugli output — mai usarlo per loghi di clienti).`);
-  process.exit(2);
+/* ---------------- favicon: solo il simbolo ---------------- */
+if (faviconDa) {
+  const src = readFileSync(faviconDa);
+  let png = null, via = "edits", usage = null;
+  try {
+    const form = new FormData();
+    form.append("image", new Blob([src], { type: "image/png" }), "mark.png");
+    form.append("model", model);
+    form.append("prompt", "Keep only the symbol of this logo, remove all text and letters, centered, same colors, transparent background.");
+    form.append("size", "1024x1024");
+    form.append("quality", "medium");
+    form.append("background", "transparent");
+    form.append("output_format", "png");
+    const r = await openai("edits", form);
+    const a = await analizza(r.png);
+    if (a.metriche.alpha && a.metriche.copertura > 0.01) { png = a.png; usage = r.usage; }
+  } catch (e) {
+    console.error(`edit favicon non riuscito, ritaglio deterministico: ${e.message}`);
+  }
+  if (!png) {
+    via = "ritaglio";
+    const a = await analizza(src);
+    const m = a.metriche;
+    const box = m.bbox_simbolo ?? { x: 0, y: 0, w: Math.min(m.width, m.height), h: Math.min(m.width, m.height) };
+    png = await sharp(a.png).extract({ left: box.x, top: box.y, width: box.w, height: box.h }).png().toBuffer();
+  }
+  const lato = 512;
+  const fav = await sharp(png).resize({ width: lato - 32, height: lato - 32, fit: "inside" }).extend({ top: 16, bottom: 16, left: 16, right: 16, background: { r: 0, g: 0, b: 0, alpha: 0 } }).resize({ width: lato, height: lato, fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
+  mkdirSync(dirname(out) || ".", { recursive: true });
+  writeFileSync(out, fav);
+  console.log(`OK — ${out} (favicon via ${via})`);
+  esito({ file: out, via, usage, costo_usd: via === "edits" ? costo(usage) : 0 });
+  process.exit(0);
 }
 
-// Guardrail anti-slop nel prompt, sempre appesi al soggetto (vedi SKILL.md logo-designer).
-const TECHNICAL = "flat vector pictogram, single solid dark color on white background, bold geometric shapes, clean silhouette, no gradients, no shadows, no 3d, no letters, no text, no words";
+/* ---------------- foglio di contatto + metriche ---------------- */
+const svgText = (t, size, color, w) => Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${size + 8}"><text x="0" y="${size}" font-family="Helvetica, Arial, sans-serif" font-size="${size}" fill="${color}">${t.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</text></svg>`);
+const tela = (w, h, background) => sharp({ create: { width: w, height: h, channels: 4, background } }).png();
+const fit = (png, w, h) => sharp(png).resize({ width: w, height: h, fit: "inside" }).png().toBuffer();
 
-// --technical "…" sostituisce la formula (stringa vuota = nessuna coda): serve
-// al banco logo-lab per provare formule diverse senza toccare lo script.
-const technical = flag("--technical") ?? TECHNICAL;
-const hexToRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
-const body = {
-  prompt: technical ? `${prompt}, ${technical}` : prompt,
-  model,
-  ...(colors.length ? { controls: { colors: colors.map((c) => ({ rgb: hexToRgb(c) })) } } : {}),
-  ...(substyle ? { substyle } : {}),
-  ...(style ? { style } : model.includes("vector") ? {} : { style: "vector_illustration" }),
-};
-
-const res = await fetch("https://external.api.recraft.ai/v1/images/generations", {
-  method: "POST",
-  headers: { Authorization: `Bearer ${apiKey()}`, "Content-Type": "application/json" },
-  body: JSON.stringify(body),
-});
-if (!res.ok) {
-  console.error(`Recraft API: HTTP ${res.status} — ${(await res.text()).slice(0, 300)}`);
-  console.error("Se l'errore riguarda i parametri (style/substyle/model), confrontare con https://www.recraft.ai/docs/api-reference/styles.md e aggiornare questo script: è il probe live a fare fede, non i docs indicizzati.");
-  process.exit(1);
+async function foglioContatto(outFile, files) {
+  const W = 1400, RH = 640;
+  const metriche = {};
+  const righe = [];
+  for (const f of files) {
+    const a = await analizza(readFileSync(f));
+    const m = a.metriche;
+    metriche[`logo/${basename(f)}`] = m;
+    const lockup = a.png;
+    const comp = [];
+    // A: 512 px su bianco
+    comp.push({ input: await fit(lockup, 512, 480), left: 16, top: 40 });
+    // B: striscia header 40 px su bg del preset + finta nav
+    const nav = svgText("Home    Servizi    Lavori    Contatti", 14, "#444444", 300);
+    const hdr = await tela(560, 64, bg).composite([{ input: await fit(lockup, 220, 40), left: 12, top: 12 }, { input: nav, left: 250, top: 22 }]).toBuffer();
+    comp.push({ input: hdr, left: 560, top: 40 });
+    // C: 40 px su scuro
+    const dark = await tela(560, 64, SCURO).composite([{ input: await fit(lockup, 220, 40), left: 12, top: 12 }]).toBuffer();
+    comp.push({ input: dark, left: 560, top: 120 });
+    // D: 96 px · E: 256 px
+    comp.push({ input: await fit(lockup, 300, 96), left: 560, top: 210 });
+    comp.push({ input: await fit(lockup, 500, 256), left: 880, top: 210 });
+    // F: simbolo a 32 px (se separabile)
+    if (m.bbox_simbolo) {
+      const sym = await sharp(lockup).extract({ left: m.bbox_simbolo.x, top: m.bbox_simbolo.y, width: m.bbox_simbolo.w, height: m.bbox_simbolo.h }).png().toBuffer();
+      comp.push({ input: await fit(sym, 32, 32), left: 560, top: 330 });
+      comp.push({ input: await tela(48, 48, SCURO).composite([{ input: await fit(sym, 32, 32), left: 8, top: 8 }]).toBuffer(), left: 610, top: 322 });
+      comp.push({ input: svgText("simbolo 32 px", 12, "#666666", 200), left: 670, top: 336 });
+    }
+    const etichetta = `${basename(f)} · ${m.width}x${m.height} · ratio ${m.ratio} · ${m.larghezza_a_40px} px di larghezza nell'header · colori ${m.n_colori} · dettaglio ${m.dettaglio}${m.alpha ? "" : " · SENZA TRASPARENZA"}${m.bordo_opaco ? " · MOZZATO" : ""}`;
+    comp.push({ input: svgText(etichetta, 16, "#222222", W - 32), left: 16, top: 8 });
+    comp.push({ input: svgText("512 px", 12, "#888888", 100), left: 16, top: 528 });
+    comp.push({ input: svgText("header 40 px · su fondo scuro 40 px · 96 px · 256 px", 12, "#888888", 500), left: 560, top: 528 });
+    righe.push(await tela(W, RH, "#ffffff").composite(comp).toBuffer());
+  }
+  const H = righe.length * RH;
+  const foglio = await tela(W, H, "#ffffff").composite(righe.map((r, i) => ({ input: r, left: 0, top: i * RH }))).toBuffer();
+  mkdirSync(dirname(outFile) || ".", { recursive: true });
+  writeFileSync(outFile, foglio);
+  writeFileSync(join(dirname(outFile), "metriche.json"), JSON.stringify(metriche, null, 2));
+  console.log(`OK — ${outFile} (${files.length} varianti) + metriche.json`);
+  esito({ file: outFile, metriche });
 }
-const json = await res.json();
-const url = json?.data?.[0]?.url;
-if (!url) { console.error(`response senza URL immagine: ${JSON.stringify(json).slice(0, 300)}`); process.exit(1); }
 
-// download SUBITO (gli URL degli output scadono) e verifica che sia SVG vero
-const dl = await fetch(url);
-const svg = await dl.text();
-if (!svg.trimStart().startsWith("<") || !svg.includes("<svg")) {
-  console.error("l'output non è un SVG: controllare model/endpoint (serve la variante *_vector).");
-  process.exit(1);
+if (contatto) {
+  const files = args.slice(args.indexOf("--contatto") + 2).filter((a) => !a.startsWith("--") && a !== bg);
+  if (!files.length) fail('uso: --contatto <out.png> [--bg "#hex"] <mark-1.png> …', 2);
+  await foglioContatto(contatto, files);
 }
-writeKit(svg, out, color);
