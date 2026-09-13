@@ -622,7 +622,7 @@ standard meridian, gli altri preset mai riverificati).
   (`--brand-space:0.5`), contrasto slavato, gerarchia piatta, palette in collisione (hue
   ruotata), marker AI-slop (Inter ovunque + radius 16 uniforme + gradiente purple-blue),
   overflow/disallineamenti. Etichette di Mattia in `labels.json`.
-- **Skill** `.claude/skills/design-critic/SKILL.md` + agente `.claude/agents/design-critic.md`:
+- **Skill** `.claude/skills/design-critic/SKILL.md` (invocata per nome da `claude -p`):
   rubrica come da "Sistema di qualità", formato output = contratto §7.
 - **Harness di calibrazione** `site-factory-editor/scripts/calibrate-critic.mjs` (node
   puro, usa il seam IO): critico su ogni item del gold set → **κ di Cohen** vs etichette

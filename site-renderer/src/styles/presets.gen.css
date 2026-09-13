@@ -718,7 +718,7 @@
   --brand-dur-slow: 600ms;
   --brand-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --brand-font-body: "Inter";
-  --brand-font-eyebrow: var(--brand-font-mono);
+  --brand-font-eyebrow: var(--brand-font-body);
   --brand-font-heading: "Space Grotesk";
   --brand-font-mono: "JetBrains Mono";
   --brand-ink: #f5f5ff;
@@ -872,7 +872,7 @@
 --brand-accent: #127a54;
   --brand-bg: #f8fafb;
   --brand-font-body: "Karla";
-  --brand-font-eyebrow: "JetBrains Mono";
+  --brand-font-eyebrow: var(--brand-font-body);
   --brand-font-heading: "Space Grotesk";
   --brand-ink: #16232e;
   --brand-inverse-bg: #10151b;

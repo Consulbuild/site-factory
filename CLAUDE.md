@@ -204,9 +204,10 @@ l'estetica cambia senza toccare markup. Usala per verificare ogni modifica ai co
   l'infrastruttura SOLO via env di build (`FORM_ACTION`, `UMAMI_HOST`,
   `UMAMI_WEBSITE_ID`), mai in `site.json`; Stripe è l'unico orologio del rinnovo
   (1 abbonamento = 1 sito); niente notifiche lead all'agenzia, niente WhatsApp.
-- **`.claude/`** — skill e agenti della pipeline (usati a runtime da `claude -p`),
-  `settings.json` con i deny e l'hook `scope-guard` (regola 8): si modificano solo a
-  mano da Mattia. **`docs/archivio/`** — ricerche e piani conclusi: storia, non guida.
+- **`.claude/`** — le skill della pipeline (invocate per nome dai prompt `claude -p`;
+  nessun subagent: i run headless hanno `Task` tra i tool vietati), `settings.json`
+  con i deny e l'hook `scope-guard` (regola 8): si modificano solo a mano da Mattia.
+  **`docs/archivio/`** — ricerche e piani conclusi: storia, non guida.
 
 **Ciclo di vita di un cliente**: lead dal form → `percorso: "demo"` → catena automatica
 senza checkpoint (si ferma al primo critico FAIL) → demo su

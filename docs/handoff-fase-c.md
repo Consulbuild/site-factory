@@ -67,6 +67,18 @@ prossime schede.
 3. Idee minori: eventi Chiama/WhatsApp nell'hub; Gatus su scadenza certificati e disco
    del VPS; «ignora» per gli abbonamenti Stripe estranei.
 
+Passate di design rimandate (2026-09-13, emerse dalla pulizia; ognuna = mini-scheda
+con verifica visiva umana, mai da fare «di passaggio»):
+- **Eyebrow in mono per nova e ferro**: i token lo prevedevano ma il CSS non li
+  leggeva, quindi non è mai stato renderizzato né giudicato; ora il token è cablato
+  (`--font-eyebrow`) e vale body ovunque. Riaprirlo richiede un peso mono ospitato
+  (oggi solo JetBrains Mono 500, l'eyebrow è 700), screenshot a 390/1280 su hero
+  scuro e fasce chiare, baseline VRT rigenerate e il tuo occhio.
+- **Variante Servizi «compact» proposta dal critico**: il copy-critic segnalava la
+  ridondanza desc/bullet in un campo che nessuna UI leggeva; tolto dalla skill per
+  tenere il critico sulla rubrica. Da riprendere come loop completo: suggerimento nel
+  pannello critico + azione «applica» che scrive `sections[3].variant` nell'intake.
+
 ## Verifiche standard per ogni scheda
 
 `npx tsc --noEmit` + `npm run build` (editor) · parity dove c'è un contratto

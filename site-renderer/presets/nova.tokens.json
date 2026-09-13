@@ -165,7 +165,8 @@
   },
   "brand-font-eyebrow": {
     "$type": "fontFamily",
-    "$value": "{brand-font-mono}"
+    "$value": "{brand-font-body}",
+    "$description": "Intento originario: mono. Mai renderizzato e mai valutato: da riaprire in una passata di design con un peso mono ospitato (vedi docs/handoff-fase-c.md)."
   },
   "brand-radius-card": {
     "$type": "dimension",

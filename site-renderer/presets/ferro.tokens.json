@@ -152,7 +152,8 @@
   },
   "brand-font-eyebrow": {
     "$type": "fontFamily",
-    "$value": "JetBrains Mono"
+    "$value": "{brand-font-body}",
+    "$description": "Intento originario del designer: JetBrains Mono. Mai renderizzato (il CSS non leggeva il token) né valutato dal critico o dall'audit: da riaprire in una passata di design con un peso mono ospitato (vedi docs/handoff-fase-c.md)."
   },
   "brand-radius-card": {
     "$type": "dimension",

@@ -16,6 +16,11 @@ skill o guida operativa deve puntare qui. Spostati il 2026-09-12 durante la puli
 | `ricerca-intake-lead-2026-09.md` | 2026-09-07 | ricerca su come raccogliere i dati del lead; il form è stato costruito (`site-intake/`) con scelte in parte diverse (Drive via n8n, sito.consulbuild.com) | `docs/piano-form-bozza.md`, `site-intake/README.md`, memoria `intake-lead-decisioni` |
 | `ricerca-crescita-siti-2026-09.md` | 2026-09-07 | ricerca su traffico e lead (5 strati, roadmap A–D **non ancora avviata**) | memoria `strategia-traffico-lead` (sintesi); da riaprire quando si pianifica il Piano A |
 
+| `agents/*.md` (10 file) | 2026-07 | wrapper «invoca la skill X» per i subagent di Claude Code interattivo; nessun run headless può usarli (`Task` è tra i tool vietati) e l'editor invoca le skill per nome | le skill in `.claude/skills/` |
+| `component-designer/` (SKILL.md + `extract-component.mjs`) | 2026-07-14 | «Asse 2» della fabbrica (trattamenti di componente): catena ferma alla fase 3.2, nessun orchestratore la spawna. Il catalogo trattamenti in `global.css` e `/anteprima-componenti` resta vivo | da riprendere insieme, se la fabbrica dei trattamenti riparte |
+| `design-brief-editor-parte1-2026-07.md` | 2026-07-06 | shape delle prime 4 schermate dell'editor (tema scuro/teal, «niente sidebar»), superato dal refactoring | `site-factory-editor/DESIGN-SYSTEM.md` |
+| `design-refactor-2026-07-audit-e-piano.md` | 2026-07-11 | audit pre-refactor (Nielsen 25/40, gap G1–G12), piano delle fette A–H e questioni poi risolte | `site-factory-editor/DESIGN-REFACTOR-2026-07.md` §4-7 (spec viva) |
+
 Eliminati del tutto (in git history): `kickoff-sviluppo-fase-1.md` (handoff del 2026-07-05
 per `intake-tally.ts`), `evals/generated-site-A.json` (fixture dichiarata invalida),
 `evals/fine-tuning-report.md` (tuning delle skill v1).

@@ -197,7 +197,7 @@ output non vettoriale. Inadatti a rappresentare una PMI reale.
    così sfondo e knockout funzionano su chiaro e scuro).
 3. **6 varianti + checkpoint umano** (~50¢/cliente); lista nera dei cliché nella skill.
 
-Strumenti: `.claude/skills/logo-designer/` + `.claude/agents/logo-designer.md` +
+Strumenti: `.claude/skills/logo-designer/` +
 `site-renderer/scripts/generate-logo.mjs` (generazione+ricoloro, `--recolor` testato;
 probe integrato: senza `RECRAFT_API_KEY` esce 2 con istruzioni). Cliente CON logo dal
 form → la skill non si usa (al più vectorize $0.01).
