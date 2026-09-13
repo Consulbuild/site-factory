@@ -155,7 +155,7 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
 
   // invio
   const leadId = await page.evaluate(() => localStorage.getItem("bozza:corrente"));
-  await page.getByRole("button", { name: "Costruite il mio nuovo sito" }).click();
+  await page.getByRole("button", { name: "Richiedi il tuo nuovo sito" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Il tuo nuovo sito è in lavorazione", { timeout: 15_000 });
   await expect(page.locator("#progresso-eti")).toHaveText("Fatto");
   await expect(page.locator(".card")).toHaveClass(/is-fatto/);

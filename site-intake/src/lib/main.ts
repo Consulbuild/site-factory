@@ -159,7 +159,7 @@ function continua(forza: boolean): void {
   }
 }
 
-/** Il lead completo che parte con «Costruite il mio nuovo sito». */
+/** Il lead completo che parte con «Richiedi il tuo nuovo sito». */
 function componiLead() {
   const foto = coda.manifesto("foto");
   const logo = coda.manifesto("logo")[0] ?? null;

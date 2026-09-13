@@ -107,7 +107,7 @@ test.describe("@schermate", () => {
         }
         await route.continue();
       });
-      await page.getByRole("button", { name: "Costruite il mio nuovo sito" }).click();
+      await page.getByRole("button", { name: "Richiedi il tuo nuovo sito" }).click();
       await page.waitForTimeout(600);
       await shot("16-attesa");
       await page.getByRole("heading", { level: 1, name: "Il tuo nuovo sito è in lavorazione" }).waitFor({ timeout: 15_000 });

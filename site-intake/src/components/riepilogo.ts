@@ -144,7 +144,7 @@ export function montaRiepilogo(a: ArgomentiRiepilogo): RiepilogoMontato {
     );
   });
   const slot = h("div", { class: "passo__esito", "aria-live": "assertive" });
-  const btnInvia = h("button", { class: "btn btn--primario btn--blocco btn--invia", type: "button" }, "Costruite il mio nuovo sito", svgIcona("destra"));
+  const btnInvia = h("button", { class: "btn btn--primario btn--blocco btn--invia", type: "button" }, "Richiedi il tuo nuovo sito", svgIcona("destra"));
   const btnIndietro = h("button", { class: "btn btn--ghost", type: "button", hidden: !a.puoIndietro, onclick: a.indietro }, svgIcona("sinistra"), "Indietro");
   btnInvia.addEventListener("click", a.invia);
   const el = h(
