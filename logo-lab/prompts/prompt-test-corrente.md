@@ -1,4 +1,43 @@
-# Prompt di prova corrente (v8, 2026-09-13) — solo contesto, uso sul sito
+# Prompt di prova corrente (v9, 2026-09-13) — contesto generale + guardrail + ragionamento
+
+Richiesta di Mattia: guardrail «the logo shows only the name»; un fattore che chieda un design
+professionale e faccia RAGIONARE il modello sul design prima di disegnare; contesto più
+generale (solo di cosa si occupa la ditta e dove, niente numeri); massimo 4 righe.
+
+Come ho reso il «fattore professionale» senza dare stile: non aggettivi d'umore (la ricerca 05
+dice che «professional/modern» non spostano nulla) ma un RUOLO e un PROCESSO: «as a senior brand
+designer would for a paying client: think the concept through before drawing». È indirizzato ai
+modelli con ragionamento (GPT Image 2, Nano Banana Pro, Seedream 5) e non vincola la resa. I
+criteri di qualità sono espressi come risultato d'uso («distinctive, simple, still clear at small
+size in the site header»), non come stile.
+
+## 1 — La Cecilia
+
+```text
+Logo for the website landing page of "LA CECILIA", a family-run bathroom renovation company in San Severo, Puglia, Italy.
+Design it as a senior brand designer would for a paying client: think the concept through before drawing, so it is distinctive, simple and still clear at small size in the site header.
+The logo shows only the name.
+```
+
+## 2 — Termoidraulica Rossi
+
+```text
+Logo for the website landing page of "TERMOIDRAULICA ROSSI", a father-and-son plumbing and heating business in Bergamo, Italy.
+Design it as a senior brand designer would for a paying client: think the concept through before drawing, so it is distinctive, simple and still clear at small size in the site header.
+The logo shows only the name.
+```
+
+## 3 — Coperture Marini
+
+```text
+Logo for the website landing page of "COPERTURE MARINI", a roofing and waterproofing contractor in Treviso, Italy.
+Design it as a senior brand designer would for a paying client: think the concept through before drawing, so it is distinctive, simple and still clear at small size in the site header.
+The logo shows only the name.
+```
+
+---
+
+# v8 (superata) — solo contesto, uso sul sito
 
 Richiesta di Mattia: prompt di massimo 3 righe, nessuna indicazione di stile né vincolo; solo il
 contesto dell'azienda. Esito v7 (5 servizi): «già meglio, più creativi», ma tutti hanno messo le
