@@ -437,7 +437,7 @@ non pipeline. Traffico da AI: si presidia con Bing, answer-first, entità e dire
 | Meta auto-post su scala, Subito/Bakeca, gruppi Facebook | app review e rischio a cascata; pagamento e spam |
 | Google Ads micro-budget in automatico | sotto la soglia di dati per l'ottimizzazione |
 | promettere posizioni o tempi | Google: «no one can guarantee a #1 ranking»; red flag del settore |
-| creare schede Google Business al posto del cliente | fuori scope per decisione; sospensioni e reputazione |
+| creare schede Google Business al posto del cliente | sospensioni e reputazione. La scheda del cliente è un servizio separato (decisione del 14/09): il software prepara la scheda consigliata, Mattia la inserisce a mano con l'accesso da Manager dato dal cliente (`docs/traffico/README.md`) |
 
 ## 8. Strumenti e budget
 
@@ -468,9 +468,11 @@ consumo**; nessun altro acquisto finché i sensori non mostrano dati.
 
 ## 10. Cosa cambia rispetto al 03/09 e al 07/09
 
-- Il **Local Pack è fuori portata** senza scheda Google Business (decisione del committente): il
-  terreno è l'**organico locale** e la coda lunga «servizio + comune», dove il fattore n. 1 è la
-  pagina per servizio. Va detto al cliente: senza scheda non si entra nella mappa.
+- Il **Local Pack è fuori portata** per il servizio Sito: il suo terreno è l'**organico locale** e
+  la coda lunga «servizio + comune», dove il fattore n. 1 è la pagina per servizio. La scheda
+  Google è un **servizio separato** (decisione del 14/09, dopo questa ricerca): quando il cliente
+  dà l'accesso, il software prepara la scheda consigliata e Mattia la inserisce a mano. Roadmap
+  e decisioni: `docs/traffico/README.md`.
 - Un sito nuovo senza reputazione **non è penalizzato** dai rater (QRG §3.3.5): corregge la lettura
   «strutturalmente penalizzato» del 07/09 e della pista fiducia di oggi.
 - `FAQPage` e `HowTo` non producono più rich result (2023, rimozione 05/2026): il JSON-LD resta
@@ -497,6 +499,10 @@ consumo**; nessun altro acquisto finché i sensori non mostrano dati.
 - Churn reale dei competitor italiani; siti cliente dei competitor da ispezionare a mano.
 
 ## 12. Proposta di integrazione in pipeline
+
+> **Superata il 2026-09-14** dalla roadmap `docs/traffico/README.md`, che divide il lavoro in 20
+> piani (T0-T8, G1-G3) con due servizi attivabili per cliente (Sito e Scheda Google). La
+> proposta qui sotto resta come provenienza.
 
 Ogni piano in plan mode con `scope.json`; ordine e dipendenze:
 
