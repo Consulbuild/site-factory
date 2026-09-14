@@ -142,6 +142,14 @@ export const ClientStateSchema = z.object({
          * Il deploy rifiuta se non coincidono con lo stato corrente.
          */
         integrazioni: z.object({ umamiWebsiteId: z.string(), formAction: z.string() }).optional(),
+        /**
+         * Fondamenta SEO COTTE nella dist dell'ultima build (servizio Traffico «Sito» attivo
+         * o sospeso, dominio, percorso completo): robots con Sitemap, sitemap.xml, JSON-LD in
+         * home, chiave IndexNow, _headers. Assente = build senza. Il deploy rifiuta se non
+         * coincide con fondamentaAttese() (lib/fondamenta.ts). `avvisi`: dati omessi dal
+         * JSON-LD e title/description/H1 fuori misura — mai bloccanti.
+         */
+        fondamenta: z.object({ dominio: z.string(), avvisi: z.array(z.string()).optional() }).optional(),
         // Il deploy non è uno step: è la storia dell'ultima pubblicazione.
         deploy: z
           .object({

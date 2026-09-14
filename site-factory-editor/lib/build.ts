@@ -1,9 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
-import { SITE_RENDERER, NODE_BIN, clientDir } from "./paths";
+import { REPO_ROOT, SITE_RENDERER, NODE_BIN, clientDir } from "./paths";
 import { readClientState, patchClientState, readCopy, readLavori } from "./clients";
 import { validateCopyArtifact } from "./slots";
 import { UMAMI_HOST, ensureUmamiWebsite, formAction } from "./integrazioni";
+import { fondamentaAttese, scriviDatiStrutturati, cuociFondamenta } from "./fondamenta";
 import type { RunEvent, PhaseResult, StepIO } from "./run-step";
 import type { RunCtx } from "./steps";
 
@@ -14,6 +15,8 @@ import type { RunCtx } from "./steps";
 const PUBLIC_MEDIA = path.join(SITE_RENDERER, "public", "media");
 const ASTRO_BIN = path.join(SITE_RENDERER, "node_modules", ".bin", "astro");
 const BLUEPRINT = "blueprints/conversione-locale-v1";
+// Elenco ISTAT dei comuni (nome, sigla, CAP) per l'indirizzo strutturato del JSON-LD.
+const COMUNI_JSON = path.join(REPO_ROOT, "site-intake", "data-src", "comuni.json");
 
 const distDirOf = (slug: string) => path.join(clientDir(slug), "dist");
 
@@ -192,6 +195,20 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
     }
   }
 
+  // FASE fondamenta SEO (dati strutturati): servizio Traffico «Sito» attivo o sospeso,
+  // dominio, percorso completo, build completa — stessa regola dell'interlock del deploy.
+  // Il JSON-LD arriva al renderer come file (DATI_STRUTTURATI_JSON), mai in site.json.
+  // A servizio spento questa fase e la cottura post-build non girano: dist di sempre.
+  const fondamenta = partial ? null : fondamentaAttese(statoCliente, dominio);
+  let datiStrutturati: { file: string; avvisi: string[] } | null = null;
+  if (fondamenta) {
+    yield { type: "phase", label: "fondamenta SEO (dati strutturati)" };
+    const ds = scriviDatiStrutturati(dir, site, fondamenta, COMUNI_JSON);
+    yield { type: "text", text: ds.riepilogo };
+    for (const a of ds.avvisi) yield { type: "text", text: `avviso: ${a}` };
+    datiStrutturati = ds;
+  }
+
   // FASE astro build → out/<slug>/dist (path assoluti: fuori dal renderer).
   // Col dominio pubblicato la build riceve SITE_URL: attiva canonical e og:*
   // assoluti in Base.astro (consolidamento SEO apex/www/workers.dev); con le
@@ -208,6 +225,7 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
       ...(integrazioni
         ? { UMAMI_HOST, UMAMI_WEBSITE_ID: integrazioni.umamiWebsiteId, FORM_ACTION: integrazioni.formAction }
         : {}),
+      ...(datiStrutturati ? { DATI_STRUTTURATI_JSON: datiStrutturati.file } : {}),
     },
     timeoutMs: 180_000,
   });
@@ -218,6 +236,22 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
   // trovata pubblicata sul dominio al primo audit go-live 2026-07-22).
   for (const qa of ["anteprima", "anteprima-componenti"]) {
     fs.rmSync(path.join(dist, qa), { recursive: true, force: true });
+  }
+
+  // FASE fondamenta SEO (sitemap, robots, IndexNow): sull'HTML finale, dopo la pulizia
+  // delle pagine QA. Errori tecnici (canonical ≠ URL della sitemap, JSON-LD assente o
+  // non valido) fermano la build; title, description e H1 fuori misura sono avvisi.
+  let avvisiFondamenta: string[] = [];
+  if (fondamenta) {
+    yield { type: "phase", label: "fondamenta SEO (sitemap, robots, IndexNow)" };
+    const c = cuociFondamenta(dist, dir, fondamenta, new Date());
+    if (!c.ok) return { ok: false, error: c.errore };
+    yield {
+      type: "text",
+      text: `sitemap: ${c.urls} URL · lastmod ${c.cambiate.length ? `aggiornato per ${c.cambiate.join(", ")}` : "invariato"} · robots, chiave IndexNow e _headers (noindex su workers.dev) scritti`,
+    };
+    for (const a of c.avvisi) yield { type: "text", text: `avviso: ${a}` };
+    avvisiFondamenta = [...(datiStrutturati?.avvisi ?? []), ...c.avvisi];
   }
   const { pages, sizeKb } = distStats(dist);
   patchClientState(slug, (s) => {
@@ -234,12 +268,15 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
     // Stessa logica per le integrazioni cotte nell'HTML (script Umami, action).
     if (integrazioni) s.steps.build.integrazioni = integrazioni;
     else delete s.steps.build.integrazioni;
+    // E per le fondamenta SEO (con i loro avvisi, mai bloccanti).
+    if (fondamenta) s.steps.build.fondamenta = { dominio: fondamenta, ...(avvisiFondamenta.length ? { avvisi: avvisiFondamenta } : {}) };
+    else delete s.steps.build.fondamenta;
     // deploy NON si azzera: il sito online resta online; la UI segnala
     // «build più recente non pubblicata» confrontando builtAt/deployedAt.
   });
   yield {
     type: "text",
-    text: `build ok — ${pages} pagine, ${sizeKb} KB${partial ? " (parziale)" : ""}${noindex ? " · noindex (demo)" : ""}${integrazioni ? " · integrazioni attive" : ""}`,
+    text: `build ok — ${pages} pagine, ${sizeKb} KB${partial ? " (parziale)" : ""}${noindex ? " · noindex (demo)" : ""}${integrazioni ? " · integrazioni attive" : ""}${fondamenta ? ` · fondamenta SEO${avvisiFondamenta.length ? ` (${avvisiFondamenta.length} avvisi)` : ""}` : ""}`,
   };
   return { ok: true };
 }

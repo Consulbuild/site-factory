@@ -6,6 +6,7 @@ import { readClientState, patchClientState, writeJson } from "./clients";
 import { getSecret } from "./secrets";
 import { syncInfra, type InfraEsito } from "./integrazioni";
 import { etichettaDemo } from "./portafoglio-shared";
+import { fondamentaAttese, motivoRifiutoFondamenta } from "./fondamenta";
 
 // Pubblicazione su Cloudflare Workers static assets (decisione 2026-07,
 // docs/decisions/2026-07-verifiche-fase-b.md §6): wrangler.jsonc per cliente
@@ -108,7 +109,8 @@ async function deployClientInner(slug: string): Promise<DeployResult> {
     throw new Error("nessuna build da pubblicare: builda prima il sito");
   }
 
-  const build = readClientState(slug).steps.build;
+  const st = readClientState(slug);
+  const build = st.steps.build;
   if (build.noindex) {
     throw new Error("la build è noindex (demo): ribuilda in percorso completo per pubblicare il sito reale.");
   }
@@ -137,6 +139,11 @@ async function deployClientInner(slug: string): Promise<DeployResult> {
         : "la build contiene ancora le integrazioni del dominio ora rimosso (statistiche e modulo). Ribuilda, riconferma e poi pubblica.",
     );
   }
+  // Stessa regola per le fondamenta SEO del servizio Traffico «Sito» (robots con
+  // Sitemap, sitemap, JSON-LD, chiave IndexNow, _headers): cotte alla build per un
+  // dominio, attese secondo lo stato corrente del servizio. Prima di wrangler.
+  const motivoFondamenta = motivoRifiutoFondamenta(build.fondamenta?.dominio ?? null, fondamentaAttese(st, dominio));
+  if (motivoFondamenta) throw new Error(motivoFondamenta);
 
   // ponytail: nome worker = slug (già [a-z0-9-]; il più lungo oggi è 47 char,
   // ben sotto il limite Workers — se mai servisse, qui si tronca).

@@ -331,7 +331,11 @@ export function datiStrutturati(i: InputDatiStrutturati): { jsonld: Rec; avvisi:
 
 function leggiJsonSeEsiste(file: string): unknown {
   if (!fs.existsSync(file)) return null;
-  return JSON.parse(fs.readFileSync(file, "utf8"));
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch (e) {
+    throw new Error(`dati strutturati non generabili: ${path.basename(file)} illeggibile (${e instanceof Error ? e.message : String(e)})`);
+  }
 }
 
 /** Scrittura atomica (tmp + rename): un crash a metà non lascia file troncati. */
