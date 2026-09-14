@@ -259,7 +259,8 @@ export function BuildPanel({
     abbonato: { key: "abbonato", label: "Il cliente si è abbonato", tone: "secondary", onClick: () => setDialog("abbonato") } as Azione,
     proroga: demoAccesa && !demo!.congelata ? ({ key: "proroga", label: "Proroga +15 gg", tone: "ghost", onClick: () => setDialog("proroga") } as Azione) : null,
     spegni: demoAccesa ? ({ key: "spegni", label: demoScaduta ? "Spegni demo adesso" : "Spegni demo", tone: "danger", onClick: () => setDialog("spegni") } as Azione) : null,
-    pubblicaSito: { key: "pubblica-sito", label: build.deployErrore ? "Riprova la pubblicazione" : build.deploy ? "Ripubblica" : "Pubblica su Cloudflare", tone: "secondary", onClick: () => setDialog("pubblica") } as Azione,
+    // Con un motivo di rebuild il deploy rifiuterebbe comunque: l'azione sparisce in ogni ramo (anche a VPS bloccato).
+    pubblicaSito: rebuild ? null : ({ key: "pubblica-sito", label: build.deployErrore ? "Riprova la pubblicazione" : build.deploy ? "Ripubblica" : "Pubblica su Cloudflare", tone: "secondary", onClick: () => setDialog("pubblica") } as Azione),
     copiaSito: build.deploy ? ({ key: "copia-sito", label: "Copia link", tone: "ghost", onClick: () => copiaLink(build.deploy!.url), icon: <LinkIcon className="size-3.5" aria-hidden /> } as Azione) : null,
   };
 
