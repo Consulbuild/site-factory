@@ -157,6 +157,8 @@ export interface ClientSummary {
   percorso: ClientState["percorso"];
   catena?: ClientState["catena"];
   demo?: ClientState["demo"];
+  /** Servizi Traffico (portafoglio /traffico); assente = entrambi spenti. */
+  traffico?: ClientState["traffico"];
   flagsCount: number;
 }
 
@@ -185,6 +187,7 @@ export function listClients(): ClientSummary[] {
       percorso: state.percorso,
       ...(state.catena ? { catena: state.catena } : {}),
       ...(state.demo ? { demo: state.demo } : {}),
+      ...(state.traffico ? { traffico: state.traffico } : {}),
       flagsCount: brief?._da_verificare?.length ?? 0,
     });
   }

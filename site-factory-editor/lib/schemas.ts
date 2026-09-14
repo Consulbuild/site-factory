@@ -21,6 +21,20 @@ const UltimaRun = z
 // se divergono → banner «a monte è cambiato». I client.json vecchi (solo stringhe) restano validi.
 const Upstream = z.record(z.string(), z.string().nullable()).optional();
 
+// Servizio «Traffico» per cliente (docs/traffico/README.md §3). Le invarianti sulle
+// date le garantisce lib/traffico.ts (unico scrittore), NON un refine: un campo
+// ritoccato male a mano non deve rendere «corrotto» l'intero client.json.
+export const StatoServizioTraffico = z.enum(["spento", "attivo", "sospeso"]);
+const ServizioTraffico = z.object({
+  stato: StatoServizioTraffico,
+  /** Prima attivazione in assoluto: non cambia più (report e misura degli effetti). */
+  primaAttivazioneAt: z.string().optional(),
+  /** Ultimo passaggio ad attivo, attivazione o riattivazione («attivo dal»). */
+  attivatoAt: z.string().optional(),
+  /** Ultimo passaggio a sospeso: resta anche dopo una riattivazione. */
+  sospesoAt: z.string().optional(),
+});
+
 export const ClientStateSchema = z.object({
   version: z.literal(1),
   submissionId: z.string(),
@@ -184,6 +198,15 @@ export const ClientStateSchema = z.object({
       /** true = «Il cliente si è abbonato»: la scadenza non conta più. */
       congelata: z.boolean().optional(),
       errore: z.string().optional(),
+    })
+    .optional(),
+  // Servizi «Traffico» (Sito, Scheda Google). Chiave assente = entrambi spenti.
+  // .optional() e non .default(): nessuna scrittura estranea (conferme, catena)
+  // la fa nascere; compare solo al primo cambio di stato fatto dalla route traffico.
+  traffico: z
+    .object({
+      sito: ServizioTraffico.default({ stato: "spento" }),
+      scheda: ServizioTraffico.default({ stato: "spento" }),
     })
     .optional(),
 });
