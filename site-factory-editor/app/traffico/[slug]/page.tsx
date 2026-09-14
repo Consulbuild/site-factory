@@ -28,11 +28,12 @@ export const dynamic = "force-dynamic";
 
 const MOTIVO_ID = "traffico-motivo-blocco";
 
-const CONTENUTI: Record<ServizioKey, { descrizione: string; arrivera: string[]; servira: string[] }> = {
+const CONTENUTI: Record<ServizioKey, { descrizione: string; disponibile: string[]; arrivera: string[]; servira: string[] }> = {
   sito: {
     descrizione: "Ottimizzazione del sito per le ricerche locali.",
+    // Piano T1a: le cuoce la build col dominio quando il servizio è attivo o sospeso.
+    disponibile: ["le fondamenta tecniche (sitemap, robots, dati strutturati), aggiunte dalla build col dominio"],
     arrivera: [
-      "le fondamenta tecniche: sitemap, robots, dati strutturati",
       "le pagine per servizio e per zona, da approvare una per una",
       "lo stato dell'indicizzazione su Google e Bing",
       "le correzioni a titoli, descrizioni e link interni",
@@ -45,6 +46,7 @@ const CONTENUTI: Record<ServizioKey, { descrizione: string; arrivera: string[]; 
   },
   scheda: {
     descrizione: "L'editor prepara la scheda consigliata; nella scheda Google del cliente la inserisci tu, a mano.",
+    disponibile: [],
     arrivera: [
       "la scheda consigliata: categorie, servizi, attributi, descrizione",
       "la checklist di ciò che hai già inserito",
@@ -112,13 +114,23 @@ function SezioneServizio({
       )}
       <div className="mt-4 grid gap-x-8 gap-y-4 border-t border-line pt-4 md:grid-cols-2">
         <div>
+          {c.disponibile.length > 0 && (
+            <>
+              <h3 className="text-sm font-semibold text-muted">Già disponibile</h3>
+              <ul className="mt-1.5 mb-4 list-disc space-y-1 pl-4 text-sm text-muted">
+                {c.disponibile.map((x) => (
+                  <li key={x}>{x}</li>
+                ))}
+              </ul>
+            </>
+          )}
           <h3 className="text-sm font-semibold text-muted">Cosa comparirà qui</h3>
           <ul className="mt-1.5 list-disc space-y-1 pl-4 text-sm text-muted">
             {c.arrivera.map((x) => (
               <li key={x}>{x}</li>
             ))}
           </ul>
-          <p className="mt-2 text-sm text-faint">Per ora nessuna di queste parti è disponibile.</p>
+          {c.disponibile.length === 0 && <p className="mt-2 text-sm text-faint">Per ora nessuna di queste parti è disponibile.</p>}
         </div>
         <div>
           <h3 className="text-sm font-semibold text-muted">Cosa servirà</h3>
