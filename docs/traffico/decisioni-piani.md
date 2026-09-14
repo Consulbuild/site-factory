@@ -61,6 +61,9 @@ restano anche se il contesto della sessione si perde. Valgono sopra il testo del
       `inbox-form.ts` non si tocca.
     - Sito attuale del cliente come fonte: solo i dati strutturati (JSON-LD) che pubblica, se
       l'URL è nel brief e risponde; nessuna estrazione dal testo.
+11. Il link del mini-form si genera per un cliente con **almeno uno** dei due servizi attivo (Sito
+    o Scheda Google): gli stessi dati servono a entrambi (decisione G1 punto 3). Le domande su
+    foto dei cantieri e prezzi restano utili anche col solo servizio Scheda.
 
 ## T5a — Contratto multipagina e renderer (piano pronto)
 
@@ -80,6 +83,35 @@ restano anche se il contesto della sessione si perde. Valgono sopra il testo del
 7. `lastmod` onesto con il footer che elenca i servizi: `testoIndicizzabile` in
    `site-factory-editor/lib/fondamenta.ts` deve ignorare header, nav e footer (conta il contenuto
    principale). Rientra nel perimetro di T5a con un caso nel banco `test-fondamenta.ts`.
+
+## T1b — Pagine leggere (piano pronto)
+
+1. Varianti immagini dietro l'interruttore del servizio Sito finché Mattia non decide se estenderle a
+   tutti i siti (domanda aperta nel riepilogo per Mattia).
+2. Budget sforato: **avviso** visibile nella scheda Build & Pubblica e nel log, non blocco (coerente
+   con T1a punto 7).
+3. Ordine: T1b si sviluppa dopo T6a e **prima di T5a** (le pagine interne usano `Foto.astro`).
+4. Lighthouse con `npx` ammesso, versione fissata (pacchetto ufficiale Google).
+5. `sizeKb` nella scheda Build invariato.
+6. Nel perimetro anche il `favicon` (148 KB scaricati a ogni pagina: obiettivo ≤ 10 KB senza toccare
+   la pipeline del logo, ottimizzando la copia della build) e una variante `og:image` 1200×630 JPEG.
+
+## G1 — Scheda Google consigliata (piano pronto)
+
+1. Ditte individuali: raccolta delle schede della zona ammessa (le query non contengono il nome del
+   cliente); vietate solo le ricerche col nome del cliente.
+2. Senza chiave DataForSEO la scheda si prepara lo stesso: categorie dai soli servizi, segnate «da
+   confermare coi concorrenti».
+3. **Il mini-form di T3 è disponibile anche col solo servizio Scheda** (vedi T3 punto 11).
+4. Business Profile API e `cache-api.json` rinviati a G3.
+5. Logo: quello fornito dal cliente oppure quello generato dalla pipeline se la riga Logo è
+   verificata; mai un logo non approvato.
+6. Nessuna descrizione dei singoli servizi per ora.
+7. Parametri iniziali (zoom 17z, 5 punti, soglie) del piano fino alla calibrazione.
+8. Spesa di calibrazione (~0,30 $) quando Mattia inserisce la chiave.
+9. Descrizione modificata a mano da Mattia: passano sempre i controlli rigidi (lunghezza, URL,
+   telefono, keyword ripetute, promesse vietate); salta solo il critico di stile; salvare = approvare.
+10. Descrizione in prima persona plurale.
 
 ## T2a — Motori al deploy (piano pronto)
 
