@@ -60,7 +60,10 @@ export interface RecordComune {
   nome: string;
   sigla: string;
   nomeAltraLingua?: string;
+  /** Solo per la ricerca per nome: denominazioni precedenti (righe CD, POSAS) e dei comuni soppressi confluiti nel comune. */
   nomiPrecedenti?: string[];
+  /** Solo per la ricerca per nome: sigle delle province dei codici precedenti («SU» per Carbonia, oggi CI). */
+  siglePrecedenti?: string[];
   /** [lat, lon] WGS84, punto interno al comune (4 decimali). */
   centro: [number, number];
   /** Raggio del cerchio di pari area: misura dell'incertezza del «centro». */
@@ -330,15 +333,21 @@ export function frasiFatto(codice: string | number, ds: DatasetFattiComuni = car
   return frasi;
 }
 
-/** Nome (attuale, nell'altra lingua o precedente; accenti e apostrofi indifferenti) e sigla opzionale → candidati. */
+/**
+ * Nome (attuale, nell'altra lingua, solo italiano o precedente; accenti e apostrofi indifferenti) e
+ * sigla opzionale (attuale o precedente, come la salva il form) → candidati, sempre con nome e sigla 2026.
+ */
 export function cercaComune(nome: string, sigla?: string, ds: DatasetFattiComuni = caricaFattiComuni()): { codice: string; nome: string; sigla: string }[] {
   const chiave = normalizzaNome(nome);
   if (!chiave) return [];
   const s = sigla?.trim().toUpperCase();
   const out: { codice: string; nome: string; sigla: string }[] = [];
   for (const [codice, r] of Object.entries(ds.comuni)) {
-    if (s && r.sigla !== s) continue;
-    const nomi = [r.nome, ...r.nome.split("/"), ...(r.nomeAltraLingua ? [r.nomeAltraLingua] : []), ...(r.nomiPrecedenti ?? [])];
+    if (s && r.sigla !== s && !r.siglePrecedenti?.includes(s)) continue;
+    // «San Dorligo della Valle-Dolina» con nome nell'altra lingua «Dolina» → anche «San Dorligo della Valle»
+    const soloItaliano = r.nomeAltraLingua && r.nome.endsWith(`-${r.nomeAltraLingua}`) ? [r.nome.slice(0, -r.nomeAltraLingua.length - 1)] : [];
+    const precedenti = (r.nomiPrecedenti ?? []).flatMap((n) => n.split("/").concat(n));
+    const nomi = [r.nome, ...r.nome.split("/"), ...(r.nomeAltraLingua ? [r.nomeAltraLingua] : []), ...soloItaliano, ...precedenti];
     if (nomi.some((n) => normalizzaNome(n) === chiave)) out.push({ codice, nome: r.nome, sigla: r.sigla });
   }
   return out.sort((a, b) => a.nome.localeCompare(b.nome, "it") || a.sigla.localeCompare(b.sigla));

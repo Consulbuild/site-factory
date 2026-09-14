@@ -10,7 +10,9 @@
 // gate e scrive data/comuni-fatti.json SOLO se tutto passa (file temporaneo + rename).
 // Una fonte non raggiungibile ferma l'aggiornamento; con --parziale il dataset si scrive
 // lo stesso ma dichiara `completo: false` e `fontiMancanti` (mai un dataset parziale
-// spacciato per completo). --offline usa solo la cache.
+// spacciato per completo). --offline usa solo la cache. --solo-verifica esegue i gate senza
+// scrivere il dataset (la cache si aggiorna comunque, solo con file nuovi che hanno passato i
+// controlli del contenuto: una copia buona non è mai sostituita da un download sbagliato).
 //
 // PROCEDURA ANNUALE (aprile, dopo i confini al 1/1 e la POSAS definitiva) — piano T6a §9:
 //  1. Controllare le pagine Istat (codici dei comuni, confini amministrativi, demo.istat.it) e
@@ -191,9 +193,10 @@ const ZIP = {
 };
 
 /**
- * Sigle di province del 1993 che oggi hanno un'altra sigla o non esistono più (serve solo a
- * disambiguare gli omonimi dell'allegato A): Forlì FO (oggi FC), Pesaro PS (oggi PU), le
- * quattro province sarde storiche (codici 090-095, sostituite dal riordino del 1/1/2026).
+ * Sigle di province che oggi hanno un'altra sigla o non esistono più (servono a disambiguare
+ * gli omonimi dell'allegato A e a riconoscere le sigle salvate dal form, fermo a prima del
+ * 2026): Forlì FO (oggi FC), Pesaro PS (oggi PU), le quattro province sarde storiche (codici
+ * 090-095) e il Sud Sardegna SU (111, 2016-2025), sostituite dal riordino del 1/1/2026.
  */
 const SIGLE_STORICHE: Record<string, string[]> = {
   "040": ["FO"],
@@ -202,6 +205,7 @@ const SIGLE_STORICHE: Record<string, string[]> = {
   "091": ["NU"],
   "092": ["CA"],
   "095": ["OR"],
+  "111": ["SU"],
 };
 
 const UA = "site-factory-fatti-comuni/1.0 (+mailto:info@consulbuild.com)";
@@ -984,12 +988,24 @@ export function zonaDaGradiGiorno(gg: number): string {
 
 export const INTERVALLO_GRADI_GIORNO: [number, number] = [500, 5200];
 export const INTERVALLO_ALTITUDINE: [number, number] = [-5, 2100];
+/** Righe minime dei tre frammenti dell'allegato A (oggi 8.088): sotto, parser rotto o pagina cambiata. */
+export const RIGHE_MINIME_DPR412 = 8000;
 
 export interface ComuneAnagrafica {
   codice: string;
   nome: string;
   nomeAltraLingua?: string;
   sigla: string;
+}
+
+/** Sigla attuale del comune più quelle delle province dei suoi codici precedenti (cambi di codice). */
+export function sigleDelComune(codice: string, siglaAttuale: string, territorio: Territorio, siglePerProvincia: Map<string, string[]>): Set<string> {
+  const s = new Set([siglaAttuale]);
+  for (const c of territorio.codiciStorici(codice)) {
+    const p = c.slice(0, 3);
+    for (const sigla of [...(siglePerProvincia.get(p) ?? []), ...(SIGLE_STORICHE[p] ?? [])]) s.add(sigla);
+  }
+  return s;
 }
 
 /**
@@ -1033,35 +1049,35 @@ export function abbinaDpr412(
     const k = territorio.risolvi(v.codice, v, true).codice;
     if (anagrafica.has(k)) indicizza(v.nome, k);
   }
-  const sigleDi = (codice: string): Set<string> => {
-    const s = new Set([anagrafica.get(codice)!.sigla]);
-    for (const c of territorio.codiciStorici(codice)) {
-      const p = c.slice(0, 3);
-      for (const sigla of [...(siglePerProvincia.get(p) ?? []), ...(SIGLE_STORICHE[p] ?? [])]) s.add(sigla);
-    }
-    return s;
-  };
+  const sigleDi = (codice: string) => sigleDelComune(codice, anagrafica.get(codice)!.sigla, territorio, siglePerProvincia);
   const assegnate = new Map<string, RigaDpr412[]>();
   const assegna = (codice: string, r: RigaDpr412) => (assegnate.get(codice) ?? assegnate.set(codice, []).get(codice)!).push(r);
   const nonTrovate: RigaDpr412[] = [];
   const conNomeAltrove = new Set<RigaDpr412>();
+  // comuni con una riga esatta scartata: la loro riga c'è ma non vale, quindi il secondo
+  // passaggio non deve dar loro la riga di un altro comune per nome simile
+  const occupati = new Set<string>();
   for (const r of righe) {
+    const candidati = [...(indice.get(normalizzaNome(r.nome)) ?? [])];
+    const conSigla = candidati.filter((c) => sigleDi(c).has(r.sigla));
+    const scartaRiga = (motivo: string) => {
+      scarta(motivo, r.testo);
+      for (const c of conSigla) occupati.add(c);
+    };
     if (zonaDaGradiGiorno(r.gradiGiorno) !== r.zona) {
-      scarta("zona_incoerente", r.testo);
+      scartaRiga("zona_incoerente");
       continue;
     }
     if (r.gradiGiorno < INTERVALLO_GRADI_GIORNO[0] || r.gradiGiorno > INTERVALLO_GRADI_GIORNO[1] || r.altitudine < INTERVALLO_ALTITUDINE[0] || r.altitudine > INTERVALLO_ALTITUDINE[1]) {
-      scarta("fuori_intervallo", r.testo);
+      scartaRiga("fuori_intervallo");
       continue;
     }
-    const candidati = [...(indice.get(normalizzaNome(r.nome)) ?? [])];
     if (!candidati.length) {
       nonTrovate.push(r);
       continue;
     }
-    const conSigla = candidati.filter((c) => sigleDi(c).has(r.sigla));
     if (conSigla.length > 1) {
-      scarta("nome_ambiguo", r.testo);
+      scartaRiga("nome_ambiguo");
       continue;
     }
     if (conSigla.length === 0) {
@@ -1077,8 +1093,8 @@ export function abbinaDpr412(
     }
     assegna(codice, r);
   }
-  // secondo passaggio: solo comuni rimasti liberi, esistenti nel 1993, della stessa provincia
-  const liberi = [...anagrafica.keys()].filter((c) => !assegnate.has(c) && !territorio.natoDopo(c, R));
+  // secondo passaggio: solo comuni rimasti liberi (senza righe esatte, valide o scartate), esistenti nel 1993, della stessa provincia
+  const liberi = [...anagrafica.keys()].filter((c) => !assegnate.has(c) && !occupati.has(c) && !territorio.natoDopo(c, R));
   for (const r of nonTrovate) {
     const nome = normalizzaNome(r.nome);
     const vicini = liberi.filter((c) => sigleDi(c).has(r.sigla));
@@ -1199,20 +1215,56 @@ export function leggiManifest(cache: string): Manifest {
   }
 }
 
-/** La copia in cache è utilizzabile: file presenti, sha uguali al manifest, zip integri. */
+/**
+ * Il contenuto dei file di una fonte è quello atteso, altrimenti lancia: zip integri (unzip -t),
+ * CSV sismico e allegato A letti con gli stessi lettori della costruzione. Si usa sui file appena
+ * scaricati PRIMA di sostituire la copia in cache (una pagina d'errore servita con HTTP 200 non
+ * deve mai prendere il posto dell'ultima copia buona) e sulla copia in cache prima di usarla.
+ * Una fonte nuova che non è uno zip va aggiunta qui con il suo lettore.
+ */
+export function controllaContenuto(id: IdFonte, percorsi: string[]): void {
+  const def = FONTI[id];
+  const testo = (i: number) => daUtf8(readFileSync(percorsi[i]!), def.file[i]!.nome);
+  def.file.forEach((f, i) => {
+    if (!f.nome.endsWith(".zip")) return;
+    try {
+      execFileSync("unzip", ["-tqq", percorsi[i]!], { stdio: "pipe" });
+    } catch {
+      throw new Error(`${f.nome}: zip corrotto (unzip -t)`);
+    }
+  });
+  switch (id) {
+    case "dpc-sismica-2025":
+      leggiSismica(testo(0));
+      break;
+    case "dpr412-allegato-a": {
+      const n = def.file.reduce((somma, _, i) => somma + leggiDpr412(testo(i)).length, 0);
+      if (n < RIGHE_MINIME_DPR412) throw new Error(`allegato A: solo ${n} righe estratte (attese oltre 8.000): parser rotto o pagina cambiata`);
+      break;
+    }
+    case "istat-famiglie-2021":
+      // ponytail: il lettore delle famiglie non esiste ancora (piano T6a, M0): per ora si scartano solo le
+      // pagine d'errore HTML/XML; quando il lettore c'è, il controllo diventa il lettore stesso
+      if (/^\s*</.test(testo(0).slice(0, 200))) throw new Error(`${def.file[0]!.nome}: ricevuta una pagina HTML/XML invece del CSV`);
+      break;
+  }
+}
+
+/** La copia in cache è utilizzabile: file presenti, scaricati dagli URL attuali di FONTI, sha uguali al manifest, contenuto atteso. */
 function cacheValida(cache: string, id: IdFonte, voce: VoceManifest | undefined): string | null {
-  if (!voce || voce.stato !== "ok" || voce.file.length !== FONTI[id].file.length) return "nessuna copia in cache";
+  if (!voce || voce.stato !== "ok") return "nessuna copia in cache";
+  // stesso id ma URL cambiati in FONTI (procedura annuale): la copia vecchia non vale per il riferimento nuovo
+  const origine = (l: { nome: string; url: string }[]) => l.map((f) => `${f.nome} ${f.url}`).join("\n");
+  if (origine(voce.file) !== origine(FONTI[id].file)) return "nessuna copia in cache degli URL attuali (la copia presente viene da URL diversi da quelli di FONTI)";
   for (const f of voce.file) {
     const p = join(cache, f.nome);
     if (!existsSync(p)) return `${f.nome} assente dalla cache`;
     if (sha256File(p) !== f.sha256) return `${f.nome}: sha256 diverso dal manifest (cache corrotta)`;
-    if (f.nome.endsWith(".zip")) {
-      try {
-        execFileSync("unzip", ["-tqq", p], { stdio: "pipe" });
-      } catch {
-        return `${f.nome}: zip corrotto (unzip -t)`;
-      }
-    }
+  }
+  try {
+    controllaContenuto(id, voce.file.map((f) => join(cache, f.nome)));
+  } catch (e) {
+    return `copia in cache inutilizzabile: ${messaggio(e)}`;
   }
   return null;
 }
@@ -1239,13 +1291,10 @@ export async function preparaCache(cache: string, offline: boolean, log: (s: str
         file.push({ nome: f.nome, url: f.url, ...esito });
       }
       // prima si controllano tutti i file nuovi, poi si sostituisce la copia in cache
-      for (const f of file) {
-        if (!f.nome.endsWith(".zip")) continue;
-        try {
-          execFileSync("unzip", ["-tqq", join(cache, `${f.nome}.part`)], { stdio: "pipe" });
-        } catch {
-          throw new Error(`${f.nome}: zip scaricato ma corrotto (unzip -t)`);
-        }
+      try {
+        controllaContenuto(id, file.map((f) => join(cache, `${f.nome}.part`)));
+      } catch (e) {
+        throw new Error(`scaricato ma inutilizzabile: ${messaggio(e)}`);
       }
       for (const f of file) renameSync(join(cache, `${f.nome}.part`), join(cache, f.nome));
       const cambiato = precedente?.file.map((x) => x.sha256).join() !== file.map((x) => x.sha256).join();
@@ -1262,7 +1311,10 @@ export async function preparaCache(cache: string, offline: boolean, log: (s: str
         log(`✗ ${id}: non raggiungibile (${messaggio(e)}) e ${problema}`);
       }
     }
-    writeFileSync(join(cache, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
+    // file temporaneo + rename: un manifest troncato renderebbe inutilizzabile tutta la cache, --offline compreso
+    const tmp = join(cache, "manifest.json.tmp");
+    writeFileSync(tmp, JSON.stringify(manifest, null, 2) + "\n");
+    renameSync(tmp, join(cache, "manifest.json"));
   }
   return manifest;
 }
@@ -1368,12 +1420,20 @@ export function costruisciDataset(cache: string, manifest: Manifest, generatoIl:
   }
   const nomeStorico = (c: string) => nomiStorici.get(c) ?? anagrafica.get(c)?.nome ?? c;
 
-  for (const v of territorio.ridenominazioni) {
-    const k = territorio.risolvi(v.codice, v, true).codice;
-    const rec = comuni[k];
-    if (!rec || normalizzaNome(v.nome) === normalizzaNome(rec.nome)) continue;
+  // nomi con cui il comune si cerca ancora (form e client.json fermi a prima del 2026): servono solo a cercaComune
+  const aggiungiNomePrecedente = (codice2026: string, nome: string | undefined) => {
+    const rec = comuni[codice2026];
+    if (!rec || !nome || normalizzaNome(nome) === normalizzaNome(rec.nome)) return;
     const l = (rec.nomiPrecedenti ??= []);
-    if (!l.includes(v.nome)) l.push(v.nome);
+    if (!l.some((n) => normalizzaNome(n) === normalizzaNome(nome))) l.push(nome);
+  };
+  for (const v of territorio.ridenominazioni) aggiungiNomePrecedente(territorio.risolvi(v.codice, v, true).codice, v.nome);
+  // codici soppressi: nome prima del cambio di codice e comuni d'origine delle fusioni («Alano di Piave» → Setteville)
+  const aliasTerritorio = territorio.alias();
+  for (const [codice, a] of aliasTerritorio) aggiungiNomePrecedente(a.a, nomiStorici.get(codice));
+  for (const [codice, rec] of Object.entries(comuni)) {
+    const precedenti = [...sigleDelComune(codice, rec.sigla, territorio, siglePerProvincia)].filter((s) => s !== rec.sigla).sort();
+    if (precedenti.length) rec.siglePrecedenti = precedenti;
   }
 
   const scarti: Record<string, Record<string, string[]>> = {};
@@ -1398,6 +1458,9 @@ export function costruisciDataset(cache: string, manifest: Manifest, generatoIl:
   if (presente("istat-posas-2025")) {
     const letti = leggiPosas(daUtf8(membroZip(percorso("istat-posas-2025"), "*.csv"), "POSAS"), FONTI["istat-posas-2025"].riferimento);
     applica("popolazione", "istat-posas-2025", letti, { additivo: true, somma: (v) => v.reduce((a, b) => a + b, 0) });
+    // denominazioni Istat al riferimento della POSAS: le ridenominazioni più recenti del CSV delle variazioni (Murisengo → Murisengo Monferrato)
+    const R = riferimento(FONTI["istat-posas-2025"].riferimentoTerritoriale);
+    for (const [codice, nome] of letti.nomi) aggiungiNomePrecedente(territorio.risolvi(codice, R).codice, nome);
   }
 
   /* ---- sismica ---- */
@@ -1410,7 +1473,7 @@ export function costruisciDataset(cache: string, manifest: Manifest, generatoIl:
   if (presente("dpr412-allegato-a")) {
     const lette = FONTI["dpr412-allegato-a"].file.flatMap((_, i) => leggiDpr412(daUtf8(readFileSync(percorso("dpr412-allegato-a", i)), "allegato A")));
     righePerFonte["dpr412-allegato-a"] = lette.length;
-    if (lette.length < 8000) errori.push(`allegato A: solo ${lette.length} righe estratte (attese oltre 8.000): parser rotto o pagina cambiata`);
+    if (lette.length < RIGHE_MINIME_DPR412) errori.push(`allegato A: solo ${lette.length} righe estratte (attese oltre 8.000): parser rotto o pagina cambiata`);
     const { righe, correzioni } = correggiSigleOcr(lette);
     const { clima, scarti: s, approssimati: a } = abbinaDpr412(righe, anagrafica, territorio, siglePerProvincia);
     unisciScarti("clima", s);
@@ -1422,7 +1485,7 @@ export function costruisciDataset(cache: string, manifest: Manifest, generatoIl:
 
   /* ---- alias ---- */
   const alias: DatasetFattiComuni["alias"] = {};
-  for (const [codice, a] of [...territorio.alias()].sort(([x], [y]) => (x < y ? -1 : 1))) alias[codice] = { a: a.a, motivo: a.motivo, dal: a.dal };
+  for (const [codice, a] of [...aliasTerritorio].sort(([x], [y]) => (x < y ? -1 : 1))) alias[codice] = { a: a.a, motivo: a.motivo, dal: a.dal };
 
   /* ---- intestazione ---- */
   const fonti: DatasetFattiComuni["fonti"] = {};
@@ -1565,7 +1628,7 @@ export async function aggiorna(opzioni: { cache: string; dataset: string; offlin
     return false;
   }
   if (opzioni.soloVerifica) {
-    log("\n✓ gate verdi (--solo-verifica: nulla scritto)");
+    log("\n✓ gate verdi (--solo-verifica: dataset non scritto)");
     return true;
   }
   mkdirSync(dirname(opzioni.dataset), { recursive: true });

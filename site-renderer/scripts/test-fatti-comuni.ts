@@ -3,7 +3,7 @@
 // il dataset committato data/comuni-fatti.json.
 //
 //   cd site-renderer && node --experimental-strip-types scripts/test-fatti-comuni.ts
-import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -14,9 +14,11 @@ import {
   correggiSigleOcr,
   distanzaNomi,
   daWindows1252,
+  FONTI,
   leggiCsv,
   leggiDbf,
   leggiDpr412,
+  leggiManifest,
   leggiPosas,
   leggiSardegna,
   leggiShp,
@@ -25,15 +27,19 @@ import {
   PERCORSO_DATASET,
   BUDGET_DATASET_BYTE,
   portaAl2026,
+  preparaCache,
   puntoDentro,
   puntoInterno,
   riferimento,
   serializzaDataset,
+  sha256File,
   Territorio,
   utmInWgs84,
   zonaDaGradiGiorno,
   type ComuneAnagrafica,
+  type IdFonte,
   type Poligono,
+  type VoceManifest,
 } from "./fatti-comuni.ts";
 import {
   cercaComune,
@@ -360,6 +366,12 @@ console.log("\nDPR 412/1993 allegato A:");
   caso("inizio del nome a parola intera: «TELESE» → Telese Terme, dichiarato", clima.get("062074")?.[1] === 1170 && approssimati.inizio_del_nome?.[0]?.startsWith("062074") === true, approssimati);
   caso("nome esistente solo in un'altra provincia: «BG … CORTENOVA» → Cortenuova (BG), non Cortenova (LC)", clima.get("016083")?.[1] === 2383 && !clima.has("097025"), [clima.get("016083"), clima.get("097025")]);
   caso("il secondo passaggio non tocca comuni già abbinati esattamente né nati dopo il 1993", !approssimati.una_lettera?.some((v) => v.startsWith("015081") || v.startsWith("024128")));
+  const cunico = abbinaDpr412(leggiDpr412("AT F 2698 257 CUNICO\nAT E 2600 300 CUNIC"), new Map([["005051", { codice: "005051", nome: "Cunico", sigla: "AT" }]]), territorio, new Map([["005", ["AT"]]]));
+  caso(
+    "riga esatta scartata (zona incoerente): il secondo passaggio non dà a Cunico la riga «CUNIC» di un altro comune",
+    !cunico.clima.has("005051") && cunico.scarti.zona_incoerente?.length === 1 && cunico.scarti.non_trovato?.join() === "AT E 2600 300 CUNIC",
+    cunico,
+  );
 }
 
 /* ---------- POSAS e sismica ---------- */
@@ -395,6 +407,57 @@ console.log("\nAggiornamento:");
   const okParziale = await aggiorna({ cache: join(cartella, "cache"), dataset, offline: true, soloVerifica: false, parziale: true, log: () => {} });
   caso("--parziale senza le fonti strutturali: nulla scritto", !okParziale && readFileSync(dataset, "utf8").includes("sentinella"));
   rmSync(cartella, { recursive: true, force: true });
+
+  // cache con una copia buona di sismica e allegato A; la rete (finta) risponde HTTP 200 con una pagina d'errore a ogni URL
+  const cache = mkdtempSync(join(tmpdir(), "fatti-comuni-cache-"));
+  writeFileSync(join(cache, FONTI["dpc-sismica-2025"].file[0]!.nome), "﻿REGIONE;PROV_CITTA_METROPOLITANA;SIGLA_PROV;COMUNE;COD_ISTAT_COMUNE;ZONA_SISMICA\r\nLombardia;Milano;MI;Cologno Monzese;15081;3\r\n");
+  FONTI["dpr412-allegato-a"].file.forEach((f, i) => writeFileSync(join(cache, f.nome), `<pre>\n${Array.from({ length: 2700 }, (_, k) => `MI E 2404 131 COMUNE ${i} ${k}`).join("\n")}\n</pre>`));
+  const voce = (id: IdFonte): VoceManifest => ({
+    stato: "ok",
+    file: FONTI[id].file.map((f) => ({ nome: f.nome, url: f.url, sha256: sha256File(join(cache, f.nome)), byte: statSync(join(cache, f.nome)).size })),
+    scaricatoIl: "2026-09-14T00:00:00.000Z",
+    ultimoTentativo: "2026-09-14T00:00:00.000Z",
+  });
+  const buoni = { "dpc-sismica-2025": voce("dpc-sismica-2025"), "dpr412-allegato-a": voce("dpr412-allegato-a") };
+  writeFileSync(join(cache, "manifest.json"), JSON.stringify(buoni));
+  const fetchVera = globalThis.fetch;
+  const reteGuasta = (async () => new Response("<html><body>Servizio temporaneamente non disponibile</body></html>", { status: 200 })) as typeof fetch;
+  const logCache: string[] = [];
+  globalThis.fetch = reteGuasta;
+  try {
+    await preparaCache(cache, false, (r) => logCache.push(r));
+  } finally {
+    globalThis.fetch = fetchVera;
+  }
+  const dopo = leggiManifest(cache);
+  const intatta = (id: keyof typeof buoni) => dopo[id]?.stato === "ok" && dopo[id]!.file.every((f, i) => f.sha256 === buoni[id].file[i]!.sha256 && sha256File(join(cache, f.nome)) === f.sha256);
+  caso(
+    "HTTP 200 con pagina d'errore: sismica e allegato A (non zip) restano la copia buona in cache, nessun .part",
+    intatta("dpc-sismica-2025") && intatta("dpr412-allegato-a") && logCache.filter((r) => r.includes("uso la copia in cache")).length === 2 && !readdirSync(cache).some((n) => n.endsWith(".part")),
+    logCache,
+  );
+  caso("… e uno zip d'errore non entra in cache", dopo["istat-confini-2026"]?.stato === "non_raggiungibile" && !existsSync(join(cache, FONTI["istat-confini-2026"].file[0]!.nome)), dopo["istat-confini-2026"]);
+
+  const urlVecchio = structuredClone(buoni);
+  urlVecchio["dpc-sismica-2025"].file[0]!.url = "https://rischi.protezionecivile.gov.it/static/vecchio/classificazione-sismica.csv";
+  writeFileSync(join(cache, "manifest.json"), JSON.stringify(urlVecchio));
+  const offline = await preparaCache(cache, true, () => {});
+  caso(
+    "copia in cache scaricata da un URL diverso da quello attuale di FONTI → non usata; l'altra fonte sì",
+    offline["dpc-sismica-2025"]?.stato === "non_raggiungibile" && offline["dpc-sismica-2025"].errore?.includes("URL") === true && offline["dpr412-allegato-a"]?.stato === "ok",
+    offline["dpc-sismica-2025"],
+  );
+
+  const manifestPrima = readFileSync(join(cache, "manifest.json"), "utf8");
+  mkdirSync(join(cache, "manifest.json.tmp")); // la scrittura del file temporaneo fallisce
+  globalThis.fetch = reteGuasta;
+  const guasto = await preparaCache(cache, false, () => {}).then(
+    () => null,
+    (e: unknown) => String(e),
+  );
+  globalThis.fetch = fetchVera;
+  caso("scrittura del manifest fallita: il manifest precedente resta intero e leggibile", guasto !== null && readFileSync(join(cache, "manifest.json"), "utf8") === manifestPrima, guasto);
+  rmSync(cache, { recursive: true, force: true });
 }
 
 /* ---------- dataset committato ---------- */
@@ -450,6 +513,15 @@ console.log("\nDataset committato:");
   caso("nome precedente: «Grana» → Grana Monferrato (005056)", cercaComune("Grana", "AT", ds).some((c) => c.codice === "005056"), cercaComune("Grana", undefined, ds));
   caso("omonimo: «Castro» → 2 risultati, con sigla «le» → 1", cercaComune("Castro", undefined, ds).length === 2 && cercaComune("Castro", "le", ds).length === 1);
   caso("bilingue: «Bozen» → Bolzano/Bozen", cercaComune("Bozen", undefined, ds)[0]?.codice === "021008");
+  caso("sigla precedente salvata dal form: «Carbonia» SU → 119003 (oggi CI)", JSON.stringify(cercaComune("Carbonia", "SU", ds).map((c) => c.codice)) === '["119003"]', cercaComune("Carbonia", undefined, ds));
+  const dalForm: [string, string, string][] = [
+    ["Montagna", "BZ", "021053"], // nome precedente bilingue «Montagna/Montan»
+    ["Alano di Piave", "BL", "025075"], // comune d'origine della fusione di Setteville
+    ["San Dorligo della Valle", "TS", "032004"], // solo la parte italiana di «San Dorligo della Valle-Dolina»
+    ["Murisengo", "AL", "006113"], // ridenominazione del 2025 (nome POSAS al 1/1/2025)
+  ];
+  const trovati = dalForm.map(([n, s]) => cercaComune(n, s, ds).map((c) => c.codice).join());
+  caso("nomi del form rinominati o fusi: «Montagna» BZ, «Alano di Piave» BL, «San Dorligo della Valle» TS, «Murisengo» AL", trovati.join(";") === dalForm.map((f) => f[2]).join(";"), trovati);
   const d = distanzaKm("015081", "108033", ds);
   caso("distanza Cologno → Monza: 6 km in linea d'aria (5,8 arrotondato), metodo dichiarato, citabile", d?.km === 6 && d.citabile && d.metodo === "linea_aria_centroidi" && d.citazione.includes("linea d'aria") && d.citazione.includes("non su strada"), d);
   const confinanti = distanzaKm("058091", "058118", ds);
