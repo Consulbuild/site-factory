@@ -1,5 +1,6 @@
 // Banco di prova deterministico delle fondamenta SEO (lib/fondamenta.ts), nessuna rete:
-// regola «fondamenta attese» e interlock del deploy, tipo schema.org, indirizzo
+// regola «fondamenta attese», interlock del deploy e il suo specchio in catena e scheda
+// Build (lib/traffico.ts), tipo schema.org, indirizzo
 // strutturato (comuni in linea + comuni.json reale), JSON-LD, hash del testo per lastmod,
 // sitemap/robots/_headers, controlli sulle pagine, chiave IndexNow e cottura su una dist
 // sintetica in una cartella temporanea (cancellata a fine banco).
@@ -31,6 +32,7 @@ import {
   type InputDatiStrutturati,
 } from "../lib/fondamenta.ts";
 import { TESTI } from "../lib/inbox-form.ts";
+import { motivoRebuildFondamenta } from "../lib/traffico.ts";
 
 let passati = 0;
 let falliti = 0;
@@ -61,6 +63,42 @@ try {
   caso("b.it contro a.it → entrambi i domini", m3.includes("b.it") && m3.includes("a.it"), m3);
   caso("entrambe null → null", motivoRifiutoFondamenta(null, null) === null);
   caso("entrambe a.it → null", motivoRifiutoFondamenta("a.it", "a.it") === null);
+
+  console.log("\nmotivoRebuildFondamenta (specchio dell'interlock in catena e scheda Build):");
+  // Stessa composizione di buildDaRifare (lib/catena.ts) e della pagina Build: attese dalla regola unica.
+  type StatoProva = { percorso: "demo" | "completo"; traffico?: ReturnType<typeof t>; steps: { build: { dominio?: string; fondamenta?: { dominio: string } } } };
+  const statoCliente = (percorso: StatoProva["percorso"], sito: "spento" | "attivo" | "sospeso" | null, dominio?: string, cotte?: string): StatoProva => ({
+    percorso,
+    ...(sito ? { traffico: t(sito) } : {}),
+    steps: { build: { ...(dominio ? { dominio } : {}), ...(cotte ? { fondamenta: { dominio: cotte } } : {}) } },
+  });
+  const rebuild = (st: StatoProva) => motivoRebuildFondamenta(st.percorso, st.steps.build, fondamentaAttese(st, st.steps.build.dominio));
+  const r1 = rebuild(statoCliente("completo", "attivo", "a.it")) ?? "";
+  caso("servizio attivo + dominio, build senza fondamenta → rifare, dice «acceso per a.it»", r1.includes("senza le fondamenta") && r1.includes("acceso per a.it"), r1);
+  caso("sospeso + dominio, build senza fondamenta → rifare (restano accese)", rebuild(statoCliente("completo", "sospeso", "a.it")) !== null);
+  const r2 = rebuild(statoCliente("completo", "spento", "a.it", "a.it")) ?? "";
+  caso("servizio spento, build con fondamenta cotte → rifare, dice «spento»", r2.includes("con le fondamenta SEO per a.it") && r2.includes("spento"), r2);
+  caso("senza campo traffico (file storico), build con fondamenta → rifare", rebuild(statoCliente("completo", null, "a.it", "a.it")) !== null);
+  caso("attivo, dominio rimosso dopo la build con fondamenta → rifare", rebuild(statoCliente("completo", "attivo", undefined, "a.it")) !== null);
+  const r3 = rebuild(statoCliente("completo", "attivo", "a.it", "b.it")) ?? "";
+  caso("dominio cambiato (cotte b.it, dominio a.it) → rifare, nomina entrambi", r3.includes("b.it") && r3.includes("a.it"), r3);
+  caso("coincidenti: attivo + a.it cotte per a.it → non rifare", rebuild(statoCliente("completo", "attivo", "a.it", "a.it")) === null);
+  caso("coincidenti: spento senza fondamenta → non rifare", rebuild(statoCliente("completo", "spento", "a.it")) === null);
+  caso("coincidenti: attivo senza dominio né fondamenta → non rifare", rebuild(statoCliente("completo", "attivo")) === null);
+  caso("percorso demo + sospeso + dominio senza fondamenta → non contano", rebuild(statoCliente("demo", "sospeso", "a.it")) === null);
+  caso("percorso demo con fondamenta cotte (stato ritoccato) → non contano", rebuild(statoCliente("demo", "spento", "a.it", "a.it")) === null);
+  // In percorso completo lo specchio rifà la build esattamente quando il deploy la rifiuterebbe.
+  const divergenti: string[] = [];
+  for (const sito of ["spento", "attivo", "sospeso", null] as const) {
+    for (const dominio of [undefined, "a.it"]) {
+      for (const cotte of [undefined, "a.it", "b.it"]) {
+        const st = statoCliente("completo", sito, dominio, cotte);
+        const attese = fondamentaAttese(st, dominio);
+        if ((rebuild(st) !== null) !== (motivoRifiutoFondamenta(cotte ?? null, attese) !== null)) divergenti.push(`${sito}/${dominio}/${cotte}`);
+      }
+    }
+  }
+  caso("percorso completo, 24 combinazioni: rifare ⇔ il deploy rifiuta", divergenti.length === 0, divergenti);
 
   /* ---------------------------------------------------------------- */
   console.log("\ntipoSchema (mestiere del form, poi settore di contesto.json):");

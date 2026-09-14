@@ -1,7 +1,8 @@
 // Regole PURE dei servizi «Traffico» per cliente (nessun I/O): stati, transizioni
 // ammesse, guard del percorso demo, date dei passaggi. Le usano la route
-// app/api/clients/[slug]/traffico, le pagine /traffico e l'hub; il banco
-// scripts/test-traffico-stato.ts le verifica. Import solo di tipo (erasato da
+// app/api/clients/[slug]/traffico, le pagine /traffico e l'hub, la catena e la scheda
+// Build (specchio delle fondamenta SEO); i banchi scripts/test-traffico-stato.ts e
+// scripts/test-fondamenta.ts le verificano. Import solo di tipo (erasato da
 // strip-types): il modulo gira anche nel banco. Decisioni: docs/traffico/README.md.
 import type { ClientState } from "./schemas";
 
@@ -127,6 +128,26 @@ export function dataValida(iso: string | undefined): iso is string {
 /** Il renderer accende fondamenta e pagine extra: Sito attivo o sospeso (decisione 11, restano online). */
 export function fondamentaAccese(t: Traffico): boolean {
   return t.sito.stato !== "spento";
+}
+
+/**
+ * Perché l'ultima build va rifatta per le fondamenta SEO (null = coincidono): specchio
+ * dell'interlock di deployClient per la catena (`buildDaRifare`) e per la scheda Build
+ * (`rebuildMotivi`). `attese` = `fondamentaAttese(st, build.dominio)` di lib/fondamenta.ts,
+ * calcolata lato server perché quel modulo usa node:fs. Non null esattamente quando il
+ * deploy rifiuterebbe (banco: scripts/test-fondamenta.ts). In percorso demo non contano:
+ * la demo si pubblica con deployDemo, che non le controlla.
+ */
+export function motivoRebuildFondamenta(
+  percorso: Percorso,
+  build: Pick<ClientState["steps"]["build"], "fondamenta">,
+  attese: string | null,
+): string | null {
+  const cotte = build.fondamenta?.dominio ?? null;
+  if (percorso === "demo" || cotte === attese) return null;
+  if (!cotte) return `build senza le fondamenta SEO (sitemap, robots, dati strutturati), ma il servizio Traffico «Sito» è acceso per ${attese}`;
+  if (!attese) return `build con le fondamenta SEO per ${cotte}, ma il servizio Traffico «Sito» è spento o manca il dominio`;
+  return `build con le fondamenta SEO per ${cotte}, ma il dominio attuale è ${attese}`;
 }
 
 /** Il ciclo del servizio gira solo se attivo. */

@@ -21,6 +21,8 @@ import {
   type EsitoConferma,
 } from "./conferme";
 import { deployClient } from "./deploy";
+import { fondamentaAttese } from "./fondamenta";
+import { motivoRebuildFondamenta } from "./traffico";
 import type { ClientState } from "./schemas";
 
 // Catena automatica (decisione 2026-09-08): gli step corrono uno dopo l'altro
@@ -153,13 +155,18 @@ async function eseguiRunConRiprova(slug: string, key: StepKey, mode: RunMode, la
   }
 }
 
-/** La build va (ri)fatta anche se «verificato»: parziale, noindex incoerente col percorso, dominio cambiato, upstream cambiato. */
+/**
+ * La build va (ri)fatta anche se «verificato»: parziale, noindex incoerente col percorso, dominio cambiato,
+ * fondamenta SEO diverse da quelle attese (servizio Traffico «Sito» acceso o spento dopo la build), upstream
+ * cambiato. Senza, «Riprendi» si fermerebbe ogni volta sul deploy rifiutato.
+ */
 function buildDaRifare(st: ClientState, slug: string): boolean {
   const b = st.steps.build;
   if (b.stato !== "verificato") return true;
   if (b.partial) return true;
   if (!!b.noindex !== (st.percorso === "demo")) return true;
   if (b.siteUrl !== (b.dominio ? `https://${b.dominio}` : undefined)) return true;
+  if (motivoRebuildFondamenta(st.percorso, b, fondamentaAttese(st, b.dominio))) return true;
   return staleFiles(slug, STEPS.build.upstream, b.upstream).length > 0;
 }
 
