@@ -33,8 +33,9 @@ grezzi delle 15 ricerche di questa sessione in `~/knowledge/seo/ricerche-2026-09
 6. Il fattore n. 1 dell'organico locale è **una pagina per servizio** (survey Whitespark 2026,
    47 esperti), poi rilevanza geografica e link interni. È tutto dentro il `site.json`.
 7. Le pagine per comune sono legittime solo con **dati locali reali**: ISTAT (epoca degli edifici),
-   zona climatica, zona sismica, quotazioni OMI, distanza dalla sede. Sono open data gratuiti e la
-   pipeline può usarli per ogni comune d'Italia; il gate anti-doorway è deterministico.
+   zona climatica, zona sismica, famiglie proprietarie, distanza dalla sede. Sono open data
+   gratuiti, provati su 5 comuni, usabili per ogni comune d'Italia; il gate anti-doorway è
+   deterministico.
 8. La misura è gratuita: Search Console + Bing Webmaster verificati via API al deploy, IndexNow,
    PageSpeed. È il **volano**: le query con impression e senza pagina generano la proposta della
    pagina successiva.
@@ -226,8 +227,41 @@ verificare: la coda lunga «servizio specifico + comune medio» è il terreno vi
 
 ### 4.2 Analisi tecnica dei siti che si posizionano
 
-*In arrivo dall'ondata 2 (analisi di 25 siti: struttura, pagine per servizio/città, età, schema,
-velocità, similarità delle pagine città di perinotto.com). Sezione da completare.*
+Campione: 35 domini di imprese (15 dalla prima misura + 20 trovati su Monza, Treviso, Bergamo,
+Vicenza, Padova, Brescia, Modena, Parma, Pescara), 32 raggiungibili; script e CSV in
+`~/knowledge/seo/ricerche-2026-09-14/` (w2-4). Limiti: posizione esatta non nota, nessun gruppo
+di controllo, PageSpeed API in 429 senza chiave, Common Crawl è un proxy debole dei link.
+
+Cosa accomuna chi si posiziona [fatto sul campione]:
+- **città nel `<title>` della home**: 22/32 (69 %), il tratto più costante;
+- **siti piccoli**: mediana 32 URL in sitemap, 19/30 sotto i 40. Il modello più pulito è
+  `ediliziabrambilla.it`: 32 URL, 23 dei quali `servizio-città` (`/rifacimento-bagni-monza/`);
+- telefono in home 97 %, indirizzo 78 %, P.IVA 59 %;
+- igiene di base risolta da tutti (HTTPS 100 %, viewport 100 %, canonical 91 %, sitemap 94 %):
+  soglia d'ingresso, non vantaggio;
+- WordPress 75 %, spesso versioni del 2017; età mediana 10 anni, **ma 12/32 hanno ≤ 5 anni e
+  7 ≤ 3**: un sito nuovo entra.
+
+Cosa non serve (evidenza contraria): JSON-LD di attività locale solo in 3/32 (9 %), 12/32
+senza alcun JSON-LD; un solo H1 ignorato dal 50 % (6 siti senza H1); title oltre 60 caratteri
+nel 38 % (fino a 243), un refuso da 24 anni in campeol.it; home da 325-476 KB con 25+ script.
+Tradotto: la nostra pulizia tecnica è un vantaggio di Q\* (`clutterScore`) su concorrenti sciatti,
+non un prerequisito per comparire.
+
+**Il caso perinotto.com**: 1.035 URL di cui 751 = 8 servizi × 94 comuni della provincia di
+Treviso, URL piatti `/{servizio}-{comune}`; tre pagine-comune confrontate hanno **Jaccard su
+shingle di 5 parole 0,855-0,882** (cambia solo il nome del comune), 12 H1 per pagina, meta
+description «L», zero JSON-LD, nessun canonical; dominio del 2001. Non sembra penalizzato ma
+nemmeno premiato: compare per una query su una città e Common Crawl ne conosce 17 URL su 1.035.
+Stessa tattica in scala minore su `bocciacostruzioniparmasrl.it` (79 URL) e
+`fllilongoristrutturazioni.it` (68). È esattamente il pattern che le policy chiamano doorway: su
+un dominio del 2001 è tollerato, su un dominio nuovo è il modo più rapido di finire nel
+«sandbox fresh spam» (§2.2). La nostra soglia di gate (Jaccard < 0,60) sta ben sotto.
+
+Regole per la pipeline derivate dal campione: title e H1 «{servizio} {città} — {impresa}»
+sotto i 60 caratteri; una pagina per servizio con la città nello slug (4-8 pagine, non 700);
+telefono, indirizzo e P.IVA come testo in home; JSON-LD generato dal contesto (lo fa il 9 %,
+per noi è gratis) **senza `AggregateRating`** (recensioni self-serving: policy Google).
 
 ### 4.3 Il campione vero, quando c'è l'account DataForSEO
 
@@ -300,19 +334,33 @@ vivono nella pagina «Zone servite». Tipicamente 2-6 pagine-comune per cliente,
 
 Dati locali automatizzabili per ogni comune d'Italia (open data, costo 0):
 
-| Dataset | Fatto in pagina (esempio) | Licenza | Stato |
+| Dataset | Fatto in pagina (esempio) | Licenza | Verificato |
 |---|---|---|---|
-| ISTAT censimento edifici per epoca di costruzione | «A Cologno Monzese il 62 % degli edifici residenziali è del pre-1980 (ISTAT)» | CC-BY | comunale certo per il 2011; 2021 da verificare tavola per tavola |
-| DPR 412/93 zona climatica e gradi giorno | «zona E, 2.404 gradi giorno: riscaldamento fino al 15 aprile» | allegato normativo | tabella statica |
-| Protezione Civile classificazione sismica | «zona sismica 3» | dato pubblico, licenza da leggere nel footer | CSV/XLS 05/2025 |
-| Agenzia Entrate OMI quotazioni | «valori residenziali 2.100-2.600 €/m² in zona centrale (OMI 1° sem. 2026)» | citazione obbligatoria, uso commerciale non esplicitato | CSV semestrale (repo onData) |
-| ISTAT popolazione e famiglie | dato di contesto | CC-BY | annuale |
-| OpenStreetMap/OSRM | «18 minuti in auto dalla sede (12 km)» | ODbL | self-hosted, gratis |
+| ISTAT Censimento 2011, edifici residenziali per epoca di costruzione (bulk ZIP, 9 classi) | «quasi 7 edifici su 10 costruiti prima del 1981» | CC BY 4.0 | sì, comunale. **Il Censimento permanente 2021 non pubblica l'epoca a livello comunale**: si cita il 2011 con l'anno |
+| ISTAT SDMX popolazione al 1° gennaio | «46.994 residenti (1/1/2025)» | CC BY 4.0 | sì, query live (va messa in cache: timeout osservati) |
+| ISTAT Censimento permanente 2021, famiglie per titolo di godimento | «il 78 % delle famiglie vive in casa di proprietà» | CC BY 4.0 | sì, comunale |
+| ISTAT ASIA 2011, unità locali e addetti nelle costruzioni | contesto di mercato | CC BY 4.0 | sì, comunale |
+| DPR 412/93 allegato A, zona climatica e gradi giorno (parsato dalla Gazzetta Ufficiale, 8.088 comuni) | «zona E, 2.404 gradi giorno: riscaldamento fino al 15 aprile» (con DPR 74/2013 art. 4) | testo normativo | sì; **non esiste un dataset nazionale**: parser proprio, con zeri resi «O» dall'OCR da normalizzare |
+| Protezione Civile, classificazione sismica (05/2025) | «zona sismica 3» | CC BY 4.0 con dicitura obbligatoria | sì |
+| OpenStreetMap/OSRM + Nominatim | «8 km, 12 minuti in auto da Monza» | ODbL | sì; coordinate di terze parti da scartare (Vicenza 15 km fuori posto in un repo) |
+| Agenzia Entrate OMI | — | **non aperta**, uso commerciale non dichiarato; repo onData fermo al 2018 | **scartato** |
 | ENEA detrazioni | solo regionale | pubblicazione | non comunale |
 | SUE/CILA-SCIA comunali | solo come link di servizio | — | nessun dataset nazionale |
 
-*Prova pratica sui 5 comuni di test (Cologno Monzese, San Severo, Sandrigo, Monza, Treviso) in
-arrivo dall'ondata 2: sezione da completare con i valori estratti e lo script riproducibile.*
+**Prova pratica riuscita** (script `fatti_locali.py` in `~/knowledge/seo/ricerche-2026-09-14/
+w2-3-opendata/`, ~3 s per comune, nessuna chiave API, preparazione una tantum di 3 bulk ISTAT):
+
+| | Cologno Monzese | San Severo | Sandrigo | Monza | Treviso |
+|---|---|---|---|---|---|
+| residenti 1/1/2025 | 46.994 | 49.136 | 8.303 | 123.032 | 85.652 |
+| edifici residenziali ante 1981 | 69,7 % | 75,2 % | 74,4 % | 75,8 % | 83,2 % |
+| zona climatica / gradi giorno | E / 2.404 | D / 1.494 | E / 2.343 | E / 2.404 | E / 2.378 |
+| zona sismica | 3 | 2 | 2 | 3 | 2 |
+| famiglie proprietarie | 78,1 % | 79,0 % | 80,8 % | 74,2 % | 65,9 % |
+| unità locali costruzioni | 521 | 579 | 124 | 1.225 | 667 |
+
+Uso corretto: sono fatti sul **territorio** («perché qui serve il cappotto», «perché qui conta
+l'antisismico»), mai prove di competenza dell'impresa, che restano ancorate al contesto.json.
 
 **Gate anti-doorway deterministici** (nella build, nessun giudizio umano ricorrente):
 Jaccard su shingle di 5 parole del solo testo editoriale tra pagine gemelle > 0,60-0,70 ⇒ FAIL;
@@ -442,8 +490,8 @@ consumo**; nessun altro acquisto finché i sensori non mostrano dati.
   di comune): serve il campione DataForSEO.
 - Pesi e soglie dei segnali: non esistono in nessuna fonte pubblica.
 - Nessun case study verificabile su siti nuovi di artigiani: lo produrremo noi.
-- Granularità comunale del Censimento ISTAT 2021 per epoca di costruzione; licenza esplicita del
-  dataset sismico; comma della L. 199/2025 sulle aliquote.
+- Il comma esatto della L. 199/2025 sulle aliquote dei bonus (da verificare su Normattiva prima
+  del gate).
 - Crawler Hints su Workers Static Assets; quota fissa di `SubmitUrlBatch`; tetto proprietà GSC.
 - Se il volume di keyword del Keyword Planner è completo su account senza spesa.
 - Churn reale dei competitor italiani; siti cliente dei competitor da ispezionare a mano.
