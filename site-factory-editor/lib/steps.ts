@@ -951,6 +951,15 @@ async function* logoRun(slug: string, _ctx: RunCtx, io: StepIO): AsyncGenerator<
 const IMAGES_TIMEOUT = 30 * 60 * 1000; // submit+poll BFL sequenziali per ~7 immagini
 const IMAGES_TURNS = 80;
 const IMG_ALLOWED = ["Read", "Skill", "Write", "Bash(node site-renderer/scripts/generate-image.mjs:*)"];
+// L'allowlist è un prefisso esatto e la sessione `claude -p` non può chiedere
+// approvazioni: `export PATH=…` (che CLAUDE.md suggerisce per le shell umane)
+// viene bloccato dal guard della shell, `cd`/path assoluti/`node -e` non
+// matchano e il modello finisce per non generare nulla (run 2026-09-14).
+const IMG_FORMA_COMANDO =
+  `FORMA OBBLIGATORIA del comando (unica autorizzata; qualunque altra viene rifiutata senza possibilità di approvazione): ` +
+  `un solo comando per chiamata Bash che inizia ESATTAMENTE con \`node site-renderer/scripts/generate-image.mjs\` — ` +
+  `niente \`export PATH\`, niente \`cd\`, niente path assoluti allo script o a node, niente \`node -e\`/heredoc: ` +
+  `la cwd è già la root del repo e node è già nel PATH. `;
 const IMG_DISALLOWED = ["WebSearch", "WebFetch", "Edit", "Task"];
 const bflEnv = () => ({ BFL_API_KEY: getSecret("BFL_API_KEY") ?? "" });
 
@@ -982,6 +991,7 @@ function promptImagePrompter(slug: string): string {
     manifestRighe(slug) +
     `\nOgni immagine SOLO via: node site-renderer/scripts/generate-image.mjs --prompt "…" --width W --height H ` +
     `--model pro|max --out ${p.dir}/img/<file> [--seed n] (la key è già nell'ambiente). ` +
+    IMG_FORMA_COMANDO +
     `Se lo script fallisce due volte di fila con lo stesso errore (es. HTTP 402 credito esaurito), smetti di generare: ` +
     `scrivi comunque il trace con i prompt preparati e riporta l'errore verbatim al posto della conferma. ` +
     `Poi scrivi ${p.trace} come da sezione «Formato artifact» della skill: ` +
@@ -1021,6 +1031,7 @@ function promptImagesRegen(slug: string, files: string[], daReview: boolean): st
     `\n${dettagli}\n` +
     `Rigenera SOLO questi file: stesso nome, stesse dimensioni e profilo del trace ${p.trace}, prompt corretto ` +
     `(applica i fix) e SEED NUOVO, via node site-renderer/scripts/generate-image.mjs --out ${p.dir}/img/<file>. ` +
+    IMG_FORMA_COMANDO +
     `Aggiorna nel trace SOLO le entry rigenerate (prompt/alt/seed), tutto il resto byte-identico. ` +
     `Se lo script fallisce due volte di fila con lo stesso errore, fermati e riporta l'errore verbatim. ` +
     `Input di verità: ${p.contesto} (primario) + ${p.copy} + ${p.palette}. Nessun altro file, poi una riga di conferma.`
@@ -1070,6 +1081,7 @@ async function* imagesTraceGate(slug: string, io: StepIO): AsyncGenerator<RunEve
       errs.join("\n- ") +
       `\nCorreggi SOLO questi problemi: rigenera i file mancanti/troncati via node site-renderer/scripts/generate-image.mjs ` +
       `(dimensioni e soggetto dal manifest:\n${manifestRighe(slug)}\n), sistema ${p.trace} (entry mancanti, alt vuoti o oltre 140, file fuori manifest da rimuovere). ` +
+      IMG_FORMA_COMANDO +
       `Se lo script fallisce due volte di fila con lo stesso errore, fermati e riporta l'errore verbatim. ` +
       `Nessun altro file, poi una riga di conferma.`,
     allowed: IMG_ALLOWED,
