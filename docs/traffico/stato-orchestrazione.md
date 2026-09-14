@@ -28,7 +28,7 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
 |---|---|
 | T0, R1, T1a (+ integrazione) | chiusi e verificati |
 | T6a | chiuso e verificato dall'orchestratore (banco 141/0/5, build, check): edifici 2011 presenti (`04d6203`…`673bbb3`); mancano solo le famiglie 2021 (esploradati giù, comando in `piano-T6a.md`) |
-| T1b | **in sviluppo** col workflow «piano-traffico» |
+| T1b | **in sviluppo** col workflow «piano-traffico» (run `wf_9156f412-030`, task `w3p0iii7h`) |
 | T3, T4, T5a, T2a, T2b, G1 | piano scritto e decisioni registrate, da sviluppare |
 | T5b, T5c, T6b, T7a, T7b, T8, G2, G3 | da pianificare (fase 1) |
 | S0 | lavoro manuale di Mattia (README §8) |

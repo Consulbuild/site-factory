@@ -103,10 +103,26 @@ restano anche se il contesto della sessione si perde. Valgono sopra il testo del
    è un avviso (punto 2, sopra il §11-2 del piano): gli avvisi del budget si accodano agli avvisi delle
    fondamenta che `lib/build.ts` salva in `steps.build.fondamenta.avvisi`, già mostrati nel blocco
    Pubblicazione, con il prefisso «Pagine leggere:», così la UI dell'editor non si tocca. Le
-   calibrazioni che il piano rimette a Mattia (C1 qualità, C3 hero da mobile) si chiudono con l'opzione
-   che passa i gate oggettivi e, a parità, la più nitida; le schermate di confronto vanno in
+   calibrazioni C1 (qualità) e C3 (hero da mobile) seguono il punto 8; le schermate di confronto vanno in
    `~/.cache/site-factory/revisione-T1b/` (fuori da git e da `out/`) e sono elencate in «Calibrazione»
    per la revisione di Mattia.
+8. **Decisione di Mattia (2026-09-14 sera): la qualità delle immagini resta quella dei siti dei clienti
+   di oggi, anche con lo zoom, su PC, telefono e tablet.** La nitidezza vale più del peso: se il budget
+   o Lighthouse ≥ 90 non ci stanno, vince la qualità e resta l'avviso. In pratica:
+   - **Compressione (C1)**: AVIF e JPEG a una qualità indistinguibile dagli originali serviti oggi, anche su
+     ritagli ingranditi al 200 % delle texture fini (fughe, intonaco, legno, cementine, bordi del logo),
+     separatamente per foto generate e reali; nel dubbio si sale di qualità. q55/q80 del §4.1 sono solo il
+     punto di partenza.
+   - **Risoluzione con lo zoom**: su ogni dispositivo di riferimento (telefono 390 px DPR 3, 412 px DPR
+     1,75, tablet 768 px DPR 2, PC 1280 e 1920 px DPR 1 e 2) il candidato che il browser sceglie ha
+     almeno **2 volte** i pixel resi (larghezza resa × DPR × 2), fermandosi alla larghezza dell'originale,
+     che resta sempre il gradino più grande; mai ingrandire. Così lo zoom con le dita (che non fa
+     cambiare candidato al browser) resta nitido come oggi. Il controllo «sizes onesti» del §8.2 usa
+     questa soglia al posto di «≥ resa × DPR e ≤ 1,5×»; il tetto allo spreco diventa «non oltre il gradino
+     successivo a quello necessario».
+   - **Hero da mobile (C3)**: vince l'opzione più nitida (`sizes` onesto o più largo), mai `100vw` se
+     sceglie un candidato sotto la soglia qui sopra.
+   - Logo e mark (C4): nessuna perdita visibile dei bordi ingranditi; nel dubbio PNG lossless.
 
 ## G1 — Scheda Google consigliata (piano pronto)
 

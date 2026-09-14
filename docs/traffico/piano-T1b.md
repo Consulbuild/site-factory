@@ -347,6 +347,9 @@ già chiuso si aggiungono i due file di `src/pagine/` **prima** di iniziare, con
 
 Calibrazione (fase 3), da scrivere in «Calibrazione»:
 
+- **Decisione di Mattia (14/09 sera), vale sopra C1, C3, C4 e il controllo «sizes onesti» del §8.2**: qualità
+  uguale ai siti dei clienti di oggi anche con lo zoom, su PC, telefono e tablet; candidato scelto ≥ 2 × resa
+  × DPR (fino all'originale); dettagli in `decisioni-piani.md`, T1b punto 8.
 - **C1 qualità**: AVIF q 50/55/62/70 e JPEG q 75/80/85 su foto generate (hero, card) e reali (le 12 di
   Cavaliere + quelle di Mattia Saggin), SSIM approssimato come filtro e poi schermate a confronto
   (originale / variante) a 390@3× e 1280 per le celle con texture fine. Soglia proposta: nessuna differenza
@@ -386,8 +389,10 @@ Calibrazione (fase 3), da scrivere in «Calibrazione»:
   manifest (media e varianti copiati nelle due `dist`).
 - **Box identici** (`confronta.cjs` esteso): immagini, sezioni e altezza pagina a 390@3×, 768@2×, 1280, 1920.
   Errore a qualunque differenza.
-- **Sizes onesti** (`box.cjs` esteso): per ogni immagine e viewport, larghezza del candidato scelto ≥ larghezza
-  resa × DPR (o il più grande disponibile) e ≤ 1,5 × (spreco). Le eccezioni si scrivono in «Verifica».
+- **Sizes onesti** (`box.cjs` esteso): per ogni immagine e viewport, larghezza del candidato scelto ≥ 2 ×
+  larghezza resa × DPR (o l'originale) e non oltre il gradino successivo (decisione di Mattia,
+  `decisioni-piani.md` T1b punto 8). Viewport: 390@3, 412@1,75, 768@2, 1280@1, 1280@2, 1920@1. Le eccezioni si
+  scrivono in «Verifica».
 - **Pixel**: scarto per sezione tra originali e varianti con le soglie decise in C1; schermate affiancate in
   `$T/schermate/` per la revisione di Mattia (hero, servizi, lavori; 390 e 1280; 7 preset).
 - **Fondamenta**: script che importa `site-factory-editor/lib/fondamenta.ts` per path assoluto:
