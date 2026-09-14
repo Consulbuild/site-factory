@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatoIl": "2026-09-14T16:32:02.417Z",
+  "generatoIl": "2026-09-14T16:35:51.444Z",
   "riferimentoTerritoriale": "2026-01-01",
   "completo": false,
   "fontiMancanti": [
@@ -138,10 +138,10 @@
       "titolo": "DPR 26 agosto 1993, n. 412, allegato A — tabella dei gradi giorno dei comuni italiani",
       "ente": "Gazzetta Ufficiale della Repubblica Italiana",
       "url": "https://www.gazzettaufficiale.it/atto/serie_generale/caricaDettaglioAtto/originario?atto.dataPubblicazioneGazzetta=1993-10-14&atto.codiceRedazionale=093G0451",
-      "licenza": "Testo di atto ufficiale, escluso dal diritto d'autore (art. 5 L. 633/1941)",
+      "licenza": "atto ufficiale escluso dal diritto d'autore (art. 5 L. 633/1941)",
       "licenzaUrl": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1941-04-22;633~art5",
-      "dicitura": "DPR 26 agosto 1993, n. 412, allegato A (casa comunale)",
-      "riferimento": "allegato A (1993)",
+      "dicitura": "DPR 26 agosto 1993, n. 412, allegato A",
+      "riferimento": "testo originario del 1993",
       "riferimentoTerritoriale": "1993-10-14",
       "stato": "ok",
       "file": [

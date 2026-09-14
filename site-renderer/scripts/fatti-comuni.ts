@@ -32,6 +32,11 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
+  caricaFattiComuni,
+  cercaComune,
+  distanzaKm,
+  fattiComune,
+  frasiFatto,
   normalizzaNome,
   type CampoAdditivo,
   type DatasetFattiComuni,
@@ -155,10 +160,10 @@ export const FONTI: Record<IdFonte, DefFonte> = {
     titolo: "DPR 26 agosto 1993, n. 412, allegato A — tabella dei gradi giorno dei comuni italiani",
     ente: "Gazzetta Ufficiale della Repubblica Italiana",
     url: "https://www.gazzettaufficiale.it/atto/serie_generale/caricaDettaglioAtto/originario?atto.dataPubblicazioneGazzetta=1993-10-14&atto.codiceRedazionale=093G0451",
-    licenza: "Testo di atto ufficiale, escluso dal diritto d'autore (art. 5 L. 633/1941)",
+    licenza: "atto ufficiale escluso dal diritto d'autore (art. 5 L. 633/1941)",
     licenzaUrl: "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1941-04-22;633~art5",
-    dicitura: "DPR 26 agosto 1993, n. 412, allegato A (casa comunale)",
-    riferimento: "allegato A (1993)",
+    dicitura: "DPR 26 agosto 1993, n. 412, allegato A",
+    riferimento: "testo originario del 1993",
     riferimentoTerritoriale: "1993-10-14",
     file: [1, 2, 3].map((p) => ({ nome: `dpr412-allegato-a-${p}.html`, url: GU_ALLEGATO_A(p) })),
     strutturale: false,
@@ -1479,16 +1484,43 @@ export async function aggiorna(opzioni: { cache: string; dataset: string; offlin
   return true;
 }
 
+/** Punto d'accesso della pipeline copy: `mostra <codice|"nome" [sigla]> [--da <codice>] [--json]`. */
 function mostra(argomenti: string[], json: boolean, da: string | undefined): number {
-  const ds = JSON.parse(readFileSync(PERCORSO_DATASET, "utf8")) as DatasetFattiComuni;
-  const codice = (argomenti[0] ?? "").padStart(6, "0");
-  const rec = ds.comuni[codice] ?? (ds.alias[codice] ? ds.comuni[ds.alias[codice]!.a] : undefined);
-  if (!rec) {
-    console.error(`comune «${argomenti.join(" ")}» non trovato`);
+  const ds = caricaFattiComuni(PERCORSO_DATASET);
+  const [primo = "", sigla] = argomenti;
+  let codice = primo;
+  if (!/^\d{1,6}$/.test(primo)) {
+    const candidati = cercaComune(primo, sigla, ds);
+    if (candidati.length !== 1) {
+      console.error(
+        candidati.length
+          ? `«${primo}» è ambiguo: ${candidati.map((c) => `${c.codice} ${c.nome} (${c.sigla})`).join(", ")}. Indicare la sigla o il codice.`
+          : `nessun comune di nome «${primo}»${sigla ? ` in ${sigla}` : ""}`,
+      );
+      return 1;
+    }
+    codice = candidati[0]!.codice;
+  }
+  const comune = fattiComune(codice, ds);
+  if (!comune) {
+    console.error(`codice Istat «${primo}» sconosciuto`);
     return 1;
   }
-  void da;
-  console.log(json ? JSON.stringify(rec, null, 2) : `${rec.nome} (${rec.sigla})\n${JSON.stringify(rec)}`);
+  const frasi = frasiFatto(codice, ds);
+  const distanza = da === undefined ? undefined : distanzaKm(da, codice, ds);
+  if (da !== undefined && !distanza) {
+    console.error(`codice di partenza «${da}» sconosciuto`);
+    return 1;
+  }
+  const avviso = ds.completo ? undefined : `dataset incompleto: fonti non raggiungibili all'ultimo aggiornamento (${ds.fontiMancanti.join(", ")})`;
+  if (json) {
+    console.log(JSON.stringify({ comune, frasi, ...(distanza ? { distanza: { da, ...distanza } } : {}), ...(avviso ? { avviso } : {}) }, null, 2));
+    return 0;
+  }
+  console.log(`${comune.nome} (${comune.sigla}) — Istat ${comune.codice}${comune.alias ? ` (richiesto ${comune.alias.da}: ${comune.alias.motivo} dal ${comune.alias.dal})` : ""}`);
+  if (avviso) console.log(`! ${avviso}`);
+  for (const f of frasi) console.log(`- ${f.testo}\n    ${f.citazione}\n    ${f.url}`);
+  if (distanza) console.log(`- ${distanza.km} km da ${da} (${distanza.citazione})`);
   return 0;
 }
 

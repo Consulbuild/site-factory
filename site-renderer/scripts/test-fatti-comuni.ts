@@ -33,10 +33,21 @@ import {
   type ComuneAnagrafica,
   type Poligono,
 } from "./fatti-comuni.ts";
-import type { DatasetFattiComuni } from "../src/lib/fatti-comuni.ts";
+import {
+  cercaComune,
+  comuniEntroKm,
+  distanzaKm,
+  fattiComune,
+  formatoIntero,
+  formatoQuota,
+  frasiFatto,
+  quota,
+  type DatasetFattiComuni,
+} from "../src/lib/fatti-comuni.ts";
 
 let passati = 0;
 let falliti = 0;
+const nonVerificabili: string[] = [];
 function caso(nome: string, ok: boolean, dettaglio?: unknown): void {
   if (ok) passati += 1;
   else falliti += 1;
@@ -382,7 +393,149 @@ console.log("\nDataset committato:");
   const vicenza = ds.comuni["024116"];
   // municipio di Vicenza (Palazzo Trissino) circa a 45,547; 11,546: il file di terze parti della ricerca lo metteva 15 km più a nord
   caso("Vicenza: centro entro 2 km dal municipio, non 15 km fuori", vicenza !== undefined && Math.hypot((vicenza.centro[0] - 45.547) * 111, (vicenza.centro[1] - 11.546) * 78) < 2, vicenza?.centro);
+
+  // Tabella della prova pratica: docs/ricerca-traffico-2026-09.md §6.3 (e rapporto w2-3-opendata §2)
+  console.log("\nGolden dei 5 comuni di prova (ricerca §6.3):");
+  const golden = [
+    { codice: "015081", nome: "Cologno Monzese", pop: 46994, edifici: 3087, ante: 69.7, zona: "E", gg: 2404, alt: 131, sismica: "3", famiglie: 78.1 },
+    { codice: "071051", nome: "San Severo", pop: 49136, edifici: 7539, ante: 75.2, zona: "D", gg: 1494, alt: 86, sismica: "2", famiglie: 79.0 },
+    { codice: "024091", nome: "Sandrigo", pop: 8303, edifici: 1628, ante: 74.4, zona: "E", gg: 2343, alt: 64, sismica: "2", famiglie: 80.8 },
+    { codice: "108033", nome: "Monza", pop: 123032, edifici: 8879, ante: 75.8, zona: "E", gg: 2404, alt: 162, sismica: "3", famiglie: 74.2 },
+    { codice: "026086", nome: "Treviso", pop: 85652, edifici: 13696, ante: 83.2, zona: "E", gg: 2378, alt: 15, sismica: "2", famiglie: 65.9 },
+  ];
+  const verificaFonte = (id: string, nome: string, fn: () => void) => {
+    if (ds.fonti[id]?.stato === "ok") fn();
+    else nonVerificabili.push(`${nome}: fonte ${id} non raggiungibile all'ultimo aggiornamento`);
+  };
+  for (const g of golden) {
+    const f = fattiComune(g.codice, ds);
+    const v = (k: string) => f?.fatti.find((x) => x.chiave === k)?.valore;
+    caso(`${g.nome}: nome`, f?.nome === g.nome, f?.nome);
+    // la popolazione si confronta solo finché la fonte è la POSAS 2025
+    verificaFonte("istat-posas-2025", `${g.nome} popolazione`, () => caso(`${g.nome}: ${formatoIntero(g.pop)} residenti al 1/1/2025`, v("popolazione") === g.pop, v("popolazione")));
+    verificaFonte("dpr412-allegato-a", `${g.nome} clima`, () => caso(`${g.nome}: zona ${g.zona}, ${g.gg} GG, ${g.alt} m`, v("zona_climatica") === g.zona && v("gradi_giorno") === g.gg && v("altitudine_casa_comunale") === g.alt, [v("zona_climatica"), v("gradi_giorno"), v("altitudine_casa_comunale")]));
+    verificaFonte("dpc-sismica-2025", `${g.nome} sismica`, () => caso(`${g.nome}: zona sismica ${g.sismica}`, v("zona_sismica") === g.sismica, v("zona_sismica")));
+    verificaFonte("istat-edifici-2011", `${g.nome} edifici`, () => caso(`${g.nome}: ${g.edifici} edifici, ${g.ante}% ante 1981`, v("edifici_residenziali") === g.edifici && v("edifici_ante_1981") === g.ante, [v("edifici_residenziali"), v("edifici_ante_1981")]));
+    verificaFonte("istat-famiglie-2021", `${g.nome} famiglie`, () => caso(`${g.nome}: ${g.famiglie}% famiglie proprietarie`, v("famiglie_proprietarie") === g.famiglie, v("famiglie_proprietarie")));
+  }
+
+  console.log("\nCodici, alias, ricerca e distanza sul dataset:");
+  caso('"15081" e 15081 → Cologno Monzese', fattiComune("15081", ds)?.codice === "015081" && fattiComune(15081, ds)?.nome === "Cologno Monzese");
+  caso('"999999", "abc", "", -1 → null senza eccezioni', [fattiComune("999999", ds), fattiComune("abc", ds), fattiComune("", ds), fattiComune(-1, ds)].every((x) => x === null));
+  const alghero = fattiComune("090003", ds);
+  caso('fattiComune("090003") → Alghero 112001 con alias cambio_codice', alghero?.codice === "112001" && alghero.alias?.motivo === "cambio_codice" && alghero.alias.da === "090003", alghero?.alias);
+  caso("«Cologno Monzese» → 015081", JSON.stringify(cercaComune("Cologno Monzese", undefined, ds).map((c) => c.codice)) === '["015081"]');
+  caso("«cassina de pecchi» senza apostrofo → 015060", cercaComune("cassina de pecchi", undefined, ds)[0]?.codice === "015060");
+  caso("nome precedente: «Grana» → Grana Monferrato (005056)", cercaComune("Grana", "AT", ds).some((c) => c.codice === "005056"), cercaComune("Grana", undefined, ds));
+  caso("omonimo: «Castro» → 2 risultati, con sigla «le» → 1", cercaComune("Castro", undefined, ds).length === 2 && cercaComune("Castro", "le", ds).length === 1);
+  caso("bilingue: «Bozen» → Bolzano/Bozen", cercaComune("Bozen", undefined, ds)[0]?.codice === "021008");
+  const d = distanzaKm("015081", "108033", ds);
+  caso("distanza Cologno → Monza: 6 km in linea d'aria (5,8 arrotondato), metodo dichiarato", d?.km === 6 && d.metodo === "linea_aria_centroidi" && d.citazione.includes("linea d'aria") && d.citazione.includes("non su strada"), d);
+  caso("distanza con codice ignoto → null", distanzaKm("015081", "999999", ds) === null);
+  const entro = comuniEntroKm("015081", 6, ds);
+  caso(
+    "comuniEntroKm: sede a 0 km in testa, ordinati, Monza compresa",
+    entro[0]?.codice === "015081" && entro[0].km === 0 && entro.every((c, i) => i === 0 || c.km >= entro[i - 1]!.km) && entro.some((c) => c.codice === "108033"),
+    entro.slice(0, 5),
+  );
+  caso("comuniEntroKm con codice ignoto → []", comuniEntroKm("abc", 10, ds).length === 0);
 }
 
-console.log(`\n${passati} passati, ${falliti} falliti`);
+/* ---------- modulo: numeri, fatti e frasi ---------- */
+
+console.log("\nNumeri, fatti e frasi (dataset in memoria):");
+{
+  caso("2151/3087 → 69,7", quota(2151, 3087) === 69.7 && formatoQuota(quota(2151, 3087)) === "69,7");
+  caso("8303 → «8.303», 46994 → «46.994», 79 → «79,0»", formatoIntero(8303) === "8.303" && formatoIntero(46994) === "46.994" && formatoQuota(79) === "79,0");
+
+  const istat = (titolo: string, riferimento: string) => ({
+    titolo,
+    ente: "Istat",
+    url: `https://esempio.istat.it/${titolo.length}`,
+    licenza: "CC BY 4.0",
+    licenzaUrl: "https://creativecommons.org/licenses/by/4.0/deed.it",
+    dicitura: `Fonte: Istat, ${titolo}`,
+    dicituraElaborazione: `Elaborazione su dati Istat, ${titolo}`,
+    riferimento,
+    riferimentoTerritoriale: "2011-10-09",
+    stato: "ok" as const,
+  });
+  const ds = {
+    schema: 1,
+    generatoIl: "2026-09-14T00:00:00.000Z",
+    riferimentoTerritoriale: "2026-01-01",
+    completo: true,
+    fontiMancanti: [],
+    fonti: {
+      "istat-posas-2025": istat("Popolazione residente al 1° gennaio 2025", "1° gennaio 2025"),
+      "istat-edifici-2011": istat("Censimento della popolazione e delle abitazioni 2011", "9 ottobre 2011"),
+      "istat-famiglie-2021": istat("Censimento permanente della popolazione e delle abitazioni 2021", "2021"),
+      "dpc-sismica-2025": {
+        titolo: "Classificazione sismica aggiornata a maggio 2025",
+        ente: "Dipartimento della Protezione Civile",
+        url: "https://rischi.protezionecivile.gov.it/static/x.csv",
+        licenza: "CC BY 4.0",
+        licenzaUrl: "https://creativecommons.org/licenses/by/4.0/deed.it",
+        dicitura: "Fonte: Dipartimento della Protezione Civile-Presidenza del Consiglio dei Ministri",
+        riferimento: "31 maggio 2025",
+        riferimentoTerritoriale: "2025-05-31",
+        stato: "ok",
+      },
+      "dpr412-allegato-a": {
+        titolo: "DPR 26 agosto 1993, n. 412, allegato A",
+        ente: "Gazzetta Ufficiale della Repubblica Italiana",
+        url: "https://www.gazzettaufficiale.it/x",
+        licenza: "atto ufficiale escluso dal diritto d'autore (art. 5 L. 633/1941)",
+        licenzaUrl: "https://www.normattiva.it/x",
+        dicitura: "DPR 26 agosto 1993, n. 412, allegato A",
+        riferimento: "testo originario del 1993",
+        riferimentoTerritoriale: "1993-10-14",
+        stato: "ok",
+      },
+    },
+    fatti: { popolazione: "istat-posas-2025", edificiEpoca: "istat-edifici-2011", clima: "dpr412-allegato-a", sismica: "dpc-sismica-2025", famiglie: "istat-famiglie-2021" },
+    copertura: {},
+    scarti: {},
+    alias: { "037004": { a: "037061", motivo: "fusione", dal: "2014-01-01" } },
+    comuni: {
+      // epoche ante 1981 e totali di Cologno Monzese dalla ricerca (≤1918: 78 · 1946-60: 704 · 1961-70: 650 ·
+      // 1971-80: 563; 2.151 su 3.087); la ripartizione dopo il 1981 e i conteggi delle famiglie sono di prova
+      // (stesse quote: 69,7% e 78,1%)
+      "015081": { nome: "Cologno Monzese", sigla: "MI", centro: [45.5333, 9.2802], raggioKm: 1.65, popolazione: 46994, edificiEpoca: [78, 156, 704, 650, 563, 400, 300, 136, 100], clima: ["E", 2404, 131], sismica: "3", famiglie: [15000, 19206] },
+      "001263": { nome: "Sestriere", sigla: "TO", centro: [44.95, 6.87], raggioKm: 3.3, clima: ["F", 5165, 2035] },
+      "037061": {
+        nome: "Valsamoggia",
+        sigla: "BO",
+        centro: [44.444, 11.0913],
+        raggioKm: 7.53,
+        edificiEpoca: [10, 10, 10, 10, 10, 10, 10, 10, 10],
+        derivati: { edificiEpoca: { regola: "somma_fusione", da: ["037004", "037018"], nomi: ["Bazzano", "Castello di Serravalle"] } },
+      },
+    },
+  } as unknown as DatasetFattiComuni;
+
+  const cologno = frasiFatto("015081", ds);
+  const testo = (k: string) => cologno.find((f) => f.chiave === k);
+  caso("frase popolazione «46.994 residenti» con dicitura Istat e data", testo("popolazione")?.testo === "46.994 residenti" && testo("popolazione")!.citazione.startsWith("Fonte: Istat, Popolazione residente al 1° gennaio 2025"), testo("popolazione"));
+  caso("frase edifici: «69,7% … prima del 1981 (2.151 su 3.087)» con «Elaborazione su dati Istat» e anno", testo("edifici_ante_1981")?.testo === "69,7% degli edifici residenziali costruiti prima del 1981 (2.151 su 3.087)" && testo("edifici_ante_1981")!.citazione.startsWith("Elaborazione su dati Istat") && testo("edifici_ante_1981")!.citazione.includes("2011"), testo("edifici_ante_1981"));
+  caso("frase clima con casa comunale e allegato A", testo("zona_climatica")?.testo === "zona climatica E, 2.404 gradi giorno (casa comunale a 131 m)" && testo("zona_climatica")!.citazione.includes("allegato A") && testo("zona_climatica")!.citazione.includes("1993"), testo("zona_climatica"));
+  caso("frase riscaldamento zona E dal DPR 74/2013", testo("periodo_riscaldamento")?.testo === "riscaldamento consentito dal 15 ottobre al 15 aprile, 14 ore al giorno" && testo("periodo_riscaldamento")!.citazione.includes("DPR 16 aprile 2013, n. 74"), testo("periodo_riscaldamento"));
+  caso("frase sismica con la dicitura DPC letterale", testo("zona_sismica")?.testo === "zona sismica 3" && testo("zona_sismica")!.citazione.startsWith("Fonte: Dipartimento della Protezione Civile-Presidenza del Consiglio dei Ministri"), testo("zona_sismica"));
+  caso("frase famiglie «78,1% …» come elaborazione", testo("famiglie_proprietarie")?.testo === "78,1% delle famiglie in abitazione di proprietà" && testo("famiglie_proprietarie")!.citazione.startsWith("Elaborazione su dati Istat"), testo("famiglie_proprietarie"));
+  caso("ogni frase ha citazione con anno e URL", cologno.length === 7 && cologno.every((f) => /\b(19|20)\d{2}\b/.test(f.citazione) && f.url.startsWith("https://")), cologno);
+  const sestriere = frasiFatto("001263", ds);
+  caso("zona F → «nessuna limitazione»", sestriere.some((f) => f.chiave === "periodo_riscaldamento" && f.testo.includes("nessuna limitazione")), sestriere);
+  caso("fonti mancanti nel record (Sestriere senza popolazione, edifici, famiglie): nessun fatto né frase, mai «0»", !sestriere.some((f) => ["popolazione", "edifici_residenziali", "famiglie_proprietarie"].includes(f.chiave)) && !fattiComune("001263", ds)!.fatti.some((f) => f.valore === 0), sestriere.map((f) => f.chiave));
+  const valsa = fattiComune("037004", ds);
+  const fraseValsa = frasiFatto("037061", ds).find((f) => f.chiave === "edifici_residenziali");
+  caso(
+    "somma per fusione: derivazione nel fatto, citazione come elaborazione con i comuni d'origine",
+    valsa?.codice === "037061" && valsa.alias?.motivo === "fusione" && valsa.fatti[0]?.derivazione?.regola === "somma_fusione" && fraseValsa?.citazione.startsWith("Elaborazione") === true && fraseValsa.citazione.includes("Bazzano, Castello di Serravalle"),
+    fraseValsa,
+  );
+  caso("codice ignoto → nessuna frase", frasiFatto("999999", ds).length === 0);
+}
+
+console.log(`\n${passati} passati, ${falliti} falliti${nonVerificabili.length ? `, ${nonVerificabili.length} NON VERIFICABILI` : ""}`);
+for (const n of nonVerificabili) console.log(`  ⚠ ${n}`);
 process.exit(falliti ? 1 : 0);
