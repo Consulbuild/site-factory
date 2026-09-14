@@ -40,7 +40,17 @@ prossime schede.
   `gpt-image-2.5-sunburst` (≈0,24 $ a cliente, demo incluse) → foglio di contatto +
   metriche → logo-critic (trascrive e osserva) → verdetto in TS → favicon dal
   simbolo; un round in più al massimo, poi decide l'umano. Ricerca in
-  `docs/logo-ricerca/`; banco `scripts/test-logo-gates.ts`. **Critico tarato il
+  `docs/logo-ricerca/`; banco `scripts/test-logo-gates.ts`. **Lockup orizzontale
+  standard dal 2026-09-14** (decisione Mattia: il lockup impilato a 40 px rendeva
+  il nome illeggibile nell'header): riga 3 del prompt chiede il nome a destra del
+  simbolo; `generate-logo.mjs` cerca il simbolo prima come blocco sinistro
+  (colonna trasparente) poi come blocco superiore; gate `proporzioni` = ratio
+  fuori 2–8; header a 40/48 px per il lockup (`Header.astro`); rubrica P4 del
+  logo-critic aggiornata (100–260 px). Prova reale su Mattia Saggin Costruzioni:
+  `logo/mark-4.png` (ratio 4,47, simbolo rilevato, favicon via edits ok). Da
+  fare: i clienti con lockup impilato già generato vanno rigenerati dalla riga
+  Logo; la taratura del critico (oro impilato) andrà ripetuta con loghi
+  orizzontali. **Critico tarato il
   2026-09-13** (`scripts/calibrate-logo-critic.ts`, report in
   `factory/calibration/report-logo-critic.json`): 6 item oro in
   `scripts/fixtures/logo-gold/` (3 loghi ChatGPT approvati da Mattia + 3 clienti

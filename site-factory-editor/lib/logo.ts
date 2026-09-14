@@ -75,9 +75,13 @@ export function gateLogoBrief(b: LogoBrief, businessName: string): string[] {
 
 // Le 4 righe approvate da Mattia (v9b, 2026-09-13) + la riga colori come DATI.
 // Righe 2 e 3 sono costanti: il banco le verifica byte-identiche.
+// Riga 3 aggiornata da Mattia il 2026-09-14: lockup ORIZZONTALE (nome a destra
+// del simbolo, mai sotto) — un lockup impilato a 40 px d'altezza rende il nome
+// illeggibile nell'header; quello orizzontale sfrutta la larghezza della barra.
 export const RIGA_DESIGNER =
   "Design it as a senior brand designer would for a paying client: think the concept through before drawing, so it is distinctive and still clear at small size in the site header.";
-export const RIGA_NOME = "The logo shows also the name.";
+export const RIGA_NOME =
+  "The logo also shows the name, placed to the right of the symbol and vertically centered on it, never below it: a horizontal lockup.";
 
 export function componiPromptLogo(b: LogoBrief, palette: PaletteArtifact): string {
   const primary = palette["brand.palette.primary"];
@@ -124,7 +128,10 @@ export function gateVariante(m: LogoMetriche, bg: string): string[] {
   if (!m.alpha || m.copertura > 0.9) c.push("sfondo_pieno");
   if (m.bordo_opaco) c.push("tagliato");
   if (m.copertura < 0.005 || m.ink256 < 0.02) c.push("vuoto");
-  if (m.ratio < 0.4 || m.ratio > 6) c.push("proporzioni");
+  // Lockup orizzontale (dal 2026-09-14): un lockup impilato (simbolo sopra il
+  // nome, ratio ≈1.2-1.8) a 40 px rende il nome illeggibile → scarto; un nome
+  // lungo su una riga può arrivare a ratio ≈8.
+  if (m.ratio < 2 || m.ratio > 8) c.push("proporzioni");
   const contrasti = m.colori_dominanti.filter((k) => isHex6(k.hex)).map((k) => contrastRatio(k.hex, bg));
   if (isHex6(bg) && contrasti.length && Math.max(...contrasti) < 3) c.push("invisibile_su_header");
   return c;
@@ -134,7 +141,7 @@ export const MOTIVO_GATE: Record<string, string> = {
   sfondo_pieno: "sfondo non trasparente",
   tagliato: "logo mozzato sul bordo",
   vuoto: "immagine vuota",
-  proporzioni: "proporzioni inadatte all'header",
+  proporzioni: "proporzioni inadatte all'header (serve il lockup orizzontale: nome a destra del simbolo)",
   invisibile_su_header: "colori senza contrasto sul fondo dell'header",
 };
 

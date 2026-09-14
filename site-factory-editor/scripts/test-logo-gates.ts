@@ -73,7 +73,7 @@ caso("nessuna riga → null", parseEsito(["OK"]) === null);
 caso("JSON rotto → null", parseEsito(["ESITO {a"]) === null);
 
 console.log("\ngate sulle metriche:");
-const buona: LogoMetriche = { alpha: true, copertura: 0.3, bordo_opaco: false, width: 1300, height: 700, ratio: 1.86, larghezza_a_40px: 74, colori_dominanti: [{ hex: "#1e3a8a", quota: 0.6 }, { hex: "#f97316", quota: 0.3 }], n_colori: 2, ink40: 0.4, ink256: 0.42, dettaglio: 0.95, bbox_simbolo: null };
+const buona: LogoMetriche = { alpha: true, copertura: 0.3, bordo_opaco: false, width: 1300, height: 300, ratio: 4.33, larghezza_a_40px: 173, colori_dominanti: [{ hex: "#1e3a8a", quota: 0.6 }, { hex: "#f97316", quota: 0.3 }], n_colori: 2, ink40: 0.4, ink256: 0.42, dettaglio: 0.95, bbox_simbolo: null };
 const BG = "#ffffff";
 caso("variante buona → nessun codice", gateVariante(buona, BG).length === 0, gateVariante(buona, BG));
 caso("senza alpha → sfondo_pieno", gateVariante({ ...buona, alpha: false }, BG).includes("sfondo_pieno"));
@@ -81,7 +81,9 @@ caso("copertura 0.95 → sfondo_pieno", gateVariante({ ...buona, copertura: 0.95
 caso("bordo opaco → tagliato", gateVariante({ ...buona, bordo_opaco: true }, BG).includes("tagliato"));
 caso("copertura 0.001 → vuoto", gateVariante({ ...buona, copertura: 0.001, ink256: 0.001 }, BG).includes("vuoto"));
 caso("ratio 0.2 → proporzioni", gateVariante({ ...buona, ratio: 0.2 }, BG).includes("proporzioni"));
-caso("ratio 7 → proporzioni", gateVariante({ ...buona, ratio: 7 }, BG).includes("proporzioni"));
+caso("ratio 1.8 (lockup impilato, nome sotto) → proporzioni", gateVariante({ ...buona, ratio: 1.8 }, BG).includes("proporzioni"));
+caso("ratio 7 (nome lungo su una riga) → ok", !gateVariante({ ...buona, ratio: 7 }, BG).includes("proporzioni"));
+caso("ratio 9 → proporzioni", gateVariante({ ...buona, ratio: 9 }, BG).includes("proporzioni"));
 caso("colori chiarissimi su bianco → invisibile_su_header", gateVariante({ ...buona, colori_dominanti: [{ hex: "#f2f2f2", quota: 1 }] }, BG).includes("invisibile_su_header"));
 caso("colore scuro su header scuro → invisibile", gateVariante({ ...buona, colori_dominanti: [{ hex: "#111111", quota: 1 }] }, "#0a0a0f").includes("invisibile_su_header"));
 caso("un colore chiaro tra i dominanti basta su header scuro", !gateVariante({ ...buona, colori_dominanti: [{ hex: "#111111", quota: 0.7 }, { hex: "#ffffff", quota: 0.3 }] }, "#0a0a0f").includes("invisibile_su_header"));

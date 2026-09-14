@@ -110,10 +110,30 @@ async function analizza(buf, { ritagliato = false } = {}) {
     return Math.round((n / (rw * rh)) * 1000) / 1000;
   };
   const ink40 = await ink(40), ink256 = await ink(256);
-  // simbolo: la fascia trasparente più alta (≥2% dell'altezza) che separa un blocco superiore ≥30%
+  // simbolo: dal 2026-09-14 il prompt chiede il lockup ORIZZONTALE (nome a destra
+  // del simbolo), quindi si cerca PRIMA una colonna trasparente (≥1.5% della
+  // larghezza) che separi un blocco sinistro tra il 12% e il 60% della larghezza;
+  // in subordine la fascia orizzontale storica (lockup impilato: blocco
+  // superiore 30-70%, fascia ≥2% dell'altezza).
   let simbolo = null;
   let gapStart = -1;
-  for (let y = minY; y <= maxY + 1; y++) {
+  for (let x = minX; x <= maxX + 1; x++) {
+    let vuota = true;
+    if (x <= maxX) for (let y = minY; y <= maxY; y++) if (alpha(x, y) > 16) { vuota = false; break; }
+    if (vuota && gapStart < 0) gapStart = x;
+    if (!vuota && gapStart >= 0) {
+      const left = gapStart - minX;
+      if (x - gapStart >= bw * 0.015 && left >= bw * 0.12 && left <= bw * 0.6) {
+        let sy = h, ey = -1;
+        for (let xx = minX; xx < gapStart; xx++) for (let y = minY; y <= maxY; y++) if (alpha(xx, y) > 16) { if (y < sy) sy = y; if (y > ey) ey = y; }
+        simbolo = { x: 0, y: sy - minY, w: left, h: ey - sy + 1 };
+        break;
+      }
+      gapStart = -1;
+    }
+  }
+  gapStart = -1;
+  for (let y = minY; y <= maxY + 1 && !simbolo; y++) {
     let vuota = true;
     if (y <= maxY) for (let x = minX; x <= maxX; x++) if (alpha(x, y) > 16) { vuota = false; break; }
     if (vuota && gapStart < 0) gapStart = y;

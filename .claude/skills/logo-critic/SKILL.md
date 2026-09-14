@@ -114,9 +114,10 @@ varianti diverse hanno totali diversi, e la differenza sta scritta nelle prove.
 - **P3 gerarchia tipografica**: 4 = nome dominante, descrittore subordinato, al
   massimo due caratteri, nome su ≤ 2 righe; 2 = uno scarto (tre caratteri,
   descrittore grande quanto il nome); 0 = nome subordinato al descrittore.
-- **P4 presenza nell'header**: 4 = a 40 px il nome è nitido e il lockup occupa
-  tra 40 e 120 px di larghezza (l'etichetta lo dice); 2 = leggibile ma piccolo o
-  molto stretto/largo; 0 = a 40 px si vede solo il simbolo.
+- **P4 presenza nell'header**: 4 = a 40 px il nome è nitido e il lockup è
+  orizzontale (nome a destra del simbolo, lo standard dal 2026-09-14) largo
+  tra 100 e 260 px (l'etichetta lo dice); 2 = leggibile ma piccolo, o nome
+  sotto il simbolo, o molto stretto/largo; 0 = a 40 px si vede solo il simbolo.
 - **P5 pulizia di resa**: 4 = campiture piatte, bordi netti, nessun disegno
   dentro le forme; 2 = una sfumatura leggera, un'ombra piatta o una texture
   interna (venature, tratteggi, lumeggiature, linee incise dentro una lettera

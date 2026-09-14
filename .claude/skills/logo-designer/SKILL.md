@@ -61,7 +61,7 @@ SOLO `out/<slug>/logo-brief.json`:
 ```
 Logo for the website landing page of "<nome>", a <mestiere_en> in <citta>, <regione>, Italy.
 Design it as a senior brand designer would for a paying client: think the concept through before drawing, so it is distinctive and still clear at small size in the site header.
-The logo shows also the name.
+The logo also shows the name, placed to the right of the symbol and vertically centered on it, never below it: a horizontal lockup.
 Brand colors to use: <primary> and <accent>.
 ```
 
