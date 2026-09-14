@@ -13,6 +13,8 @@ import {
   abbinaDpr412,
   areaCentroide,
   confrontaDataset,
+  controllaContenuto,
+  controllaTracciatoEdifici2011,
   correggiSigleOcr,
   distanzaNomi,
   daWindows1252,
@@ -20,6 +22,7 @@ import {
   leggiCsv,
   leggiDbf,
   leggiDpr412,
+  leggiEdificiSezioni2011,
   leggiManifest,
   leggiPosas,
   leggiSardegna,
@@ -305,6 +308,19 @@ const somma = (v: number[]) => v.reduce((a, b) => a + b, 0);
   const gordonaSola = portaAl2026(territorio, new Map([["014032", 1800]]), R2011, { additivo: true, somma, nomeStorico });
   caso("incorporazione senza il dato del soppresso → nessun fatto", !gordonaSola.valori.has("014032"), gordonaSola);
 
+  // stesso CSV delle variazioni (sha256 222fa3cc…): una delle 4 righe CS di Mappano e la CECS di Caselle Torinese
+  const righeMappano = [
+    `2017;CS;01;201;001316;Mappano;01;201;001063;Caselle Torinese;"Legge Regionale 25 gennaio 2013, n. 1; B.U. n. 5 del 31 gennaio 2013. Successivo Decreto del Presidente del TAR Piemonte n. 44 del 21 febbraio 2017, con il quale è dichiarato estinto per rinuncia il ricorso contro l'istituzione del Comune di Mappano";Nuovo Comune costituito con zone di territorio staccate dai Comuni di Caselle Torinese, Borgaro Torinese, Settimo Torinese e Leini. ;18/04/2017;`,
+    `2017;CECS;01;201;001063;Caselle Torinese;01;201;001316;Mappano;"Legge Regionale 25 gennaio 2013, n. 1; B.U. n. 5 del 31 gennaio 2013. Successivo Decreto del Presidente del TAR Piemonte n. 44 del 21 febbraio 2017, con il quale è dichiarato estinto per rinuncia il ricorso contro l'istituzione del Comune di Mappano";Modificata la circoscrizione territoriale a seguito del distacco di alcune zone di territorio erette in Comune autonomo con denominazione Mappano     ;18/04/2017;`,
+  ];
+  const territorioMappano = new Territorio(leggiVariazioni(daWindows1252(Buffer.from([TESTA_VARIAZIONI, ...righeMappano, ""].join("\r\n"), "latin1"))), new Set(["001316", "001063"]));
+  const mappano = portaAl2026(territorioMappano, new Map([["001063", 7000]]), R2011, { additivo: true, somma, nomeStorico });
+  caso(
+    "comune nato da parti di altri dopo la fonte (Mappano 2017 da Caselle Torinese): nessun fatto 2011 e scarto dichiarato anche per il nuovo comune",
+    mappano.valori.size === 0 && mappano.scarti.scambio_parziale?.join() === "001063,001316" && mappano.errori.length === 0,
+    mappano,
+  );
+
   const bg = portaAl2026(territorio, new Map([["016024", 100], ["016150", 10]]), R2011, { additivo: true, somma, nomeStorico });
   caso("scambio parziale puro (Bergamo/Orio al Serio 2024): fatti 2011 assenti per entrambi", bg.valori.size === 0 && bg.scarti.scambio_parziale?.length === 2, bg);
   const bg2021 = portaAl2026(territorio, new Map([["016024", 100], ["016150", 10]]), riferimento("2021-12-31"), { additivo: true, somma, nomeStorico });
@@ -394,6 +410,75 @@ console.log("\nPOSAS e sismica:");
   const s = leggiSismica(sismica("2A-3A-3B"));
   caso("sismica: BOM rimosso, codice riempito a 6 cifre, «2A-3A-3B» verbatim", s.valori.get("015081") === "3" && s.valori.get("058091") === "2A-3A-3B", [...s.valori]);
   caso("sismica: zona «5» → errore di gate", lancia(() => leggiSismica(sismica("5")))?.includes("fuori formato") === true);
+}
+
+/* ---------- Censimento 2011, variabili per sezione ---------- */
+
+console.log("\nEdifici 2011 per sezione di censimento:");
+{
+  // Istat, dati-cpa_2011.zip (last-modified 29/08/2022, sha256 c62af5f6…): tracciato_2011_sezioni.csv (estratto
+  // verbatim, windows-1252 già decodificato) e R03_indicatori_2011_sezioni.csv, intestazione e le 2 sezioni di Pedesina (SO)
+  const TRACCIATO = [
+    "NOME_CAMPO;DEFINIZIONE",
+    "CODREG;Codice numerico che identifica univocamente la regione nell’ambito del territorio nazionale",
+    "PROCOM;Codice numerico che identifica univocamente il comune nell’ambito del territorio nazionale. Il valore è ottenuto dalla concatenazione del campo CODPRO con il campo CODCOM a tre digit",
+    "E3;Edifici ad uso residenziale",
+    "E4;Edifici e complessi di edifici (utilizzati) ad uso produttivo, commerciale, direzionale/terziario, turistico/ricettivo, servizi, altro",
+    "E5;Edifici ad uso residenziale in muratura portante",
+    "E6;Edifici ad uso residenziale in calcestruzzo armato",
+    "E7;Edifici ad uso residenziale in altro materiale (acciaio, legno, ecc.)",
+    "E8;Edifici ad uso residenziale costruiti prima del 1919",
+    "E9;Edifici ad uso residenziale costruiti dal 1919 al 1945",
+    "E10;Edifici ad uso residenziale costruiti dal 1946 al 1960",
+    "E11;Edifici ad uso residenziale costruiti dal 1961 al 1970",
+    "E12;Edifici ad uso residenziale costruiti dal 1971 al 1980",
+    "E13;Edifici ad uso residenziale costruiti dal 1981 al 1990",
+    "E14;Edifici ad uso residenziale costruiti dal 1991 al 2000",
+    "E15;Edifici ad uso residenziale costruiti dal 2001 al 2005",
+    "E16;Edifici ad uso residenziale costruiti dopo il 2005",
+  ].join("\r\n");
+  const TESTA =
+    "CODREG;REGIONE;CODPRO;PROVINCIA;CODCOM;COMUNE;PROCOM;SEZ2011;NSEZ;ACE;CODLOC;CODASC;P1;P2;P3;P4;P5;P6;P7;P8;P9;P10;P11;P12;P13;P14;P15;P16;P17;P18;P19;P20;P21;P22;P23;P24;P25;P26;P27;P28;P29;P30;P31;P32;P33;P34;P35;P36;P37;P38;P39;P40;P41;P42;P43;P44;P45;P46;P47;P48;P49;P50;P51;P52;P53;P54;P55;P56;P57;P58;P59;P60;P61;P62;P64;P65;P66;P128;P129;P130;P131;P132;P135;P136;P137;P138;P139;P140;ST1;ST2;ST3;ST4;ST5;ST6;ST7;ST8;ST9;ST10;ST11;ST12;ST13;ST14;ST15;A2;A3;A5;A6;A7;A44;A46;A47;A48;PF1;PF2;PF3;PF4;PF5;PF6;PF7;PF8;PF9;E1;E2;E3;E4;E5;E6;E7;E8;E9;E10;E11;E12;E13;E14;E15;E16;E17;E18;E19;E20;E21;E22;E23;E24;E25;E26;E27;E28;E29;E30;E31";
+  const PEDESINA = [
+    "3;Lombardia;14;Sondrio;47;Pedesina;14047;140470000001;1;0;10001;;30;14;16;15;8;2;2;3;7;5;0;2;0;0;1;0;1;0;1;2;5;1;0;3;3;4;2;2;5;0;0;0;1;0;0;2;2;1;0;2;0;1;1;1;3;29;2;10;9;8;0;0;14;1;5;5;3;0;0;16;16;0;8;8;0;13;6;3;0;0;1;1;5;9;9;5;1;0;0;1;0;0;0;0;1;0;0;0;0;0;1;17;119;0;119;0;1262;4;12;1;17;30;10;4;1;1;1;0;0;93;93;87;6;34;1;52;6;9;9;7;20;16;16;2;2;6;56;19;6;69;12;2;3;0;1;136;34;41;11;1",
+    "3;Lombardia;14;Sondrio;47;Pedesina;14047;140470000004;4;0;40001;;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;29;0;29;0;0;0;0;0;0;0;0;0;0;0;0;0;0;6;6;4;2;2;0;2;0;0;0;0;1;1;2;0;0;0;1;1;2;0;0;0;3;1;0;29;2;2;0;0",
+  ];
+  const NOME_R03 = "Sezioni di Censimento/R03_indicatori_2011_sezioni.csv";
+  const csv = (righe: string[], testa = TESTA) => [testa, ...righe, ""].join("\r\n");
+
+  caso("tracciato: definizioni verbatim di E3 ed E8-E16 accettate", lancia(() => controllaTracciatoEdifici2011(TRACCIATO)) === null);
+  caso(
+    "tracciato: una classe di epoca ridefinita → errore che la nomina",
+    lancia(() => controllaTracciatoEdifici2011(TRACCIATO.replace("dal 1971 al 1980", "dal 1971 al 1981")))?.includes("E12") === true,
+  );
+  const letti = leggiEdificiSezioni2011([{ nome: NOME_R03, testo: csv(PEDESINA) }]);
+  caso(
+    "Pedesina: 2 sezioni sommate per PROCOM (14047 → 014047), 9 classi E8-E16 = [6,9,9,7,21,17,18,2,2], 91 edifici",
+    JSON.stringify(letti.valori.get("014047")) === "[6,9,9,7,21,17,18,2,2]" && letti.righe === 2 && letti.nomi.get("014047") === "Pedesina",
+    [...letti.valori],
+  );
+  caso(
+    "E3 diverso dalla somma delle classi → errore",
+    lancia(() => leggiEdificiSezioni2011([{ nome: NOME_R03, testo: csv([PEDESINA[0]!.replace(";93;93;87;6;", ";93;93;88;6;"), PEDESINA[1]!]) }]))?.includes("E3 92 diverso dalla somma delle classi di epoca 91") === true,
+  );
+  caso("riga della Lombardia in un file di un'altra regione → errore", lancia(() => leggiEdificiSezioni2011([{ nome: NOME_R03.replace("R03", "R02"), testo: csv(PEDESINA) }]))?.includes("regione") === true);
+  caso("colonna E16 assente → errore", lancia(() => leggiEdificiSezioni2011([{ nome: NOME_R03, testo: csv([], TESTA.replace(";E16;", ";E16bis;")) }]))?.includes("E16") === true);
+  caso("valore vuoto in una classe → errore (mai contato come 0)", lancia(() => leggiEdificiSezioni2011([{ nome: NOME_R03, testo: csv([PEDESINA[0]!.replace(";20;16;16;2;2;", ";20;16;16;;2;")]) }]))?.includes("E15") === true);
+  caso("stesso comune in due regioni → errore", lancia(() => leggiEdificiSezioni2011([{ nome: NOME_R03, testo: csv(PEDESINA) }, { nome: NOME_R03.replace("R03", "R02"), testo: csv(PEDESINA.map((r) => r.replace(/^3;/, "2;"))) }]))?.includes("anche nella regione") === true);
+
+  // zip integro ma incompleto (solo tracciato e Lombardia): il controllo del contenuto della cache lo rifiuta
+  const cartella = mkdtempSync(join(tmpdir(), "fatti-comuni-sezioni-"));
+  mkdirSync(join(cartella, "Sezioni di Censimento"));
+  writeFileSync(join(cartella, "Sezioni di Censimento", "tracciato_2011_sezioni.csv"), Buffer.from(TRACCIATO.replaceAll("’", "\x92"), "latin1"));
+  writeFileSync(join(cartella, NOME_R03), csv(PEDESINA));
+  const zip = join(cartella, "sezioni.zip");
+  const compresso = spawnSync("zip", ["-qr", zip, "Sezioni di Censimento"], { cwd: cartella });
+  caso(
+    "zip delle sezioni senza tutte le regioni R01-R20 → contenuto rifiutato (la copia in cache non lo accetta)",
+    compresso.status === 0 && lancia(() => controllaContenuto("istat-edifici-2011", [zip]))?.includes("R01-R20") === true,
+    compresso.stderr?.toString(),
+  );
+  rmSync(cartella, { recursive: true, force: true });
 }
 
 /* ---------- aggiornamento senza fonti ---------- */
@@ -539,6 +624,19 @@ console.log("\nDataset committato:");
     verificaFonte("istat-famiglie-2021", `${g.nome} famiglie`, () => caso(`${g.nome}: ${g.famiglie}% famiglie proprietarie`, v("famiglie_proprietarie") === g.famiglie, v("famiglie_proprietarie")));
   }
 
+  verificaFonte("istat-edifici-2011", "edifici: attribuzione e scarti", () => {
+    const f = fattiComune("015081", ds)?.fatti.find((x) => x.chiave === "edifici_ante_1981");
+    const frase = frasiFatto("015081", ds).find((x) => x.chiave === "edifici_ante_1981");
+    caso(
+      "edifici 2011 nel dataset: URL del file per sezioni, licenza, metodo di aggregazione nel fatto, citazione come elaborazione con l'anno",
+      f?.url === "https://www.istat.it/storage/cartografia/variabili-censuarie/dati-cpa_2011.zip" && f.licenza === "CC BY 4.0" && f.metodo?.includes("E8-E16") === true && frase?.citazione.startsWith("Elaborazione su dati Istat, Censimento della popolazione e delle abitazioni 2011, dati per sezione di censimento") === true,
+      [f, frase],
+    );
+    const dichiarati = new Set(Object.values(ds.scarti.edificiEpoca ?? {}).flat().map((v) => v.slice(0, 6)));
+    const senza = Object.entries(ds.comuni).filter(([k, r]) => !r.edificiEpoca && !dichiarati.has(k)).map(([k, r]) => `${k} ${r.nome}`);
+    caso("ogni comune senza edifici 2011 ha uno scarto dichiarato (fusi con scambi, cessioni parziali, nati da parti di altri)", senza.length === 0, senza);
+  });
+
   console.log("\nCodici, alias, ricerca e distanza sul dataset:");
   caso('"15081" e 15081 → Cologno Monzese', fattiComune("15081", ds)?.codice === "015081" && fattiComune(15081, ds)?.nome === "Cologno Monzese");
   caso('"999999", "abc", "", -1 → null senza eccezioni', [fattiComune("999999", ds), fattiComune("abc", ds), fattiComune("", ds), fattiComune(-1, ds)].every((x) => x === null));
@@ -607,7 +705,7 @@ console.log("\nNumeri, fatti e frasi (dataset in memoria):");
     fontiMancanti: [],
     fonti: {
       "istat-posas-2025": istat("Popolazione residente al 1° gennaio 2025", "1° gennaio 2025"),
-      "istat-edifici-2011": istat("Censimento della popolazione e delle abitazioni 2011", "9 ottobre 2011"),
+      "istat-edifici-2011": { ...istat("Censimento della popolazione e delle abitazioni 2011", "9 ottobre 2011"), metodo: "somma per comune delle sezioni di censimento" },
       "istat-famiglie-2021": istat("Censimento permanente della popolazione e delle abitazioni 2021", "2021"),
       "dpc-sismica-2025": {
         titolo: "Classificazione sismica aggiornata a maggio 2025",
@@ -657,6 +755,12 @@ console.log("\nNumeri, fatti e frasi (dataset in memoria):");
   const testo = (k: string) => cologno.find((f) => f.chiave === k);
   caso("frase popolazione «46.994 residenti» con dicitura Istat e data", testo("popolazione")?.testo === "46.994 residenti" && testo("popolazione")!.citazione.startsWith("Fonte: Istat, Popolazione residente al 1° gennaio 2025"), testo("popolazione"));
   caso("frase edifici: «69,7% … prima del 1981 (2.151 su 3.087)» con «Elaborazione su dati Istat» e anno", testo("edifici_ante_1981")?.testo === "69,7% degli edifici residenziali costruiti prima del 1981 (2.151 su 3.087)" && testo("edifici_ante_1981")!.citazione.startsWith("Elaborazione su dati Istat") && testo("edifici_ante_1981")!.citazione.includes("2011"), testo("edifici_ante_1981"));
+  const edificiCologno = fattiComune("015081", ds)?.fatti.find((f) => f.chiave === "edifici_residenziali");
+  caso(
+    "fonte aggregata (metodo dichiarato): anche il conteggio degli edifici è un'elaborazione e porta il metodo; la popolazione no",
+    edificiCologno?.metodo === "somma per comune delle sezioni di censimento" && edificiCologno.dicitura.startsWith("Elaborazione su dati Istat") && testo("edifici_residenziali")!.citazione.startsWith("Elaborazione") && fattiComune("015081", ds)?.fatti.find((f) => f.chiave === "popolazione")?.metodo === undefined,
+    edificiCologno,
+  );
   caso("frase clima con casa comunale e allegato A", testo("zona_climatica")?.testo === "zona climatica E, 2.404 gradi giorno (casa comunale a 131 m)" && testo("zona_climatica")!.citazione.includes("allegato A") && testo("zona_climatica")!.citazione.includes("1993"), testo("zona_climatica"));
   caso("frase riscaldamento zona E dal DPR 74/2013", testo("periodo_riscaldamento")?.testo === "riscaldamento consentito dal 15 ottobre al 15 aprile, 14 ore al giorno" && testo("periodo_riscaldamento")!.citazione.includes("DPR 16 aprile 2013, n. 74"), testo("periodo_riscaldamento"));
   caso("frase sismica con la dicitura DPC letterale", testo("zona_sismica")?.testo === "zona sismica 3" && testo("zona_sismica")!.citazione.startsWith("Fonte: Dipartimento della Protezione Civile-Presidenza del Consiglio dei Ministri"), testo("zona_sismica"));

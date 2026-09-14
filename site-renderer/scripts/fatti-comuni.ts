@@ -123,16 +123,23 @@ export const FONTI: Record<IdFonte, DefFonte> = {
     file: [{ nome: "istat-posas-2025.zip", url: "https://demo.istat.it/data/posas/POSAS_2025_it_Comuni.zip" }],
     strutturale: false,
   },
+  // Variabili censuarie per sezione di censimento, dalla pagina https://www.istat.it/notizia/basi-territoriali-e-variabili-censuarie/
+  // (nessuna licenza diversa indicata: vale la CC BY 4.0 di https://www.istat.it/note-legali/, verificata il 14/09/2026).
+  // Stesso censimento del bulk comunale di esploradati (DICA_EDIFICIRES, host irraggiungibile): stessi 5 valori della
+  // ricerca e totali per ripartizione identici alla «Nota edifici e abitazioni» Istat (Italia 12.187.698).
   "istat-edifici-2011": {
-    titolo: "Censimento della popolazione e delle abitazioni 2011 — edifici residenziali per epoca di costruzione",
+    titolo: "Censimento della popolazione e delle abitazioni 2011 — variabili censuarie per sezione di censimento (edifici residenziali per epoca di costruzione)",
     ente: "Istat",
-    url: "https://esploradati.istat.it/databrowser/DWL/censtatv5db/Popolazione/DICA_EDIFICIRES-data.zip",
+    url: "https://www.istat.it/storage/cartografia/variabili-censuarie/dati-cpa_2011.zip",
     ...CC_BY,
     dicitura: "Fonte: Istat, Censimento della popolazione e delle abitazioni 2011",
-    dicituraElaborazione: "Elaborazione su dati Istat, Censimento della popolazione e delle abitazioni 2011",
+    dicituraElaborazione: "Elaborazione su dati Istat, Censimento della popolazione e delle abitazioni 2011, dati per sezione di censimento",
     riferimento: "9 ottobre 2011",
     riferimentoTerritoriale: "2011-10-09",
-    file: [{ nome: "istat-edifici-2011.zip", url: "https://esploradati.istat.it/databrowser/DWL/censtatv5db/Popolazione/DICA_EDIFICIRES-data.zip" }],
+    metodo:
+      "somma per comune (campo PROCOM) di tutte le sezioni di censimento 2011 dei campi E8-E16 (edifici ad uso residenziale per epoca di costruzione, 9 classi) " +
+      "del tracciato ufficiale tracciato_2011_sezioni.csv; controllo per ogni comune: E3 (edifici ad uso residenziale) uguale alla somma delle 9 classi",
+    file: [{ nome: "istat-edifici-2011.zip", url: "https://www.istat.it/storage/cartografia/variabili-censuarie/dati-cpa_2011.zip" }],
     strutturale: false,
   },
   "istat-famiglie-2021": {
@@ -791,12 +798,16 @@ export function portaAl2026<T>(
   }
   const scambi = opzioni.additivo ? territorio.scambiParziali(R) : new Map<string, Variazione[]>();
   const valori = new Map<string, { valore: T; derivazione?: Derivazione }>();
-  for (const [k, presenti] of [...gruppi].sort(([a], [b]) => (a < b ? -1 : 1))) {
-    const origini = territorio.origini(k, R);
-    if (opzioni.additivo && scambi.has(k)) {
+  // anche i comuni nati dopo R solo da parti di altri (Mappano 2017): nessun codice della fonte li raggiunge, lo scarto va dichiarato
+  const natiDaParti = [...scambi.keys()].filter((k) => territorio.codici2026.has(k) && territorio.origini(k, R).length === 0);
+  const chiavi = new Set([...gruppi.keys(), ...natiDaParti]);
+  for (const k of [...chiavi].sort()) {
+    if (scambi.has(k)) {
       scarta("scambio_parziale", k);
       continue;
     }
+    const presenti = gruppi.get(k)!;
+    const origini = territorio.origini(k, R);
     if (origini.length === 1) {
       valori.set(k, { valore: valoriFonte.get(presenti[0]!)! });
       continue;
@@ -891,6 +902,127 @@ export function leggiSismica(testo: string): ValoriFonte<string> {
     nomi.set(codice, (r[3] ?? "").trim());
   }
   return { valori, nomi, righe: n };
+}
+
+/* ---------- Censimento 2011, variabili per sezione di censimento ---------- */
+
+/** Definizioni verbatim del tracciato ufficiale (tracciato_2011_sezioni.csv) dei campi usati: se cambiano, cambia il dato. */
+export const TRACCIATO_EDIFICI_2011: readonly (readonly [string, string])[] = [
+  ["E3", "Edifici ad uso residenziale"],
+  ["E8", "Edifici ad uso residenziale costruiti prima del 1919"],
+  ["E9", "Edifici ad uso residenziale costruiti dal 1919 al 1945"],
+  ["E10", "Edifici ad uso residenziale costruiti dal 1946 al 1960"],
+  ["E11", "Edifici ad uso residenziale costruiti dal 1961 al 1970"],
+  ["E12", "Edifici ad uso residenziale costruiti dal 1971 al 1980"],
+  ["E13", "Edifici ad uso residenziale costruiti dal 1981 al 1990"],
+  ["E14", "Edifici ad uso residenziale costruiti dal 1991 al 2000"],
+  ["E15", "Edifici ad uso residenziale costruiti dal 2001 al 2005"],
+  ["E16", "Edifici ad uso residenziale costruiti dopo il 2005"],
+];
+/** Comuni al Censimento del 9 ottobre 2011: il file per sezioni li deve coprire tutti. */
+export const COMUNI_CENSIMENTO_2011 = 8092;
+const CARTELLA_SEZIONI_2011 = "Sezioni di Censimento/";
+const FILE_SEZIONI_2011 = /^Sezioni di Censimento\/R(\d{2})_indicatori_2011_sezioni\.csv$/;
+
+/** Il tracciato record contiene i campi PROCOM e CODREG e le definizioni attese di E3 ed E8-E16. */
+export function controllaTracciatoEdifici2011(testo: string): void {
+  const definizioni = new Map<string, string>();
+  for (const riga of testo.split(/\r?\n/)) {
+    const i = riga.indexOf(";");
+    if (i > 0) definizioni.set(riga.slice(0, i).trim(), riga.slice(i + 1).trim());
+  }
+  for (const campo of ["CODREG", "PROCOM"]) if (!definizioni.has(campo)) throw new Error(`tracciato sezioni 2011: campo ${campo} assente`);
+  for (const [campo, attesa] of TRACCIATO_EDIFICI_2011) {
+    const trovata = definizioni.get(campo);
+    if (trovata !== attesa) throw new Error(`tracciato sezioni 2011: ${campo} definito «${trovata ?? "assente"}», atteso «${attesa}»`);
+  }
+}
+
+/**
+ * CSV regionali delle variabili per sezione 2011 («;», windows-1252, niente virgolette) → per comune le 9
+ * classi di epoca (E8-E16) sommate su tutte le sezioni. Errore se: nome file o regione incoerenti,
+ * colonne assenti, numero di campi diverso dall'intestazione, valori non interi, un comune in due regioni,
+ * E3 diverso dalla somma delle classi o nessun edificio residenziale.
+ */
+export function leggiEdificiSezioni2011(file: { nome: string; testo: string }[]): ValoriFonte<number[]> {
+  const somme = new Map<string, number[]>(); // [E3, E8 … E16]
+  const regioneDi = new Map<string, string>();
+  const nomi = new Map<string, string>();
+  const campi = TRACCIATO_EDIFICI_2011.map(([c]) => c);
+  let sezioni = 0;
+  for (const { nome, testo } of file) {
+    const m = FILE_SEZIONI_2011.exec(nome);
+    if (!m) throw new Error(`sezioni 2011: file «${nome}» inatteso`);
+    const regione = String(Number(m[1]));
+    const righe = testo.split(/\r?\n/);
+    const testa = (righe[0] ?? "").split(";");
+    const indice = (c: string) => {
+      const i = testa.indexOf(c);
+      if (i < 0) throw new Error(`sezioni 2011: ${nome} senza la colonna ${c}`);
+      return i;
+    };
+    const iRegione = indice("CODREG");
+    const iCodice = indice("PROCOM");
+    const iNome = indice("COMUNE");
+    const iCampi = campi.map(indice);
+    for (let k = 1; k < righe.length; k++) {
+      const riga = righe[k]!;
+      if (riga === "") continue;
+      const dove = `sezioni 2011: ${nome} riga ${k + 1}`;
+      const r = riga.split(";");
+      if (r.length !== testa.length) throw new Error(`${dove}: ${r.length} campi, attesi ${testa.length}`);
+      if (r[iRegione] !== regione) throw new Error(`${dove}: regione ${r[iRegione]} in un file della regione ${regione}`);
+      const grezzo = r[iCodice]!;
+      if (!/^\d{4,6}$/.test(grezzo)) throw new Error(`${dove}: PROCOM «${grezzo}» non valido`);
+      const codice = grezzo.padStart(6, "0");
+      const altra = regioneDi.get(codice);
+      if (altra !== undefined && altra !== regione) throw new Error(`${dove}: comune ${codice} anche nella regione ${altra}`);
+      regioneDi.set(codice, regione);
+      const valori = iCampi.map((i, j) => {
+        const v = r[i]!;
+        if (!/^\d+$/.test(v)) throw new Error(`${dove}: ${campi[j]} «${v}» non è un intero`);
+        return Number(v);
+      });
+      const s = somme.get(codice);
+      if (s) valori.forEach((v, j) => (s[j]! += v));
+      else {
+        somme.set(codice, valori);
+        nomi.set(codice, r[iNome]!);
+      }
+      sezioni++;
+    }
+  }
+  const valori = new Map<string, number[]>();
+  for (const [codice, [residenziali, ...classi]] of somme) {
+    const totale = classi.reduce((a, b) => a + b, 0);
+    if (residenziali !== totale) throw new Error(`sezioni 2011: ${codice} ${nomi.get(codice)} E3 ${residenziali} diverso dalla somma delle classi di epoca ${totale}`);
+    if (totale <= 0) throw new Error(`sezioni 2011: ${codice} ${nomi.get(codice)} senza edifici residenziali`);
+    valori.set(codice, classi);
+  }
+  return { valori, nomi, righe: sezioni };
+}
+
+/** File regionali R01-R20 dello zip delle variabili per sezione 2011, tutti presenti. */
+function fileSezioni2011(zip: string): string[] {
+  let elenco: string;
+  try {
+    elenco = daWindows1252(execFileSync("unzip", ["-Z1", zip], { maxBuffer: 16 * 1024 * 1024, stdio: ["ignore", "pipe", "pipe"] }));
+  } catch (e) {
+    throw new Error(`${zip}: elenco dei file non leggibile (${messaggio(e)})`);
+  }
+  const membri = elenco.split(/\r?\n/).filter((n) => FILE_SEZIONI_2011.test(n)).sort();
+  const attesi = Array.from({ length: 20 }, (_, i) => `${CARTELLA_SEZIONI_2011}R${String(i + 1).padStart(2, "0")}_indicatori_2011_sezioni.csv`);
+  const assenti = attesi.filter((n) => !membri.includes(n));
+  if (assenti.length || membri.length !== attesi.length) throw new Error(`sezioni 2011: file regionali attesi R01-R20, assenti ${assenti.join(", ") || "nessuno"} (trovati ${membri.length})`);
+  return membri;
+}
+
+/** Lettura completa dallo zip: tracciato, 20 regioni, un valore per ognuno degli 8.092 comuni del 2011. */
+export function leggiEdifici2011(zip: string): ValoriFonte<number[]> {
+  controllaTracciatoEdifici2011(daWindows1252(membroZip(zip, `${CARTELLA_SEZIONI_2011}tracciato_2011_sezioni.csv`)));
+  const letti = leggiEdificiSezioni2011(fileSezioni2011(zip).map((nome) => ({ nome, testo: daWindows1252(membroZip(zip, nome)) })));
+  if (letti.valori.size !== COMUNI_CENSIMENTO_2011) throw new Error(`sezioni 2011: ${letti.valori.size} comuni, attesi ${COMUNI_CENSIMENTO_2011}`);
+  return letti;
 }
 
 /* ---------- DPR 412/1993 allegato A ---------- */
@@ -1242,6 +1374,11 @@ export function controllaContenuto(id: IdFonte, percorsi: string[]): void {
       if (n < RIGHE_MINIME_DPR412) throw new Error(`allegato A: solo ${n} righe estratte (attese oltre 8.000): parser rotto o pagina cambiata`);
       break;
     }
+    case "istat-edifici-2011":
+      // uno zip integro ma diverso (altro file allo stesso URL) si riconosce dal tracciato e dai 20 file regionali
+      controllaTracciatoEdifici2011(daWindows1252(membroZip(percorsi[0]!, `${CARTELLA_SEZIONI_2011}tracciato_2011_sezioni.csv`)));
+      fileSezioni2011(percorsi[0]!);
+      break;
     case "istat-famiglie-2021":
       // ponytail: il lettore delle famiglie non esiste ancora (piano T6a, M0): per ora si scartano solo le
       // pagine d'errore HTML/XML; quando il lettore c'è, il controllo diventa il lettore stesso
@@ -1488,6 +1625,13 @@ export function costruisciDataset(cache: string, manifest: Manifest, generatoIl:
     // denominazioni Istat al riferimento della POSAS: le ridenominazioni più recenti del CSV delle variazioni (Murisengo → Murisengo Monferrato)
     const R = riferimento(FONTI["istat-posas-2025"].riferimentoTerritoriale);
     for (const [codice, nome] of letti.nomi) aggiungiNomePrecedente(territorio.risolvi(codice, R).codice, nome);
+  }
+
+  /* ---- edifici residenziali per epoca di costruzione (2011, somma delle sezioni) ---- */
+  if (presente("istat-edifici-2011")) {
+    const letti = leggiEdifici2011(percorso("istat-edifici-2011"));
+    applica("edificiEpoca", "istat-edifici-2011", letti, { additivo: true, somma: (v) => v[0]!.map((_, i) => v.reduce((s, x) => s + x[i]!, 0)) });
+    note.push(`edifici 2011: ${letti.righe} sezioni di censimento sommate in ${letti.valori.size} comuni del 2011`);
   }
 
   /* ---- sismica ---- */

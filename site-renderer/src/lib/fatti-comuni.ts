@@ -40,6 +40,8 @@ export interface FonteDataset {
   riferimento: string;
   /** Data dei confini comunali a cui la fonte si riferisce (ISO). */
   riferimentoTerritoriale: string;
+  /** Come il valore comunale è ottenuto dai dati pubblicati (es. somma delle sezioni di censimento): ogni fatto è un'elaborazione. */
+  metodo?: string;
   stato: StatoFonte;
   file?: { sha256: string; byte: number; ultimaModifica?: string }[];
   scaricatoIl?: string;
@@ -126,8 +128,10 @@ export interface Fatto {
   url: string;
   licenza: string;
   licenzaUrl: string;
-  /** Già scelta tra dato grezzo ed elaborazione (quote, somme per fusione). */
+  /** Già scelta tra dato grezzo ed elaborazione (quote, somme per fusione, fonti con `metodo`). */
   dicitura: string;
+  /** Metodo di aggregazione della fonte, quando il valore comunale non è pubblicato così com'è. */
+  metodo?: string;
   derivazione?: Derivazione;
 }
 
@@ -236,7 +240,9 @@ export function fattiComune(codice: string | number, ds: DatasetFattiComuni = ca
       url: f.url,
       licenza: f.licenza,
       licenzaUrl: f.licenzaUrl,
-      dicitura: elaborazione ? (f.dicituraElaborazione ?? f.dicitura) : f.dicitura,
+      // un valore aggregato dalla fonte è già un'elaborazione (la CC BY 4.0 chiede di indicare le modifiche)
+      dicitura: elaborazione || f.metodo ? (f.dicituraElaborazione ?? f.dicitura) : f.dicitura,
+      ...(f.metodo ? { metodo: f.metodo } : {}),
     };
   };
   const derivazione = (campo: CampoAdditivo) => rec.derivati?.[campo];
