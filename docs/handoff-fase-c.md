@@ -116,10 +116,13 @@ prossime schede.
   (provato con un worktree sul commit precedente). Regole in `lib/fondamenta.ts`
   (`fondamentaAttese` unica per build e deploy), banco `scripts/test-fondamenta.ts`,
   interlock in `lib/deploy.ts` prima di wrangler, avvisi in `steps.build.fondamenta.avvisi`.
-  Nessun cliente ribuildato. **Aperti (serve l'ok di Mattia, fuori perimetro)**:
-  `lib/catena.ts` `buildDaRifare` e `components/build-panel.tsx` `rebuildMotivi` non
-  conoscono ancora l'interlock (con il servizio acceso la catena si ferma al deploy e la
-  primaria resta «Ripubblica»), e gli avvisi non sono ancora nel blocco Pubblicazione.
+  Nessun cliente ribuildato. **Integrazione** (2026-09-14, `90adaca`, `0376844`): la regola
+  pura `motivoRebuildFondamenta` (`lib/traffico.ts`) fa rifare la build alla catena
+  (`buildDaRifare`) e mette il motivo tra i `rebuildMotivi` della scheda Build (primaria
+  «Builda il sito», attese calcolate nella pagina server); avvisi delle fondamenta in un
+  banner warn nel blocco Pubblicazione; il dialog «Attiva Sito» dice che le fondamenta
+  arrivano con la prossima build col dominio e vanno online solo pubblicando. Aperto: il
+  dettaglio `/traffico/[slug]` elenca ancora le fondamenta tra «Cosa comparirà qui».
 
 ## Clienti in `site-renderer/out/` (fuori git)
 

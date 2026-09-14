@@ -1,7 +1,8 @@
 # Piano T1a — Fondamenta SEO dietro l'interruttore
 
 Stato: **chiuso** (fasi 1-5 fatte), 2026-09-14 — commit `78ddf16`, `29ea851`, `bd1578d`, `93ad659`,
-`e44fb95`, `10692a0` + chiusura documenti. Restano i due punti aperti fuori perimetro in fondo al §11. Fonti: `docs/traffico/README.md`
+`e44fb95`, `10692a0` + chiusura documenti. I punti aperti fuori perimetro del §11 (specchi dell'interlock in
+catena e scheda Build, avvisi nella UI) sono chiusi dall'**Integrazione** in fondo: `90adaca`, `0376844`. Fonti: `docs/traffico/README.md`
 (§1-§5), `docs/traffico/brief-T1a.md`, `docs/traffico/piano-T0.md` §3-§4, codice e dati elencati nel brief,
 documentazione Google (dati strutturati LocalBusiness, sitemap), IndexNow, schema.org, Cloudflare
 (`_headers` degli static assets).
@@ -659,6 +660,7 @@ Calibrazione); in più `chiaviVietate(v)` esportata per banco e controlli. Lo sc
 Pubblicazione, `components/pubblicazione-sito.tsx`). Quel file è fuori dal perimetro di §5: oggi gli avvisi
 stanno nello stato (`steps.build.fondamenta.avvisi`) e nel log della build (righe «avviso: …» e conteggio in
 «build ok»), non ancora nella UI. Serve l'ok per allargare il perimetro a quel componente (o rinviarlo a T2b).
+→ Chiuso nell'**Integrazione (2026-09-14)**.
 
 **Aperti dalla revisione (fuori perimetro, serve l'ok di Mattia)**: l'interlock nuovo del deploy non ha
 ancora i suoi specchi. `lib/catena.ts` `buildDaRifare` non rifà la build quando
@@ -666,6 +668,7 @@ ancora i suoi specchi. `lib/catena.ts` `buildDaRifare` non rifà la build quando
 a ogni «Riprendi». `components/build-panel.tsx` `rebuildMotivi` non lo conta, quindi la primaria resta
 «Ripubblica»/«Riprova la pubblicazione», che fallisce sempre. Il componente è client e non può importare
 `lib/fondamenta.ts` (node:fs): `fondamentaAttese` va spostata in `lib/traffico.ts` o calcolata nella page.
+→ Chiuso nell'**Integrazione (2026-09-14)**.
 
 ## Calibrazione
 
@@ -753,6 +756,36 @@ Resta da verificare al primo deploy reale con dominio: sul dominio l'intestazion
   spento (stato messo a mano nella fixture) non lascia sitemap, chiave, `_headers` né JSON-LD (Astro svuota
   la dist) e `robots.txt` torna ai 23 byte statici.
 
+### Integrazione (2026-09-14)
+
+Testi e regole della UI tarati nel browser sulla fixture `zz-test-t1a-int` (stati scritti a mano, nessuna build):
+
+- **Motivo di ribuild** (`motivoRebuildFondamenta`): stessa forma degli altri motivi della scheda (minuscola,
+  senza punto finale, la barra aggiunge «Pronto per ribuildare: … .»), non il messaggio del deploy, che finisce
+  con «Ribuilda, riconferma e poi pubblica.» e nella barra diventava un doppio invito col doppio punto. Tre frasi
+  parallele: «build senza le fondamenta SEO (sitemap, robots, dati strutturati), ma il servizio Traffico «Sito» è
+  acceso per d» · «build con le fondamenta SEO per b, ma il servizio Traffico «Sito» è spento o manca il
+  dominio» · «build con le fondamenta SEO per b, ma il dominio attuale è d». A 400 px la barra va su quattro
+  righe con la primaria accanto, leggibile.
+- **Avvisi nel blocco Pubblicazione**: titolo «Fondamenta SEO: N avvisi nell'ultima build», una riga «Non
+  bloccano la pubblicazione: per toglierli correggi i dati indicati e ribuilda.» (la prima prova, «il dato
+  resta fuori», era falsa per title e description troppo lunghi, che non restano fuori), elenco in mono come i
+  motivi di ribuild (DESIGN-SYSTEM §3: esiti tecnici; sono le righe «avviso: …» del log). **Nascosti quando le
+  fondamenta cotte non sono quelle attese**: con il servizio spento il banner diceva «correggi e ribuilda»
+  mentre la prossima build toglie le fondamenta; da rifare conta solo «Ribuilda prima di pubblicare».
+- **Dialog «Attiva Sito»**: «… entra nel servizio Sito. Dalla prossima build col dominio il sito avrà sitemap,
+  robots e dati strutturati: vanno online solo quando ribuildi e pubblichi dalla scheda Build & Pubblica.»
+  «col dominio» rende la frase vera anche senza dominio (lì segue il paragrafo `NOTA_DOMINIO`); «pubblichi»
+  e non «ripubblichi» perché il sito può non essere mai stato pubblicato; «solo» dice che online nulla cambia da
+  sé. Nessuna promessa di risultati.
+- **Sospendi e Riattiva** lasciati come sono: da sospeso le fondamenta restano attese (decisione 11), quindi
+  «Ciò che il servizio ha già messo online resta online, anche nelle build successive» e «Il servizio torna
+  attivo da oggi» restano veri. **Spegni non esiste** (T0 ammette solo spento→attivo, attivo→sospeso,
+  sospeso→attivo): il testo «spegnendo, la build con le fondamenta non sarà pubblicabile finché non si
+  ribuilda» non ha un dialog in cui stare; uno spegnimento a mano in `client.json` compare nella scheda Build
+  come motivo di ribuild (provato).
+- Nessuna soglia da tarare: la regola è esatta (build da rifare ⇔ deploy rifiuterebbe, 24 combinazioni nel banco).
+
 ## Verifica
 
 Fasi 4-5, 2026-09-14, su `10692a0` (collaudo finale: suite completa, criteri del brief uno per uno, E2E
@@ -838,3 +871,90 @@ servizio spento nessun ramo nuovo gira (`fondamenta` null, env assente, nessun f
 fallita esce prima del `patchClientState`, quindi la build resta non confermabile come le altre build fallite.
 Restano aperti, fuori perimetro e già descritti al §11: avvisi nel blocco Pubblicazione, e gli specchi
 dell'interlock in `lib/catena.ts` (`buildDaRifare`) e `components/build-panel.tsx` (`rebuildMotivi`).
+→ Chiusi nell'**Integrazione** qui sotto.
+
+## Integrazione (2026-09-14)
+
+Il giro che chiude i punti confermati dalla revisione fuori dal perimetro di T1a. Perimetro in
+`.claude/scope.json` (task «T1a-integrazione»): `lib/catena.ts`, `components/build-panel.tsx`,
+`app/clienti/[slug]/build/page.tsx`, `components/pubblicazione-sito.tsx`, `components/traffico-azione.tsx`,
+`lib/traffico.ts`, i banchi, `docs/traffico/**`, handoff e DEBUG. `lib/fondamenta.ts`, `build.ts` e `deploy.ts`
+non cambiano. Commit `90adaca` (catena + regola + banco), `0376844` (scheda Build, avvisi, dialog) + documenti.
+
+### Cosa è stato fatto
+
+1. **Catena.** `buildDaRifare` rifà la build anche quando le fondamenta cotte (`steps.build.fondamenta?.dominio`)
+   non coincidono con `fondamentaAttese(st, build.dominio)`: dopo attivazione o spegnimento del servizio Sito,
+   o un cambio di dominio, «Riprendi» ribuilda invece di fermarsi sul deploy rifiutato. La condizione è la
+   funzione pura `motivoRebuildFondamenta(percorso, build, attese)` in `lib/traffico.ts`: null quando
+   coincidono o in percorso demo (la demo si pubblica con `deployDemo`, che non le controlla), altrimenti la
+   frase per la scheda. Sta in `lib/traffico.ts` e non in `lib/fondamenta.ts` perché deve girare anche nel
+   componente client; le attese restano calcolate dalla regola unica, lato server.
+2. **Scheda Build & Pubblica.** La pagina server passa `fondamentaAttese` al pannello (niente `node:fs` nel
+   client); `rebuildMotivi` conta il motivo delle fondamenta per le build complete, quindi la primaria diventa
+   «Builda il sito» con il perché nella barra e nel banner «Ribuilda prima di pubblicare», come per gli altri
+   interlock (DESIGN-BRIEF: una primaria solo nella action bar, il motivo scritto accanto). «Ripubblica» e
+   «Riprova la pubblicazione» non compaiono più finché la build non è rifatta.
+3. **Avvisi.** `steps.build.fondamenta.avvisi` in un `Banner` warn non bloccante nel blocco Pubblicazione (titolo
+   col numero, elenco dei testi), solo se le fondamenta cotte sono quelle attese (Calibrazione § Integrazione).
+4. **Dialog del servizio Sito.** «Attiva» dice cosa porterà la prossima build col dominio e che online arriva
+   solo ribuildando e pubblicando; Sospendi e Riattiva verificati veri e invariati; Spegni non esiste
+   (Calibrazione § Integrazione).
+
+### Verifica
+
+| Comando (editor) | Esito |
+|---|---|
+| `npx tsc --noEmit` | exit 0 |
+| `npm run build` | exit 0; un solo warning Turbopack «unexpected file in NFT list» su `app/api/clients/[slug]/img/[file]/route.ts`, presente identico sul commit precedente (build rifatta su `90adaca` senza le modifiche) |
+| `scripts/test-fondamenta.ts` | 114 passati, 0 falliti (102 + 12 nuovi) |
+| `scripts/test-demo.ts` | 19 passati, 0 falliti |
+| `scripts/test-stati.ts` | 30 passati, 0 falliti |
+| `scripts/test-traffico-stato.ts` | 58 passati, 0 falliti |
+| `scripts/test-portafoglio.ts` | 43 passati, 0 falliti |
+| `scripts/test-import-form.ts` | ✓ scenario completo |
+
+Casi nuovi del banco (composti come `buildDaRifare`, con le attese dalla regola unica): servizio attivo o
+sospeso con dominio e build senza fondamenta → rifare; spento, senza campo `traffico` o dominio rimosso con
+fondamenta cotte → rifare; dominio cambiato → rifare, con entrambi i domini nella frase; coincidenti (attivo e
+cotte per lo stesso dominio, spento senza, attivo senza dominio né fondamenta) → non rifare; percorso demo, con
+o senza fondamenta cotte → non contano; in percorso completo, su 24 combinazioni di stato, dominio e fondamenta
+cotte, «rifare» vale esattamente quando `motivoRifiutoFondamenta` rifiuterebbe il deploy.
+
+**UI nel browser** (editor in dev su :3311), fixture `out/zz-test-t1a-int` copiata da Cavaliere senza `dist`,
+`.wrangler`, `wrangler.jsonc` e `logs`, con nome, dominio (`.invalid`), sito Umami e integrazioni finti e
+nessuna build né chiamata di rete; il deploy rifiutato è simulato con `deployErrore` scritto a mano, mai la
+route di deploy:
+
+- servizio attivo, build verificata senza fondamenta, deploy rifiutato: barra «Pronto per ribuildare: build
+  senza le fondamenta SEO …», primaria «Builda il sito», banner «Ribuilda prima di pubblicare» con il motivo,
+  errore del deploy sotto, nessun «Ripubblica»; chiaro e scuro a 1280, scuro a 400;
+- build con fondamenta per il dominio e 3 avvisi: banner warn con il conteggio, «Niente da fare» nella barra;
+  chiaro e scuro a 1280 e a 400, nessuno scroll orizzontale (`scrollWidth` = viewport);
+- servizio spento con fondamenta cotte: motivo «… è spento o manca il dominio», banner degli avvisi nascosto;
+- `/traffico/zz-test-t1a-int`: dialog Attiva con e senza dominio pubblicato (paragrafo `NOTA_DOMINIO`), scuro a
+  400 e chiaro a 1280; dialog Sospendi invariato. Nessuna conferma premuta.
+
+Pulizia: fixture cancellata (solo `brief.json` e `client.json` scritti dopo il marcatore, entrambi a mano),
+nessuna cartella in `public/media`, `ls out/` = i 3 clienti, hash di `cavaliere-build-srls/client.json` uguale a
+prima e `find -newer` sul marcatore vuoto. Tema del pannello riportato a chiaro.
+
+**Incidente durante la verifica**: un `git stash` usato per confrontare la build col commit precedente ha
+tolto per circa un minuto anche le modifiche non committate di un'altra sessione (`docs/traffico/piano-T3.md`,
+`factory/assignments.json`), e il `pop` si è fermato su una sua scrittura nel frattempo. Ripristino: file di
+questo giro e `assignments.json` dallo stash (byte-identici), `piano-T3.md` con merge a tre vie senza conflitti
+(base HEAD, contenuto allo stash, scrittura successiva), copia della patch nello scratchpad, stash eliminato,
+sessioni sorelle avvisate. Da qui in poi: mai `git stash` in un working tree condiviso (worktree temporaneo,
+come nel collaudo di T1a).
+
+### Aperti (fuori perimetro)
+
+1. `app/traffico/[slug]/page.tsx` elenca ancora «le fondamenta tecniche: sitemap, robots, dati strutturati» tra
+   «Cosa comparirà qui» con «Per ora nessuna di queste parti è disponibile»: dopo T1a non è più vero e
+   contraddice il dialog. Serve una riga di stato onesta (es. fondamenta cotte nell'ultima build sì/no), da
+   pianificare con T2b o come fix a sé.
+2. Alcuni avvisi di `lib/fondamenta.ts` non nominano scheda e campo dove correggere (P.IVA, telefono, email,
+   `sameAs`, H1): il banner li mostra così come sono. Da allineare alle frasi che già lo fanno (indirizzo,
+   title, description).
+3. La frase del deploy (`motivoRifiutoFondamenta`) e quella della scheda (`motivoRebuildFondamenta`) sono due
+   testi: il banco garantisce che la condizione coincida, non le parole.
