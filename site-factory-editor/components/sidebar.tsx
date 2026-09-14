@@ -7,7 +7,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Users, Factory, BookMarked, Settings, type LucideIcon } from "lucide-react";
+import { Users, Signpost, Factory, BookMarked, Settings, type LucideIcon } from "lucide-react";
 
 type Voce = {
   href: string;
@@ -23,6 +23,13 @@ const VOCI: Voce[] = [
     label: "Clienti",
     icon: Users,
     attiva: (p) => p === "/" || p.startsWith("/clienti"),
+  },
+  {
+    // Servizi Sito e Scheda Google per cliente (docs/traffico/README.md).
+    href: "/traffico",
+    label: "Traffico",
+    icon: Signpost,
+    attiva: (p) => p === "/traffico" || p.startsWith("/traffico/"),
   },
   {
     href: "/fabbrica",

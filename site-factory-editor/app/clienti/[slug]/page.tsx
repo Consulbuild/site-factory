@@ -13,6 +13,7 @@ import { ClienteStato } from "@/components/cliente-stato";
 import { StepRunLive } from "@/components/step-run-live";
 import { CatenaCard } from "@/components/catena-card";
 import { LogoVarianti } from "@/components/logo-varianti";
+import { StatoServizi } from "@/components/traffico-ui";
 
 export const dynamic = "force-dynamic";
 
@@ -345,6 +346,18 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
           );
         })}
       </ol>
+
+      {/* Servizi Traffico (DESIGN-BRIEF §Area Traffico): riga compatta dopo gli step,
+          fuori da `righe` (non è uno step e non cambia il prossimo passo), mai primaria. */}
+      <section aria-labelledby="hub-traffico" className="card mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3.5">
+        <h2 id="hub-traffico" className="font-medium">
+          Traffico
+        </h2>
+        <StatoServizi traffico={client.traffico} corrotto={!!bundle.corrotto} />
+        <Link href={`/traffico/${slug}`} className={`${btnSecondary} ml-auto`}>
+          Apri Traffico →
+        </Link>
+      </section>
     </div>
   );
 }

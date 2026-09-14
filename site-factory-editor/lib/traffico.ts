@@ -36,7 +36,7 @@ export function leggiTraffico(state: { traffico?: ClientState["traffico"] }): Tr
 /** null = ammessa. Prima la validità della transizione (400), poi il guard demo sull'attivazione (409). */
 export function motivoRifiuto(da: StatoServizio, verso: StatoServizio, percorso: Percorso): Rifiuto | null {
   if (da === verso) {
-    return { codice: 400, errore: `Il servizio è già ${da}: forse è stato cambiato da un'altra finestra, ricarica la pagina` };
+    return { codice: 400, errore: `Il servizio è già ${da}: forse è stato cambiato da un'altra finestra` };
   }
   if (AMMESSA[da] !== verso) {
     return { codice: 400, errore: `Transizione non ammessa da ${da} a ${verso}: da ${da} si può solo ${VERBO[da]}` };
