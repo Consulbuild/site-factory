@@ -121,7 +121,7 @@ si calibra con 4-8 settimane di dati Search Console.
 |---|---|---|---|---|
 | S0 | Baseline e richieste esterne | account (Mattia), GSC/Bing verificati su cavalierebuild.it, baseline congelata | da fare (Mattia) | — |
 | T0 | Area Traffico: forma e scheletro | pagina portafoglio + dettaglio Sito/Scheda, stati spento/attivo/sospeso, chiavi con prova | fatto (2026-09-14) | `fb2ade6`, `a6e10b9`, `ff95365`, `4d859cc`, `e307917` + chiusura documenti |
-| T1a | Fondamenta SEO | sitemap, robots per cliente, JSON-LD reale, title/H1/description per pagina, chiave IndexNow, interlock deploy | da fare | — |
+| T1a | Fondamenta SEO | sitemap, robots per cliente, JSON-LD reale, title/H1/description per pagina, chiave IndexNow, interlock deploy | fatto (2026-09-14): aperti fuori perimetro gli specchi dell'interlock in catena e scheda Build e gli avvisi nella UI (piano §11) | `78ddf16`, `29ea851`, `bd1578d`, `93ad659`, `e44fb95`, `10692a0` + chiusura documenti |
 | T5a | Contratto multipagina e renderer | `pages` additivo, pagine servizio/zone/lavori, navbar/footer, 404, breadcrumb | da fare | — |
 | T3 | Mini-form «Dati per farti trovare» | link firmato → form → `traffico/dati.json` | da fare | — |
 | T6a | Fatti comunali | `comuni-fatti.json` con fonte/licenza, offline in build | da fare | — |

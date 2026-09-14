@@ -106,6 +106,20 @@ prossime schede.
   `scripts/test-traffico-stato.ts`, route `POST /api/clients/[slug]/traffico` (400
   transizione, 409 demo e file illeggibile, 403/415 anti-CSRF). In T0 attivare registra
   solo stato e date: online non cambia nulla. Prossimo: T1a (fondamenta SEO).
+- **Traffico T1a — fondamenta SEO dietro l'interruttore** (2026-09-14, piano chiuso in
+  `docs/traffico/piano-T1a.md`): con il servizio «Sito» attivo o sospeso, un dominio e il
+  percorso completo la build scrive robots con `Sitemap`, `sitemap.xml` con `lastmod` da
+  hash del testo indicizzabile (registro `out/<slug>/traffico/lastmod.json`, ancorato
+  all'ultima pubblicazione), JSON-LD reale in home (file `traffico/dati-strutturati.json`
+  passato al renderer con `DATI_STRUTTURATI_JSON`), chiave IndexNow e `_headers` con
+  `noindex` su workers.dev; a servizio spento la `dist` è identica byte per byte a prima
+  (provato con un worktree sul commit precedente). Regole in `lib/fondamenta.ts`
+  (`fondamentaAttese` unica per build e deploy), banco `scripts/test-fondamenta.ts`,
+  interlock in `lib/deploy.ts` prima di wrangler, avvisi in `steps.build.fondamenta.avvisi`.
+  Nessun cliente ribuildato. **Aperti (serve l'ok di Mattia, fuori perimetro)**:
+  `lib/catena.ts` `buildDaRifare` e `components/build-panel.tsx` `rebuildMotivi` non
+  conoscono ancora l'interlock (con il servizio acceso la catena si ferma al deploy e la
+  primaria resta «Ripubblica»), e gli avvisi non sono ancora nel blocco Pubblicazione.
 
 ## Clienti in `site-renderer/out/` (fuori git)
 

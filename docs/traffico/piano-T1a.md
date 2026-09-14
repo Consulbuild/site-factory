@@ -1,7 +1,7 @@
 # Piano T1a — Fondamenta SEO dietro l'interruttore
 
-Stato: **fasi 2 (sviluppo) e 3 (calibrazione) fatte**, 2026-09-14 — commit `78ddf16`, `29ea851`,
-`bd1578d` + calibrazione; fasi 4-5 (test completi, debug finale, chiusura) all'orchestratore. Fonti: `docs/traffico/README.md`
+Stato: **chiuso** (fasi 1-5 fatte), 2026-09-14 — commit `78ddf16`, `29ea851`, `bd1578d`, `93ad659`,
+`e44fb95`, `10692a0` + chiusura documenti. Restano i due punti aperti fuori perimetro in fondo al §11. Fonti: `docs/traffico/README.md`
 (§1-§5), `docs/traffico/brief-T1a.md`, `docs/traffico/piano-T0.md` §3-§4, codice e dati elencati nel brief,
 documentazione Google (dati strutturati LocalBusiness, sitemap), IndexNow, schema.org, Cloudflare
 (`_headers` degli static assets).
@@ -755,4 +755,86 @@ Resta da verificare al primo deploy reale con dominio: sul dominio l'intestazion
 
 ## Verifica
 
-_(fase 4)_
+Fasi 4-5, 2026-09-14, su `10692a0` (collaudo finale: suite completa, criteri del brief uno per uno, E2E
+sulla fixture con l'editor in dev su :3311).
+
+### Suite
+
+| Comando | Esito |
+|---|---|
+| editor `npx tsc --noEmit` | exit 0 |
+| editor `npm run build` | exit 0, route compilate (`/traffico`, `/traffico/[slug]` comprese) |
+| `scripts/test-fondamenta.ts` | 102 passati, 0 falliti |
+| `scripts/test-traffico-stato.ts` | 58 passati, 0 falliti |
+| `scripts/test-stati.ts` | 30 passati, 0 falliti |
+| `scripts/test-portafoglio.ts` | 43 passati, 0 falliti |
+| `scripts/test-demo.ts` | 19 passati, 0 falliti |
+| `scripts/test-import-form.ts` | ✓ scenario completo (import, foto senza metadati, file illeggibili, pulizia) |
+| `scripts/test-legale-gates.ts` · `test-logo-gates.ts` · `test-metadati-foto.ts` | 67/0 · 75/0 · ✓ |
+| `scripts/parity-copy.ts` | «Parity OK: editor e assembler concordano» |
+| renderer `npm run build` | exit 0, 18 pagine |
+| renderer `npm run check` | 1 errore, l'atteso di `registry.ts` (8 tipi senza componente) |
+| validatore sul blueprint | «OK — site.json valido · 12 sezioni · preset "meridian"» |
+| renderer `npm run test:visual` | 28 passed (snapshot invariati) |
+| renderer `npm run test:a11y` | 14 passed |
+
+### Criteri del brief
+
+Fixture `out/zz-test-t1a` rifatta da zero (F1-F3: copia di Cavaliere senza `dist`, `.wrangler`,
+`wrangler.jsonc`, `logs`; id Umami, integrazioni, deploy e infra tolti prima del dominio di prova, `grep` = 0).
+
+- **Spento = dist di prima, byte per byte.** «Prima» ricostruito senza toccare il repo: worktree temporaneo
+  su `cb80666` (ultimo commit prima di T1a; da lì in `site-renderer` cambiano solo i tre file del piano),
+  `astro build` con le stesse env della build dell'editor (`SITE_JSON`, `SITE_URL`, `UMAMI_*`, `FORM_ACTION`)
+  e rimozione di `/anteprima*`. `diff -r` prima (cb80666) ↔ stessa invocazione su HEAD: **vuoto**. `diff -r`
+  prima ↔ `dist` della build dell'editor a servizio spento: vuoto a parte due stub `content-assets.mjs` e
+  `content-modules.mjs` (`export default new Map();`) che `astro build` lanciato a mano dalla shell scrive
+  in ogni versione, cb80666 compreso, e la build dell'editor no: dipendono dall'invocazione, non da T1a.
+  `robots.txt` = 23 byte statici; nessuna cartella `traffico/`; `client.json` senza `steps.build.fondamenta`.
+- **Attivo** (route `traffico` → build): `diff -rq` con lo spento elenca solo `index.html`, `robots.txt`,
+  `sitemap.xml`, `<chiave>.txt`, `_headers`; privacy, termini, grazie e asset identici; `index.html` differisce
+  **solo** per il blocco JSON-LD. `robots.txt` e `_headers` uguali carattere per carattere al §2.5/§2.9;
+  `xmllint --noout` ok, un solo `<loc>` = canonical della home, `lastmod` W3C. JSON-LD: un blocco, parse ok,
+  `GeneralContractor` (dal settore), `@id`/`url` sul dominio, `address` con i 5 campi, `vatID`, `telephone`,
+  `email`, `logo` (simbolo) e `image` (foto reale) assoluti, 5 `makesOffer`; scansione ricorsiva senza chiavi
+  vietate; cifre di telefono e P.IVA e CAP presenti nel testo della pagina. `<chiave>.txt` = `indexnow.json`,
+  senza newline; `traffico/lastmod.json` con `/`; `steps.build.fondamenta.dominio` = dominio di prova, nessun
+  avviso. Log: le due fasi, «JSON-LD: GeneralContractor (settore «Edilizia») · indirizzo ok · P.IVA ok ·
+  5 servizi · omessi: sameAs (nessun social)», «sitemap: 1 URL · lastmod aggiornato per /».
+- **Ribuild senza cambi** (F8): `diff -r` vuoto, registro byte-identico, log «lastmod invariato».
+- **Testo della home cambiato** (F9, una parola del sottotitolo hero): cambiano solo `index.html` e
+  `sitemap.xml`, `lastmod` di `/` nuovo nel registro e nella sitemap.
+- **Palette cambiata** (F10): cambiano le quattro pagine (stile inline), `sitemap.xml` identica, «lastmod invariato».
+- **Sospeso** (F11): `diff -r` con F10 vuoto.
+- **Ritorno a spento** (fuori dal piano; stato messo a mano nella fixture perché la route ammette da sospeso
+  solo la riattivazione), con copy e palette ripristinati: `diff -r` con la dist spenta di partenza **vuoto**,
+  quindi Astro toglie sitemap, chiave, `_headers` e JSON-LD e `client.json` perde `fondamenta`.
+- **Interlock** (F12, script sullo stato reale della fixture, nessuna chiamata alla route di deploy):
+  stato coerente → `null`; senza `traffico` → «contiene le fondamenta»; senza `fondamenta` cotte → «senza le
+  fondamenta»; dominio diverso → messaggio con i due domini; percorso demo senza fondamenta → `null`. Nel
+  codice il controllo precede `writeJson(wrangler.jsonc)` e `wrangler deploy`.
+- **Escape** (F13, `astro build` diretto): nome con `</script><script>alert(1)</script>&B` e U+2028/U+2029 →
+  l'HTML non contiene la sequenza né i separatori letterali, `JSON.parse` restituisce il nome originale;
+  senza `DATI_STRUTTURATI_JSON` nessun `ld+json`; privacy, termini e grazie mai.
+- **Pulizia** (F14): fixture eliminata dall'editor (`DELETE` col nome esatto, `{"ok":true}` senza avvisi:
+  cartella, sito Umami di prova — id verificato uguale a quello creato dalla prima build della prova — e
+  `rimuovi` n8n dello slug di prova); `public/media/zz-test-t1a` rimossa; worktree temporaneo rimosso;
+  `ls out/` = i 3 clienti; hash di `cavaliere-build-srls/client.json` uguale a F1; `find -newer` sul
+  marcatore vuoto: Cavaliere non ribuildato né toccato.
+
+### File toccati vs §4
+
+Commit del piano: `78ddf16` (fondamenta.ts, banco), `29ea851` (banco, Base.astro, loadSite.ts, index.astro),
+`bd1578d` (build.ts, deploy.ts, fondamenta.ts, schemas.ts), `93ad659` e `10692a0` (DEBUG.md, piano, deploy.ts,
+fondamenta.ts, banco), `e44fb95` (piano, build.ts, fondamenta.ts, banco) + chiusura (piano, README, handoff).
+Tutti dentro §4/§5: nessun file fuori perimetro. Nessuna modifica del piano rimasta non committata (le
+modifiche aperte nel working tree, `factory/assignments.json` e i documenti di T4, sono di altre sessioni).
+`d0c473b` e `9b03d56`, intercalati nella storia, sono il lavoro sulle foto del form (T3), non di T1a.
+
+### Revisione finale
+
+Diff riletto riga per riga (build, deploy, schemas, renderer, `fondamenta.ts`): nessun difetto nuovo. A
+servizio spento nessun ramo nuovo gira (`fondamenta` null, env assente, nessun file scritto); una cottura
+fallita esce prima del `patchClientState`, quindi la build resta non confermabile come le altre build fallite.
+Restano aperti, fuori perimetro e già descritti al §11: avvisi nel blocco Pubblicazione, e gli specchi
+dell'interlock in `lib/catena.ts` (`buildDaRifare`) e `components/build-panel.tsx` (`rebuildMotivi`).
