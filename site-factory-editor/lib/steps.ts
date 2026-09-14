@@ -93,6 +93,18 @@ export interface RunCtx {
   /** Solo mode "regen" (immagini): file da rigenerare, es. ["img/card-2.jpg"]. */
   files?: string[];
 }
+/** Modalità ammesse per step (la route run le fa rispettare): un mode estraneo
+ *  (es. "lavori" sul copy) entrerebbe nel ramo generate riscrivendo l'artifact
+ *  senza toccare stato, validazione né upstream. */
+export const STEP_MODES: Record<StepKey, RunMode[]> = {
+  contesto: ["generate", "update"],
+  palette: ["generate"],
+  logo: ["generate"],
+  copy: ["generate", "update", "critic"],
+  images: ["generate", "regen", "critic", "lavori"],
+  legale: ["generate", "update", "critic"],
+  build: ["generate", "partial"],
+};
 
 export interface StepDef {
   stateKey: StepKey;
@@ -363,13 +375,19 @@ export const STEPS: Record<StepKey, StepDef> = {
     // Staleness sugli INPUT dell'assembler (site.json lo produce build stessa).
     // legale.json incluso (M5 piano legale): un legale aggiornato → build stale.
     // logo-trace.json: cambiare variante del mark (scelta nel trace) rende la build stale.
-    upstream: ["intake.json", "contesto.json", "palette.json", "copy.json", "images.json", "legale.json", "logo-trace.json"],
-    // Gate minimo comune (la route applica il gate PRIMA di leggere il mode):
-    // il gate della build completa (images verificato) vive dentro buildRun.
-    gate: (slug) =>
-      readClientState(slug).steps.intake.stato === "verificato"
-        ? null
-        : "Prima verifica l'intake: anche l'anteprima parziale parte dai dati corretti.",
+    // lavori.json: la galleria delle foto reali è montata dalla build (lib/build.ts).
+    upstream: ["intake.json", "contesto.json", "palette.json", "copy.json", "images.json", "legale.json", "logo-trace.json", "lavori.json"],
+    // UNICO gate della build, condiviso da route, catena, hub e scheda: intake
+    // verificato per tutte; immagini verificate per la build completa (la
+    // parziale monta i segnaposto del blueprint e può girare prima).
+    gate: (slug, mode) => {
+      const s = readClientState(slug).steps;
+      if (s.intake.stato !== "verificato") return "Prima verifica l'intake: anche l'anteprima parziale parte dai dati corretti.";
+      if (mode !== "partial" && s.images.stato !== "verificato") {
+        return "Prima verifica le immagini: la build completa monta gli artifact confermati (usa «Anteprima parziale» per vedere il sito a metà pipeline).";
+      }
+      return null;
+    },
     run: buildRun,
     validate(slug) {
       return fs.existsSync(path.join(OUT_DIR, slug, "dist", "index.html"))

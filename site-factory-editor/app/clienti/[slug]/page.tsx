@@ -2,11 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { readClientBundle, listClients, readLogoTrace } from "@/lib/clients";
 import { STEPS, motivoGate, type StepKey } from "@/lib/steps";
-import { staleFiles } from "@/lib/staleness";
+import { staleFiles, type Upstream } from "@/lib/staleness";
 import { leggiStatoCliente } from "@/lib/portafoglio";
 import { catenaViva, posizioneInCoda } from "@/lib/catena";
 import { etichettaDemo, DEMO_ZONA } from "@/lib/deploy";
-import { Badge, StepBadge, formatDate, btnPrimary, btnSecondary, Breadcrumb } from "@/components/ui";
+import { Badge, Banner, StepBadge, formatDate, btnPrimary, btnSecondary, Breadcrumb } from "@/components/ui";
 import { ClienteAzioni } from "@/components/cliente-azioni";
 import { ClienteStato } from "@/components/cliente-stato";
 import { StepRunLive } from "@/components/step-run-live";
@@ -62,8 +62,10 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
 
   const stale = (k: StepKey) =>
     client.steps[k].stato !== "assente" &&
-    staleFiles(slug, STEPS[k].upstream, (client.steps[k] as { upstream?: Record<string, string> }).upstream).length > 0;
-  const gate = (k: StepKey) => motivoGate(slug, k) ?? undefined;
+    staleFiles(slug, STEPS[k].upstream, (client.steps[k] as { upstream?: Upstream }).upstream).length > 0;
+  // client.json fuori schema: nessuna azione finché il file non è corretto a mano
+  // (le scritture sono già rifiutate da lib/clients.ts; qui lo si dice).
+  const gate = (k: StepKey) => (bundle.corrotto ? "client.json non leggibile: correggi il file a mano" : (motivoGate(slug, k) ?? undefined));
   const logoFornito = !!intake["brand.logo"] || contesto?.materiali.logo !== false;
   const logoTrace = readLogoTrace(slug);
 
@@ -162,7 +164,9 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
       stale: stale("legale"),
       fail: client.steps.legale.stato !== "assente" && bundle.legaleReview?.verdict === "FAIL",
       auto: client.steps.legale.autoConferma,
-      abilitato: !gate("legale"),
+      // In demo il legale non è nel cammino (arriva con «Il cliente si è abbonato»).
+      nota: client.percorso === "demo" ? "non serve in demo" : undefined,
+      abilitato: client.percorso !== "demo" && !gate("legale"),
       motivoGate: gate("legale"),
       labelGenera: "Genera documenti legali",
       labelApri: "Apri legale",
@@ -175,7 +179,9 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
       errore: client.steps.build.errore,
       stale: stale("build"),
       auto: client.steps.build.autoConferma,
-      abilitato: !gate("build"),
+      // La scheda resta apribile per l'anteprima parziale; «Builda il sito»
+      // (completa) e «prossimo» seguono il gate completo (immagini verificate).
+      abilitato: !bundle.corrotto && !motivoGate(slug, "build", "partial"),
       motivoGate: gate("build"),
       labelGenera: "Builda il sito",
       labelApri: "Apri build",
@@ -187,9 +193,9 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
   const viva = catenaViva(slug);
   const catenaAttiva = viva || (!!client.catena && ["in_coda", "in_corso", "attesa_limite"].includes(client.catena.stato));
   const primariaCatena = client.percorso === "demo" || catenaAttiva;
-  const prossimo = primariaCatena ? null : (righe.find((r) => r.abilitato && r.stato !== "verificato" && !r.nota)?.key ?? null);
+  const prossimo = primariaCatena ? null : (righe.find((r) => r.abilitato && !r.motivoGate && r.stato !== "verificato" && !r.nota)?.key ?? null);
   // Il legale è parte del percorso completo: in demo la riga resta ma non è nel cammino.
-  const mostraCard = client.percorso === "demo" || !!client.catena || !!client.demo || client.steps.build.stato !== "verificato";
+  const mostraCard = !bundle.corrotto && (client.percorso === "demo" || !!client.catena || !!client.demo || client.steps.build.stato !== "verificato");
   const hostPrevisto = client.demo?.host ?? `${etichettaDemo(brief.azienda, slug)}.${DEMO_ZONA}`;
 
   return (
@@ -218,6 +224,16 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
           sitoGiu={stato.sito?.su === false}
         />
       </header>
+
+      {bundle.corrotto && (
+        <div className="mt-4">
+          <Banner tone="err" title="client.json non leggibile">
+            Il file dello stato di questo cliente non rispetta lo schema e non viene toccato: correggilo a mano in{" "}
+            <span className="mono">site-renderer/out/{slug}/client.json</span>, poi ricarica. Fino ad allora ogni azione è
+            bloccata. Dettaglio: <span className="mono">{bundle.corrotto}</span>
+          </Banner>
+        </div>
+      )}
 
       {mostraCard && (
         <CatenaCard

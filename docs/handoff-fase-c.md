@@ -65,6 +65,21 @@ prossime schede.
   (max 9 immagini a run), Mattia indica `scelta_umana`, calibratore con
   `--force`. Da fare: la prima run reale su un cliente senza logo.
 
+- **Solidità degli stati** (2026-09-14, audit + 13 fix, piano
+  `vectorized-petting-snowglobe`): regole pure in `lib/stati.ts` (il solo critico
+  non cambia mai lo stato; decisione della catena su un passo; flag «auto»), banco
+  `scripts/test-stati.ts`. Staleness con snapshot a null (file comparso/sparito =
+  stale, `lavori.json` tra gli upstream della build); stop tardivo non marca
+  «errore»; `STEP_MODES` per step (400 su mode estraneo); intake salvato a mano
+  toglie «auto»; gate della build unico (immagini verificate per la completa) per
+  route/catena/hub/scheda; Legale «non serve in demo»; dominio rifiutato in demo
+  (409) e `rebuildPerPercorso` nella scheda; **la catena si ferma e lo dice** su uno
+  step verificato ma cambiato a monte (decisione Mattia; il logo è escluso finché la
+  riga Logo non ha «Va bene così»); un run manuale cancella la conclusione della
+  catena; errore del contesto visibile nell'editor con «Riprova»; `client.json`
+  fuori schema non viene più rinominato/azzerato: banner rosso, scritture rifiutate.
+  Fuori scope: «Va bene così» per la build, staleness sui sorgenti del renderer.
+
 ## Clienti in `site-renderer/out/` (fuori git)
 
 - `cavaliere-build-srls`: online su cavalierebuild.it con modulo reale e Umami;

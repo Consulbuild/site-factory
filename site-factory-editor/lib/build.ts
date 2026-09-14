@@ -58,10 +58,8 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
   const siteJson = path.join(dir, "site.json");
   const dist = distDirOf(slug);
 
-  // Gate della build COMPLETA (la parziale può girare da intake verificato).
-  if (!partial && readClientState(slug).steps.images.stato !== "verificato") {
-    return { ok: false, error: "Prima verifica le immagini: la build completa monta gli artifact confermati (usa «Anteprima parziale» per vedere il sito a metà pipeline)." };
-  }
+  // Il gate (intake verificato; immagini verificate per la build completa) è
+  // STEPS.build.gate: lo applicano route, catena e hub prima di arrivare qui.
 
   // Difesa in profondità: lo stato «verificato» è una promessa, il file è la
   // verità — un copy.json fuori contratto (visto in produzione: drift tra stato

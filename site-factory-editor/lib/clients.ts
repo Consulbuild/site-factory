@@ -52,20 +52,35 @@ export function writeJson(file: string, data: unknown): void {
  * (es. cavaliere-build-srls) non ce l'hanno — si sintetizzano i default
  * in lettura e si scrive il file solo alla prima azione di scrittura.
  */
-export function readClientState(slug: string): ClientState {
+export const readClientState = (slug: string): ClientState => leggi(slug).state;
+
+/**
+ * Motivo per cui client.json NON è leggibile (null = ok). Un file presente ma
+ * fuori schema non si tocca mai: lo stato sintetizzato serve solo a mostrare
+ * l'hub col banner, e ogni scrittura (patchClientState) è rifiutata finché il
+ * file non viene corretto a mano — così nessun «verificato» va perso.
+ */
+export const motivoCorrotto = (slug: string): string | null => leggi(slug).corrotto;
+
+function leggi(slug: string): { state: ClientState; corrotto: string | null } {
   const dir = clientDir(slug);
   const clientJson = path.join(dir, "client.json");
+  let corrotto: string | null = null;
   const onDisk = readJson<unknown>(clientJson);
   if (onDisk) {
     const parsed = ClientStateSchema.safeParse(onDisk);
-    if (parsed.success) return fillLazySteps(slug, parsed.data);
+    if (parsed.success) return { state: fillLazySteps(slug, parsed.data), corrotto: null };
+    corrotto = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
+  } else if (fs.existsSync(clientJson)) {
+    corrotto = "JSON non parsabile";
   }
-  // File presente ma illeggibile/invalido: mai sovrascriverlo in silenzio coi
-  // default (perderebbe i «verificato» per sempre) — copia in .bak e log.
-  if (fs.existsSync(clientJson)) {
-    fs.renameSync(clientJson, clientJson + ".bak");
-    console.error(`[clients] client.json corrotto o fuori schema per "${slug}" — salvato in client.json.bak, stato risintetizzato`);
-  }
+  if (corrotto) console.error(`[clients] client.json fuori schema per "${slug}" (${corrotto}): file intatto, scritture bloccate`);
+  return { state: sintetizza(slug), corrotto };
+}
+
+/** Stato di default per i clienti importati prima della GUI (nessun client.json). */
+function sintetizza(slug: string): ClientState {
+  const dir = clientDir(slug);
   const brief = readJson<Brief>(path.join(dir, "brief.json"));
   const contesto = readJson<unknown>(path.join(dir, "contesto.json"));
   const contestoOk = contesto ? ContestoSchema.safeParse(contesto) : null;
@@ -121,7 +136,8 @@ export function writeClientState(slug: string, state: ClientState): void {
 
 /** Patch parziale dello stato (legge, applica, riscrive). */
 export function patchClientState(slug: string, patch: (s: ClientState) => void): ClientState {
-  const state = readClientState(slug);
+  const { state, corrotto } = leggi(slug);
+  if (corrotto) throw new Error(`client.json non leggibile (${corrotto}): correggi il file a mano prima di continuare`);
   patch(state);
   writeClientState(slug, state);
   return state;
@@ -196,6 +212,8 @@ export function readClientBundle(slug: string) {
     intake: readJson<Intake>(path.join(dir, "intake.json"))!,
     brief: readJson<Brief>(path.join(dir, "brief.json")) ?? {},
     client: readClientState(slug),
+    /** client.json presente ma fuori schema: l'hub lo dice e blocca le azioni. */
+    corrotto: motivoCorrotto(slug),
     contesto: contestoParsed?.success ? contestoParsed.data : null,
     palette: readPalette(slug),
     copy: readCopy(slug),

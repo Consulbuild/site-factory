@@ -16,6 +16,10 @@ export const StatoContesto = StatoStep;
 const UltimaRun = z
   .object({ mode: z.string(), durataMs: z.number(), esito: z.enum(["ok", "errore"]), quando: z.string() })
   .optional();
+// Snapshot degli artifact a monte all'ultima generazione/conferma (lib/staleness.ts):
+// file → hash, o null se il file mancava (così «comparso dopo» è rilevabile);
+// se divergono → banner «a monte è cambiato». I client.json vecchi (solo stringhe) restano validi.
+const Upstream = z.record(z.string(), z.string().nullable()).optional();
 
 export const ClientStateSchema = z.object({
   version: z.literal(1),
@@ -47,7 +51,7 @@ export const ClientStateSchema = z.object({
         autoConferma: z.boolean().optional(),
         // Hash degli artifact a monte all'ultima generazione/conferma
         // (lib/staleness.ts): se divergono → banner "a monte è cambiato".
-        upstream: z.record(z.string(), z.string()).optional(),
+        upstream: Upstream,
         ultimaRun: UltimaRun,
       })
       .default({ stato: "assente" }),
@@ -58,7 +62,7 @@ export const ClientStateSchema = z.object({
         stato: StatoStep,
         errore: z.string().optional(),
         autoConferma: z.boolean().optional(),
-        upstream: z.record(z.string(), z.string()).optional(),
+        upstream: Upstream,
         ultimaRun: UltimaRun,
       })
       .default({ stato: "assente" }),
@@ -67,7 +71,7 @@ export const ClientStateSchema = z.object({
         stato: StatoStep,
         errore: z.string().optional(),
         autoConferma: z.boolean().optional(),
-        upstream: z.record(z.string(), z.string()).optional(),
+        upstream: Upstream,
         // Estratto per-campo del contesto all'ultimo allineamento (hash dei
         // campi chiave): permette all'update-mode di dire COSA è cambiato.
         fonte: z.record(z.string(), z.string()).optional(),
@@ -79,7 +83,7 @@ export const ClientStateSchema = z.object({
         stato: StatoStep,
         errore: z.string().optional(),
         autoConferma: z.boolean().optional(),
-        upstream: z.record(z.string(), z.string()).optional(),
+        upstream: Upstream,
         ultimaRun: UltimaRun,
       })
       .default({ stato: "assente" }),
@@ -88,7 +92,7 @@ export const ClientStateSchema = z.object({
         stato: StatoStep,
         errore: z.string().optional(),
         autoConferma: z.boolean().optional(),
-        upstream: z.record(z.string(), z.string()).optional(),
+        upstream: Upstream,
         // Estratto per-area del brief (identità / sede e foro / recapiti):
         // l'update-mode rigenera SOLO i documenti delle aree cambiate.
         fonte: z.record(z.string(), z.string()).optional(),
@@ -100,7 +104,7 @@ export const ClientStateSchema = z.object({
         stato: StatoStep,
         errore: z.string().optional(),
         autoConferma: z.boolean().optional(),
-        upstream: z.record(z.string(), z.string()).optional(),
+        upstream: Upstream,
         /** true = ultima build con --partial (segnaposto del blueprint): mai confermabile/pubblicabile. */
         partial: z.boolean().optional(),
         /** true = build per la demo (meta robots noindex su tutte le pagine): pubblicabile SOLO come demo. */

@@ -1,16 +1,14 @@
 import { NextRequest } from "next/server";
 import fs from "node:fs";
 import { clientDir } from "@/lib/paths";
-import { STEPS, type StepKey, type RunMode } from "@/lib/steps";
+import { STEPS, STEP_MODES, type StepKey, type RunMode } from "@/lib/steps";
 import { listClients } from "@/lib/clients";
 import { startClientRun } from "@/lib/run-bus";
 import { rispostaStreamRun } from "@/lib/run-stream";
-import { catenaViva } from "@/lib/catena";
+import { catenaViva, invalidaCatena } from "@/lib/catena";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 3600; // secondi: gli step multi-fase possono durare a lungo
-
-const MODES: RunMode[] = ["generate", "update", "critic", "regen", "partial", "lavori"];
 
 /**
  * Avvia uno step AI IN BACKGROUND (bus dei run) e streamma gli eventi in
@@ -37,13 +35,19 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
   }
 
   const body = await req.json().catch(() => ({}));
-  const mode: RunMode = MODES.includes(body?.mode) ? body.mode : "generate";
+  const mode: RunMode = body?.mode ?? "generate";
+  if (!STEP_MODES[step as StepKey].includes(mode)) {
+    return new Response(JSON.stringify({ error: `modalità «${String(mode)}» non prevista per lo step ${step}` }), { status: 400 });
+  }
 
   // Gate di ingresso dello step (es. palette richiede contesto verificato);
   // riceve il mode perché alcuni prerequisiti dipendono da esso (es. la key
   // BFL serve a generare immagini, non al solo ricontrollo del critico).
   const gateMsg = STEPS[step as StepKey].gate?.(slug, mode);
   if (gateMsg) return new Response(JSON.stringify({ error: gateMsg }), { status: 409 });
+  // Un run manuale che (ri)scrive un artifact scavalca le conclusioni della
+  // catena (ferma/demo_pronta/completata): non descrivono più lo stato.
+  if (mode !== "critic") invalidaCatena(slug);
   // Solo mode "regen": lista dei file da rigenerare, filtrata (anti path traversal).
   const files: string[] | undefined = Array.isArray(body?.files)
     ? body.files.filter((f: unknown): f is string => typeof f === "string" && /^img\/[a-z0-9-]+\.jpg$/.test(f))

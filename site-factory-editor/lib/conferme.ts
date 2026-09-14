@@ -8,6 +8,7 @@ import { checkPalette } from "./contrast";
 import { validateCopyArtifact } from "./slots";
 import { validateImagesTrace, deriveImagesArtifact } from "./images";
 import { computeUpstream } from "./staleness";
+import { marca } from "./stati";
 import { copyFonte, legaleFonte } from "./steps";
 import { gateLegale, briefLegale, readForo, readLegale, readLegaleReview } from "./legale";
 
@@ -30,13 +31,8 @@ export interface OpzioniConferma {
 
 export const IMAGES_UPSTREAM = ["contesto.json", "copy.json", "palette.json"];
 
-type StepConAuto = { autoConferma?: boolean };
 const no = (status: 404 | 409 | 422 | 500, error: string, extra?: Record<string, unknown>): EsitoConferma =>
   extra ? { ok: false, status, error, extra } : { ok: false, status, error };
-const marca = (step: StepConAuto, auto: boolean | undefined) => {
-  if (auto) step.autoConferma = true;
-  else delete step.autoConferma;
-};
 
 export function leggiBrief(slug: string): Record<string, unknown> {
   try {

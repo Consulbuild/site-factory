@@ -27,6 +27,7 @@ export default async function BuildPage({ params }: { params: Promise<{ slug: st
       slug={slug}
       businessName={String(bundle.brief.azienda ?? slug)}
       build={steps.build}
+      percorso={bundle.client.percorso}
       imagesOk={steps.images.stato === "verificato"}
       staleFiles={stale}
       cfTokenOk={hasSecret("CLOUDFLARE_API_TOKEN")}

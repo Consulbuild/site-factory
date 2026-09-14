@@ -25,6 +25,7 @@ export function BuildPanel({
   slug,
   businessName,
   build,
+  percorso,
   imagesOk,
   staleFiles,
   cfTokenOk,
@@ -35,6 +36,7 @@ export function BuildPanel({
   slug: string;
   businessName: string;
   build: BuildState;
+  percorso: ClientState["percorso"];
   imagesOk: boolean;
   staleFiles: string[];
   cfTokenOk: boolean;
@@ -73,7 +75,10 @@ export function BuildPanel({
     (build.dominio
       ? !build.integrazioni || build.integrazioni.umamiWebsiteId !== build.umamiWebsiteId
       : !!build.integrazioni);
-  const rebuild = rebuildPerDominio || rebuildPerIntegrazioni;
+  // Specchio dell'interlock sul noindex: la demo si pubblica solo da una build
+  // noindex, il sito reale solo da una build senza (percorso cambiato → ribuilda).
+  const rebuildPerPercorso = completa && !!build.noindex !== (percorso === "demo");
+  const rebuild = rebuildPerDominio || rebuildPerIntegrazioni || rebuildPerPercorso;
   const vpsOk = vpsKeysOk.umami && vpsKeysOk.n8n;
 
   // Una sola primaria contestuale: build → conferma → pubblica.
@@ -303,7 +308,19 @@ export function BuildPanel({
             {rebuild && (
               <div className="mt-4">
                 <Banner tone="warn" title="Ribuilda prima di pubblicare">
-                  {rebuildPerDominio ? (
+                  {rebuildPerPercorso ? (
+                    build.noindex ? (
+                      <>
+                        L&apos;ultima build è la demo (noindex) ma il cliente è in percorso completo: ribuilda e riconferma
+                        per avere il sito reale, indicizzabile.
+                      </>
+                    ) : (
+                      <>
+                        L&apos;ultima build è un sito reale ma il cliente è in percorso demo: ribuilda e riconferma per
+                        avere la build noindex della demo.
+                      </>
+                    )
+                  ) : rebuildPerDominio ? (
                     build.dominio ? (
                       <>
                         L&apos;ultima build è stata prodotta{" "}

@@ -92,7 +92,9 @@ function avvia(run: BusRun, gen: AsyncGenerator<RunEvent>, onStop?: () => void) 
     } finally {
       run.done = true;
       run.endedAt = Date.now();
-      if (run.stopRequested) {
+      // Uno stop arrivato DOPO il done non deve marcare «errore» uno step
+      // appena validato (stato e ultimaRun.esito resterebbero in disaccordo).
+      if (run.stopRequested && run.esito !== "ok") {
         run.esito = "interrotto";
         onStop?.();
       } else if (!run.esito) {

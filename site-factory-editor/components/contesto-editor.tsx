@@ -8,7 +8,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Contesto } from "@/lib/schemas";
-import { btnPrimary, btnSecondary, btnGhost } from "./ui";
+import { Banner, btnPrimary, btnSecondary, btnGhost } from "./ui";
 import { useUnsavedGuard } from "./use-unsaved-guard";
 import { useSaveShortcut } from "./use-save-shortcut";
 import { BackBar } from "./back-bar";
@@ -35,11 +35,14 @@ export function ContestoEditor({
   businessName,
   initial,
   drift = [],
+  errore,
 }: {
   slug: string;
   businessName: string;
   initial: Contesto;
   drift?: string[];
+  /** steps.contesto.errore quando l'ultimo run (riallineamento/rigenerazione) è fallito. */
+  errore?: string;
 }) {
   const router = useRouter();
   const built = useMemo(() => build(initial), [initial]);
@@ -215,6 +218,33 @@ export function ContestoEditor({
         <div className="mt-4">
           {runner.running && <p className="text-sm text-brand">Riallineamento in corso (claude -p)…</p>}
           <RunLog log={runner.log} />
+        </div>
+      ) : errore ? (
+        <div className="mt-4">
+          <Banner
+            tone="err"
+            title="L'ultimo run del contesto è fallito"
+            actions={
+              <button
+                className={btnPrimary}
+                onClick={() =>
+                  drift.length > 0
+                    ? runner.run("update", "Riallineamento intelligente: aggiorno solo le parti impattate…")
+                    : setConfermaRigenera(true)
+                }
+              >
+                Riprova
+              </button>
+            }
+          >
+            <span className="whitespace-pre-wrap">{errore}</span>
+            {drift.length > 0 && (
+              <>
+                {" "}
+                Campi dell&apos;intake cambiati: <strong>{drift.join(", ")}</strong>.
+              </>
+            )}
+          </Banner>
         </div>
       ) : (
         drift.length > 0 && (

@@ -25,7 +25,15 @@ export default async function ContestoPage({ params }: { params: Promise<{ slug:
   // Con il contesto pronto → l'editor gestisce la propria navigazione (guardata).
   if (bundle.contesto) {
     const drift = driftLabels(bundle.client.steps.contesto.drift ?? []);
-    return <ContestoEditor slug={slug} businessName={businessName} initial={bundle.contesto} drift={drift} />;
+    return (
+      <ContestoEditor
+        slug={slug}
+        businessName={businessName}
+        initial={bundle.contesto}
+        drift={drift}
+        errore={stato === "errore" ? bundle.client.steps.contesto.errore : undefined}
+      />
+    );
   }
 
   // In assenza di contesto → runner (nessuna modifica non salvata, nav semplice).

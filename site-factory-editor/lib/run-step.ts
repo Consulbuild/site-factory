@@ -1,6 +1,8 @@
 import { spawn } from "node:child_process";
 import { REPO_ROOT, CLAUDE_BIN, childEnv } from "./paths";
 import { STEPS, setStepState, patchStepMeta, type StepKey, type RunCtx } from "./steps";
+import { readClientState } from "./clients";
+import { statoDopoRun } from "./stati";
 import { captureEvent, type PhaseRecord, type RecordSink, type ToolAction, type PhaseClasse } from "./run-record";
 
 // Runner degli step AI, multi-fase: ogni StepDef orchestra in TS una o più
@@ -387,6 +389,14 @@ export async function* runStep(
   // NON deve toccare lo stato/validazione dello step ospite (hero+card restano
   // «verificato»). Salta stato, validate, afterSuccess e metriche.
   const sideRun = ctx.mode === "lavori";
+  // Stato PRIMA del run: il solo critico non tocca l'artifact e non deve
+  // cambiarlo (lib/stati.ts statoDopoRun) — «Riverifica»/«Ricontrolla col
+  // critico» su uno step verificato lo lasciano verificato.
+  const prima = readClientState(slug).steps[step.stateKey].stato;
+  const chiudi = (ok: boolean, msg?: string) => {
+    const nuovo = statoDopoRun(ctx.mode, prima, ok);
+    setStepState(slug, step.stateKey, nuovo, nuovo === "errore" ? msg : undefined);
+  };
   // Metriche minime del run (durata/mode/esito) in client.json: senza, né i
   // costi né la convergenza dei loop critico-correzioni sono osservabili.
   const registraRun = (esito: "ok" | "errore") =>
@@ -409,7 +419,7 @@ export async function* runStep(
     if (!res.ok) {
       const msg = res.error ?? "step fallito";
       if (!sideRun) {
-        setStepState(slug, step.stateKey, "errore", msg);
+        chiudi(false, msg);
         registraRun("errore");
       }
       yield { type: "error", message: msg };
@@ -420,12 +430,12 @@ export async function* runStep(
       // Validazione deterministica dell'artifact.
       const v = step.validate(slug);
       if (!v.ok) {
-        setStepState(slug, step.stateKey, "errore", v.errore);
+        chiudi(false, v.errore);
         registraRun("errore");
         yield { type: "error", message: v.errore ?? "artifact non valido" };
         return;
       }
-      setStepState(slug, step.stateKey, "da_verificare");
+      chiudi(true);
       // Provenienza/upstream si ri-snapshottano SOLO quando l'artifact è stato
       // (ri)generato: un run di solo critico non tocca l'artifact e non deve
       // disarmare il sensore di staleness.

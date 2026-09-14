@@ -5,7 +5,9 @@ import { readClientState, patchClientState, readCopyReview, readImageReview, rea
 import { STEPS, motivoGate, type StepKey, type RunMode } from "./steps";
 import { startClientRun, attendiRun, stopRun, busIdCliente } from "./run-bus";
 import { isErroreLimite } from "./run-step";
-import { staleFiles } from "./staleness";
+import { staleFiles, type Upstream } from "./staleness";
+import { decidiPasso } from "./stati";
+import { driftLabels } from "./contesto-sync";
 import {
   confermaIntake,
   confermaContesto,
@@ -74,6 +76,17 @@ export function avviaCatena(slug: string): { ok: true; posizione: number } | { e
   log(slug, "-", "in_coda");
   pompa();
   return { ok: true, posizione: posizioneInCoda(slug) };
+}
+
+/**
+ * Un run manuale che riscrive un artifact scavalca la catena: una conclusione
+ * terminale (ferma / demo_pronta / completata) non descrive più lo stato e si
+ * cancella (card e lista tornano ad «Avvia demo» / «Esegui in automatico»).
+ */
+export function invalidaCatena(slug: string): void {
+  patchClientState(slug, (s) => {
+    if (s.catena && ["ferma", "demo_pronta", "completata"].includes(s.catena.stato)) delete s.catena;
+  });
 }
 
 /** Ferma: in coda → via subito; in corso → stop del run del passo corrente, la catena si chiude da sola. */
@@ -148,6 +161,30 @@ function buildDaRifare(st: ClientState, slug: string): boolean {
   if (!!b.noindex !== (st.percorso === "demo")) return true;
   if (b.siteUrl !== (b.dominio ? `https://${b.dominio}` : undefined)) return true;
   return staleFiles(slug, STEPS.build.upstream, b.upstream).length > 0;
+}
+
+const NOME_SCHEDA: Record<StepKey, string> = { contesto: "Contesto", palette: "Palette", logo: "Logo", copy: "Copy", images: "Immagini", legale: "Legale", build: "Build" };
+
+/**
+ * Step verificato/da_verificare ma cambiato a monte (decisione Mattia
+ * 2026-09-14): la catena si FERMA e lo dice, mai rigenerare a sua insaputa.
+ * Stessi predicati dell'hub: drift per il contesto, staleFiles per gli altri.
+ * Build esclusa (buildDaRifare la rifà da sola).
+ */
+function motivoStale(slug: string, key: StepKey, st: ClientState): string | null {
+  if (key === "build") return null;
+  // ponytail: la riga Logo non ha «Va bene così» — fermarsi sarebbe un vicolo cieco; aggiungere l'ack e togliere l'eccezione
+  if (key === "logo") return null;
+  if (key === "contesto") {
+    const d = st.steps.contesto.drift ?? [];
+    return d.length
+      ? `contesto: l'intake è cambiato dopo la generazione (${driftLabels(d).join(", ")}) — apri la scheda Contesto e scegli Riallinea con l'AI o Va bene così, poi Riprendi`
+      : null;
+  }
+  const f = staleFiles(slug, STEPS[key].upstream, (st.steps[key] as { upstream?: Upstream }).upstream);
+  return f.length
+    ? `${key} cambiato a monte (${f.join(", ")}) — apri la scheda ${NOME_SCHEDA[key]} e scegli Aggiorna con l'AI o Va bene così, poi Riprendi`
+    : null;
 }
 
 type Passo = {
@@ -227,12 +264,17 @@ async function eseguiCatena(slug: string, ctl: Controllo): Promise<void> {
       log(slug, p.key, "saltato", motivoSalto);
       return true;
     }
-    const daRifare = p.rifare ? p.rifare(st, slug) : stato !== "verificato";
-    if (!daRifare) {
+    const staleMotivo = motivoStale(slug, p.key, st);
+    const decisione = decidiPasso(stato, p.rifare?.(st, slug), staleMotivo);
+    if (decisione === "gia_verificato") {
       log(slug, p.key, "gia_verificato");
       return true;
     }
-    if (stato !== "da_verificare" || (p.rifare && p.rifare(st, slug))) {
+    if (decisione === "stale") {
+      ferma(p.key, staleMotivo!);
+      return false;
+    }
+    if (decisione === "run") {
       segna(slug, "in_corso", { passo: p.key });
       log(slug, p.key, "run");
       const r = await eseguiRunConRiprova(slug, p.key, "generate", label, ctl);

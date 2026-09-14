@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { clientDir } from "@/lib/paths";
 import { writeJson, patchClientState, readContesto, writeContesto } from "@/lib/clients";
 import { syncIntakeFromBrief } from "@/lib/intake-map";
+import { confermaIntake } from "@/lib/conferme";
 import { snapshotFonte, applyIntakeToContesto } from "@/lib/contesto-sync";
 import type { Brief } from "@/lib/clients";
 
@@ -61,9 +62,9 @@ export async function PUT(req: NextRequest, ctx: { params: Promise<{ slug: strin
 
   writeJson(briefPath, brief);
   writeJson(intakePath, nextIntake);
-  patchClientState(slug, (s) => {
-    s.steps.intake.stato = "verificato";
-  });
+  // Conferma umana: stessa via della catena (lib/conferme.ts), che cancella il
+  // flag «auto» lasciato da una conferma automatica precedente.
+  confermaIntake(slug);
   // Riconcilia il contesto già generato con i dati appena verificati.
   reconcileContesto(slug, brief);
   const client = patchClientState(slug, () => {}); // rilegge lo stato aggiornato

@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
-import { clientDir } from "./paths";
+// Estensione esplicita: il modulo gira anche nel banco scripts/test-stati.ts (strip-types).
+import { clientDir } from "./paths.ts";
 
 // Staleness a valle: ogni step registra in client.json l'hash degli artifact
 // A MONTE al momento della generazione/conferma; se un hash su disco diverge,
@@ -17,10 +18,10 @@ export function hashValue(v: unknown): string {
   return crypto.createHash("sha256").update(JSON.stringify(v)).digest("hex").slice(0, 12);
 }
 
-/** sha256 (12 hex) del JSON ri-serializzato senza le chiavi volatili top-level. */
-export function hashArtifact(slug: string, file: string): string | null {
+/** sha256 (12 hex) del JSON ri-serializzato senza le chiavi volatili top-level; null se assente o non JSON. */
+export function hashFile(abs: string): string | null {
   try {
-    const raw = JSON.parse(fs.readFileSync(path.join(clientDir(slug), file), "utf8"));
+    const raw = JSON.parse(fs.readFileSync(abs, "utf8"));
     const stable =
       raw && typeof raw === "object" && !Array.isArray(raw)
         ? Object.fromEntries(Object.entries(raw).filter(([k]) => !VOLATILE.has(k)))
@@ -31,25 +32,28 @@ export function hashArtifact(slug: string, file: string): string | null {
   }
 }
 
-/** Snapshot corrente degli artifact a monte (file mancanti esclusi). */
-export function computeUpstream(slug: string, files: string[]): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const f of files) {
-    const h = hashArtifact(slug, f);
-    if (h) out[f] = h;
-  }
-  return out;
+export const hashArtifact = (slug: string, file: string): string | null => hashFile(path.join(clientDir(slug), file));
+
+/** Snapshot degli artifact a monte: file → hash, o null se il file manca (registrato, così «comparso dopo» è rilevabile). */
+export type Upstream = Record<string, string | null>;
+
+export function computeUpstreamIn(dir: string, files: string[]): Upstream {
+  return Object.fromEntries(files.map((f) => [f, hashFile(path.join(dir, f))]));
 }
 
+export const computeUpstream = (slug: string, files: string[]): Upstream => computeUpstreamIn(clientDir(slug), files);
+
 /**
- * File a monte cambiati rispetto allo snapshot registrato. Senza snapshot
- * (artifact pre-GUI, provenienza ignota) non si segnala nulla: lo snapshot
- * nasce alla prima generazione/conferma.
+ * File a monte cambiati rispetto allo snapshot registrato: chiave presente nello
+ * snapshot con valore diverso (hash cambiato, null→hash = comparso, hash→null =
+ * sparito). Una chiave ASSENTE dallo snapshot (snapshot vecchio, o file aggiunto
+ * agli upstream dopo) è ignota → non stale. Senza snapshot (artifact pre-GUI)
+ * non si segnala nulla: lo snapshot nasce alla prima generazione/conferma.
  */
-export function staleFiles(slug: string, files: string[], recorded: Record<string, string> | undefined): string[] {
+export function diffUpstream(now: Upstream, recorded: Upstream | undefined): string[] {
   if (!recorded) return [];
-  return files.filter((f) => {
-    const h = hashArtifact(slug, f);
-    return h !== null && recorded[f] !== undefined && h !== recorded[f];
-  });
+  return Object.keys(now).filter((f) => f in recorded && recorded[f] !== now[f]);
 }
+
+export const staleFiles = (slug: string, files: string[], recorded: Upstream | undefined): string[] =>
+  diffUpstream(computeUpstream(slug, files), recorded);

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
 import { clientDir } from "@/lib/paths";
-import { patchClientState } from "@/lib/clients";
+import { patchClientState, readClientState } from "@/lib/clients";
 import { setPreviewRoot } from "@/lib/preview";
 import { confermaBuild, rispostaConferma } from "@/lib/conferme";
 
@@ -44,6 +44,12 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
     const dominio = String(body.dominio ?? "").trim().toLowerCase();
     if (dominio && !DOMAIN_RE.test(dominio)) {
       return NextResponse.json({ error: "dominio non valido (es. impresarossi.it)" }, { status: 422 });
+    }
+    // In demo una build col dominio non è pubblicabile né come demo (ha le
+    // integrazioni) né come sito (è noindex): il dominio arriva dopo l'abbonamento.
+    // La stringa vuota resta ammessa per ripulire un dominio salvato prima.
+    if (dominio && readClientState(slug).percorso === "demo") {
+      return NextResponse.json({ error: "in percorso demo il dominio non serve: segna prima «Il cliente si è abbonato»" }, { status: 409 });
     }
     patchClientState(slug, (s) => {
       s.steps.build.dominio = dominio || undefined;
