@@ -4,7 +4,7 @@
 // leggibile», mai «Spento» (lo stato vero non si conosce).
 import { Badge } from "./ui";
 import { ggmm } from "./portafoglio-ui";
-import { ETICHETTA_SERVIZIO, SERVIZI, leggiTraffico, type StatoServizio, type Traffico } from "@/lib/traffico";
+import { ETICHETTA_SERVIZIO, SERVIZI, dataValida, leggiTraffico, type StatoServizio, type Traffico } from "@/lib/traffico";
 
 type Tono = React.ComponentProps<typeof Badge>["tone"];
 
@@ -33,7 +33,7 @@ export function StatoServizi({ traffico, corrotto, conData = false }: { traffico
           <span key={k} className="inline-flex items-center gap-1.5 text-sm text-muted">
             {ETICHETTA_SERVIZIO[k]}
             <ServizioBadge stato={corrotto ? "non_leggibile" : s.stato} />
-            {conData && !corrotto && dal && <span className="mono text-faint">dal {ggmm(dal)}</span>}
+            {conData && !corrotto && dataValida(dal) && <span className="mono text-faint">dal {ggmm(dal)}</span>}
           </span>
         );
       })}

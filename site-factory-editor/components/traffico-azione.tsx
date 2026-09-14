@@ -6,7 +6,7 @@
 // Nessuna primaria: attivare è una decisione commerciale rara, non il prossimo passo.
 // Il motivo di un blocco lo scrive la pagina accanto al bottone (aria-describedby).
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "./confirm-dialog";
 import { btnSecondary } from "./ui";
@@ -77,6 +77,13 @@ export function TrafficoAzione(props: Props) {
   // Alla chiusura il focus torna al bottone (tastiera): il dialog non lo restituisce da solo.
   const bottone = useRef<HTMLButtonElement>(null);
 
+  // La conferma premuta si disabilita («Salvo…») e il focus cade sul body: con un errore
+  // lo si porta sul messaggio, dentro il dialog (Tab → Chiudi, Riprova), mai sulla pagina sotto.
+  const avviso = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (errore) avviso.current?.focus();
+  }, [errore]);
+
   // Chiudere dopo un errore rilegge la pagina: lo stato mostrato torna quello vero.
   const chiudi = useCallback(() => {
     if (salvo) return;
@@ -132,12 +139,13 @@ export function TrafficoAzione(props: Props) {
         message={t.messaggio}
         confirmLabel={salvo ? "Salvo…" : errore?.riprovabile ? "Riprova" : t.bottone}
         confirmDisabled={salvo || (!!errore && !errore.riprovabile)}
-        cancelLabel={errore ? "Chiudi" : "Annulla"}
+        // Durante il salvataggio chiudi() non fa nulla (la scrittura non si può fermare): l'etichetta lo dice.
+        cancelLabel={salvo ? "Attendi…" : errore ? "Chiudi" : "Annulla"}
         onConfirm={conferma}
         onCancel={chiudi}
       >
         {errore && (
-          <p role="alert" className="mt-3 text-sm text-err">
+          <p ref={avviso} tabIndex={-1} role="alert" className="mt-3 text-sm text-err">
             {errore.riprovabile ? errore.testo : `${errore.testo}. Chiudi per vedere lo stato aggiornato.`}
           </p>
         )}

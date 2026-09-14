@@ -92,6 +92,23 @@ export function gruppoPortafoglio(c: { percorso: Percorso; traffico?: ClientStat
   return c.percorso === "demo" ? "demo" : "spenti";
 }
 
+/**
+ * «Nessun servizio acceso» si può dire solo se nessun cliente è acceso E nessun file è
+ * illeggibile: di un client.json fuori schema lo stato vero non si conosce.
+ */
+export function nessunServizioAcceso(gruppi: GruppoPortafoglio[]): boolean {
+  return !gruppi.some((g) => g === "accesi" || g === "non_leggibile");
+}
+
+/**
+ * Data mostrabile: ISO (almeno aaaa-mm-gg) e interpretabile. Lo schema accetta qualunque
+ * stringa (un ritocco a mano non deve rendere corrotto il file): chi formatta la scarta
+ * invece di mostrare «Invalid Date» o di leggere «01/09/2026» all'americana.
+ */
+export function dataValida(iso: string | undefined): iso is string {
+  return !!iso && /^\d{4}-\d{2}-\d{2}/.test(iso) && !Number.isNaN(Date.parse(iso));
+}
+
 /** Il renderer accende fondamenta e pagine extra: Sito attivo o sospeso (decisione 11, restano online). */
 export function fondamentaAccese(t: Traffico): boolean {
   return t.sito.stato !== "spento";
@@ -102,24 +119,21 @@ export function cicloAttivo(t: Traffico, servizio: ServizioKey): boolean {
   return t[servizio].stato === "attivo";
 }
 
-/** Riga delle date del dettaglio; `data` formatta un ISO (la UI passa formatDate). */
+/**
+ * Riga delle date del dettaglio; `data` formatta un ISO (la UI passa formatDate).
+ * Prima attivazione e ultimo passaggio compaiono solo se la data MOSTRATA è nuova:
+ * più passaggi nello stesso giorno sono un fatto solo, non una cronologia.
+ */
 export function fraseDate(s: Servizio, data: (iso: string) => string): string {
-  const prima = s.primaAttivazioneAt;
-  if (s.stato === "spento") return prima ? `Spento · prima attivazione ${data(prima)}` : "Mai attivato";
-  if (s.stato === "attivo") {
-    return [
-      s.attivatoAt ? `Attivo dal ${data(s.attivatoAt)}` : "Attivo",
-      prima && prima !== s.attivatoAt ? `prima attivazione ${data(prima)}` : "",
-      s.sospesoAt ? `ultima sospensione ${data(s.sospesoAt)}` : "",
-    ]
-      .filter(Boolean)
-      .join(" · ");
-  }
-  return [
-    s.sospesoAt ? `Sospeso dal ${data(s.sospesoAt)}` : "Sospeso",
-    prima ? `prima attivazione ${data(prima)}` : "",
-    s.attivatoAt && s.attivatoAt !== prima ? `ultima riattivazione ${data(s.attivatoAt)}` : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const f = (iso: string | undefined) => (dataValida(iso) ? data(iso) : "");
+  const prima = f(s.primaAttivazioneAt);
+  // Una prima attivazione illeggibile c'è stata comunque: «Spento», mai «Mai attivato».
+  if (s.stato === "spento") return prima ? `Spento · prima attivazione ${prima}` : s.primaAttivazioneAt ? "Spento" : "Mai attivato";
+  const attivo = s.stato === "attivo";
+  const dal = f(attivo ? s.attivatoAt : s.sospesoAt);
+  const ultimo = f(attivo ? s.sospesoAt : s.attivatoAt);
+  const parti = [dal ? `${attivo ? "Attivo" : "Sospeso"} dal ${dal}` : attivo ? "Attivo" : "Sospeso"];
+  if (prima && prima !== dal) parti.push(`prima attivazione ${prima}`);
+  if (ultimo && ultimo !== dal && ultimo !== prima) parti.push(`${attivo ? "ultima sospensione" : "ultima riattivazione"} ${ultimo}`);
+  return parti.join(" · ");
 }

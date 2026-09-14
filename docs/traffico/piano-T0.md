@@ -302,6 +302,8 @@ Input (Zod, `.strict()`): `{ servizio: "sito" | "scheda", stato: "spento" | "att
 | Codice | Quando | Corpo |
 |---|---|---|
 | 200 | transizione applicata | `{ ok: true, traffico }` |
+| 403 | `Sec-Fetch-Site` diverso da `same-origin`/`none` (CSRF: una pagina esterna non scrive `client.json`) | `{ error }` |
+| 415 | `content-type` diverso da `application/json` (impone il preflight CORS a ogni richiesta cross-origin) | `{ error }` |
 | 400 | slug non valido (`clientDir` lancia) · JSON o campi non validi · transizione non ammessa | `{ error }` leggibile |
 | 404 | cartella del cliente assente | `{ error: "cliente non trovato" }` |
 | 409 | percorso demo e `stato: "attivo"` · `client.json` fuori schema (`motivoCorrotto`, controllato prima; `patchClientState` in try/catch come rete) | `{ error }` con il dettaglio |

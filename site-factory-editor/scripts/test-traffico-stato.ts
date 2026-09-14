@@ -14,6 +14,8 @@ import {
   fondamentaAccese,
   cicloAttivo,
   fraseDate,
+  dataValida,
+  nessunServizioAcceso,
   MOTIVO_DEMO,
   type Traffico,
   type StatoServizio,
@@ -115,6 +117,9 @@ caso("un servizio sospeso in demo → accesi", gruppoPortafoglio({ percorso: "de
 caso("entrambi spenti, completo → spenti", gruppoPortafoglio({ percorso: "completo", traffico: SPENTI }, false) === "spenti");
 caso("entrambi spenti, demo → demo", gruppoPortafoglio({ percorso: "demo", traffico: SPENTI }, false) === "demo");
 caso("senza campo → come spenti", gruppoPortafoglio({ percorso: "completo" }, false) === "spenti" && gruppoPortafoglio({ percorso: "demo" }, false) === "demo");
+caso("nessun servizio acceso: solo spenti e demo → sì", nessunServizioAcceso(["spenti", "demo"]) && nessunServizioAcceso([]));
+caso("nessun servizio acceso: un acceso → no", !nessunServizioAcceso(["spenti", "accesi"]));
+caso("nessun servizio acceso: un file illeggibile → no (il suo stato non si conosce)", !nessunServizioAcceso(["spenti", "non_leggibile"]));
 
 console.log("\nfondamentaAccese / cicloAttivo:");
 const conSito = (stato: StatoServizio): Traffico => ({ sito: { stato }, scheda: { stato: "attivo" } });
@@ -139,6 +144,23 @@ caso(
   fraseDate(risosp.sito, d) === "Sospeso dal 2026-10-15 · prima attivazione 2026-09-14 · ultima riattivazione 2026-10-01",
   fraseDate(risosp.sito, d),
 );
+
+// Stesso giorno: Attiva, Sospendi, Riattiva, Sospendi il 14/09 a ore diverse → una data sola.
+const G = (ora: string) => `2026-09-14T${ora}:00:00.000Z`;
+const giornata = passa(passa(passa(SPENTI, "sito", "attivo", G("08")), "sito", "sospeso", G("09")), "sito", "attivo", G("10"));
+caso("stesso giorno, riattivato → «Attivo dal» senza ripetere la data", fraseDate(giornata.sito, d) === "Attivo dal 2026-09-14", fraseDate(giornata.sito, d));
+const giornata2 = passa(giornata, "sito", "sospeso", G("11"));
+caso("stesso giorno, risospeso → «Sospeso dal» senza ripetere la data", fraseDate(giornata2.sito, d) === "Sospeso dal 2026-09-14", fraseDate(giornata2.sito, d));
+const misto = passa(passa(passa(SPENTI, "sito", "attivo", G("08")), "sito", "sospeso", G("09")), "sito", "attivo", T1);
+caso("sospeso lo stesso giorno della prima attivazione → la data compare una volta", fraseDate(misto.sito, d) === "Attivo dal 2026-09-20 · prima attivazione 2026-09-14", fraseDate(misto.sito, d));
+
+// Date ritoccate a mano in formato non ISO: con il formattatore vero, mai «Invalid Date».
+const vera = (iso: string) => new Date(iso).toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit", year: "numeric" });
+caso("dataValida: ISO sì; gg/mm/aaaa, testo, vuoto e assente no", dataValida(T0) && dataValida("2026-09-14") && !dataValida("14/09/2026") && !dataValida("01/09/2026") && !dataValida("ieri") && !dataValida("") && !dataValida(undefined));
+caso("attivo dal non ISO → «Attivo»", fraseDate({ stato: "attivo", attivatoAt: "14/09/2026" }, vera) === "Attivo", fraseDate({ stato: "attivo", attivatoAt: "14/09/2026" }, vera));
+const sporco = fraseDate({ stato: "sospeso", primaAttivazioneAt: "14/09/2026", attivatoAt: "14/09/2026", sospesoAt: T1 }, vera);
+caso("sospeso con prima attivazione non ISO → la data illeggibile si omette", sporco === `Sospeso dal ${vera(T1)}` && !sporco.includes("Invalid"), sporco);
+caso("spento con prima attivazione non ISO → «Spento», mai «Mai attivato»", fraseDate({ stato: "spento", primaAttivazioneAt: "ieri" }, vera) === "Spento");
 
 console.log(`\n${passati} passati, ${falliti} falliti`);
 if (falliti) process.exit(1);

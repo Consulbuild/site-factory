@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronRight, Signpost, Users } from "lucide-react";
 import { listClients, motivoCorrotto } from "@/lib/clients";
 import { dominioDi } from "@/lib/portafoglio-shared";
-import { gruppoPortafoglio, type GruppoPortafoglio } from "@/lib/traffico";
+import { gruppoPortafoglio, nessunServizioAcceso, type GruppoPortafoglio } from "@/lib/traffico";
 import { EmptyState } from "@/components/ui";
 import { StatoServizi } from "@/components/traffico-ui";
 
@@ -26,7 +26,7 @@ export default function TrafficoPage() {
       return { c, corrotto, gruppo: gruppoPortafoglio(c, !!corrotto) };
     })
     .sort((a, b) => a.c.businessName.localeCompare(b.c.businessName, "it"));
-  const nessunoAcceso = !righe.some((r) => r.gruppo === "accesi");
+  const nessunoAcceso = nessunServizioAcceso(righe.map((r) => r.gruppo));
 
   return (
     <div className="space-y-8">

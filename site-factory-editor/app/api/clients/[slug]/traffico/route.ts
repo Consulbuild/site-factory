@@ -16,6 +16,17 @@ const Body = z.strictObject({ servizio: z.enum(SERVIZI), stato: StatoServizioTra
 const ATTESO = "atteso { servizio: sito | scheda, stato: spento | attivo | sospeso }";
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
+  // CSRF: una pagina esterna aperta nel browser dell'operatore non deve poter scrivere
+  // client.json. Sec-Fetch-Site ferma i browser moderni; il JSON obbligatorio impone il
+  // preflight CORS (che fallisce) a qualunque richiesta cross-origin, anche senza quell'header.
+  const sito = req.headers.get("sec-fetch-site");
+  if (sito && sito !== "same-origin" && sito !== "none") {
+    return NextResponse.json({ error: "richiesta da un'altra origine: il cambio di stato si fa solo dall'editor" }, { status: 403 });
+  }
+  if (!req.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    return NextResponse.json({ error: "content-type non valido: atteso application/json" }, { status: 415 });
+  }
+
   const { slug } = await ctx.params;
   let dir: string;
   try {
