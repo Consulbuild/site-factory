@@ -478,6 +478,18 @@ console.log("\nEdifici 2011 per sezione di censimento:");
     compresso.status === 0 && lancia(() => controllaContenuto("istat-edifici-2011", [zip]))?.includes("R01-R20") === true,
     compresso.stderr?.toString(),
   );
+  // tracciato e R01-R20 presenti ma CSV fuori formato: il controllo è il lettore completo, lo zip non prende il posto della copia buona
+  const regioni = Array.from({ length: 20 }, (_, i) => NOME_R03.replace("R03", `R${String(i + 1).padStart(2, "0")}`));
+  const esitoControllo = (testoDi: (nome: string) => string) => {
+    for (const nome of regioni) writeFileSync(join(cartella, nome), testoDi(nome));
+    rmSync(zip, { force: true });
+    const z = spawnSync("zip", ["-qr", zip, "Sezioni di Censimento"], { cwd: cartella });
+    return z.status === 0 ? lancia(() => controllaContenuto("istat-edifici-2011", [zip])) : `zip fallito: ${z.stderr}`;
+  };
+  const virgole = esitoControllo(() => "CODREG,PROCOM,COMUNE\r\n");
+  caso("zip con tracciato e R01-R20 ma CSV separati da virgole e senza righe → contenuto rifiutato", virgole?.includes("senza la colonna CODREG") === true, virgole);
+  const campoInPiu = esitoControllo((nome) => csv(nome === NOME_R03 ? [`${PEDESINA[0]!};0`, PEDESINA[1]!] : []));
+  caso("zip con tracciato e R01-R20 ma una riga con un campo in più → contenuto rifiutato", campoInPiu?.includes("campi, attesi") === true, campoInPiu);
   rmSync(cartella, { recursive: true, force: true });
 }
 

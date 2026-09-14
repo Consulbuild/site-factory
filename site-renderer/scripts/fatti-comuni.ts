@@ -1349,7 +1349,7 @@ export function leggiManifest(cache: string): Manifest {
 
 /**
  * Il contenuto dei file di una fonte è quello atteso, altrimenti lancia: zip integri (unzip -t),
- * CSV sismico e allegato A letti con gli stessi lettori della costruzione. Si usa sui file appena
+ * CSV sismico, allegato A e sezioni 2011 letti con gli stessi lettori della costruzione. Si usa sui file appena
  * scaricati PRIMA di sostituire la copia in cache (una pagina d'errore servita con HTTP 200 non
  * deve mai prendere il posto dell'ultima copia buona) e sulla copia in cache prima di usarla.
  * Una fonte nuova che non è uno zip va aggiunta qui con il suo lettore.
@@ -1375,9 +1375,9 @@ export function controllaContenuto(id: IdFonte, percorsi: string[]): void {
       break;
     }
     case "istat-edifici-2011":
-      // uno zip integro ma diverso (altro file allo stesso URL) si riconosce dal tracciato e dai 20 file regionali
-      controllaTracciatoEdifici2011(daWindows1252(membroZip(percorsi[0]!, `${CARTELLA_SEZIONI_2011}tracciato_2011_sezioni.csv`)));
-      fileSezioni2011(percorsi[0]!);
+      // il lettore completo (tracciato, 20 regioni, campi e interi, E3, 8.092 comuni): tracciato e nomi giusti
+      // con CSV illeggibili non devono prendere il posto dell'ultima copia buona
+      leggiEdifici2011(percorsi[0]!);
       break;
     case "istat-famiglie-2021":
       // ponytail: il lettore delle famiglie non esiste ancora (piano T6a, M0): per ora si scartano solo le
