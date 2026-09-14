@@ -2,7 +2,8 @@
 
 Stato: **chiuso** (fasi 1-5 fatte), 2026-09-14 — commit `78ddf16`, `29ea851`, `bd1578d`, `93ad659`,
 `e44fb95`, `10692a0` + chiusura documenti. I punti aperti fuori perimetro del §11 (specchi dell'interlock in
-catena e scheda Build, avvisi nella UI) sono chiusi dall'**Integrazione** in fondo: `90adaca`, `0376844`. Fonti: `docs/traffico/README.md`
+catena e scheda Build, avvisi nella UI) sono chiusi dall'**Integrazione** in fondo: `90adaca`, `0376844`, `4e9f327`
+(collaudata e chiusa il 2026-09-14). Fonti: `docs/traffico/README.md`
 (§1-§5), `docs/traffico/brief-T1a.md`, `docs/traffico/piano-T0.md` §3-§4, codice e dati elencati nel brief,
 documentazione Google (dati strutturati LocalBusiness, sitemap), IndexNow, schema.org, Cloudflare
 (`_headers` degli static assets).
@@ -784,6 +785,10 @@ Testi e regole della UI tarati nel browser sulla fixture `zz-test-t1a-int` (stat
   sospeso→attivo): il testo «spegnendo, la build con le fondamenta non sarà pubblicabile finché non si
   ribuilda» non ha un dialog in cui stare; uno spegnimento a mano in `client.json` compare nella scheda Build
   come motivo di ribuild (provato).
+- **Azione di pubblicazione con build da rifare** (revisione, `4e9f327`): il ramo «Build bloccata: chiavi del VPS
+  mancanti» metteva ancora «Ripubblica»/«Riprova la pubblicazione» tra le azioni del blocco, anche con un motivo di
+  ribuild; il deploy l'avrebbe rifiutata e scritto `deployErrore`. Regola: con `rebuildMotivi` non vuoto l'azione non
+  esiste in nessun ramo (i rami che la usano come primaria vengono tutti dopo quello di ribuild).
 - Nessuna soglia da tarare: la regola è esatta (build da rifare ⇔ deploy rifiuterebbe, 24 combinazioni nel banco).
 
 ## Verifica
@@ -879,7 +884,9 @@ Il giro che chiude i punti confermati dalla revisione fuori dal perimetro di T1a
 `.claude/scope.json` (task «T1a-integrazione»): `lib/catena.ts`, `components/build-panel.tsx`,
 `app/clienti/[slug]/build/page.tsx`, `components/pubblicazione-sito.tsx`, `components/traffico-azione.tsx`,
 `lib/traffico.ts`, i banchi, `docs/traffico/**`, handoff e DEBUG. `lib/fondamenta.ts`, `build.ts` e `deploy.ts`
-non cambiano. Commit `90adaca` (catena + regola + banco), `0376844` (scheda Build, avvisi, dialog) + documenti.
+non cambiano. Commit `90adaca` (catena + regola + banco), `0376844` (scheda Build, avvisi, dialog), `a103da2`
+(documenti), `4e9f327` (correzione dalla revisione: nessuna «Ripubblica» a chiavi VPS mancanti con build da rifare)
++ chiusura documenti.
 
 ### Cosa è stato fatto
 
@@ -946,6 +953,58 @@ questo giro e `assignments.json` dallo stash (byte-identici), `piano-T3.md` con 
 (base HEAD, contenuto allo stash, scrittura successiva), copia della patch nello scratchpad, stash eliminato,
 sessioni sorelle avvisate. Da qui in poi: mai `git stash` in un working tree condiviso (worktree temporaneo,
 come nel collaudo di T1a).
+
+### Collaudo finale dell'integrazione (fasi 4-5, 2026-09-14, su `4e9f327`)
+
+| Comando (editor) | Esito |
+|---|---|
+| `npx tsc --noEmit` | exit 0 |
+| `npm run build` | exit 0, route compilate (`/traffico/[slug]` compresa); lo stesso unico warning Turbopack noto su `app/api/clients/[slug]/img/[file]/route.ts` |
+| `scripts/test-fondamenta.ts` | 114 passati, 0 falliti |
+| `scripts/test-demo.ts` | 19 passati, 0 falliti |
+| `scripts/test-stati.ts` | 30 passati, 0 falliti |
+| `scripts/test-traffico-stato.ts` | 58 passati, 0 falliti |
+| `scripts/test-portafoglio.ts` | 43 passati, 0 falliti |
+| `scripts/test-import-form.ts` | ✓ scenario completo, exit 0 |
+
+Nessun banco nuovo della catena: `buildDaRifare` non è esportata e compone `motivoRebuildFondamenta` con
+`fondamentaAttese` esattamente come il banco (letto nel diff), che prova le 24 combinazioni contro l'interlock.
+
+**Criteri del brief**: renderer, `lib/build.ts`, `lib/deploy.ts`, `lib/fondamenta.ts` e `lib/schemas.ts` non cambiano
+da `10692a0` (`git diff --stat 10692a0 HEAD` sul renderer e sull'editor elenca solo i sette file dell'integrazione),
+quindi valgono le prove E2E della Verifica sopra (spento = dist di prima, attivo, lastmod, sospeso, interlock,
+escape). L'integrazione è provata dal banco e nel browser.
+
+**UI nel browser** (editor in dev su :3311), fixture `out/zz-test-t1a-fin` copiata da Cavaliere senza `dist`,
+`.wrangler`, `wrangler.jsonc` e `logs`; nome, recapiti, dominio (`.invalid`), sito Umami, modulo e deploy finti,
+`infra` tolta (`grep` del dominio e dell'id Umami veri = 0); stati scritti a mano, nessuna build, nessun deploy:
+
+- attivo, build con deploy precedente e senza fondamenta: banner «Ribuilda prima di pubblicare» e barra «Pronto per
+  ribuildare: build senza le fondamenta SEO …», primaria «Builda il sito», nessuna «Ripubblica»;
+- fondamenta cotte per il dominio con 2 avvisi: banner «Fondamenta SEO: 2 avvisi nell'ultima build» con l'elenco,
+  «Ripubblica» tra le azioni (la build è pubblicabile);
+- spento con fondamenta cotte e `deployErrore`: motivo «… è spento o manca il dominio», errore del deploy sotto,
+  banner degli avvisi nascosto, nessuna «Riprova la pubblicazione»;
+- dominio cambiato dopo la build: due motivi (siteUrl e fondamenta, con entrambi i domini);
+- `/traffico/zz-test-t1a-fin`, servizio spento: dialog «Attiva Sito» col testo calibrato; chiuso con «Annulla»,
+  `traffico` rimasto spento.
+
+Il ramo a chiavi VPS mancanti (`4e9f327`) non è riproducibile senza togliere chiavi dal Keychain: verificato sul
+codice (`pubblicaSito` null con `rebuild`, e i rami che la usano come primaria stanno dopo quello di ribuild).
+
+**File toccati vs perimetro**: `90adaca` (`lib/catena.ts`, `lib/traffico.ts`, `scripts/test-fondamenta.ts`),
+`0376844` (`app/clienti/[slug]/build/page.tsx`, `components/build-panel.tsx`, `components/pubblicazione-sito.tsx`,
+`components/traffico-azione.tsx`), `a103da2` (`docs/DEBUG.md`, `docs/handoff-fase-c.md`, `docs/traffico/README.md`,
+questo piano), `4e9f327` (`components/build-panel.tsx`): tutti nel perimetro dell'integrazione, nessuno fuori.
+Nessuna modifica del piano rimasta non committata (aperti nel working tree solo `factory/assignments.json` e i
+documenti di T2a, T3, T5a e del registro decisioni, di altre sessioni). `.claude/scope.json` vuoto.
+
+**Revisione**: diff riletto; nessun difetto nuovo. Chiavi React degli avvisi = testo (avvisi uguali
+nella stessa build non esistono: quelli del JSON-LD nominano ciascuno un campo, quelli delle pagine hanno il path davanti).
+
+**Pulizia**: fixture cancellata (scritti dopo il marcatore solo `brief.json` e `client.json`, a mano), nessuna
+cartella in `public/media`, `ls out/` = i 3 clienti, hash di `cavaliere-build-srls/client.json` invariato,
+`find -newer` sul marcatore vuoto in Cavaliere.
 
 ### Aperti (fuori perimetro)
 
