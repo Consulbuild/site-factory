@@ -1269,6 +1269,22 @@ function cacheValida(cache: string, id: IdFonte, voce: VoceManifest | undefined)
   return null;
 }
 
+/**
+ * Durante la sostituzione la copia precedente di una fonte resta in `<nome>.prec` finché il manifest
+ * nuovo non è scritto. Qui la si rimette al suo posto se `voce` (il manifest su disco) la descrive
+ * ancora, altrimenti la si cancella: file e manifest tornano coerenti dopo un errore o dopo una corsa
+ * interrotta (Ctrl-C, kill) prima o dopo la scrittura del manifest.
+ */
+function chiudiSostituzione(cache: string, id: IdFonte, voce: VoceManifest | undefined): void {
+  for (const f of FONTI[id].file) {
+    const prec = join(cache, `${f.nome}.prec`);
+    if (!existsSync(prec)) continue;
+    const atteso = voce?.stato === "ok" ? voce.file.find((x) => x.nome === f.nome)?.sha256 : undefined;
+    if (atteso !== undefined && sha256File(prec) === atteso) renameSync(prec, join(cache, f.nome));
+    else rmSync(prec, { force: true });
+  }
+}
+
 /** Aggiorna la cache: scarica ogni fonte (o usa la copia valida) e scrive il manifest. */
 export async function preparaCache(cache: string, offline: boolean, log: (s: string) => void = console.log): Promise<Manifest> {
   mkdirSync(cache, { recursive: true });
@@ -1277,6 +1293,7 @@ export async function preparaCache(cache: string, offline: boolean, log: (s: str
   for (const id of Object.keys(FONTI) as IdFonte[]) {
     const def = FONTI[id];
     const precedente = manifest[id];
+    chiudiSostituzione(cache, id, precedente); // sostituzione lasciata a metà da una corsa interrotta
     if (offline) {
       // in sola lettura: il manifest su disco non si tocca
       const problema = cacheValida(cache, id, precedente);
@@ -1296,12 +1313,14 @@ export async function preparaCache(cache: string, offline: boolean, log: (s: str
       } catch (e) {
         throw new Error(`scaricato ma inutilizzabile: ${messaggio(e)}`);
       }
+      for (const f of file) if (existsSync(join(cache, f.nome))) renameSync(join(cache, f.nome), join(cache, `${f.nome}.prec`));
       for (const f of file) renameSync(join(cache, `${f.nome}.part`), join(cache, f.nome));
       const cambiato = precedente?.file.map((x) => x.sha256).join() !== file.map((x) => x.sha256).join();
       manifest[id] = { stato: "ok", file, scaricatoIl: ora, ultimoTentativo: ora };
       log(`✓ ${id}: scaricato (${file.map((x) => `${(x.byte / 1e6).toFixed(1)} MB`).join(" + ")})${precedente?.stato === "ok" && cambiato ? " — CAMBIATO rispetto alla copia precedente" : ""}`);
     } catch (e) {
       for (const f of def.file) rmSync(join(cache, `${f.nome}.part`), { force: true });
+      chiudiSostituzione(cache, id, precedente);
       const problema = cacheValida(cache, id, precedente);
       if (!problema) {
         manifest[id] = { ...precedente!, ultimoTentativo: ora, errore: messaggio(e) };
@@ -1313,8 +1332,16 @@ export async function preparaCache(cache: string, offline: boolean, log: (s: str
     }
     // file temporaneo + rename: un manifest troncato renderebbe inutilizzabile tutta la cache, --offline compreso
     const tmp = join(cache, "manifest.json.tmp");
-    writeFileSync(tmp, JSON.stringify(manifest, null, 2) + "\n");
-    renameSync(tmp, join(cache, "manifest.json"));
+    try {
+      writeFileSync(tmp, JSON.stringify(manifest, null, 2) + "\n");
+      renameSync(tmp, join(cache, "manifest.json"));
+    } catch (e) {
+      // su disco resta il manifest precedente: tornano i file che descrive
+      chiudiSostituzione(cache, id, precedente);
+      throw e;
+    }
+    // solo con il manifest nuovo scritto la copia precedente si può cancellare
+    for (const f of def.file) rmSync(join(cache, `${f.nome}.prec`), { force: true });
   }
   return manifest;
 }
@@ -1694,7 +1721,8 @@ async function main(): Promise<number> {
   if (comando === "mostra") {
     const da = valore("--da");
     const posizionali = argv.slice(1).filter((a, i, l) => !a.startsWith("--") && l[i - 1] !== "--da");
-    if (!posizionali.length) {
+    // `--da` senza codice: una distanza chiesta e mai stampata non deve uscire con 0
+    if (!posizionali.length || (flag("--da") && (!da || da.startsWith("--")))) {
       console.error('uso: fatti-comuni.ts mostra <codice|"nome" [sigla]> [--da <codice>] [--json]');
       return 2;
     }

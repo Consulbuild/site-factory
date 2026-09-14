@@ -3,9 +3,11 @@
 // il dataset committato data/comuni-fatti.json.
 //
 //   cd site-renderer && node --experimental-strip-types scripts/test-fatti-comuni.ts
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   aggiorna,
   abbinaDpr412,
@@ -457,6 +459,40 @@ console.log("\nAggiornamento:");
   );
   globalThis.fetch = fetchVera;
   caso("scrittura del manifest fallita: il manifest precedente resta intero e leggibile", guasto !== null && readFileSync(join(cache, "manifest.json"), "utf8") === manifestPrima, guasto);
+
+  // la sismica arriva valida e diversa, poi la scrittura del manifest subito dopo fallisce
+  rmSync(join(cache, "manifest.json.tmp"), { recursive: true });
+  writeFileSync(join(cache, "manifest.json"), JSON.stringify(buoni));
+  const csvSismica = join(cache, FONTI["dpc-sismica-2025"].file[0]!.nome);
+  globalThis.fetch = (async (url: string) => {
+    if (url !== FONTI["dpc-sismica-2025"].file[0]!.url) return reteGuasta(url);
+    mkdirSync(join(cache, "manifest.json.tmp"));
+    return new Response(readFileSync(csvSismica, "utf8") + "Lazio;Roma;RM;Roma;58091;2A-3A-3B\r\n", { status: 200 });
+  }) as typeof fetch;
+  const guastoDopoDownload = await preparaCache(cache, false, () => {}).then(
+    () => null,
+    (e: unknown) => String(e),
+  );
+  globalThis.fetch = fetchVera;
+  const offlineDopoGuasto = await preparaCache(cache, true, () => {});
+  caso(
+    "download valido e diverso, poi scrittura del manifest fallita: torna la copia descritta dal manifest e --offline la usa",
+    guastoDopoDownload !== null && offlineDopoGuasto["dpc-sismica-2025"]?.stato === "ok" && sha256File(csvSismica) === buoni["dpc-sismica-2025"].file[0]!.sha256 && !readdirSync(cache).some((n) => n.endsWith(".prec")),
+    [guastoDopoDownload, offlineDopoGuasto["dpc-sismica-2025"]],
+  );
+
+  // corsa uccisa a metà: frammento 1 dell'allegato A già spostato in .prec e sostituito, manifest non ancora
+  // scritto; e una .prec della sismica rimasta dopo la scrittura del manifest
+  const frammento1 = join(cache, FONTI["dpr412-allegato-a"].file[0]!.nome);
+  renameSync(frammento1, `${frammento1}.prec`);
+  writeFileSync(frammento1, readFileSync(`${frammento1}.prec`, "utf8").replace("COMUNE 0 0", "COMUNE 0 NUOVO"));
+  writeFileSync(`${csvSismica}.prec`, "copia superata\n");
+  const offlineDopoKill = await preparaCache(cache, true, () => {});
+  caso(
+    "corsa interrotta durante la sostituzione: torna la copia descritta dal manifest, la .prec superata si cancella, --offline usa la cache",
+    offlineDopoKill["dpr412-allegato-a"]?.stato === "ok" && offlineDopoKill["dpc-sismica-2025"]?.stato === "ok" && !readdirSync(cache).some((n) => n.endsWith(".prec")),
+    [offlineDopoKill["dpr412-allegato-a"], offlineDopoKill["dpc-sismica-2025"]],
+  );
   rmSync(cache, { recursive: true, force: true });
 }
 
@@ -534,6 +570,14 @@ console.log("\nDataset committato:");
     entro.slice(0, 5),
   );
   caso("comuniEntroKm con codice ignoto → []", comuniEntroKm("abc", 10, ds).length === 0);
+
+  const cli = (...args: string[]) => spawnSync(process.execPath, ["--experimental-strip-types", fileURLToPath(new URL("./fatti-comuni.ts", import.meta.url)), ...args], { encoding: "utf8" });
+  const senzaDa = [cli("mostra", "108012", "--da"), cli("mostra", "108012", "--da", "--json")];
+  caso(
+    "CLI: «mostra 108012 --da» senza codice (anche seguito da --json) → uso e codice 2, nessun fatto stampato",
+    senzaDa.every((r) => r.status === 2 && r.stdout === "" && r.stderr.includes("uso:")),
+    senzaDa.map((r) => [r.status, r.stdout.slice(0, 80), r.stderr.slice(0, 200)]),
+  );
 }
 
 /* ---------- modulo: numeri, fatti e frasi ---------- */
