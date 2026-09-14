@@ -7,6 +7,7 @@ import { hasSecret } from "@/lib/secrets";
 import { UMAMI_HOST } from "@/lib/integrazioni";
 import { catenaViva } from "@/lib/catena";
 import { etichettaDemo, DEMO_ZONA } from "@/lib/deploy";
+import { fondamentaAttese } from "@/lib/fondamenta";
 import { demoScaduta } from "@/lib/portafoglio-shared";
 import { previewRoot } from "@/lib/preview";
 import { BuildPanel } from "@/components/build-panel";
@@ -36,6 +37,7 @@ export default async function BuildPage({ params }: { params: Promise<{ slug: st
       referente={brief.referente ? String(brief.referente) : undefined}
       telefono={brief.telefono ? String(brief.telefono) : undefined}
       build={steps.build}
+      fondamentaAttese={fondamentaAttese(client, steps.build.dominio)}
       percorso={client.percorso}
       demo={client.demo}
       catena={client.catena}

@@ -2,8 +2,9 @@
 
 // Blocco «3 · Pubblicazione» della scheda Build & Pubblica in percorso
 // COMPLETO (abbonato): chiavi Cloudflare, dominio, motivi di ribuild, stato del
-// sito online e delle integrazioni, ultima pubblicazione fallita, demo ancora
-// accesa. Solo presentazione: logica, primaria e bottoni in build-panel.tsx.
+// sito online e delle integrazioni, ultima pubblicazione fallita, avvisi delle
+// fondamenta SEO, demo ancora accesa. Solo presentazione: logica, primaria e
+// bottoni in build-panel.tsx.
 
 import Link from "next/link";
 import type { ClientState } from "@/lib/schemas";
@@ -26,6 +27,7 @@ export function PubblicazioneSito({
   dominioMsg,
   onSalvaDominio,
   rebuildMotivi,
+  avvisiFondamenta,
   buildNonPubblicata,
   demo,
   azioni,
@@ -45,6 +47,8 @@ export function PubblicazioneSito({
   onSalvaDominio: () => void;
   /** Perché l'ultima build non è pubblicabile così com'è (vuoto = ok). */
   rebuildMotivi: string[];
+  /** Avvisi delle fondamenta SEO cotte (dati omessi dal JSON-LD, title/description/H1 fuori misura): mai bloccanti. */
+  avvisiFondamenta: string[];
   buildNonPubblicata: boolean;
   demo?: Demo;
   azioni: React.ReactNode;
@@ -139,6 +143,22 @@ export function PubblicazioneSito({
         <div className="mt-4">
           <Banner tone="err" title={`Ultima pubblicazione fallita il ${dtBreve(build.deployErrore.quando)}`}>
             <span className="mono whitespace-pre-wrap">{build.deployErrore.messaggio}</span>
+          </Banner>
+        </div>
+      )}
+
+      {avvisiFondamenta.length > 0 && (
+        <div className="mt-4">
+          <Banner
+            tone="warn"
+            title={`Fondamenta SEO: ${avvisiFondamenta.length} ${avvisiFondamenta.length === 1 ? "avviso" : "avvisi"} nell'ultima build`}
+          >
+            Non bloccano la pubblicazione: per toglierli correggi i dati indicati e ribuilda.
+            <ul className="mono mt-1.5 list-disc space-y-0.5 pl-4 text-xs">
+              {avvisiFondamenta.map((a) => (
+                <li key={a}>{a}</li>
+              ))}
+            </ul>
           </Banner>
         </div>
       )}

@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ExternalLink, LinkIcon, MessageCircle } from "lucide-react";
 import type { ClientState } from "@/lib/schemas";
+import { motivoRebuildFondamenta } from "@/lib/traffico";
 import { formatElapsed, nomeStep } from "@/lib/agenti";
 import { Badge, Banner, StepBadge, btnPrimary, btnSecondary, btnGhost, btnDanger } from "./ui";
 import { useStepRun, RunLog } from "./use-step-run";
@@ -76,6 +77,7 @@ export function BuildPanel({
   referente,
   telefono,
   build,
+  fondamentaAttese,
   percorso,
   demo,
   catena,
@@ -95,6 +97,8 @@ export function BuildPanel({
   referente?: string;
   telefono?: string;
   build: BuildState;
+  /** Dominio per cui la build deve avere le fondamenta SEO (fondamentaAttese, calcolata nella pagina server), o null. */
+  fondamentaAttese: string | null;
   percorso: ClientState["percorso"];
   demo?: Demo;
   catena?: Catena;
@@ -153,8 +157,8 @@ export function BuildPanel({
   const vpsOk = vpsKeysOk.umami && vpsKeysOk.n8n;
 
   // Perché l'ultima build non è pubblicabile così com'è: specchio degli
-  // interlock di deployClient/deployDemo (noindex vs percorso, SITE_URL e
-  // integrazioni cotte nell'HTML alla build) — così la primaria torna su «Builda».
+  // interlock di deployClient/deployDemo (noindex vs percorso, SITE_URL,
+  // integrazioni e fondamenta SEO cotte alla build) — così la primaria torna su «Builda».
   const rebuildMotivi: string[] = [];
   if (completa && !!build.noindex !== isDemo) {
     rebuildMotivi.push(build.noindex ? "build demo (noindex): il cliente è abbonato, serve il sito reale" : "build reale: il cliente è in percorso demo, serve la build noindex");
@@ -169,6 +173,10 @@ export function BuildPanel({
   if (completa && !isDemo && (build.dominio ? !build.integrazioni || build.integrazioni.umamiWebsiteId !== build.umamiWebsiteId : !!build.integrazioni)) {
     rebuildMotivi.push(build.dominio ? "integrazioni del dominio (Umami, modulo reale) assenti o di un altro sito Umami" : "integrazioni del dominio rimosso ancora nell'HTML");
   }
+  const motivoFondamenta = completa ? motivoRebuildFondamenta(percorso, build, fondamentaAttese) : null;
+  if (motivoFondamenta) rebuildMotivi.push(motivoFondamenta);
+  // Avvisi delle fondamenta cotte, solo se sono quelle attese: da rifare, la prossima build li riscrive (o le toglie).
+  const avvisiFondamenta = motivoFondamenta ? [] : (build.fondamenta?.avvisi ?? []);
   const rebuild = rebuildMotivi.length > 0;
   const buildBloccataVps = !isDemo && !!build.dominio && !vpsOk;
 
@@ -581,6 +589,7 @@ export function BuildPanel({
             dominioMsg={dominioMsg}
             onSalvaDominio={() => void salvaDominio()}
             rebuildMotivi={rebuildMotivi}
+            avvisiFondamenta={avvisiFondamenta}
             buildNonPubblicata={buildNonPubblicata}
             demo={demo}
             azioni={rendi(azioni3)}

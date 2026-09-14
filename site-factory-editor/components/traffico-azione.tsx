@@ -25,9 +25,11 @@ type Props = {
   senzaDominio: boolean;
 };
 
-// Testi calibrati (docs/traffico/piano-T0.md §Calibrazione): cosa cambia davvero oggi,
-// mai posizioni, clienti in più o tempi. Il paragrafo sul dominio (NOTA_DOMINIO) sta a
-// parte: è la sola informazione che può cambiare la decisione.
+// Testi calibrati (docs/traffico/piano-T0.md §Calibrazione; Attiva Sito in piano-T1a.md
+// §Integrazione): cosa cambia davvero oggi, mai posizioni, clienti in più o tempi.
+// Sospendi e Riattiva non cambiano le fondamenta attese (restano accese da sospeso). Il
+// paragrafo sul dominio (NOTA_DOMINIO) sta a parte: è la sola informazione che può
+// cambiare la decisione.
 
 function testi({ azienda, servizio, verso, etichetta, senzaDominio }: Props): { titolo: string; messaggio: React.ReactNode; bottone: string } {
   const nome = ETICHETTA_SERVIZIO[servizio];
@@ -58,7 +60,9 @@ function testi({ azienda, servizio, verso, etichetta, senzaDominio }: Props): { 
     titolo: `Attivare il servizio ${nome}?`,
     messaggio:
       servizio === "sito"
-        ? conNota(`${azienda} entra nel servizio Sito. Per ora l'editor registra solo lo stato e la data: online non cambia nulla.`)
+        ? conNota(
+            `${azienda} entra nel servizio Sito. Dalla prossima build col dominio il sito avrà sitemap, robots e dati strutturati: vanno online solo quando ribuildi e pubblichi dalla scheda Build & Pubblica.`,
+          )
         : `${azienda} entra nel servizio Scheda Google. Per ora l'editor registra solo lo stato e la data. L'editor non modifica mai la scheda Google del cliente: le modifiche le inserisci tu.`,
     bottone: `Attiva ${nome}`,
   };
