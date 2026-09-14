@@ -1,0 +1,388 @@
+// Banco di prova dei fatti comunali (piano T6a §8), senza rete: estratti verbatim delle fonti
+// registrati qui sotto (fonte e data accanto a ciascuno) e, per i valori dei 5 comuni di prova,
+// il dataset committato data/comuni-fatti.json.
+//
+//   cd site-renderer && node --experimental-strip-types scripts/test-fatti-comuni.ts
+import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import {
+  aggiorna,
+  abbinaDpr412,
+  areaCentroide,
+  confrontaDataset,
+  daWindows1252,
+  leggiCsv,
+  leggiDbf,
+  leggiDpr412,
+  leggiPosas,
+  leggiSardegna,
+  leggiShp,
+  leggiSismica,
+  leggiVariazioni,
+  PERCORSO_DATASET,
+  BUDGET_DATASET_BYTE,
+  portaAl2026,
+  puntoDentro,
+  puntoInterno,
+  riferimento,
+  serializzaDataset,
+  Territorio,
+  utmInWgs84,
+  zonaDaGradiGiorno,
+  type ComuneAnagrafica,
+  type Poligono,
+} from "./fatti-comuni.ts";
+import type { DatasetFattiComuni } from "../src/lib/fatti-comuni.ts";
+
+let passati = 0;
+let falliti = 0;
+function caso(nome: string, ok: boolean, dettaglio?: unknown): void {
+  if (ok) passati += 1;
+  else falliti += 1;
+  console.log(`${ok ? "✓" : "✗"} ${nome}${!ok && dettaglio !== undefined ? ` → ${JSON.stringify(dettaglio)}` : ""}`);
+}
+function lancia(fn: () => unknown): string | null {
+  try {
+    fn();
+    return null;
+  } catch (e) {
+    return e instanceof Error ? e.message : String(e);
+  }
+}
+const vicino = (a: number, b: number, tolleranza: number) => Math.abs(a - b) <= tolleranza;
+
+/* ---------- estratti verbatim ---------- */
+
+// Istat, Variazioni amministrative e territoriali dal 1991 (zip del 09/01/2025, sha256 222fa3cc…),
+// CSV «;» in windows-1252 con CRLF; la riga di Grana Monferrato ha un campo tra virgolette su due righe.
+const TESTA_VARIAZIONI =
+  "Anno;Tipo variazione;Codice Regione;Codice Unità territoriale sovracomunale;Codice Comune formato alfanumerico;Denominazione Comune;Codice Regione associato alla variazione;Codice Unità territoriale sovracomunale associato alla variazione;Codice del Comune associato alla variazione o nuovo codice Istat del Comune ;Denominazione Comune associata alla variazione o nuova denominazione;Provvedimento e Documento;Contenuto del provvedimento;Data decorrenza validità amministrativa;Flag_note";
+const RIGHE_VARIAZIONI = [
+  `2009;AP;03;015;015149;Monza;03;108;108033;;"Legge 11 giugno 2004, n. 146; G.U. n. 138 del 15 giugno 2004";Comune della Provincia di Milano andato a costituire la nuova Provincia di Monza e della Brianza;30/06/2009;`,
+  `2010;CE;03;016;016024;Bergamo;03;016;016150;Orio al Serio;Legge Regionale 25 gennaio 2010, n. 2: B.U.R. n. 4 del 29 gennaio 2010, 1° S.O.;Modificata la circoscrizione territoriale a seguito del distacco di una zona di territorio aggregata al Comune di Orio al Serio;13/02/2010;`,
+  `2010;AQ;03;016;016150;Orio al Serio;03;016;016024;Bergamo;Legge Regionale 25 gennaio 2010, n. 2: B.U.R. n. 4 del 29 gennaio 2010, 1° S.O.;Modificata la circoscrizione territoriale a seguito dell'aggregazione di una zona di territorio staccata dal Comune di Bergamo;13/02/2010;`,
+  ...["037004;Bazzano", "037018;Castello di Serravalle", "037023;Crespellano", "037043;Monteveglio", "037058;Savigno"].map(
+    (p) => `2014;CS;08;037;037061;Valsamoggia;08;037;${p};"Legge Regionale 7 febbraio 2013, n. 1; Parte Prima del B.U.R. n. 27 del 7 febbraio 2013";Nuovo Comune costituito mediante fusione dei Comuni di Bazzano, Castello di Serravalle, Crespellano, Monteveglio e Savigno ;01/01/2014;`,
+  ),
+  `2014;ES;08;037;037004;Bazzano;08;037;037061;Valsamoggia;"Legge Regionale 7 febbraio 2013, n. 1; Parte Prima del B.U.R. n. 27 del 7 febbraio 2013";Soppresso ed unitamente ai Comuni di Castello di Serravalle, Crespellano, Monteveglio e Savigno passa a costituire il nuovo Comune di Valsamoggia;01/01/2014;`,
+  `2014;ES;08;037;037018;Castello di Serravalle;08;037;037061;Valsamoggia;"Legge Regionale 7 febbraio 2013, n. 1; Parte Prima del B.U.R. n. 27 del 7 febbraio 2013";Soppresso ed unitamente ai Comuni di Bazzano, Crespellano, Monteveglio e Savigno passa a costituire il nuovo Comune di Valsamoggia;01/01/2014;`,
+  `2014;ES;08;037;037023;Crespellano;08;037;037061;Valsamoggia;"Legge Regionale 7 febbraio 2013, n. 1; Parte Prima del B.U.R. n. 27 del 7 febbraio 2013";Soppresso ed unitamente ai Comuni di Bazzano, Castello di Serravalle, Monteveglio e Savigno passa a costituire il nuovo Comune di Valsamoggia;01/01/2014;`,
+  `2014;ES;08;037;037043;Monteveglio;08;037;037061;Valsamoggia;"Legge Regionale 7 febbraio 2013, n. 1; Parte Prima del B.U.R. n. 27 del 7 febbraio 2013";Soppresso ed unitamente ai Comuni di Bazzano, Castello di Serravalle, Crespellano e Savigno passa a costituire il nuovo Comune di Valsamoggia;01/01/2014;`,
+  `2014;ES;08;037;037058;Savigno;08;037;037061;Valsamoggia;"Legge Regionale 7 febbraio 2013, n. 1; Parte Prima del B.U.R. n. 27 del 7 febbraio 2013";Soppresso ed unitamente ai Comuni di Bazzano, Castello di Serravalle, Crespellano e Monteveglio passa a costituire il nuovo Comune di Valsamoggia;01/01/2014;`,
+  `2014;CS;03;020;020071;Borgo Virgilio;03;020;020069;Virgilio;"Legge Regionale 30 gennaio 2014, n. 9; Suppl. n. 6 al B.U. del 3 febbraio 2014";Nuovo Comune costituito mediante fusione dei Comuni di Virgilio e Borgoforte;04/02/2014;`,
+  `2014;CS;03;020;020071;Borgo Virgilio;03;020;020005;Borgoforte;"Legge Regionale 30 gennaio 2014, n. 9; Suppl. n. 6 al B.U. del 3 febbraio 2014";Nuovo Comune costituito mediante fusione dei Comuni di Virgilio e Borgoforte;04/02/2014;`,
+  `2014;ES;03;020;020069;Virgilio;03;020;020071;Borgo Virgilio;"Legge Regionale 30 gennaio 2014, n. 9; Suppl. n. 6 al B.U. del 3 febbraio 2014";Soppresso e unitamente al Comune di Borgoforte passa a costituire il nuovo Comune di Borgo Virgilio;04/02/2014;`,
+  `2014;ES;03;020;020005;Borgoforte;03;020;020071;Borgo Virgilio;"Legge Regionale 30 gennaio 2014, n. 9; Suppl. n. 6 al B.U. del 3 febbraio 2014";Soppresso e unitamente al Comune di Virgilio passa a costituire il nuovo Comune di Borgo Virgilio;04/02/2014;`,
+  `2015;ES;03;014;014042;Menarola;03;014;014032;Gordona;"Legge Regionale 6 novembre 2015, n. 35; Suppl. al B.U.R.L. n. 46 del 10 novembre 2015";Soppresso e aggregato alla circoscrizione territoriale del Comune di Gordona;25/11/2015;`,
+  `2015;AQES;03;014;014032;Gordona;03;014;014042;Menarola;"Legge Regionale 6 novembre 2015, n. 35; Suppl. al B.U.R.L. n. 46 del 10 novembre 2015";Modificata la circoscrizione territoriale a seguito dellaggregazione del territorio del soppresso Comune di Menarola;25/11/2015;`,
+  `2023;CD;01;005;005056;Grana;01;005;005056;Grana Monferrato;"Deliberazione della Giunta comunale di presa datto della modifica del 17 gennaio 2023, n 2 e Delibera del Consiglio della Regione Piemonte del 29 novembre 2022, n. 252-23658, \r\npubblicata sul Suppl. ord. n. 1 al B.U. n. 50 del 15 dicembre 2022";Assunta la nuova denominazione di Grana Monferrato;17/01/2023;`,
+  `2024;CS;05;024;024128;Sovizzo;05;024;024044;Gambugliano;"Legge Regionale 29 dicembre 2023, n. 33; B.U.R. n. 171 del 29 dicembre 2023";Istituito il Comune di Sovizzo mediante fusione dei Comuni di Sovizzo e Gambugliano;22/01/2024;`,
+  `2024;CS;05;024;024128;Sovizzo;05;024;024103;Sovizzo;"Legge Regionale 29 dicembre 2023, n. 33; B.U.R. n. 171 del 29 dicembre 2023";Istituito il Comune di Sovizzo mediante fusione dei Comuni di Sovizzo e Gambugliano;22/01/2024;`,
+  `2024;ES;05;024;024044;Gambugliano;05;024;024128;Sovizzo;"Legge Regionale 29 dicembre 2023, n. 33; B.U.R. n. 171 del 29 dicembre 2023";Istituito il Comune di Sovizzo mediante fusione dei Comuni di Sovizzo e Gambugliano;22/01/2024;`,
+  `2024;ES;05;024;024103;Sovizzo;05;024;024128;Sovizzo;"Legge Regionale 29 dicembre 2023, n. 33; B.U.R. n. 171 del 29 dicembre 2023";Istituito il Comune di Sovizzo mediante fusione dei Comuni di Sovizzo e Gambugliano;22/01/2024;`,
+  `2024;CE;03;020;020071;Borgo Virgilio;03;020;020003;Bagnolo San Vito;"Legge Regionale 30 gennaio 2024, n. 2; Supplemento al B.U.R. n. 5 del 2 febbraio 2024";Distacco di zone di territorio dal Comune di Borgo Virgilio e relativa aggregazione al Comune di Bagnolo San Vito;17/02/2024;`,
+  `2024;AQ;03;020;020003;Bagnolo San Vito;03;020;020071;Borgo Virgilio;"Legge Regionale 30 gennaio 2024, n. 2; Supplemento al B.U.R. n. 5 del 2 febbraio 2024";Distacco di zone di territorio dal Comune di Borgo Virgilio e relativa aggregazione al Comune di Bagnolo San Vito;17/02/2024;`,
+  `2024;AQ;03;016;016150;Orio al Serio;03;016;016024;Bergamo;"Legge Regionale 3 aprile 2024, n. 6; Supplemento al B.U.R. n. 14 del 5 aprile 2024";Distacco di zone di territorio dal Comune di Bergamo e relativa aggregazione al Comune di Orio al Serio;18/04/2024;`,
+  `2024;CE;03;016;016024;Bergamo;03;016;016150;Orio al Serio;"Legge Regionale 3 aprile 2024, n. 6; Supplemento al B.U.R. n. 14 del 5 aprile 2024";Distacco di zone di territorio dal Comune di Bergamo e relativa aggregazione al Comune di Orio al Serio;18/04/2024;`,
+];
+const CSV_VARIAZIONI = Buffer.from([TESTA_VARIAZIONI, ...RIGHE_VARIAZIONI, ""].join("\r\n"), "latin1");
+
+// Istat, Codici statistici delle unità amministrative della Sardegna dal 1/1/2026 (zip del 04/08/2025,
+// sha256 6fb4b421…): titolo, intestazione su più righe tra virgolette, prima riga dati.
+const CSV_SARDEGNA = Buffer.from(
+  'Codici statistici e denominazioni delle unità amministrative rispondenti ai nuovi assetti territoriali della Sardegna. In vigore dal 1° gennaio 2026;;;;;;\r\n' +
+    '"Denominazione Provincia/\nCittà metropolitana";"Codice Provincia/\nCittà metropolitana";Codice Comune;Denominazione Comune;Codice Comune precedente;"Codice Provincia/\nCittà metropolitana precedente";"Denominazione Provincia/\nCittà metropolitana\n(ripartizione precedente)"\r\n' +
+    "Città metropolitana di Sassari;312;112001;Alghero;090003;090;Provincia di Sassari\r\n",
+  "latin1",
+);
+
+// Gazzetta Ufficiale, DPR 412/1993 allegato A, frammenti del 14/09/2026 (sha256 c9a22e4d…, fa0705b8…):
+// righe verbatim, con zeri resi «O» dall'OCR; l'apostrofo di Cassina è qui come entità per provare la decodifica.
+const HTML_DPR412 = `<span class="dettaglio_atto_testo"><pre>                           ALLEGATO A
+pr z gr-g alt comune
+MI E 2404 131 COLOGNO MONZESE
+MI E 2404 130 CASSINA DE&#39; PECCHI
+AT F 2698 257 CUNICO
+AP E 21O2 395 ROTELLA
+AR E 2234 42O PRATOVECCHIO
+BG E 2386 348 CASTRO
+LE C 1161 98 CASTRO
+MI E 2404 162 MONZA
+VI E 2380 44 SOVIZZO
+SS D 1500 100 CASTRO
+Note: all'interno di ciascuna provincia i comuni sono elencati
+</pre></span>`;
+
+/* ---------- geometria ---------- */
+
+console.log("\nGeometria:");
+{
+  // anelli esterni in senso orario (convenzione shapefile), buchi antiorari
+  const anello = (...p: [number, number][]) => new Float64Array(p.flat());
+  const u: Poligono = { anelli: [anello([0, 0], [0, 10], [2, 10], [2, 2], [8, 2], [8, 10], [10, 10], [10, 0], [0, 0])] };
+  const cu = areaCentroide(u);
+  caso("U: area 52 e centroide fuori dal poligono", cu.area === 52 && !puntoDentro(u, cu.x, cu.y), cu);
+  const pu = puntoInterno(u);
+  caso("U: punto interno dentro, sul segmento più lungo dell'orizzontale", pu.spostato && puntoDentro(u, pu.x, pu.y) && vicino(pu.x, 1, 1e-9), pu);
+  const buco: Poligono = { anelli: [anello([0, 0], [0, 10], [10, 10], [10, 0], [0, 0]), anello([4, 4], [6, 4], [6, 6], [4, 6], [4, 4])] };
+  const pb = puntoInterno(buco);
+  caso("poligono con buco: area 96, punto fuori dal buco", pb.area === 96 && puntoDentro(buco, pb.x, pb.y) && !(pb.x > 4 && pb.x < 6 && pb.y > 4 && pb.y < 6), pb);
+  const dueParti: Poligono = { anelli: [anello([0, 0], [0, 1], [1, 1], [1, 0], [0, 0]), anello([9, 0], [9, 1], [10, 1], [10, 0], [9, 0])] };
+  const pd = puntoInterno(dueParti);
+  caso("poligono in due parti: punto dentro una delle parti", pd.spostato && puntoDentro(dueParti, pd.x, pd.y), pd);
+  const pieno: Poligono = { anelli: [anello([0, 0], [0, 1000], [1000, 1000], [1000, 0], [0, 0])] };
+  const pp = puntoInterno(pieno);
+  caso("quadrato: centroide esatto, non spostato", !pp.spostato && pp.x === 500 && pp.y === 500, pp);
+  const [lat, lon] = utmInWgs84(500000, 4982950.4);
+  caso("UTM 32N (500000; 4982950,4) → (45°; 9°) entro 1e-6", vicino(lat, 45, 1e-6) && vicino(lon, 9, 1e-6), [lat, lon]);
+  const [lat2, lon2] = utmInWgs84(501000, 4982950.4);
+  const a = 6378137;
+  const e2 = 0.00669437999014;
+  const phi = (lat * Math.PI) / 180;
+  const metri = ((a / Math.sqrt(1 - e2 * Math.sin(phi) ** 2)) * Math.cos(phi) * ((lon2 - lon) * Math.PI)) / 180;
+  caso("1.000 m di griglia sul meridiano centrale ≈ 1.000,4 m sull'ellissoide (k0 = 0,9996)", vicino(metri, 1000.4, 0.05) && vicino(lat2, lat, 1e-5), metri);
+}
+
+/* ---------- formati ---------- */
+
+console.log("\nFormati:");
+{
+  const righe = leggiCsv('﻿a;"b;c"\r\n"x\ny";"con ""virgolette"""\n', ";");
+  caso("CSV: BOM, separatore tra virgolette, campo su due righe, virgolette raddoppiate", JSON.stringify(righe) === JSON.stringify([["a", "b;c"], ["x\ny", 'con "virgolette"']]), righe);
+  caso("CSV: virgolette non chiuse → errore", lancia(() => leggiCsv('a;"b\n', ";")) !== null);
+
+  // DBF minimo costruito qui: 1 record con testo UTF-8
+  const campi = [
+    { nome: "PRO_COM_T", lunghezza: 6 },
+    { nome: "COMUNE", lunghezza: 20 },
+  ];
+  const testa = 32 + 32 * campi.length + 1;
+  const lunghezzaRiga = 1 + campi.reduce((s, c) => s + c.lunghezza, 0);
+  const dbf = Buffer.alloc(testa + lunghezzaRiga + 1, 0x20);
+  dbf.fill(0, 0, testa);
+  dbf.writeUInt8(3, 0);
+  dbf.writeUInt32LE(1, 4);
+  dbf.writeUInt16LE(testa, 8);
+  dbf.writeUInt16LE(lunghezzaRiga, 10);
+  campi.forEach((c, i) => {
+    dbf.write(c.nome, 32 + 32 * i, "latin1");
+    dbf.writeUInt8(0x43, 32 + 32 * i + 11);
+    dbf.writeUInt8(c.lunghezza, 32 + 32 * i + 16);
+  });
+  dbf.writeUInt8(0x0d, testa - 1);
+  dbf.write(" 001001", testa, "latin1");
+  dbf.write("Agliè", testa + 7, "utf8");
+  dbf.writeUInt8(0x1a, testa + lunghezzaRiga);
+  const r = leggiDbf(dbf, "prova");
+  caso("DBF: record e testo UTF-8 («Agliè»)", r.length === 1 && r[0]!.PRO_COM_T === "001001" && r[0]!.COMUNE === "Agliè", r);
+
+  // SHP minimo: un poligono quadrato 0..10
+  const punti = [0, 0, 0, 10, 10, 10, 10, 0, 0, 0];
+  const contenuto = 44 + 4 + 16 * 5;
+  const shp = Buffer.alloc(100 + 8 + contenuto);
+  shp.writeInt32BE(9994, 0);
+  shp.writeInt32BE(shp.length / 2, 24);
+  shp.writeInt32LE(1000, 28);
+  shp.writeInt32LE(5, 32);
+  shp.writeInt32BE(1, 100);
+  shp.writeInt32BE(contenuto / 2, 104);
+  shp.writeInt32LE(5, 108);
+  shp.writeInt32LE(1, 108 + 36);
+  shp.writeInt32LE(5, 108 + 40);
+  shp.writeInt32LE(0, 108 + 44);
+  punti.forEach((v, i) => shp.writeDoubleLE(v, 108 + 48 + 8 * i));
+  const poligoni = leggiShp(shp, "prova");
+  caso("SHP: un poligono, un anello di 5 punti", poligoni.length === 1 && poligoni[0]!.anelli[0]!.length === 10 && areaCentroide(poligoni[0]!).area === 100, poligoni);
+  shp.writeInt32LE(1, 32);
+  caso("SHP: tipo diverso da poligono → errore", lancia(() => leggiShp(shp, "prova"))?.includes("tipo 5") === true);
+
+  const minimo = {
+    schema: 1,
+    generatoIl: "2026-09-14T00:00:00.000Z",
+    riferimentoTerritoriale: "2026-01-01",
+    completo: true,
+    fontiMancanti: [],
+    fonti: {},
+    fatti: {},
+    copertura: { comuni: 2 },
+    scarti: {},
+    alias: { "090003": { a: "112001", motivo: "cambio_codice", dal: "2026-01-01" } },
+    comuni: {
+      "015081": { nome: "Cologno Monzese", sigla: "MI", centro: [45.5333, 9.2802], raggioKm: 1.65 },
+      "112001": { nome: "Alghero", sigla: "SS", centro: [40.5998, 8.2989], raggioKm: 8.47 },
+    },
+  } as unknown as DatasetFattiComuni;
+  const testo = serializzaDataset(minimo);
+  const righeComuni = testo.split("\n").filter((l) => /^ {4}"\d{6}": \{/.test(l));
+  caso("serializzazione: JSON valido, un comune e un alias per riga", JSON.stringify(JSON.parse(testo)) === JSON.stringify(minimo) && righeComuni.length === 3, righeComuni);
+  const modificato = structuredClone(minimo);
+  modificato.comuni["015081"]!.popolazione = 46994;
+  const diff = confrontaDataset(minimo, modificato);
+  caso("report di diff: conta i valori cambiati per campo", diff.some((l) => l.includes("popolazione: 1 comuni cambiati")), diff);
+}
+
+/* ---------- variazioni ---------- */
+
+console.log("\nVariazioni:");
+const variazioni = leggiVariazioni(daWindows1252(CSV_VARIAZIONI));
+const sarde = leggiSardegna(daWindows1252(CSV_SARDEGNA));
+const CODICI_2026 = new Set(["015081", "108033", "016024", "016150", "037061", "020071", "020003", "014032", "005056", "024128", "112001", "015060", "016065", "075096"]);
+const territorio = new Territorio([...variazioni, ...sarde], CODICI_2026);
+const nomeStorico = (c: string) => variazioni.find((v) => v.codice === c)?.nome ?? c;
+const R2011 = riferimento("2011-10-09");
+const R2025 = riferimento("2025-01-01");
+const somma = (v: number[]) => v.reduce((a, b) => a + b, 0);
+{
+  const grana = variazioni.find((v) => v.tipo === "CD");
+  caso(
+    "CSV variazioni: windows-1252, CRLF, campo su due righe (Grana → Grana Monferrato)",
+    variazioni.length === RIGHE_VARIAZIONI.length && grana?.nome === "Grana" && grana.nomeAssociato === "Grana Monferrato" && grana.chiave === "2023-01-17",
+    grana,
+  );
+  caso("tabella sarda: 090003 → 112001 come cambio di codice al 1/1/2026", sarde.length === 1 && sarde[0]!.codice === "090003" && sarde[0]!.codiceAssociato === "112001" && sarde[0]!.chiave === "2026-01-01", sarde);
+  caso("intestazione variazioni cambiata → errore leggibile", lancia(() => leggiVariazioni("Anno;Tipo;x\r\n"))?.includes("colonna") === true);
+
+  const edifici = new Map([
+    ["037004", [10, 20]],
+    ["037018", [1, 2]],
+    ["037023", [100, 200]],
+    ["037043", [1000, 2000]],
+    ["037058", [5, 5]],
+  ]);
+  const sommaVettori = (v: number[][]) => v[0]!.map((_, i) => somma(v.map((x) => x[i]!)));
+  const valsa = portaAl2026(territorio, edifici, R2011, { additivo: true, somma: sommaVettori, nomeStorico });
+  const v = valsa.valori.get("037061");
+  caso(
+    "fusione integrale (Valsamoggia 2014): somma dei 5 comuni d'origine con derivazione dichiarata",
+    JSON.stringify(v?.valore) === "[1116,2227]" && v?.derivazione?.regola === "somma_fusione" && v.derivazione.da.join() === "037004,037018,037023,037043,037058" && v.derivazione.nomi[0] === "Bazzano" && valsa.errori.length === 0,
+    v,
+  );
+  const senzaUno = new Map(edifici);
+  senzaUno.delete("037058");
+  const parziale = portaAl2026(territorio, senzaUno, R2011, { additivo: true, somma: sommaVettori, nomeStorico });
+  caso("fusione con un'origine senza dato → nessun fatto, scarto dichiarato", !parziale.valori.has("037061") && parziale.scarti.origine_senza_dato?.[0]?.startsWith("037061") === true, parziale.scarti);
+  const sismicaFusa = portaAl2026(territorio, new Map([["037004", "3"], ["037018", "3"], ["037023", "3"], ["037043", "3"], ["037058", "3"]]), R2011, { additivo: false, nomeStorico });
+  caso("fatto non additivo di comuni poi fusi → mai derivato", !sismicaFusa.valori.has("037061") && sismicaFusa.scarti.fusione_dopo_riferimento?.[0] === "037061", sismicaFusa.scarti);
+
+  const bv = portaAl2026(territorio, new Map([["020069", 1], ["020005", 2], ["020003", 3]]), R2011, { additivo: true, somma, nomeStorico });
+  caso(
+    "fusione seguita da scambio parziale (Borgo Virgilio 2014 → Bagnolo San Vito 2024): nessun fatto 2011 per entrambi",
+    !bv.valori.has("020071") && !bv.valori.has("020003") && bv.scarti.scambio_parziale?.join() === "020003,020071",
+    bv,
+  );
+  const bv2025 = portaAl2026(territorio, new Map([["020071", 15137], ["020003", 5950]]), R2025, { additivo: true, somma, nomeStorico });
+  caso("stesso comune con fonte del 2025: fatti presenti", bv2025.valori.get("020071")?.valore === 15137 && bv2025.valori.get("020003")?.valore === 5950, bv2025);
+
+  const gordona = portaAl2026(territorio, new Map([["014032", 1800], ["014042", 40]]), R2011, { additivo: true, somma, nomeStorico });
+  caso("incorporazione (Gordona ← Menarola 2015): il comune che incorpora somma il soppresso", gordona.valori.get("014032")?.valore === 1840 && gordona.valori.get("014032")?.derivazione?.da.join() === "014032,014042", gordona);
+  const gordonaSola = portaAl2026(territorio, new Map([["014032", 1800]]), R2011, { additivo: true, somma, nomeStorico });
+  caso("incorporazione senza il dato del soppresso → nessun fatto", !gordonaSola.valori.has("014032"), gordonaSola);
+
+  const bg = portaAl2026(territorio, new Map([["016024", 100], ["016150", 10]]), R2011, { additivo: true, somma, nomeStorico });
+  caso("scambio parziale puro (Bergamo/Orio al Serio 2024): fatti 2011 assenti per entrambi", bg.valori.size === 0 && bg.scarti.scambio_parziale?.length === 2, bg);
+  const bg2021 = portaAl2026(territorio, new Map([["016024", 100], ["016150", 10]]), riferimento("2021-12-31"), { additivo: true, somma, nomeStorico });
+  caso("… anche per un fatto del 2021", bg2021.valori.size === 0, bg2021);
+
+  const alghero = portaAl2026(territorio, new Map([["090003", "4"]]), riferimento("2025-05-31"), { additivo: false, nomeStorico });
+  const alias = territorio.alias();
+  caso("cambio codice sardo: dato di 090003 sul record 112001, alias cambio_codice", alghero.valori.get("112001")?.valore === "4" && alias.get("090003")?.a === "112001" && alias.get("090003")?.motivo === "cambio_codice", [alghero, alias.get("090003")]);
+  caso("alias di un comune soppresso per fusione (Menarola → Gordona)", alias.get("014042")?.a === "014032" && alias.get("014042")?.motivo === "fusione", alias.get("014042"));
+  caso("alias di un cambio di provincia (Monza 015149 → 108033)", alias.get("015149")?.a === "108033" && alias.get("015149")?.motivo === "cambio_codice", alias.get("015149"));
+
+  const ignoto = portaAl2026(territorio, new Map([["999999", 1]]), R2011, { additivo: true, somma, nomeStorico });
+  caso("gate di chiusura: codice che non si risolve → errore", ignoto.errori.length === 1 && ignoto.errori[0]!.includes("999999"), ignoto.errori);
+  const nato = portaAl2026(territorio, new Map([["024128", 1]]), R2011, { additivo: true, somma, nomeStorico });
+  caso("gate: codice nato dopo il riferimento della fonte → errore (data territoriale sbagliata)", nato.errori.length === 1 && nato.errori[0]!.includes("non esisteva"), nato.errori);
+}
+
+/* ---------- DPR 412/1993 ---------- */
+
+console.log("\nDPR 412/1993 allegato A:");
+{
+  const righe = leggiDpr412(HTML_DPR412);
+  caso("righe tabellari estratte, intestazione e note ignorate", righe.length === 10, righe.map((r) => r.testo));
+  const rotella = righe.find((r) => r.nome === "ROTELLA");
+  const prato = righe.find((r) => r.nome === "PRATOVECCHIO");
+  caso("zeri OCR: 21O2 → 2102, 42O → 420", rotella?.gradiGiorno === 2102 && rotella.zeriOcr && prato?.altitudine === 420, [rotella, prato]);
+  caso("entità HTML nel nome: CASSINA DE' PECCHI", righe.some((r) => r.nome === "CASSINA DE' PECCHI"));
+  caso("soglie art. 2 c. 1: 600 → A, 601 → B, 2100 → D, 3001 → F", zonaDaGradiGiorno(600) === "A" && zonaDaGradiGiorno(601) === "B" && zonaDaGradiGiorno(2100) === "D" && zonaDaGradiGiorno(3001) === "F");
+
+  const anagrafica = new Map<string, ComuneAnagrafica>(
+    [
+      ["015081", "Cologno Monzese", "MI"],
+      ["015060", "Cassina de' Pecchi", "MI"],
+      ["016065", "Castro", "BG"],
+      ["075096", "Castro", "LE"],
+      ["108033", "Monza", "MB"],
+      ["024128", "Sovizzo", "VI"],
+    ].map(([codice, nome, sigla]) => [codice!, { codice: codice!, nome: nome!, sigla: sigla! }]),
+  );
+  const sigle = new Map([["015", ["MI"]], ["016", ["BG"]], ["075", ["LE"]], ["108", ["MB"]], ["024", ["VI"]]]);
+  const { clima, scarti } = abbinaDpr412(righe, anagrafica, territorio, sigle);
+  caso("Cologno Monzese abbinato: E, 2.404 GG, 131 m", JSON.stringify(clima.get("015081")) === '["E",2404,131]', clima.get("015081"));
+  caso("Cassina de' Pecchi abbinato senza badare ad apostrofi", JSON.stringify(clima.get("015060")) === '["E",2404,130]');
+  caso("coerenza: «AT F 2698 257 CUNICO» → scarto zona_incoerente", scarti.zona_incoerente?.join() === "AT F 2698 257 CUNICO", scarti);
+  caso("omonimi risolti con la sigla: Castro BG e Castro LE", clima.get("016065")?.[1] === 2386 && clima.get("075096")?.[1] === 1161, [clima.get("016065"), clima.get("075096")]);
+  caso("omonimo senza sigla utile (SS CASTRO) → non emesso", scarti.nome_ambiguo?.join() === "SS D 1500 100 CASTRO", scarti);
+  caso("provincia cambiata: «MI … MONZA» → Monza (MB) via il codice storico 015149", JSON.stringify(clima.get("108033")) === '["E",2404,162]', clima.get("108033"));
+  caso("comune nato da fusione dopo il 1993 (Sovizzo 024128): nessuna zona benché il nome coincida", !clima.has("024128") && scarti.comune_nato_dopo_1993?.[0]?.startsWith("024128") === true, scarti);
+  caso("riga senza un comune di quel nome nell'anagrafica (Rotella) → non_trovato",scarti.non_trovato?.includes("AP E 21O2 395 ROTELLA") === true, scarti.non_trovato);
+}
+
+/* ---------- POSAS e sismica ---------- */
+
+console.log("\nPOSAS e sismica:");
+{
+  // Istat, POSAS 2025 (zip del 30/01/2026, sha256 5f549156…): titolo, intestazione, righe di Abano Terme ridotte a 2 età
+  const testa = '"Codice comune";"Comune";"Età";"Celibi";"Coniugati";"Divorziati";"Vedovi";"Uniti civilmente";"Maschi già in unione civile (per scioglimento unione)";"Maschi già in unione civile (per decesso del partner)";"Totale maschi";"Nubili";"Coniugate";"Divorziate";"Vedove";"Unite civilmente";"Femmine già in unione civile (per scioglimento unione)";"Femmine già in unione civile (per decesso del partner)";"Totale femmine";"Totale"';
+  const corpo = ['"028001";"Abano Terme";0;57;0;0;0;0;0;0;57;48;0;0;0;0;0;0;48;105', '"028001";"Abano Terme";1;59;0;0;0;0;0;0;59;51;0;0;0;0;0;0;51;110'];
+  const posas = (titolo: string, totale: number) => ["﻿" + titolo, testa, ...corpo, `"028001";"Abano Terme";999;116;0;0;0;;;;116;99;0;0;0;;;;99;${totale}`, ""].join("\n");
+  const ok = leggiPosas(posas('"Popolazione residente per età, sesso e stato civile al 1° gennaio 2025"', 215), "1° gennaio 2025");
+  caso("POSAS: totale dalla riga «Età 999» uguale alla somma delle età", ok.valori.get("028001") === 215, ok);
+  caso("POSAS: totale diverso dalla somma → errore", lancia(() => leggiPosas(posas('"Popolazione residente per età, sesso e stato civile al 1° gennaio 2025"', 216), "1° gennaio 2025"))?.includes("somma") === true);
+  caso("POSAS: titolo con «(stima)» rifiutato", lancia(() => leggiPosas(posas('"Popolazione residente per età, sesso e stato civile al 1° gennaio 2026 (stima)"', 215), "1° gennaio 2026"))?.includes("stimato") === true);
+
+  // DPC, classificazione sismica maggio 2025 (sha256 89568b25…): BOM, CRLF, codici senza zeri iniziali
+  const sismica = (zona: string) => `﻿REGIONE;PROV_CITTA_METROPOLITANA;SIGLA_PROV;COMUNE;COD_ISTAT_COMUNE;ZONA_SISMICA\r\nLombardia;Milano;MI;Cologno Monzese;15081;3\r\nLazio;Roma;RM;Roma;58091;${zona}\r\n`;
+  const s = leggiSismica(sismica("2A-3A-3B"));
+  caso("sismica: BOM rimosso, codice riempito a 6 cifre, «2A-3A-3B» verbatim", s.valori.get("015081") === "3" && s.valori.get("058091") === "2A-3A-3B", [...s.valori]);
+  caso("sismica: zona «5» → errore di gate", lancia(() => leggiSismica(sismica("5")))?.includes("fuori formato") === true);
+}
+
+/* ---------- aggiornamento senza fonti ---------- */
+
+console.log("\nAggiornamento:");
+{
+  const cartella = mkdtempSync(join(tmpdir(), "fatti-comuni-"));
+  const dataset = join(cartella, "comuni-fatti.json");
+  writeFileSync(dataset, '{"schema":1,"sentinella":true}\n');
+  const log: string[] = [];
+  const ok = await aggiorna({ cache: join(cartella, "cache"), dataset, offline: true, soloVerifica: false, parziale: false, log: (r) => log.push(r) });
+  caso("--offline con fonti assenti: errore esplicito, dataset esistente intatto", !ok && readFileSync(dataset, "utf8").includes("sentinella") && log.some((r) => r.includes("aggiornamento fermato")), log.slice(-3));
+  const okParziale = await aggiorna({ cache: join(cartella, "cache"), dataset, offline: true, soloVerifica: false, parziale: true, log: () => {} });
+  caso("--parziale senza le fonti strutturali: nulla scritto", !okParziale && readFileSync(dataset, "utf8").includes("sentinella"));
+  rmSync(cartella, { recursive: true, force: true });
+}
+
+/* ---------- dataset committato ---------- */
+
+console.log("\nDataset committato:");
+{
+  const byte = statSync(PERCORSO_DATASET).size;
+  caso(`dimensione ${(byte / 1e6).toFixed(2)} MB entro il budget di ${BUDGET_DATASET_BYTE / 1e6} MB`, byte < BUDGET_DATASET_BYTE);
+  const t0 = performance.now();
+  const ds = JSON.parse(readFileSync(PERCORSO_DATASET, "utf8")) as DatasetFattiComuni;
+  const ms = performance.now() - t0;
+  console.log(`  (lettura + JSON.parse: ${ms.toFixed(0)} ms)`);
+  caso("caricamento sotto i 100 ms indicativi", ms < 100, ms);
+  const comuni = Object.values(ds.comuni);
+  caso(`${comuni.length} comuni, tutti con nome, sigla, centro nel riquadro dell'Italia e raggio`, comuni.length === ds.copertura.comuni && comuni.every((c) => c.nome && /^[A-Z]{2}$/.test(c.sigla) && c.centro[0] > 35.2 && c.centro[0] < 47.2 && c.centro[1] > 6.5 && c.centro[1] < 18.6 && c.raggioKm > 0));
+  caso("completo/fontiMancanti coerenti con lo stato delle fonti", ds.completo === (ds.fontiMancanti.length === 0) && ds.fontiMancanti.every((id) => ds.fonti[id]?.stato === "non_raggiungibile"), ds.fontiMancanti);
+  const vicenza = ds.comuni["024116"];
+  // municipio di Vicenza (Palazzo Trissino) circa a 45,547; 11,546: il file di terze parti della ricerca lo metteva 15 km più a nord
+  caso("Vicenza: centro entro 2 km dal municipio, non 15 km fuori", vicenza !== undefined && Math.hypot((vicenza.centro[0] - 45.547) * 111, (vicenza.centro[1] - 11.546) * 78) < 2, vicenza?.centro);
+}
+
+console.log(`\n${passati} passati, ${falliti} falliti`);
+process.exit(falliti ? 1 : 0);
