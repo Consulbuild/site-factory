@@ -6,7 +6,7 @@ import { readClientState, patchClientState, writeJson } from "./clients";
 import { getSecret } from "./secrets";
 import { syncInfra, type InfraEsito } from "./integrazioni";
 import { etichettaDemo } from "./portafoglio-shared";
-import { fondamentaAttese, motivoRifiutoFondamenta } from "./fondamenta";
+import { fondamentaAttese, motivoRifiutoFondamenta, registraPubblicazione } from "./fondamenta";
 
 // Pubblicazione su Cloudflare Workers static assets (decisione 2026-07,
 // docs/decisions/2026-07-verifiche-fase-b.md §6): wrangler.jsonc per cliente
@@ -159,6 +159,16 @@ async function deployClientInner(slug: string): Promise<DeployResult> {
   });
 
   const { stdout } = await wrangler(["deploy"], dir);
+  // Le pagine ora online ancorano i lastmod delle build successive. Best effort: il
+  // sito è già pubblicato; un registro illeggibile o non scrivibile lo segnala la
+  // prossima build, che si ferma sullo stesso file.
+  if (build.fondamenta) {
+    try {
+      registraPubblicazione(dir);
+    } catch {
+      /* vedi sopra */
+    }
+  }
   // wrangler stampa l'URL di pubblicazione (workers.dev, o il dominio custom).
   const url =
     stdout.match(/https:\/\/[a-z0-9.-]+\.workers\.dev/i)?.[0] ??

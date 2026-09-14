@@ -112,8 +112,9 @@ di ogni `script[type=application/ld+json]` (riserializzato); del `<body>`, dopo 
 entità decodificate e spazi compressi. Hash `sha256` esadecimale.
 
 Restano fuori: `class`/`style`/`data-*` (preset, palette, kit), `src` di immagini e asset (`/_astro/*.css`
-con hash), `<link>`, canonical e og:, script Umami, `action` del modulo. Cambiare preset, palette, CSS o
-sito Umami non muove `lastmod`; cambiare un testo, un alt, un link o i dati strutturati sì.
+con hash), `<link>`, canonical e og:, script Umami, `action` del modulo, l'anno del copyright del Footer
+(«© 2026» è l'anno della build: nel testo diventa «©»). Cambiare preset, palette, CSS o sito Umami, o
+ribuildare dopo Capodanno, non muove `lastmod`; cambiare un testo, un alt, un link o i dati strutturati sì.
 L'estrazione usa regex sull'HTML prodotto dai nostri componenti, non su HTML arbitrario (commento
 `ponytail:`: se l'output diventasse imprevedibile, si passa a un parser).
 
@@ -133,6 +134,12 @@ Chiave = path della pagina (lo stesso del canonical). `aggiornaLastmod(prec, pag
 `lastmod` conservato; diverso o pagina nuova → `adesso`; pagina sparita → tolta (registro = sitemap).
 Formato W3C Datetime in UTC senza millisecondi. Il registro si scrive **solo** se i controlli di §2.7
 passano; build parziali, demo e servizio spento non lo toccano mai.
+
+**Correzione dalla revisione**: il registro ha anche `pubblicate` (stessa forma di `pagine`), la copia di
+`pagine` fatta da `registraPubblicazione()` in `deploy.ts` dopo un wrangler riuscito di una build con
+fondamenta (best effort: il sito è già online). Hash diverso dall'ultima build ma uguale alla versione
+pubblicata → il `lastmod` pubblicato: una modifica buildata e annullata prima del deploy non sposta la
+sitemap. Tornare a X dopo aver **pubblicato** Y resta un cambio (`adesso`), mai un `lastmod` all'indietro.
 
 ### 2.5 Sitemap e robots
 
@@ -652,6 +659,13 @@ Calibrazione); in più `chiaviVietate(v)` esportata per banco e controlli. Lo sc
 Pubblicazione, `components/pubblicazione-sito.tsx`). Quel file è fuori dal perimetro di §5: oggi gli avvisi
 stanno nello stato (`steps.build.fondamenta.avvisi`) e nel log della build (righe «avviso: …» e conteggio in
 «build ok»), non ancora nella UI. Serve l'ok per allargare il perimetro a quel componente (o rinviarlo a T2b).
+
+**Aperti dalla revisione (fuori perimetro, serve l'ok di Mattia)**: l'interlock nuovo del deploy non ha
+ancora i suoi specchi. `lib/catena.ts` `buildDaRifare` non rifà la build quando
+`steps.build.fondamenta?.dominio` non coincide con `fondamentaAttese()`, quindi la catena si ferma al deploy
+a ogni «Riprendi». `components/build-panel.tsx` `rebuildMotivi` non lo conta, quindi la primaria resta
+«Ripubblica»/«Riprova la pubblicazione», che fallisce sempre. Il componente è client e non può importare
+`lib/fondamenta.ts` (node:fs): `fondamentaAttese` va spostata in `lib/traffico.ts` o calcolata nella page.
 
 ## Calibrazione
 

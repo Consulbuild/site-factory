@@ -458,7 +458,8 @@ function jsonLdGrezzi(html: string): string[] {
  * Ciò che conta per `lastmod`, normalizzato: title, description, JSON-LD riserializzati e,
  * del body senza script/style/svg/commenti, testo con entità decodificate e spazi compressi
  * più `alt` delle immagini e `href` dei link in ordine di documento. Fuori: class, style,
- * data-*, src e asset con hash, canonical/og, script Umami, action del modulo.
+ * data-*, src e asset con hash, canonical/og, script Umami, action del modulo, e l'anno
+ * del copyright («© 2026» del Footer = anno della build): a Capodanno non è una modifica.
  */
 export function testoIndicizzabile(html: string): string {
   const ld = jsonLdGrezzi(html).map((j) => {
@@ -482,7 +483,7 @@ export function testoIndicizzabile(html: string): string {
     `title: ${titolo(html) ?? ""}`,
     `description: ${spazi(metaContent(html, "description") ?? "")}`,
     ...ld.map((j) => `ld: ${j}`),
-    `body: ${spazi(decodifica(body))}`,
+    `body: ${spazi(decodifica(body).replace(/©\s*\d{4}/g, "©"))}`,
   ].join("\n");
 }
 
@@ -494,22 +495,29 @@ export function hashPagina(html: string): string {
 /* lastmod, sitemap, robots, _headers                                  */
 /* ------------------------------------------------------------------ */
 
-export type RegistroLastmod = { pagine: Record<string, { hash: string; lastmod: string }> };
+type VersioniPagine = Record<string, { hash: string; lastmod: string }>;
+/** `pagine` = ultima build cotta (= sitemap nella dist); `pubblicate` = pagine dell'ultimo deploy riuscito. */
+export type RegistroLastmod = { pagine: VersioniPagine; pubblicate?: VersioniPagine };
 
 /** W3C Datetime in UTC senza millisecondi. */
 const w3c = (d: Date) => d.toISOString().replace(/\.\d{3}Z$/, "Z");
 
 /**
- * Hash uguale → `lastmod` conservato; diverso o pagina nuova → `adesso`; pagina sparita →
- * tolta (registro = sitemap). ponytail: `lastmod` = prima BUILD con quel contenuto, non il
- * deploy; se servisse allinearlo alla pubblicazione, lo fa T2a che tocca già il deploy.
+ * Hash uguale all'ultima build → `lastmod` conservato; altrimenti uguale alla versione
+ * pubblicata → il suo `lastmod` (una modifica annullata prima del deploy non ha mai
+ * raggiunto Google); diverso da entrambe o pagina nuova → `adesso`, e il path va in
+ * `cambiate`. Pagina sparita → tolta (registro = sitemap); `pubblicate` passa intatto.
+ * ponytail: `lastmod` = prima BUILD con quel contenuto, non il deploy; se servisse
+ * allinearlo alla pubblicazione, lo fa T2a che tocca già il deploy.
  */
 export function aggiornaLastmod(prec: RegistroLastmod | null, pagine: { path: string; hash: string }[], adesso: Date): { registro: RegistroLastmod; cambiate: string[] } {
-  const registro: RegistroLastmod = { pagine: {} };
+  const registro: RegistroLastmod = { pagine: {}, ...(prec?.pubblicate ? { pubblicate: prec.pubblicate } : {}) };
   const cambiate: string[] = [];
   for (const p of [...pagine].sort((a, b) => cmp(a.path, b.path))) {
     const vecchia = prec?.pagine[p.path];
+    const online = prec?.pubblicate?.[p.path];
     if (vecchia && vecchia.hash === p.hash) registro.pagine[p.path] = vecchia;
+    else if (online && online.hash === p.hash) registro.pagine[p.path] = online;
     else {
       registro.pagine[p.path] = { hash: p.hash, lastmod: w3c(adesso) };
       cambiate.push(p.path);
@@ -643,13 +651,22 @@ function leggiRegistro(file: string): RegistroLastmod | null {
   } catch (e) {
     throw new Error(`traffico/lastmod.json illeggibile (${e instanceof Error ? e.message : String(e)}): correggilo, oppure cancellalo (tutti i lastmod ripartono da oggi).`);
   }
-  const pagine = rec(r).pagine;
-  const valido =
-    !!pagine &&
-    typeof pagine === "object" &&
-    Object.values(pagine).every((p) => typeof rec(p).hash === "string" && typeof rec(p).lastmod === "string");
-  if (!valido) throw new Error("traffico/lastmod.json fuori formato ({ pagine: { \"/\": { hash, lastmod } } }): correggilo, oppure cancellalo (tutti i lastmod ripartono da oggi).");
+  const versioni = (v: unknown) =>
+    !!v && typeof v === "object" && Object.values(v).every((p) => typeof rec(p).hash === "string" && typeof rec(p).lastmod === "string");
+  const valido = versioni(rec(r).pagine) && (rec(r).pubblicate === undefined || versioni(rec(r).pubblicate));
+  if (!valido) throw new Error("traffico/lastmod.json fuori formato ({ pagine: { \"/\": { hash, lastmod } }, pubblicate? }): correggilo, oppure cancellalo (tutti i lastmod ripartono da oggi).");
   return r as RegistroLastmod;
+}
+
+/**
+ * Dopo un deploy riuscito di una build con fondamenta (lib/deploy.ts): le pagine della
+ * dist appena pubblicata (= `pagine` del registro, scritte dalla sua cottura) diventano
+ * `pubblicate`, l'àncora di aggiornaLastmod. Registro assente → nulla da ancorare.
+ */
+export function registraPubblicazione(dirCliente: string): void {
+  const file = path.join(dirCliente, "traffico", "lastmod.json");
+  const r = leggiRegistro(file);
+  if (r) scriviAtomico(file, JSON.stringify({ pagine: r.pagine, pubblicate: r.pagine }, null, 2) + "\n");
 }
 
 export type EsitoCottura = { ok: true; urls: number; cambiate: string[]; avvisi: string[] } | { ok: false; errore: string };

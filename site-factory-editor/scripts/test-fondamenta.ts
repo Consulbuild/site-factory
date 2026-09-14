@@ -26,6 +26,7 @@ import {
   elencoPagine,
   chiaveIndexNow,
   cuociFondamenta,
+  registraPubblicazione,
   type Comune,
   type InputDatiStrutturati,
 } from "../lib/fondamenta.ts";
@@ -294,6 +295,8 @@ try {
   caso("JSON-LD con spazi diversi → stesso hash", hashPagina(pagina({ ld: '{ "@context": "https://schema.org",  "@type":"GeneralContractor","@id":"https://edilprova.it/#azienda","name":"Edil Prova","url":"https://edilprova.it/" }' })) === hashPagina(base));
   caso("JSON-LD con escape \\u0026 del renderer e con & → stesso hash", hashPagina(pagina({ ld: '{"name":"A\\u0026B"}' })) === hashPagina(pagina({ ld: '{"name":"A&B"}' })));
   caso("&amp; e & → stesso testo", testoIndicizzabile(pagina({ desc: "A &amp; B" })) === testoIndicizzabile(pagina({ desc: "A &#38; B" })));
+  const footer = (anno: string) => pagina({ body: `<h1>Ristrutturazioni</h1><footer><p class="t-caption text-muted">© ${anno} EDIL PROVA. Tutti i diritti riservati.</p></footer>` });
+  caso("anno del copyright del Footer (© 2026 / © 2027) → stesso hash", hashPagina(footer("2026")) === hashPagina(footer("2027")), [testoIndicizzabile(footer("2026")), testoIndicizzabile(footer("2027"))]);
 
   /* ---------------------------------------------------------------- */
   console.log("\naggiornaLastmod:");
@@ -309,7 +312,17 @@ try {
   );
   const a25b = aggiornaLastmod(a25.registro, [{ path: "/", hash: "h1" }], T2);
   caso("pagina sparita → tolta dal registro", Object.keys(a25b.registro.pagine).join() === "/", a25b);
-
+  const pubX = { pagine: { "/": { hash: "X", lastmod: "2026-09-01T08:00:00Z" } }, pubblicate: { "/": { hash: "X", lastmod: "2026-09-01T08:00:00Z" } } };
+  const bY = aggiornaLastmod(pubX, [{ path: "/", hash: "Y" }], T1);
+  const bX = aggiornaLastmod(bY.registro, [{ path: "/", hash: "X" }], T2);
+  caso(
+    "modifica annullata prima del deploy (X online, build Y, ritorno a X) → lastmod della versione online, pubblicate intatto",
+    bY.cambiate.join() === "/" && bX.cambiate.length === 0 && bX.registro.pagine["/"].lastmod === "2026-09-01T08:00:00Z" && JSON.stringify(bX.registro.pubblicate) === JSON.stringify(pubX.pubblicate),
+    [bY, bX],
+  );
+  const pubY = { pagine: bY.registro.pagine, pubblicate: bY.registro.pagine }; // Y pubblicata
+  const bX2 = aggiornaLastmod(pubY, [{ path: "/", hash: "X" }], T2);
+  caso("ritorno a X dopo aver pubblicato Y → adesso (mai un lastmod all'indietro)", bX2.cambiate.join() === "/" && bX2.registro.pagine["/"].lastmod === "2026-09-20T10:00:00Z", bX2);
   console.log("\nsitemapXml / robotsTxt / _headers:");
   const sm = sitemapXml([{ loc: "https://a.it/z/?a=1&b=2", lastmod: "2026-09-14T09:12:31Z" }, { loc: "https://a.it/", lastmod: "2026-09-14T09:12:31Z" }]);
   caso(
@@ -443,6 +456,30 @@ try {
   fs.writeFileSync(path.join(cliente, "traffico", "lastmod.json"), "{ rotto");
   const rReg = cuociFondamenta(dist, cliente, "edilprova.it", T2);
   caso("registro lastmod illeggibile → errore leggibile, dist non toccata", !rReg.ok && rReg.errore.includes("lastmod.json") && leggi("sitemap.xml") === s0.sitemap, rReg);
+
+  // Deploy della versione con il title di diversi (lastmod T2), poi build con un altro testo e ritorno.
+  const fileRegistro = path.join(cliente, "traffico", "lastmod.json");
+  const T3 = new Date("2026-09-25T10:00:00.000Z");
+  fs.writeFileSync(fileRegistro, prima.registro);
+  scrivi("index.html", diversi.title);
+  registraPubblicazione(cliente);
+  const pubblicato = JSON.parse(fs.readFileSync(fileRegistro, "utf8"));
+  scrivi("index.html", base);
+  const cMod = cuociFondamenta(dist, cliente, "edilprova.it", T3);
+  scrivi("index.html", diversi.title);
+  const cTorna = cuociFondamenta(dist, cliente, "edilprova.it", T3);
+  const registroTorna = fs.readFileSync(fileRegistro, "utf8");
+  const cStabile = cuociFondamenta(dist, cliente, "edilprova.it", T3);
+  caso(
+    "deploy registrato, modifica non pubblicata e ritorno → sitemap col lastmod online, registro stabile",
+    JSON.stringify(pubblicato.pubblicate) === JSON.stringify(pubblicato.pagine) &&
+      cMod.ok && cMod.cambiate.join() === "/" &&
+      cTorna.ok && cTorna.cambiate.length === 0 &&
+      leggi("sitemap.xml").includes("<lastmod>2026-09-20T10:00:00Z</lastmod>") &&
+      JSON.stringify(JSON.parse(registroTorna).pubblicate) === JSON.stringify(pubblicato.pubblicate) &&
+      cStabile.ok && fs.readFileSync(fileRegistro, "utf8") === registroTorna,
+    [pubblicato, cMod, cTorna, registroTorna],
+  );
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
