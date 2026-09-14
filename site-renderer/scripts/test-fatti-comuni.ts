@@ -11,6 +11,8 @@ import {
   abbinaDpr412,
   areaCentroide,
   confrontaDataset,
+  correggiSigleOcr,
+  distanzaNomi,
   daWindows1252,
   leggiCsv,
   leggiDbf,
@@ -70,6 +72,7 @@ const vicino = (a: number, b: number, tolleranza: number) => Math.abs(a - b) <= 
 const TESTA_VARIAZIONI =
   "Anno;Tipo variazione;Codice Regione;Codice Unità territoriale sovracomunale;Codice Comune formato alfanumerico;Denominazione Comune;Codice Regione associato alla variazione;Codice Unità territoriale sovracomunale associato alla variazione;Codice del Comune associato alla variazione o nuovo codice Istat del Comune ;Denominazione Comune associata alla variazione o nuova denominazione;Provvedimento e Documento;Contenuto del provvedimento;Data decorrenza validità amministrativa;Flag_note";
 const RIGHE_VARIAZIONI = [
+  `1991;CD;02;007;007064;Saint-Rhémy;02;007;007064;Saint-Rhémy-en-Bosses;"Legge Regionale 30 luglio 1991, n.27; B.U.R. n.35 del 6 agosto 1991";Assunta la nuova denominazione di Saint-Rhémy-en-Bosses;;`,
   `2009;AP;03;015;015149;Monza;03;108;108033;;"Legge 11 giugno 2004, n. 146; G.U. n. 138 del 15 giugno 2004";Comune della Provincia di Milano andato a costituire la nuova Provincia di Monza e della Brianza;30/06/2009;`,
   `2010;CE;03;016;016024;Bergamo;03;016;016150;Orio al Serio;Legge Regionale 25 gennaio 2010, n. 2: B.U.R. n. 4 del 29 gennaio 2010, 1° S.O.;Modificata la circoscrizione territoriale a seguito del distacco di una zona di territorio aggregata al Comune di Orio al Serio;13/02/2010;`,
   `2010;AQ;03;016;016150;Orio al Serio;03;016;016024;Bergamo;Legge Regionale 25 gennaio 2010, n. 2: B.U.R. n. 4 del 29 gennaio 2010, 1° S.O.;Modificata la circoscrizione territoriale a seguito dell'aggregazione di una zona di territorio staccata dal Comune di Bergamo;13/02/2010;`,
@@ -121,6 +124,10 @@ BG E 2386 348 CASTRO
 LE C 1161 98 CASTRO
 MI E 2404 162 MONZA
 VI E 2380 44 SOVIZZO
+AO F 4511 1519 SAINT RHEMY
+VI E 2429 147 THIENNE
+BN C 1170 55 TELESE
+BG E 2383 133 CORTENOVA
 SS D 1500 100 CASTRO
 Note: all'interno di ciascuna provincia i comuni sono elencati
 </pre></span>`;
@@ -245,7 +252,7 @@ const R2011 = riferimento("2011-10-09");
 const R2025 = riferimento("2025-01-01");
 const somma = (v: number[]) => v.reduce((a, b) => a + b, 0);
 {
-  const grana = variazioni.find((v) => v.tipo === "CD");
+  const grana = variazioni.find((v) => v.tipo === "CD" && v.codice === "005056");
   caso(
     "CSV variazioni: windows-1252, CRLF, campo su due righe (Grana → Grana Monferrato)",
     variazioni.length === RIGHE_VARIAZIONI.length && grana?.nome === "Grana" && grana.nomeAssociato === "Grana Monferrato" && grana.chiave === "2023-01-17",
@@ -312,7 +319,7 @@ const somma = (v: number[]) => v.reduce((a, b) => a + b, 0);
 console.log("\nDPR 412/1993 allegato A:");
 {
   const righe = leggiDpr412(HTML_DPR412);
-  caso("righe tabellari estratte, intestazione e note ignorate", righe.length === 10, righe.map((r) => r.testo));
+  caso("righe tabellari estratte, intestazione e note ignorate", righe.length === 14, righe.map((r) => r.testo));
   const rotella = righe.find((r) => r.nome === "ROTELLA");
   const prato = righe.find((r) => r.nome === "PRATOVECCHIO");
   caso("zeri OCR: 21O2 → 2102, 42O → 420", rotella?.gradiGiorno === 2102 && rotella.zeriOcr && prato?.altitudine === 420, [rotella, prato]);
@@ -327,18 +334,32 @@ console.log("\nDPR 412/1993 allegato A:");
       ["075096", "Castro", "LE"],
       ["108033", "Monza", "MB"],
       ["024128", "Sovizzo", "VI"],
+      ["007064", "Saint-Rhémy-en-Bosses", "AO"],
+      ["024105", "Thiene", "VI"],
+      ["062074", "Telese Terme", "BN"],
+      ["016083", "Cortenuova", "BG"],
+      ["097025", "Cortenova", "LC"],
     ].map(([codice, nome, sigla]) => [codice!, { codice: codice!, nome: nome!, sigla: sigla! }]),
   );
-  const sigle = new Map([["015", ["MI"]], ["016", ["BG"]], ["075", ["LE"]], ["108", ["MB"]], ["024", ["VI"]]]);
-  const { clima, scarti } = abbinaDpr412(righe, anagrafica, territorio, sigle);
+  const sigle = new Map([["015", ["MI"]], ["016", ["BG"]], ["075", ["LE"]], ["108", ["MB"]], ["024", ["VI"]], ["007", ["AO"]], ["062", ["BN"]], ["097", ["LC"]]]);
+  const { clima, scarti, approssimati } = abbinaDpr412(righe, anagrafica, territorio, sigle);
   caso("Cologno Monzese abbinato: E, 2.404 GG, 131 m", JSON.stringify(clima.get("015081")) === '["E",2404,131]', clima.get("015081"));
   caso("Cassina de' Pecchi abbinato senza badare ad apostrofi", JSON.stringify(clima.get("015060")) === '["E",2404,130]');
   caso("coerenza: «AT F 2698 257 CUNICO» → scarto zona_incoerente", scarti.zona_incoerente?.join() === "AT F 2698 257 CUNICO", scarti);
   caso("omonimi risolti con la sigla: Castro BG e Castro LE", clima.get("016065")?.[1] === 2386 && clima.get("075096")?.[1] === 1161, [clima.get("016065"), clima.get("075096")]);
-  caso("omonimo senza sigla utile (SS CASTRO) → non emesso", scarti.nome_ambiguo?.join() === "SS D 1500 100 CASTRO", scarti);
+  caso("omonimo senza sigla utile (SS CASTRO) → non emesso", scarti.sigla_diversa?.join() === "SS D 1500 100 CASTRO" && ![...clima.values()].some((v) => v[1] === 1500), scarti);
   caso("provincia cambiata: «MI … MONZA» → Monza (MB) via il codice storico 015149", JSON.stringify(clima.get("108033")) === '["E",2404,162]', clima.get("108033"));
   caso("comune nato da fusione dopo il 1993 (Sovizzo 024128): nessuna zona benché il nome coincida", !clima.has("024128") && scarti.comune_nato_dopo_1993?.[0]?.startsWith("024128") === true, scarti);
+  caso("zeri OCR nel nome: «PATERN0'» → PATERNO'", leggiDpr412("CT C 1087 225 PATERN0'")[0]?.nome === "PATERNO'");
+  const ocr = correggiSigleOcr(leggiDpr412("MT D 1837 515 GRASSANO\nMT D 1787 481 GROTTOLE\nMR D 1885 548 IRSINA\nMT D 1418 200 MATERA\nFO E 2789 492 BAGNO DI ROMAGNA"));
+  caso("sigla OCR isolata tra righe della stessa provincia: MR → MT; FO in coda non si tocca", ocr.righe[2]?.sigla === "MT" && ocr.righe[4]?.sigla === "FO" && ocr.correzioni.length === 1, ocr.correzioni);
+  caso("distanza fra nomi: trasposizione = 1, due modifiche = 2", distanzaNomi("PIORINO", "POIRINO") === 1 && distanzaNomi("THIENNE", "THIENE") === 1 && distanzaNomi("ISOLA DI BARI", "MOLA DI BARI") === 2);
   caso("riga senza un comune di quel nome nell'anagrafica (Rotella) → non_trovato",scarti.non_trovato?.includes("AP E 21O2 395 ROTELLA") === true, scarti.non_trovato);
+  caso("nome già cambiato prima del 1993 (CD 1991): «SAINT RHEMY» → Saint-Rhémy-en-Bosses", clima.get("007064")?.[1] === 4511, clima.get("007064"));
+  caso("una lettera di differenza, stessa provincia: «THIENNE» → Thiene, dichiarato", clima.get("024105")?.[1] === 2429 && approssimati.una_lettera?.some((v) => v.startsWith("024105 Thiene ← ")) === true, approssimati);
+  caso("inizio del nome a parola intera: «TELESE» → Telese Terme, dichiarato", clima.get("062074")?.[1] === 1170 && approssimati.inizio_del_nome?.[0]?.startsWith("062074") === true, approssimati);
+  caso("nome esistente solo in un'altra provincia: «BG … CORTENOVA» → Cortenuova (BG), non Cortenova (LC)", clima.get("016083")?.[1] === 2383 && !clima.has("097025"), [clima.get("016083"), clima.get("097025")]);
+  caso("il secondo passaggio non tocca comuni già abbinati esattamente né nati dopo il 1993", !approssimati.una_lettera?.some((v) => v.startsWith("015081") || v.startsWith("024128")));
 }
 
 /* ---------- POSAS e sismica ---------- */
@@ -430,7 +451,9 @@ console.log("\nDataset committato:");
   caso("omonimo: «Castro» → 2 risultati, con sigla «le» → 1", cercaComune("Castro", undefined, ds).length === 2 && cercaComune("Castro", "le", ds).length === 1);
   caso("bilingue: «Bozen» → Bolzano/Bozen", cercaComune("Bozen", undefined, ds)[0]?.codice === "021008");
   const d = distanzaKm("015081", "108033", ds);
-  caso("distanza Cologno → Monza: 6 km in linea d'aria (5,8 arrotondato), metodo dichiarato", d?.km === 6 && d.metodo === "linea_aria_centroidi" && d.citazione.includes("linea d'aria") && d.citazione.includes("non su strada"), d);
+  caso("distanza Cologno → Monza: 6 km in linea d'aria (5,8 arrotondato), metodo dichiarato, citabile", d?.km === 6 && d.citabile && d.metodo === "linea_aria_centroidi" && d.citazione.includes("linea d'aria") && d.citazione.includes("non su strada"), d);
+  const confinanti = distanzaKm("058091", "058118", ds);
+  caso("distanza sotto la somma dei raggi (Roma → Ciampino) → non citabile", confinanti !== null && !confinanti.citabile, [confinanti, ds.comuni["058091"]?.raggioKm, ds.comuni["058118"]?.raggioKm]);
   caso("distanza con codice ignoto → null", distanzaKm("015081", "999999", ds) === null);
   const entro = comuniEntroKm("015081", 6, ds);
   caso(

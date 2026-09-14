@@ -924,17 +924,52 @@ export function leggiDpr412(html: string): RigaDpr412[] {
     if (!m) continue;
     const gg = m[3]!;
     const alt = m[4]!;
+    const nome = m[5]!;
     out.push({
       sigla: m[1]!,
       zona: m[2]!,
       gradiGiorno: Number(gg.replaceAll("O", "0")),
       altitudine: Number(alt.replaceAll("O", "0")),
-      nome: m[5]!,
+      // l'errore opposto nei nomi: «PATERN0'», «BRUZZANO ZEFFIRI0» (nessun nome di comune contiene cifre)
+      nome: nome.replaceAll("0", "O"),
       testo: u,
-      zeriOcr: gg.includes("O") || alt.includes("O"),
+      zeriOcr: gg.includes("O") || alt.includes("O") || nome.includes("0"),
     });
   }
   return out;
+}
+
+/**
+ * Sigla resa male dall'OCR: l'allegato è ordinato per provincia, quindi una sigla che compare una
+ * sola volta in tutta la tabella, tra due righe della stessa provincia, prende quella dei vicini
+ * («MR D 1885 548 IRSINA» tra righe MT). Restituisce le righe corrette e l'elenco delle correzioni.
+ */
+export function correggiSigleOcr(righe: RigaDpr412[]): { righe: RigaDpr412[]; correzioni: string[] } {
+  const conteggi = new Map<string, number>();
+  for (const r of righe) conteggi.set(r.sigla, (conteggi.get(r.sigla) ?? 0) + 1);
+  const correzioni: string[] = [];
+  const out = righe.map((r, i) => {
+    const prima = righe[i - 1]?.sigla;
+    if (conteggi.get(r.sigla) !== 1 || !prima || prima !== righe[i + 1]?.sigla) return r;
+    correzioni.push(`${r.testo} → ${prima}`);
+    return { ...r, sigla: prima };
+  });
+  return { righe: out, correzioni };
+}
+
+/** Distanza di modifica con trasposizione di caratteri adiacenti (optimal string alignment). */
+export function distanzaNomi(a: string, b: string): number {
+  if (Math.abs(a.length - b.length) > 2) return Math.abs(a.length - b.length);
+  const d: number[][] = Array.from({ length: a.length + 1 }, (_, i) => Array.from({ length: b.length + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)));
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const costo = a[i - 1] === b[j - 1] ? 0 : 1;
+      let v = Math.min(d[i - 1]![j]! + 1, d[i]![j - 1]! + 1, d[i - 1]![j - 1]! + costo);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, d[i - 2]![j - 2]! + 1);
+      d[i]![j] = v;
+    }
+  }
+  return d[a.length]![b.length]!;
 }
 
 /** Soglie dell'art. 2 c. 1 DPR 412/1993. */
@@ -958,26 +993,36 @@ export interface ComuneAnagrafica {
 }
 
 /**
- * Abbina le righe dell'allegato A ai comuni 2026 per nome (attuale, parti bilingui, nomi
- * precedenti dopo il 1993) e sigla (attuale o storica). Regole §3.4.4-5: zona incoerente,
- * omonimi non risolti, comuni nati da fusione dopo il 14/10/1993 → nessun fatto.
+ * Abbina le righe dell'allegato A ai comuni 2026 (regole §3.4.4-5, tarate in fase 3).
+ *
+ * 1. Nome esatto (normalizzato): nome attuale, parti dei nomi bilingui, nome nell'altra lingua,
+ *    nomi precedenti da tutte le righe CD dal 1991 (l'allegato usa anche nomi già cambiati,
+ *    es. «SAINT RHEMY»), con la sigla attuale o storica del comune come vincolo.
+ * 2. Solo per le righe rimaste senza comune (o col nome presente solo in altre province), verso
+ *    comuni rimasti senza riga ed esistenti nel 1993, stessa sigla,
+ *    candidato unico: (a) il nome dell'allegato è l'inizio del nome attuale fino a una parola
+ *    intera («VENARIA» → Venaria Reale); (b) una sola lettera diversa, mancante, in più o
+ *    scambiata con la vicina («THIENNE» → Thiene, «PIORINO» → Poirino). Elencati in `approssimati`.
+ * Mai: zona incoerente con i gradi giorno, omonimi non risolti, comuni nati da fusione dopo il
+ * 14/10/1993 (art. 2 c. 3: li classifica il Sindaco), due righe sullo stesso comune.
  */
 export function abbinaDpr412(
   righe: RigaDpr412[],
   anagrafica: Map<string, ComuneAnagrafica>,
   territorio: Territorio,
   siglePerProvincia: Map<string, string[]>,
-): { clima: Map<string, [string, number, number]>; scarti: Record<string, string[]> } {
+): { clima: Map<string, [string, number, number]>; scarti: Record<string, string[]>; approssimati: Record<string, string[]> } {
   const R = riferimento(FONTI["dpr412-allegato-a"].riferimentoTerritoriale);
   const scarti: Record<string, string[]> = {};
+  const approssimati: Record<string, string[]> = {};
   const scarta = (motivo: string, voce: string) => (scarti[motivo] ??= []).push(voce);
+  const nomiDi = new Map<string, Set<string>>();
   const indice = new Map<string, Set<string>>();
   const indicizza = (nome: string, codice: string) => {
     const k = normalizzaNome(nome);
     if (!k) return;
-    const s = indice.get(k);
-    if (s) s.add(codice);
-    else indice.set(k, new Set([codice]));
+    (indice.get(k) ?? indice.set(k, new Set()).get(k)!).add(codice);
+    (nomiDi.get(codice) ?? nomiDi.set(codice, new Set()).get(codice)!).add(k);
   };
   for (const c of anagrafica.values()) {
     indicizza(c.nome, c.codice);
@@ -985,7 +1030,6 @@ export function abbinaDpr412(
     if (c.nomeAltraLingua) indicizza(c.nomeAltraLingua, c.codice);
   }
   for (const v of territorio.ridenominazioni) {
-    if (!successiva(v, R)) continue;
     const k = territorio.risolvi(v.codice, v, true).codice;
     if (anagrafica.has(k)) indicizza(v.nome, k);
   }
@@ -998,6 +1042,9 @@ export function abbinaDpr412(
     return s;
   };
   const assegnate = new Map<string, RigaDpr412[]>();
+  const assegna = (codice: string, r: RigaDpr412) => (assegnate.get(codice) ?? assegnate.set(codice, []).get(codice)!).push(r);
+  const nonTrovate: RigaDpr412[] = [];
+  const conNomeAltrove = new Set<RigaDpr412>();
   for (const r of righe) {
     if (zonaDaGradiGiorno(r.gradiGiorno) !== r.zona) {
       scarta("zona_incoerente", r.testo);
@@ -1009,12 +1056,18 @@ export function abbinaDpr412(
     }
     const candidati = [...(indice.get(normalizzaNome(r.nome)) ?? [])];
     if (!candidati.length) {
-      scarta("non_trovato", r.testo);
+      nonTrovate.push(r);
       continue;
     }
     const conSigla = candidati.filter((c) => sigleDi(c).has(r.sigla));
-    if (conSigla.length !== 1) {
-      scarta(conSigla.length === 0 && candidati.length === 1 ? "sigla_diversa" : "nome_ambiguo", r.testo);
+    if (conSigla.length > 1) {
+      scarta("nome_ambiguo", r.testo);
+      continue;
+    }
+    if (conSigla.length === 0) {
+      // il nome esiste solo in altre province («BG … CORTENOVA» è Cortenuova, non Cortenova LC)
+      conNomeAltrove.add(r);
+      nonTrovate.push(r);
       continue;
     }
     const codice = conSigla[0]!;
@@ -1022,9 +1075,29 @@ export function abbinaDpr412(
       scarta("comune_nato_dopo_1993", `${codice} ${r.testo}`);
       continue;
     }
-    const l = assegnate.get(codice);
-    if (l) l.push(r);
-    else assegnate.set(codice, [r]);
+    assegna(codice, r);
+  }
+  // secondo passaggio: solo comuni rimasti liberi, esistenti nel 1993, della stessa provincia
+  const liberi = [...anagrafica.keys()].filter((c) => !assegnate.has(c) && !territorio.natoDopo(c, R));
+  for (const r of nonTrovate) {
+    const nome = normalizzaNome(r.nome);
+    const vicini = liberi.filter((c) => sigleDi(c).has(r.sigla));
+    const perRegola: [string, (k: string) => boolean][] = [
+      ["inizio_del_nome", (k) => k.startsWith(`${nome} `)],
+      ["una_lettera", (k) => distanzaNomi(nome, k) === 1],
+    ];
+    let trovato = false;
+    for (const [regola, prova] of perRegola) {
+      const c = vicini.filter((codice) => [...(nomiDi.get(codice) ?? [])].some(prova));
+      if (c.length === 1) {
+        assegna(c[0]!, r);
+        (approssimati[regola] ??= []).push(`${c[0]} ${anagrafica.get(c[0]!)!.nome} ← ${r.testo}`);
+        trovato = true;
+        break;
+      }
+      if (c.length > 1) break;
+    }
+    if (!trovato) scarta(conNomeAltrove.has(r) ? "sigla_diversa" : "non_trovato", r.testo);
   }
   const clima = new Map<string, [string, number, number]>();
   for (const [codice, l] of [...assegnate].sort(([a], [b]) => (a < b ? -1 : 1))) {
@@ -1034,7 +1107,10 @@ export function abbinaDpr412(
     }
     clima.set(codice, [l[0]!.zona, l[0]!.gradiGiorno, l[0]!.altitudine]);
   }
-  return { clima, scarti };
+  for (const [regola, voci] of Object.entries(approssimati)) {
+    approssimati[regola] = voci.filter((v) => clima.has(v.slice(0, 6)));
+  }
+  return { clima, scarti, approssimati };
 }
 
 /* ====================================================================================== */
@@ -1296,7 +1372,8 @@ export function costruisciDataset(cache: string, manifest: Manifest, generatoIl:
   }
 
   const scarti: Record<string, Record<string, string[]>> = {};
-  const unisciScarti = (campo: string, s: Record<string, string[]>) => {
+  const abbinamentiApprossimati: Record<string, Record<string, string[]>> = {};
+  const unisciScarti =(campo: string, s: Record<string, string[]>) => {
     for (const [motivo, voci] of Object.entries(s)) ((scarti[campo] ??= {})[motivo] ??= []).push(...voci);
   };
   const applica = <T>(campo: CampoAdditivo | "sismica", id: IdFonte, letti: ValoriFonte<T>, opzioni: { additivo: boolean; somma?: (v: T[]) => T }) => {
@@ -1326,13 +1403,16 @@ export function costruisciDataset(cache: string, manifest: Manifest, generatoIl:
 
   /* ---- zona climatica ---- */
   if (presente("dpr412-allegato-a")) {
-    const righe = FONTI["dpr412-allegato-a"].file.flatMap((_, i) => leggiDpr412(daUtf8(readFileSync(percorso("dpr412-allegato-a", i)), "allegato A")));
-    righePerFonte["dpr412-allegato-a"] = righe.length;
-    if (righe.length < 8000) errori.push(`allegato A: solo ${righe.length} righe estratte (attese oltre 8.000): parser rotto o pagina cambiata`);
-    const { clima, scarti: s } = abbinaDpr412(righe, anagrafica, territorio, siglePerProvincia);
+    const lette = FONTI["dpr412-allegato-a"].file.flatMap((_, i) => leggiDpr412(daUtf8(readFileSync(percorso("dpr412-allegato-a", i)), "allegato A")));
+    righePerFonte["dpr412-allegato-a"] = lette.length;
+    if (lette.length < 8000) errori.push(`allegato A: solo ${lette.length} righe estratte (attese oltre 8.000): parser rotto o pagina cambiata`);
+    const { righe, correzioni } = correggiSigleOcr(lette);
+    const { clima, scarti: s, approssimati: a } = abbinaDpr412(righe, anagrafica, territorio, siglePerProvincia);
     unisciScarti("clima", s);
+    abbinamentiApprossimati.clima = { ...(correzioni.length ? { sigla_ocr: correzioni } : {}), ...a };
     for (const [k, v] of clima) if (comuni[k]) comuni[k]!.clima = v;
-    note.push(`allegato A: ${righe.length} righe (${righe.filter((r) => r.zeriOcr).length} con zeri OCR «O»), ${clima.size} comuni abbinati`);
+    const nApprossimati = Object.values(a).reduce((n, l) => n + l.length, 0);
+    note.push(`allegato A: ${righe.length} righe (${righe.filter((r) => r.zeriOcr).length} con zeri OCR), ${correzioni.length} sigle corrette, ${clima.size} comuni abbinati di cui ${nApprossimati} per nome simile`);
   }
 
   /* ---- alias ---- */
@@ -1373,6 +1453,7 @@ export function costruisciDataset(cache: string, manifest: Manifest, generatoIl:
     fatti: FATTI,
     copertura,
     scarti,
+    abbinamentiApprossimati,
     alias,
     comuni: ordinati,
   };
@@ -1520,7 +1601,7 @@ function mostra(argomenti: string[], json: boolean, da: string | undefined): num
   console.log(`${comune.nome} (${comune.sigla}) — Istat ${comune.codice}${comune.alias ? ` (richiesto ${comune.alias.da}: ${comune.alias.motivo} dal ${comune.alias.dal})` : ""}`);
   if (avviso) console.log(`! ${avviso}`);
   for (const f of frasi) console.log(`- ${f.testo}\n    ${f.citazione}\n    ${f.url}`);
-  if (distanza) console.log(`- ${distanza.km} km da ${da} (${distanza.citazione})`);
+  if (distanza) console.log(`- ${distanza.km} km da ${da}${distanza.citabile ? "" : " (NON citabile: sotto la somma dei raggi dei due comuni)"} (${distanza.citazione})`);
   return 0;
 }
 

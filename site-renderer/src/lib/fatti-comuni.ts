@@ -91,6 +91,8 @@ export interface DatasetFattiComuni {
   fatti: Record<string, string>;
   copertura: Record<string, number>;
   scarti: Record<string, Record<string, string[]>>;
+  /** Abbinamenti non letterali, da poter rivedere a mano (campo → regola → voci). */
+  abbinamentiApprossimati: Record<string, Record<string, string[]>>;
   alias: Record<string, { a: string; motivo: MotivoAlias; dal: string }>;
   comuni: Record<string, RecordComune>;
 }
@@ -351,12 +353,22 @@ function haversineKm([lat1, lon1]: [number, number], [lat2, lon2]: [number, numb
 
 export const CITAZIONE_DISTANZA = "distanza in linea d'aria tra i centri geografici dei comuni, non su strada; elaborazione su dati Istat, Confini delle unità amministrative a fini statistici al 1° gennaio 2026";
 
-/** Linea d'aria tra i centri dei due comuni, km interi; null se un codice è ignoto. */
-export function distanzaKm(da: string | number, a: string | number, ds: DatasetFattiComuni = caricaFattiComuni()): { km: number; metodo: "linea_aria_centroidi"; citazione: string } | null {
+/**
+ * Linea d'aria tra i centri dei due comuni, km interi; null se un codice è ignoto.
+ * `citabile` è false quando la distanza è minore della somma dei due raggi di pari area: lì
+ * l'incertezza del «centro» (fino a circa metà raggio dal municipio) pesa più di metà del valore
+ * e conviene dire «comune vicino» invece di un numero (calibrazione T6a: 2,7% delle coppie entro 30 km).
+ */
+export function distanzaKm(
+  da: string | number,
+  a: string | number,
+  ds: DatasetFattiComuni = caricaFattiComuni(),
+): { km: number; citabile: boolean; metodo: "linea_aria_centroidi"; citazione: string } | null {
   const x = risolvi(da, ds);
   const y = risolvi(a, ds);
   if (!x || !y) return null;
-  return { km: Math.round(haversineKm(x.rec.centro, y.rec.centro)), metodo: "linea_aria_centroidi", citazione: CITAZIONE_DISTANZA };
+  const d = haversineKm(x.rec.centro, y.rec.centro);
+  return { km: Math.round(d), citabile: d >= x.rec.raggioKm + y.rec.raggioKm, metodo: "linea_aria_centroidi", citazione: CITAZIONE_DISTANZA };
 }
 
 /** Comuni entro `km` (linea d'aria, km interi) dalla sede, sede compresa, ordinati per distanza. */

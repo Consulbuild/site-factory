@@ -1,6 +1,7 @@
 # Piano T6a — Fatti comunali da open data
 
-Stato: **fase 1 (piano) — in revisione dall'orchestratore**, 2026-09-14. Fonti: `docs/traffico/README.md`
+Stato: **fasi 2-3 (sviluppo e calibrazione) eseguite il 2026-09-14, dataset dichiarato incompleto** finché
+`esploradati.istat.it` non risponde (edifici 2011 e famiglie 2021, vedi «Calibrazione»). Piano del 2026-09-14. Fonti: `docs/traffico/README.md`
 (§1-§5), `docs/traffico/brief-T6a.md`, `~/knowledge/seo/ricerche-2026-09-14/w2-3-opendata.md` e i tre script di
 prova, `docs/ricerca-traffico-2026-09.md` §6.3, `site-intake/data-src/comuni.json` e `scripts/build-comuni.mjs`,
 i due `package.json`, `site-factory-editor/scripts/test-portafoglio.ts`. Verifiche di sola lettura fatte oggi
@@ -433,8 +434,93 @@ Uscita come `test-portafoglio.ts`: `✓/✗`, conteggio, `process.exit(1)` se qu
 
 ## Calibrazione
 
-*(fase 3: normalizzazione OCR del DPR 412 e scarti; regole su fusi e scambi; soglie di plausibilità dei
-centroidi e distanza minima citabile; conferma della linea d'aria)*
+Fase 3, 2026-09-14, sulle fonti reali scaricate oggi (sha256 nel manifest della cache e nel dataset).
+Decisioni dell'orchestratore applicate (`decisioni-piani.md` §T6a): somma dichiarata per i fusi, linea
+d'aria senza OSRM, zona climatica citando l'allegato A con campione di controllo, **ASIA 2011 tolta** da
+script, dataset e banco (niente download da 166 MB, niente chiavi `costruzioni` né fatti
+`unita_locali_costruzioni`/`addetti_costruzioni`).
+
+**M0 non chiusa: `esploradati.istat.it` non ha mai risposto** (timeout di connessione a ogni tentativo
+dalle 18:00 alle 18:45 circa, un tentativo ogni 2 minuti). Senza quell'host mancano edifici 2011 e famiglie
+2021: il dataset committato è scritto con `--parziale` e dichiara `completo: false`,
+`fontiMancanti: ["istat-edifici-2011", "istat-famiglie-2021"]` e le due fonti con `stato:
+"non_raggiungibile"`; `mostra` lo avvisa e il banco conta 10 valori golden come «non verificabili» (mai
+come passati). I lettori di quei due file e la query SDMX unica non sono ancora scritti: vanno fatti sui
+file veri appena l'host risponde (colonne, DSD, data territoriale reale delle famiglie). Il gate di chiusura
+dirà se la data territoriale dichiarata (`2021-12-31`) è sbagliata.
+
+### DPR 412/1993, allegato A
+
+| Passo | Effetto sulle 8.088 righe |
+|---|---|
+| Solo nome esatto + sigla (prima taratura) | 7.637 comuni; 432 non trovati, 10 sigla diversa, 3 zona incoerente, 6 nati dopo il 1993 |
+| Zeri OCR anche nei nomi (`PATERN0'`, `ZEFFIRI0`: nessun nome contiene cifre) | +2 (Paternò, Bruzzano Zeffirio) |
+| Righe CD dal 1991 invece che dal 14/10/1993 (l'allegato usa nomi già cambiati: `SAINT RHEMY`, `SAN POLOMATESE`, `CIANO D'ENZA`) | +5 (con Canossa, Ollastra, Telese Terme); nessun omonimo ambiguo in più (0 scarti `nome_ambiguo`) |
+| Sigla OCR isolata tra righe della stessa provincia (`MR … IRSINA` tra righe MT: l'allegato è ordinato per provincia) | +1, regola generale e non una tabella di eccezioni |
+| Secondo passaggio, solo per righe senza comune (o col nome solo in altre province) verso comuni esistenti nel 1993 e rimasti senza riga, stessa sigla attuale o storica, candidato unico: **inizio del nome a parola intera** | +13 (`VENARIA` → Venaria Reale, `BASTIA` → Bastia Umbra, `TRIPI` → Tripi - Abakainon) |
+| Stesso passaggio: **una sola lettera diversa, mancante, in più o scambiata con la vicina** (distanza OSA = 1) | +69 (`THIENNE`, `IESOLO`, `SAN REMO`, `PIORINO` → Poirino, `BG CORTENOVA` → Cortenuova e non Cortenova LC) |
+| **Finale** | **7.727 comuni** (97,9%); 345 non trovati, 7 sigla diversa, 3 zona incoerente, 6 nati dopo il 1993; ogni abbinamento non letterale elencato in `abbinamentiApprossimati.clima` (83) |
+
+Soglie scelte e scartate:
+
+- **Distanza 2 esclusa**: aggiungerebbe una decina di casi quasi tutti giusti ma anche `ISOLA DI BARI` → Mola di
+  Bari (BA), non decidibile. Con distanza 1 e la sigla il campione non ha mostrato abbinamenti sbagliati.
+- **La sigla resta obbligatoria anche per i nomi unici**: senza, `PV … SANTA MARGHERITA DI BELICE` (righe
+  scambiate nell'allegato tra PV e AG) e `TN … CUNEO` darebbero valori di altri comuni. Restano scartati.
+- Le 3 righe con zona incoerente con i gradi giorno (Cunico, Caprese Michelangelo, Mongiana) restano senza
+  zona: OCR o originale, non decidibile senza un atto.
+- I 345 non trovati sono in grande maggioranza comuni soppressi dopo il 1993 (fusioni) e i comuni sardi nati
+  nel 1988-1991 assenti dall'allegato (Erula, Stintino, Elmas…): corretto non emetterli (art. 2 c. 3).
+- Intervalli di plausibilità confermati sui dati: gradi giorno 568 (Lampedusa e Linosa) – 5.165 (Sestriere)
+  dentro 500-5.200; altitudine 0-2.035 dentro -5-2.100; nessuno scarto `fuori_intervallo`. Zone: E 4.088,
+  D 1.585, C 969, F 931, B 152, A 2.
+
+**Campione di controllo** (decisione n. 3): 143 comuni, cioè tutti gli 83 abbinamenti non letterali più 60
+abbinamenti esatti presi a passo fisso sull'elenco, confrontati con i «Gradi giorno» delle voci di
+it.wikipedia (voce trovata dal codice Istat via Wikidata P635). Esito: **119 uguali, 1 diverso, 23 senza il
+dato su Wikipedia**. Esatti: 56 uguali su 56 confrontabili. Non letterali: 63 uguali su 64 confrontabili.
+L'unico diverso è Albissola Marina (allegato A: C, 1.393 GG; Wikipedia: 1.490): l'abbinamento del nome è
+giusto (`ALBISOLA MARINA`), il valore diverge. È il rischio già noto dell'art. 2 c. 2 (tabella modificabile
+per decreto): il fatto resta «secondo l'allegato A del DPR 412/1993, testo originario», e una rettifica si fa
+solo con un atto ufficiale citabile. Da ricontrollare nella procedura annuale.
+
+### Comuni fusi e scambi di territorio
+
+Conteggi sui codici 2026 con le variazioni Istat + tabella sarda:
+
+| Riferimento della fonte | Comuni da fusione (somma dichiarata) | …di cui con scambi dopo | Comuni con scambi parziali (niente fatti additivi) | Nati da parti di altri comuni | Solo cambio di codice |
+|---|---|---|---|---|---|
+| 9/10/2011 (edifici) | 137 | 2 | 66 | 2 | 381 |
+| 31/12/2021 (famiglie) | 7 | 0 | 10 | 0 | 377 |
+| 1/1/2025 (popolazione) | 0 | 0 | 0 | 0 | 377 |
+| 31/5/2025 (sismica) | 0 | 0 | 0 | 0 | 377 |
+
+Popolazione e sismica passano quindi al 2026 senza perdite (7.896 su 7.896; il gate di chiusura è verde:
+tutti i codici delle due fonti si risolvono). Per i fatti del 2011 la regola costa 66 comuni su 7.896 (0,8%):
+accettato, perché un edificio passato da un comune all'altro non è ricostruibile. Le CS senza la ES
+corrispondente (nuovo comune da parte di territorio, es. Fiumicino, Mappano) sono trattate come scambi
+parziali. 1.483 alias (95 KB) coprono codici soppressi, cambi di provincia e il riordino sardo.
+
+### Centri e distanza
+
+- 166 comuni su 7.896 hanno il centroide d'area fuori dal proprio poligono (come nel prototipo): tutti
+  sostituiti dal punto interno, tutti verificati dentro. Raggio di pari area: p10 1,4 km, mediana 2,7, p90
+  5,2, massimo 20,3 (Roma).
+- Centri dei comuni di prova coerenti col prototipo (Cologno 45,5333; 9,2802) e Vicenza entro 2 km dal
+  municipio (il file di terze parti della ricerca lo metteva 15 km più a nord).
+- **Linea d'aria confermata**: Cologno → Monza 6 km (5,8), Sandrigo → Vicenza 13, dichiarata «in linea d'aria
+  tra i centri geografici dei comuni, non su strada».
+- **Distanza minima citabile**: `distanzaKm` restituisce `citabile: false` quando la distanza è minore della
+  somma dei due raggi di pari area. Motivo: il centro dista dal municipio fino a circa mezzo raggio (San
+  Severo 4,9 km su 10,3), quindi sotto quella soglia l'errore supera metà del valore; lì T6b dirà «comune
+  vicino». Su un campione di 41.276 coppie entro 30 km la soglia esclude il 2,7%; Cologno → Monza (6 km,
+  raggi 4,9), Sandrigo → Vicenza (13; 8,1) e San Severo → Foggia (26; 23,1) restano citabili, Roma →
+  Ciampino no.
+
+### Formato
+
+Dataset 1,31 MB con le fonti oggi disponibili (budget 2,5 MB); lettura + `JSON.parse` 12 ms; build del
+renderer invariata (nessuna pagina importa il modulo). Con edifici e famiglie la stima resta 1,6-1,8 MB.
 
 ## Verifica
 
