@@ -1,7 +1,8 @@
 # Piano T6a — Fatti comunali da open data
 
-Stato: **fasi 2-3 (sviluppo e calibrazione) eseguite il 2026-09-14, dataset dichiarato incompleto** finché
-`esploradati.istat.it` non risponde (edifici 2011 e famiglie 2021, vedi «Calibrazione»). Piano del 2026-09-14. Fonti: `docs/traffico/README.md`
+Stato: **chiuso il 2026-09-14 (fasi 2-5), dataset dichiarato incompleto** finché `esploradati.istat.it`
+non risponde: edifici 2011 e famiglie 2021 mancano (vedi «Calibrazione» e «Verifica», punti aperti). Commit
+`14f2fe3`, `8561389`, `1f66586`, `c22a76e`, `866e6f6`, `4997dad` + chiusura documenti. Piano del 2026-09-14. Fonti: `docs/traffico/README.md`
 (§1-§5), `docs/traffico/brief-T6a.md`, `~/knowledge/seo/ricerche-2026-09-14/w2-3-opendata.md` e i tre script di
 prova, `docs/ricerca-traffico-2026-09.md` §6.3, `site-intake/data-src/comuni.json` e `scripts/build-comuni.mjs`,
 i due `package.json`, `site-factory-editor/scripts/test-portafoglio.ts`. Verifiche di sola lettura fatte oggi
@@ -536,4 +537,52 @@ renderer invariata (nessuna pagina importa il modulo). Con edifici e famiglie la
 
 ## Verifica
 
-*(fase 4: output di banco, `npm run check`, `npm run build`, copertura per fonte, 5 comuni)*
+Collaudo finale (fasi 4-5) del 2026-09-14 sul commit `4997dad`, da `site-renderer/`, rilanciato per intero.
+
+### Suite
+
+| Comando | Esito reale |
+|---|---|
+| `node --experimental-strip-types scripts/test-fatti-comuni.ts` | exit 0 · «119 passati, 0 falliti, 10 NON VERIFICABILI» (i 10 sono edifici e famiglie dei 5 comuni, fonti non raggiungibili: mai contati come passati) |
+| … lo stesso con `fetch` sostituito da una funzione che lancia (`node --import` di un modulo che vieta la rete) e cache inesistente | identico: 119 / 0 / 10, nessuna chiamata di rete; nessuna cartella `fatti-comuni-*` lasciata in `tmpdir` |
+| `npm run build` | exit 0 · «18 page(s) built in 914ms», 2,7 s totali; nessun file di `src/pages`, `src/sections` o `src/layouts` importa il modulo |
+| `npm run check` | «Result (63 files): 1 error, 0 warnings»: solo l'errore atteso su `src/lib/registry.ts`, nessuno sui file di T6a |
+| `node --experimental-strip-types scripts/validate-site.ts blueprints/conversione-locale-v1/blueprint.json` | «OK — site.json valido · 12 sezioni · preset "meridian"» |
+| `node --experimental-strip-types scripts/fatti-comuni.ts mostra --json 015081` | exit 0 · Cologno Monzese (MI), centro 45,5333; 9,2802, raggio 1,65 km; 46.994 residenti, zona E, 2.404 GG, 131 m, riscaldamento 15/10-15/4 14 h, zona sismica 3; `avviso` «dataset incompleto: … (istat-edifici-2011, istat-famiglie-2021)» |
+
+### Criteri del brief, uno per uno
+
+| Criterio | Prova | Esito |
+|---|---|---|
+| Script TS riproducibile, cache fuori da git, verifica, dataset | `aggiorna --offline --parziale` richiamato su una copia del dataset nello scratchpad: gate verdi, 2,2 s, **file identico a quello committato salvo `generatoIl`** (diff di una riga); report di diff «0 comuni cambiati» per ogni campo. `aggiorna --offline --solo-verifica` senza `--parziale` → exit 1 «aggiornamento fermato: fonti non disponibili…», dataset intatto (sha256 `fdf4c55c…` prima e dopo), `manifest.json` della cache non toccato | sì |
+| Dataset per codice Istat con valore, unità, riferimento, fonte, URL, licenza, dicitura | `mostra --json` di Cologno: ogni fatto porta tutti i campi; frasi con citazione, anno e URL (banco §18) | sì |
+| Soppressi e fusi mai attribuiti senza regola | banco: Valsamoggia, Borgo Virgilio, Gordona ← Menarola, Bergamo/Orio al Serio, Sovizzo, Alghero `090003`; `fattiComune("090003")` → `112001` con alias dichiarato; 1.483 alias, tutti con destinazione esistente | sì |
+| Centroidi affidabili con plausibilità; distanza scelta | 7.896 centri nel riquadro dell'Italia (controllo indipendente sul JSON), punto interno verificato dallo script; Vicenza entro 2 km dal municipio; `mostra 024116 --da 024091 --json` → 13 km, `citabile: true`, metodo e citazione «in linea d'aria … non su strada» | sì |
+| Modulo di funzioni pure con frasi citate | banco §11, §16, §18-§20; nessuna prosa generata (template fissi) | sì |
+| I 5 comuni identici alla ricerca | popolazione, zona/GG e sismica identici per tutti e 5 (Cologno, San Severo, Sandrigo, Monza, Treviso); **edifici ante 1981 e famiglie proprietarie non verificabili** (fonte giù); unità locali costruzioni tolte per decisione dell'orchestratore | **in parte** |
+| Copertura per fonte e nessun valore fuori range | `copertura` nel dataset: comuni 7.896, centro 7.896, popolazione 7.896, clima 7.727, sismica 7.896, edifici 0, famiglie 0. Controllo indipendente su tutti i record (codice a 6 cifre, sigla, raggio 0-25 km, popolazione intera 1-3.000.000, sismica con la regex del gate, zona coerente con i GG, GG 500-5.200, quota -5-2.100): **0 fuori range** | sì |
+| Banco senza rete su dati registrati | vedi Suite (rete vietata): DPR 412 con zeri OCR, fusi, comune inesistente, fonte mancante, cache corrotta | sì |
+| Dimensione ragionevole e build non rallentate | 1,34 MB (budget 2,5 MB, una riga per comune), lettura + `JSON.parse` 12 ms, build invariata | sì |
+| Utilità per T3 (codici 2026 dal form) | tutti i 7.904 comuni di `site-intake/data-src/comuni.json`: `cercaComune(nome, sigla)` → **esattamente 1** candidato per 7.904 su 7.904, e `fattiComune(codice del form)` porta allo stesso codice 2026 in 7.904 casi su 7.904 | sì |
+
+CLI: `mostra 999999` → exit 1 «codice Istat sconosciuto»; `mostra abc` → exit 1; `mostra Castro` → exit 1 con i
+2 candidati; `mostra 090003` → Alghero 112001 «richiesto 090003: cambio_codice dal 2026-01-01».
+
+### File toccati contro il §5
+
+I sei commit del piano toccano solo `site-renderer/scripts/fatti-comuni.ts`, `site-renderer/scripts/test-fatti-comuni.ts`,
+`site-renderer/src/lib/fatti-comuni.ts`, `site-renderer/data/comuni-fatti.json` e `docs/traffico/piano-T6a.md`; la
+chiusura aggiunge `docs/traffico/README.md`, `docs/handoff-fase-c.md`, `docs/DEBUG.md`. **Nessun file fuori
+perimetro**; `package.json`, `.gitignore`, editor e `site-intake/` intatti. Nessuna modifica non committata del
+piano (le modifiche presenti nel working tree, `decisioni-piani.md`, `factory/assignments.json` e i piani T1b/G1,
+sono di altre sessioni e restano fuori da questi commit). Revisione: 9 problemi corretti nei giri precedenti
+(`c22a76e`, `866e6f6`, `4997dad`); il collaudo finale non ne ha trovati altri.
+
+### Punti aperti
+
+1. **M0**: `esploradati.istat.it` ancora in timeout alle 20:15 del 14/09. Quando risponde: lettori di edifici 2011
+   e famiglie 2021 sui file veri, query SDMX unica, `aggiorna` senza `--parziale`, golden completi nel banco.
+2. **Decisione**: adottare per gli edifici 2011 le variabili censuarie per sezione (`dati-cpa_2011.zip` su
+   `www.istat.it`, stessi 5 valori della ricerca) invece del bulk di esploradati (§«Calibrazione»).
+3. `site-intake/data-src/comuni.json` resta con i codici precedenti al 2026: T3 usa i codici di T6a
+   (`cercaComune` o gli alias), come da `decisioni-piani.md` §T3 punto 6.

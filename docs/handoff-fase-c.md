@@ -125,6 +125,20 @@ prossime schede.
   arrivano con la prossima build col dominio e vanno online solo pubblicando; con una build
   da rifare «Ripubblica» non compare in nessun ramo (anche a chiavi VPS mancanti). Aperto: il
   dettaglio `/traffico/[slug]` elenca ancora le fondamenta tra «Cosa comparirà qui».
+- **Traffico T6a — fatti comunali da open data** (2026-09-14, piano chiuso in
+  `docs/traffico/piano-T6a.md`): `site-renderer/data/comuni-fatti.json` (1,34 MB, in git,
+  una riga per comune) con i 7.896 comuni al 1/1/2026, centri interni al poligono Istat,
+  1.483 alias (codici soppressi, fusioni, riordino sardo), popolazione 1/1/2025, zona
+  sismica DPC e zona climatica dall'allegato A del DPR 412/1993 (7.727 comuni), ogni fatto
+  con fonte, URL, licenza e dicitura. Aggiornamento e consultazione con
+  `scripts/fatti-comuni.ts aggiorna|mostra` (procedura annuale nel commento di testa),
+  funzioni pure in `src/lib/fatti-comuni.ts` (`fattiComune`, `frasiFatto`, `cercaComune`,
+  `distanzaKm` in linea d'aria con `citabile`, `comuniEntroKm`), banco senza rete
+  `scripts/test-fatti-comuni.ts`. Nessuna pagina lo importa ancora (T5a/T6b). **Dataset
+  dichiarato incompleto** (`completo: false`): edifici 2011 e famiglie 2021 aspettano
+  `esploradati.istat.it`, in timeout dal pomeriggio del 14/09; da decidere se prendere gli edifici
+  dal file per sezioni di censimento su `www.istat.it`. Tutti i 7.904 comuni del form si
+  risolvono in un solo codice 2026: T3 parte da qui.
 
 ## Clienti in `site-renderer/out/` (fuori git)
 
