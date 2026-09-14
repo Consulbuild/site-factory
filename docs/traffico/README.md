@@ -135,21 +135,25 @@ si calibra con 4-8 settimane di dati Search Console.
 | T7b | Volano automatico e rollback | correzioni automatiche con guardrail, effetti, rollback | da fare | — |
 | T8 | Report «Come ti trovano» | sezione nel report mensile | da fare | — |
 | T1b | Pagine leggere | immagini responsive, EXIF, font, budget come gate | da fare | — |
-| R1 | Ricerca scheda Google | rapporto con fonti primarie e schema della scheda consigliata | da fare | — |
+| R1 | Ricerca scheda Google | rapporto con fonti primarie e schema della scheda consigliata | fatto (2026-09-14): `docs/traffico/ricerca-scheda-google-2026-09.md` | `56732cc` |
 | G1 | Scheda consigliata | dati competitor + keyword → `scheda-consigliata.json` | da fare | — |
 | G2 | Checklist e allineamento | copia-incolla con «fatto», confronto scheda pubblica ↔ sito, kit presenza | da fare | — |
 | G3 | Monitor scheda | dati pubblici periodici, geogrid, sezione nel report | da fare | — |
 
 ## 8. Lavoro manuale di Mattia (non automatizzabile)
 
-- Google Cloud: progetto, abilitazione Search Console API, Site Verification API, PageSpeed
-  Insights API, CrUX API; due service account (scrittura dal Mac, lettura dal VPS) con chiave
-  JSON; domanda di accesso alla Business Profile API.
+- Google Cloud (servizio Sito): progetto, abilitazione Search Console API, Site Verification
+  API, PageSpeed Insights API, CrUX API; due service account (scrittura dal Mac, lettura dal
+  VPS) con chiave JSON.
+- Google Cloud (servizio Scheda, da `ricerca-scheda-google-2026-09.md` §8): i service account
+  **non** gestiscono schede Google Business. Servono un progetto dell'organizzazione
+  consulbuild.com, un'app OAuth «Internal» con scope `business.manage`, un utente
+  @consulbuild.com con 2FA aggiunto come Gestore alle schede dei clienti, e la domanda di accesso
+  alle Business Profile API (quota 0 finché Google non approva). Un solo refresh token, su n8n.
 - Bing Webmaster Tools: account e API key.
 - DataForSEO: account, ricarica 50 $, login e password API.
 - Google Ads: account senza campagne, developer token (Basic access).
 - Search Console e Bing: verifica manuale di cavalierebuild.it per la baseline (S0).
-- Account Google dedicato con 2FA per l'accesso Manager alle schede dei clienti.
 - Inserire le chiavi in Impostazioni → Chiavi API e le credenziali in n8n.
 - Consenso di Cavaliere prima di cambiare il suo sito online.
 
