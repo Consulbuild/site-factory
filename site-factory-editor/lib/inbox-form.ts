@@ -2,7 +2,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { OUT_DIR, clientDir } from "./paths.ts";
-import { normalizeToJpg } from "./lavori.ts";
+import { normalizeToJpg, pulisciJpeg } from "./lavori.ts";
+import { eJpeg } from "./metadati-foto.ts";
 import type { Lavori } from "./schemas.ts";
 // Import con estensione e nessuna dipendenza da lib/clients.ts: così il banco di prova
 // (scripts/test-import-form.ts) gira con `node --experimental-strip-types`.
@@ -307,11 +308,18 @@ export function importLeadForm(id: string, overwrite = false): string {
   fs.mkdirSync(path.join(tmpDir, "img"), { recursive: true });
   fs.mkdirSync(path.join(tmpDir, "foto-originali"), { recursive: true });
 
-  if (logoVoce) fs.copyFileSync(path.join(src, nomeServer(logoVoce)), path.join(tmpDir, nomeServer(logoVoce)));
+  // Nessun file del cliente esce dall'import con i metadati del telefono (GPS compreso):
+  // la build pubblica img/ e il logo così come sono.
+  if (logoVoce) {
+    const logo = path.join(tmpDir, nomeServer(logoVoce));
+    fs.copyFileSync(path.join(src, nomeServer(logoVoce)), logo);
+    if (eJpeg(fs.readFileSync(logo))) pulisciJpeg(logo); // PNG e SVG non portano il GPS della fotocamera
+  }
   const lavori: Lavori = [];
   for (const v of lead.foto.filter((f) => f.stato === "fatto").sort((a, b) => a.n - b.n)) {
     const orig = path.join(src, nomeServer(v));
-    fs.copyFileSync(orig, path.join(tmpDir, "foto-originali", nomeServer(v)));
+    // Originale fedele (nessun ridimensionamento; un JPEG dritto non si ricodifica) ma pulito.
+    normalizeToJpg(orig, path.join(tmpDir, "foto-originali", nomeServer(v).replace(/\.[^.]+$/, "") + ".jpg"), Infinity);
     if (lavori.length < MAX_FOTO) {
       const nome = `lavoro-${lavori.length + 1}.jpg`;
       normalizeToJpg(orig, path.join(tmpDir, "img", nome));
@@ -329,7 +337,9 @@ export function importLeadForm(id: string, overwrite = false): string {
 
   if (fs.existsSync(dest)) {
     // Re-import: sovrascrive gli artifact ma preserva client.json e contesto.json
-    // (non stanno nella dir temporanea, quindi la copia non li tocca).
+    // (non stanno nella dir temporanea, quindi la copia non li tocca). Gli originali
+    // si sostituiscono in blocco: quelli di prima possono avere un'altra estensione e il GPS.
+    fs.rmSync(path.join(dest, "foto-originali"), { recursive: true, force: true });
     fs.cpSync(tmpDir, dest, { recursive: true, force: true });
     fs.rmSync(tmpDir, { recursive: true, force: true });
   } else {

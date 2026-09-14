@@ -27,7 +27,8 @@ prossime schede.
 - **Form bozza** (`site-intake/`, online su https://sito.consulbuild.com dal
   2026-09-07): 21 domande, foto in originale, presa visione privacy; n8n `sf-bozza` →
   Google Drive `_inbox/<leadId>/` → «Importa» nell'editor (`lib/inbox-form.ts`).
-  Tally dismesso. Piano vivo: `docs/piano-form-bozza.md`.
+  Foto, originali e logo JPEG escono dritti e senza EXIF/GPS (2026-09-14, `lib/metadati-foto.ts`,
+  banco `scripts/test-metadati-foto.ts`). Tally dismesso. Piano vivo: `docs/piano-form-bozza.md`.
 - **VPS e integrazioni** (2026-09-05/06): build con dominio → Umami + modulo reale;
   deploy → registro n8n + monitor Gatus; report mensile al rinnovo via Stripe
   `invoice.upcoming` → n8n → Brevo (tabelle Lead/Report; il primo report reale parte da

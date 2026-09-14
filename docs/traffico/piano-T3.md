@@ -30,9 +30,10 @@ Fatti rilevati leggendo il codice (2026-09-14):
 - **`sips` non toglie i metadati**: prova con un JPEG di prova con blocco Exif (Orientation 6 + GPS):
   dopo `sips -s format jpeg` (anche con `-Z`) il file ha ancora un APP1 Exif riscritto con
   **Orientation 6** e i pixel **non ruotati**. Conseguenza: togliere l'EXIF senza applicare prima la
-  rotazione gira le foto verticali dell'iPhone. Nota fuori perimetro: l'import del form lead
-  (`lib/inbox-form.ts` → `normalizeToJpg`) oggi lascia l'EXIF in `img/lavoro-N.jpg` e negli originali
-  (§14, dubbio 9).
+  rotazione gira le foto verticali dell'iPhone. **Già risolto per l'import del form lead** (14/09,
+  fuori da T3): `lib/metadati-foto.ts` (`orientamentoExif`, `senzaMetadati`, `eJpeg`) e in
+  `lib/lavori.ts` `pulisciJpeg(file)` (rotazione `sips` per gli 8 orientamenti + via i metadati) e
+  `normalizeToJpg(src, out, maxLato)`; banco `scripts/test-metadati-foto.ts`. T3 li **riusa**.
 - `sharp` è presente solo come dipendenza transitiva di Next; `lib/lavori.ts` dichiara la scelta
   «nessuna dipendenza npm (niente sharp)». Si resta su `sips` + una funzione pura che toglie i segmenti.
 - Staleness (`lib/staleness.ts`) confronta solo file elencati (`contesto.json`, …); `lib/build.ts` copia
@@ -47,7 +48,7 @@ Fatti rilevati leggendo il codice (2026-09-14):
   non committato: la fase 2 di T3 parte solo a T0 chiuso (T3 tocca `app/traffico/[slug]/page.tsx`).
 
 Fuori perimetro T3: pagine e copy che useranno i dati (T5), mappa query (T4), fatti comunali (T6a),
-correzione dell'informativa del form lead (audit 14/09 §7.3), EXIF dell'import lead, scheda Google.
+correzione dell'informativa del form lead (audit 14/09 §7.3), scheda Google.
 
 ## 2. Studio UX (shape /impeccable)
 
@@ -408,11 +409,12 @@ con `escludi: false`: regola scritta nel modulo e nel README §3 a chiusura.
 
 ### 6.1 Funzioni
 
-- `lib/metadati-foto.ts` (pura, senza I/O): `orientamentoExif(buf): 1..8` (TIFF II e MM, tag 0x0112 in
-  IFD0; 1 se assente) e `senzaMetadati(buf): Buffer` che percorre i marker JPEG fino a SOS e toglie
-  APP1-APP13, APP15 e COM (Exif, XMP con GPS, IPTC/Photoshop, commenti), tenendo APP0, APP2 (profilo ICC)
-  e APP14 (Adobe); i dati compressi dopo SOS restano byte-identici (nessuna ricompressione). JPEG malformato
-  o troncato → eccezione.
+- `lib/metadati-foto.ts` — **esiste già (14/09), da riusare senza modifiche**: `orientamentoExif(buf): 1..8`
+  (TIFF II e MM, tag 0x0112 in IFD0; 1 se assente o IFD rovinato) e `senzaMetadati(buf): Buffer` che
+  toglie APP1-APP13, APP15 e COM (Exif, XMP con GPS, IPTC/Photoshop, commenti), tenendo APP0, APP2 **solo
+  `ICC_PROFILE`** (via MPF) e APP14 `Adobe`, e **taglia tutto dopo l'EOI** (le immagini secondarie MPF
+  portano il loro EXIF); dati compressi byte-identici. JPEG malformato o troncato → eccezione. La pipeline
+  con la rotazione è `pulisciJpeg` / `normalizeToJpg` in `lib/lavori.ts`.
 - `lib/dati-traffico.ts` (pura): schemi §5, `normalizzaInvio(invio, {comuni, servizi, adesso})`,
   `validoFino`, `statoBlocco(...)` (gli stati di §2.8 come funzione di modulo.json, presenza di
   `invio.json`, `dati.json`, stato del Sito, chiave, contesto), `linkDaToken(token, base)`.
@@ -438,10 +440,10 @@ con `escludi: false`: regola scritta nel modulo e nel README §3 a chiusura.
 2. Controlla che ogni file `fatto` del manifest sia scaricato per intero (dimensione = `bytes`; stesso
    schema di `inbox-form.ts`) → altrimenti 409 «non è ancora scaricato».
 3. Carica servizi dal `contesto.json` e comuni da `data-src` → `normalizzaInvio`.
-4. In `traffico/.import-<ts>/`: per ogni foto `sips -s format jpeg` solo se non è JPEG (senza
-   ridimensionare) → se `orientamentoExif ≠ 1`, `sips -r 90|180|270` (+ `-f` per 2, 4, 5, 7) → `senzaMetadati`
-   → `foto/cNN-MM.jpg`; misure con `sips -g`, `sha256`. Attestati: PDF copiati com'è, immagini ripulite
-   come le foto. Scrive `dati.json` (`da_verificare`), `foto.json`, `dati-grezzi.json`; valida tutto con gli
+4. In `traffico/.import-<ts>/`: per ogni foto `normalizeToJpg(src, foto/cNN-MM.jpg, Infinity)` di
+   `lib/lavori.ts` (conversione `sips` solo se non è JPEG, senza ridimensionare → rotazione per gli 8
+   orientamenti → `senzaMetadati`; un JPEG dritto non si ricodifica); misure con `sips -g`, `sha256`.
+   Attestati: PDF copiati com'è, immagini ripulite come le foto. Scrive `dati.json` (`da_verificare`), `foto.json`, `dati-grezzi.json`; valida tutto con gli
    schemi prima del rename.
 5. Se esistono dati importati: li sposta in `traffico/precedenti/` (sostituendo il precedente slot), poi
    rename della cartella temporanea. **`client.json` non si tocca.**
@@ -532,7 +534,7 @@ Non si toccano: `index.astro`, `privacy.astro`, `domande.ts` nelle domande, `val
 
 | File | Tipo | Cosa |
 |---|---|---|
-| `lib/metadati-foto.ts` | A | §6.1 |
+| `lib/metadati-foto.ts`, `lib/lavori.ts` | — | esistono già (14/09): si importano, non si modificano (§6.1, §6.3) |
 | `lib/dati-traffico.ts` | A | §5, §6.1 |
 | `lib/dati-traffico-fs.ts` | A | §6.1, §6.3 |
 | `app/api/clients/[slug]/traffico/link/route.ts` | A | §6.2 |
@@ -604,7 +606,6 @@ Fixture fuori git: `site-renderer/out/zz-test-t3/` (`client.json` completo con S
     "site-intake/PRODUCT.md",
     "infra/n8n/dati.json",
     "infra/n8n/dati-pulizia.json",
-    "site-factory-editor/lib/metadati-foto.ts",
     "site-factory-editor/lib/dati-traffico.ts",
     "site-factory-editor/lib/dati-traffico-fs.ts",
     "site-factory-editor/app/api/clients/[slug]/traffico/link/route.ts",
@@ -648,12 +649,12 @@ Link e stati
 9. `statoBlocco` per ogni riga di §2.8 (Sito spento → nascosto; sospeso → sola lettura; chiave assente,
    contesto assente, client.json illeggibile → motivo; link scaduto; arrivo; da verificare; verificati).
 
-Foto (macOS, `sips` locale, nessun file binario nuovo in git: si parte da `site-intake/tests/fixtures/lavoro-1.jpg`)
-10. `senzaMetadati`: su un JPEG con APP1 Exif (GPS), APP1 XMP, APP13 e COM iniettati → nessuno di questi
-    segmenti resta; APP0/APP2/APP14 conservati; byte dopo SOS identici; `sips -g pixelWidth` legge il file.
-11. `orientamentoExif` su TIFF II e MM; assente → 1; JPEG troncato o PNG → eccezione.
-12. pipeline di pulizia su immagine asimmetrica con Orientation 3, 6, 8 (e 2) → ruotata **una sola volta**
-    (dimensioni scambiate e quadrante colorato al posto giusto, letto convertendo in BMP), nessun APP1.
+Foto
+10-12. **Già coperti** da `scripts/test-metadati-foto.ts` (14/09, macOS, senza rete né binari in git):
+    `senzaMetadati` su EXIF con GPS, XMP, IPTC, COM, MPF, ICC e coda dopo l'EOI; `orientamentoExif` II/MM,
+    assente, rovinato, PNG e troncato; `normalizeToJpg` sugli orientamenti 1..8, da HEIC, ridimensionata e
+    su JPEG irregolare → ruotata una sola volta (quadranti letti dal BMP), zero metadati. Il banco T3 non
+    li duplica: verifica solo che `foto/cNN-MM.jpg` escano senza metadati (test 15).
 
 Import su cartelle temporanee (`sorgente`/`destinazione` passate alla funzione)
 13. file del manifest con dimensione diversa → errore «non scaricato», nulla scritto, sorgente intatta.
@@ -724,8 +725,8 @@ come tali. Verifica: `npm run check`; `npm run build` (budget lead invariato, `/
 JS 45, font 45, totale 120 KB, da calibrare); `tests/dati.spec.ts` completo; `impeccable detect --json` sui
 file nuovi; `/impeccable critique` sulle schermate; una sola tornata di correzioni. **Commit 3** + push.
 
-**M4 — Editor.** `metadati-foto`, `dati-traffico`, `dati-traffico-fs`, route, `traffico-dati.tsx`, pagina,
-banco, fixture `zz-test-t3`. Verifica: banco verde; `npx tsc --noEmit`; `npm run build`; `test-traffico-stato.ts`
+**M4 — Editor.** `dati-traffico`, `dati-traffico-fs`, route, `traffico-dati.tsx`, pagina,
+banco, fixture `zz-test-t3`. Verifica: banco verde; `npx tsc --noEmit`; `npm run build`; `test-metadati-foto.ts`, `test-traffico-stato.ts`
 e `test-import-form.ts` verdi. E2E locale con `SF_DATI_N8N_URL`/`SF_DATI_FORM_URL` sul dev di site-intake e
 `SF_TRAFFICO_DIR=.dev-inbox/_traffico`: «Crea il link» → Playwright compila → «Importa i dati» → `dati.json` e
 `foto.json` validi, foto senza APP1, sha256 di `client.json`, `contesto.json`, `copy.json` della fixture
@@ -787,7 +788,7 @@ Rollback:
 | **Form lead cambiato** dal refactor del motore | parametri espliciti, prefisso `bozza` invariato, suite esistente intatta su 3 progetti, budget per pagina con tolleranza stretta, schermate prima/dopo, `diff --stat` ristretto (M1), lead provato in anteprima prima di spostare il traffico (R5), rollback Workers istantaneo |
 | **Spam e abusi** | ogni route pubblica chiede un token valido prima di toccare Drive; formato controllato prima della Data table; la cartella nasce solo dalla route autenticata; limiti di numero, peso e dimensione del JSON; campi estranei rifiutati; pulizia notturna; nessuna cartella creabile da fuori (niente soglia «300 cartelle» da sorvegliare) |
 | **File grandi** | un file per richiesta ≤ 25 MiB col peso reale dal binario, retry della coda del lead, 2 in parallelo, massimo 48 file; caso peggiore ~1,2 GB per cliente su Drive, realistico ~150 MB; se n8n soffre in memoria: `N8N_DEFAULT_BINARY_DATA_MODE=filesystem` (già annotato in §10 della guida VPS) |
-| **iPhone** | `accept` senza `image/*` (il selettore converte gli HEIC in JPEG); Orientation 6 applicata all'import prima di togliere l'EXIF (banco 12, R7); `input type=time` e `select` nativi; `localStorage` che lancia in privata → bozza sul server |
+| **iPhone** | `accept` senza `image/*` (il selettore converte gli HEIC in JPEG); Orientation 6 applicata all'import prima di togliere l'EXIF (`test-metadati-foto.ts`, R7); `input type=time` e `select` nativi; `localStorage` che lancia in privata → bozza sul server |
 | **Browser interni di WhatsApp/Instagram** | bozza sul server ripresa alla verifica (test 3); primo passo sopra la piega a 390×680 (test 10); frammento non tagliato dai riconoscitori (token hex); prova su dispositivo vero (R7) |
 | **Privacy** | nessun dato personale nell'URL né nei log; token salvato solo come hash su n8n; Telegram solo conteggi; originali con GPS solo su Drive fino all'import, poi Cestino; attestati mai pubblicati; `import.ndjson` con conteggi; informativa con conservazione reale e fornitori qualificati come da audit |
 | **Dati inventati o sbagliati** | niente preselezioni; stato `da_verificare` con elenco dei punti; attestati senza documento non pubblicabili; prezzi con data e validità; consumatori vincolati a `verificato` e `escludi: false` |
@@ -813,8 +814,9 @@ Rollback:
    legal-it in M5).
 8. Informativa dedicata `/dati/privacy` già corretta secondo l'audit, mentre quella del lead resta con le
    correzioni dell'audit ancora da fare (scheda separata).
-9. Fuori perimetro, da affidare: l'import del form lead lascia EXIF e GPS in `img/lavoro-N.jpg` e in
-   `foto-originali/` (`sips` non li toglie); `lib/metadati-foto.ts` di T3 è riusabile (T1b).
+9. ~~EXIF e GPS nell'import del form lead~~ — **risolto il 14/09** fuori da T3: `img/lavoro-N.jpg`,
+   `foto-originali/` (senza perdita) e logo JPEG escono dritti e senza metadati; foto dei clienti in `out/`
+   ripulite. T3 riusa `lib/metadati-foto.ts` e `normalizeToJpg` (§6.1, §6.3).
 10. `.claude/scope.json` ha un solo perimetro: T3 e T1a non possono essere in fase 2 insieme senza unire i
     perimetri o serializzarli.
 11. Umami sul modulo: se le env sono attive sul deploy, paragrafo statistiche nell'informativa del modulo.

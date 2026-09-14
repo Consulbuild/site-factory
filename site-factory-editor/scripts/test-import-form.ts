@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { senzaMetadati } from "../lib/metadati-foto.ts";
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "sf-inbox-"));
 process.env.SF_INBOX_DIR = tmp;
@@ -92,6 +93,12 @@ try {
   for (const f of ["logo.png", "img/lavoro-1.jpg", "img/lavoro-2.jpg", "foto-originali/foto-01-lavoro-1.jpg", "foto-originali/foto-02-lavoro-2.jpg", "client.json"]) {
     assert.ok(fs.existsSync(path.join(dest, f)), `manca ${f}`);
   }
+  // Foto e originali senza metadati (le foto di prova portano un commento «Lavc»); il banco
+  // completo di orientamento e GPS è scripts/test-metadati-foto.ts.
+  for (const f of ["img/lavoro-1.jpg", "img/lavoro-2.jpg", "foto-originali/foto-01-lavoro-1.jpg", "foto-originali/foto-02-lavoro-2.jpg"]) {
+    const b = fs.readFileSync(path.join(dest, f));
+    assert.ok(senzaMetadati(b).equals(b), `${f}: ha ancora metadati`);
+  }
   assert.equal(leggi("client.json").steps.intake.stato, "da_verificare");
   assert.equal(fs.existsSync(dir), false, "cartella tolta da _inbox");
   assert.equal(listLeadsForm().length, 0);
@@ -100,6 +107,7 @@ try {
   const traffico = { sito: { stato: "attivo", primaAttivazioneAt: "2026-09-01T10:00:00.000Z", attivatoAt: "2026-09-01T10:00:00.000Z" }, scheda: { stato: "spento" } };
   const cj = leggi("client.json");
   fs.writeFileSync(path.join(dest, "client.json"), JSON.stringify({ ...cj, percorso: "completo", traffico }));
+  fs.copyFileSync(path.join(FOTO, "lavoro-1.jpg"), path.join(dest, "foto-originali", "foto-01-vecchia.jpeg"));
   fs.mkdirSync(dir);
   fs.writeFileSync(path.join(dir, "lead.json"), JSON.stringify(lead));
   fs.copyFileSync(path.join(FOTO, "lavoro-1.jpg"), path.join(dir, "foto-01-lavoro-1.jpg"));
@@ -110,8 +118,9 @@ try {
   assert.deepEqual(dopo.traffico, traffico, "re-import: stato Traffico preservato");
   assert.equal(dopo.percorso, "completo", "re-import: percorso preservato");
   assert.equal(dopo.steps.intake.stato, "da_verificare");
+  assert.equal(fs.existsSync(path.join(dest, "foto-originali", "foto-01-vecchia.jpeg")), false, "re-import: originali di prima tolti");
   ok = true;
-  console.log("✓ import dal form: lista, sincronizzazione, brief, intake, foto, logo, client.json, pulizia _inbox");
+  console.log("✓ import dal form: lista, sincronizzazione, brief, intake, foto e originali senza metadati, logo, client.json, pulizia _inbox");
 } finally {
   fs.rmSync(dest, { recursive: true, force: true });
   fs.rmSync(tmp, { recursive: true, force: true });
