@@ -75,6 +75,10 @@ try {
   caso("più mestieri con edilizia → GeneralContractor", tipo(undefined, "Edilizia, impianti elettrici e idraulici") === "GeneralContractor");
   caso("idraulica + elettricità senza edilizia → HomeAndConstructionBusiness", tipo(undefined, "Impianti idraulici ed elettrici") === "HomeAndConstructionBusiness");
   caso("«Studio di architettura» non è RoofingContractor (tett solo a inizio parola)", tipo(undefined, "Studio di architettura") === "HomeAndConstructionBusiness");
+  caso(
+    "esempi di settore della skill context-enricher: «Impiantistica elettrica» → Electrician, «Serramenti» → generico",
+    tipo("altro", "Impiantistica elettrica") === "Electrician" && tipo(undefined, "Serramenti") === "HomeAndConstructionBusiness",
+  );
   caso("fonte leggibile nel riepilogo", tipoSchema("impresa-edile", undefined).fonte.includes("impresa-edile") && tipoSchema(undefined, "Edilizia").fonte.includes("Edilizia"));
   const mancanti = Object.keys(TESTI.mestieri).filter((id) => !(id in TIPO_PER_MESTIERE));
   caso("ogni mestiere del form (TESTI.mestieri) ha una voce esplicita", mancanti.length === 0, mancanti);
@@ -116,6 +120,14 @@ try {
     r13.every((r) => !r.ok) && motivi[0].includes("CAP assente") && motivi[1].includes("più di un CAP") && motivi[2].includes("nessun comune") && motivi[3].includes("via assente") && motivi[4].includes("vuoto"),
     motivi,
   );
+  const rCitta = indirizzoStrutturato("Via Roma 1, 36100", COMUNI, "Vicenza, VI");
+  const rCittaNo = indirizzoStrutturato("Via Roma 1, 36100", COMUNI, "Padova");
+  const rCittaTesto = indirizzoStrutturato("Via Roma 1, 36066 Sandrigo", COMUNI, "Vicenza");
+  caso(
+    "comune assente nel testo: vale la città del sito se ha quel CAP, altrimenti null; il testo vince sulla città",
+    rCitta.ok && rCitta.address.addressLocality === "Vicenza" && rCitta.address.streetAddress === "Via Roma 1" && !rCittaNo.ok && rCittaNo.motivo.includes("città del sito") && rCittaTesto.ok && rCittaTesto.address.addressLocality === "Sandrigo",
+    [rCitta, rCittaNo, rCittaTesto],
+  );
   const r14 = ind("Via Garibaldi 7, 26866 Sant’Angelo Lodigiano (LO)");
   const r14b = ind("Via Garibaldi 7, 26866 SANT'ANGELO LODIGIANO (lo)");
   caso("apostrofo tipografico, maiuscole e sigla minuscola", r14.ok && r14.address.addressLocality === "Sant'Angelo Lodigiano" && r14b.ok, [r14, r14b]);
@@ -133,6 +145,8 @@ try {
     caso("comuni.json reale: Milano 20121 ok, Milano col CAP di Vicenza null", r15.ok && r15.address.addressRegion === "MI" && !r15b.ok, [r15, r15b]);
     caso("comuni.json reale: via che si chiama come un altro comune", r15c.ok && r15c.address.streetAddress === "Via Milano 89" && r15c.address.addressLocality === "Cologno Monzese", r15c);
     caso("comuni.json reale: trattini e accenti («Antey-Saint-André»)", r15d.ok && r15d.address.addressLocality === "Antey-Saint-André", r15d);
+    const r15e = indirizzoStrutturato("Via Po 101, 71016", comuniReali, "San Severo, Foggia");
+    caso("comuni.json reale: «via, CAP» con città del sito «San Severo, Foggia» → San Severo (FG), non Foggia", r15e.ok && r15e.address.addressLocality === "San Severo" && r15e.address.addressRegion === "FG", r15e);
   } else {
     caso("site-intake/data-src/comuni.json leggibile", false, "file assente o illeggibile");
   }

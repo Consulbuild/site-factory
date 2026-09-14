@@ -1,6 +1,7 @@
 # Piano T1a — Fondamenta SEO dietro l'interruttore
 
-Stato: **fase 1 (piano) — in revisione dall'orchestratore**, 2026-09-14. Fonti: `docs/traffico/README.md`
+Stato: **fasi 2 (sviluppo) e 3 (calibrazione) fatte**, 2026-09-14 — commit `78ddf16`, `29ea851`,
+`bd1578d` + calibrazione; fasi 4-5 (test completi, debug finale, chiusura) all'orchestratore. Fonti: `docs/traffico/README.md`
 (§1-§5), `docs/traffico/brief-T1a.md`, `docs/traffico/piano-T0.md` §3-§4, codice e dati elencati nel brief,
 documentazione Google (dati strutturati LocalBusiness, sitemap), IndexNow, schema.org, Cloudflare
 (`_headers` degli static assets).
@@ -171,7 +172,7 @@ Deterministico: nessuna data nel file, due build uguali danno byte uguali.
 ```astro
 // JSON dentro <script>: < > & e U+2028/U+2029 in \uXXXX, nessun valore può chiudere il tag.
 const jsonLdHtml = jsonLd == null ? null
-  : JSON.stringify(jsonLd).replace(/[<>&  ]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
+  : JSON.stringify(jsonLd).replace(/[<>&\p{Zl}\p{Zp}]/gu, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
 {jsonLdHtml && <script is:inline type="application/ld+json" set:html={jsonLdHtml} />}
 ```
 
@@ -619,9 +620,117 @@ Via editor sul dev server (stesse route della scheda Build): build = `POST /api/
    oppure verifica al primo deploy reale di Cavaliere insieme a Mattia?
 7. **Gate su title, H1 e description**: fanno fallire la build (proposta) o sono solo avvisi?
 
+### Decisioni dell'orchestratore (2026-09-14), applicate in fase 2
+
+Prevalgono sul testo dei paragrafi precedenti dove divergono.
+
+1. Indirizzo non riconosciuto: JSON-LD senza `address`, avviso registrato nella build, nessun blocco.
+2. `image`: la prima foto reale di `lavori.json` (`https://<dominio>/media/<slug>/<file>`), mai la hero;
+   senza foto reali niente `image` (resta il `logo`).
+3. Tipo per i clienti senza id del mestiere (e per «altro»): tabella deterministica sulle parole di
+   `contesto.json` `settore_normalizzato`, poi `HomeAndConstructionBusiness`. Nessuna scelta a mano.
+4. Servizi: i titoli delle card Services visibili in home.
+5. E2E con rete ammesso: il sito Umami di prova va cancellato verificando che l'id sia quello creato dalla
+   prova; l'`umamiWebsiteId` di Cavaliere tolto dalla fixture prima di tutto (controllo bloccante).
+6. `_headers` provato su un worker `zz-test-t1a` dell'account ConsulBuild (workers.dev), poi cancellato.
+7. Title > 60, H1 ≠ 1, description assente o > 160: **avvisi** in `steps.build.fondamenta.avvisi`, mai
+   blocchi. Bloccano solo gli errori tecnici: canonical ≠ URL della sitemap, JSON-LD assente in home, di un
+   altro dominio, non valido o con campi vietati, pagina fuori forma cartella/index.html, file `traffico/`
+   illeggibili. Di conseguenza `controllaPagina` restituisce `{ errori, avvisi }` e `cuociFondamenta`
+   restituisce anche `avvisi`.
+8. Stato del servizio letto solo con `leggiTraffico`/`fondamentaAccese` di `lib/traffico.ts` (firme
+   verificate nel codice: `leggiTraffico(state: { traffico? })`, `fondamentaAccese(t: Traffico)`).
+9. Nessun deploy su domini di clienti; Cavaliere non ribuildato né toccato.
+
+Scostamenti di firma rispetto a §3, tutti conseguenza delle decisioni: `tipoSchema(mestiereId, settore)`
+restituisce `{ tipo, fonte }`; `scriviDatiStrutturati(dirCliente, site, dominio, fileComuni)` legge da sé
+brief, raw-submission, contesto e lavori; `indirizzoStrutturato(testo, comuni, cittaSito?)` (vedi
+Calibrazione); in più `chiaviVietate(v)` esportata per banco e controlli. Lo schema è
+`fondamenta: { dominio, avvisi? }`.
+
+**Aperto**: la decisione 7 chiede di mostrare gli avvisi «dove il deploy mostra i motivi» (blocco
+Pubblicazione, `components/pubblicazione-sito.tsx`). Quel file è fuori dal perimetro di §5: oggi gli avvisi
+stanno nello stato (`steps.build.fondamenta.avvisi`) e nel log della build (righe «avviso: …» e conteggio in
+«build ok»), non ancora nella UI. Serve l'ok per allargare il perimetro a quel componente (o rinviarlo a T2b).
+
 ## Calibrazione
 
-_(fase 3)_
+Fase 3, 2026-09-14. Dati reali letti in sola lettura (i tre clienti in `out/`), fixture `zz-test-t1a`.
+
+### Tipi schema.org
+
+- Verificati su schema.org (HTTP 200 e pagina del tipo padre): i sottotipi di `HomeAndConstructionBusiness`
+  sono Electrician, GeneralContractor, HVACBusiness, HousePainter, Locksmith, MovingCompany, Plumber,
+  RoofingContractor. Usati: tutti tranne Locksmith e MovingCompany (nessun mestiere del form li richiede).
+- `vatID`: schema.org chiede il prefisso nazionale («for example IT123456789») → `IT` + 11 cifre.
+  `makesOffer` è di Organization (ereditato dal tipo). Esistono `Offer`, `itemOffered`, `Service`, `PostalAddress`.
+- Mappa del form confermata (§2.6.1). `ristrutturazioni` → GeneralContractor: l'offerta del form
+  (bagni, impianti, pavimenti, facciate, chiavi in mano) è coordinamento di più mestieri.
+- Tabella del settore (inizi di parola, minuscole senza accenti): `edil`/`ristruttur`/`costruzion` →
+  GeneralContractor; `idraul`/`termoidraul` → Plumber; `elettric` → Electrician; `imbianc`/`pittur`/`pittor`/
+  `tinteggi` → HousePainter; `tett`/`copertur` → RoofingContractor; `climatizz`/`condizionat`/
+  `riscaldament`/`termotecn` → HVACBusiness. Più tipi trovati → GeneralContractor se c'è, altrimenti
+  generico. Solo a inizio parola: «architettura» non diventa RoofingContractor. Provata sugli esempi della
+  skill context-enricher («Edilizia», «Impiantistica elettrica», «Serramenti») e sui tre clienti: tutti e tre
+  «Edilizia» → GeneralContractor (due dal settore, uno dal mestiere `impresa-edile`).
+- Rinviato: array di tipi dedotto dai lavori (idraulico con caldaie o pompe di calore →
+  `["Plumber","HVACBusiness"]`). Nessun cliente idraulico oggi; da riprendere al primo.
+
+### Campi del JSON-LD sui dati reali
+
+| Cliente (forma) | Esito | Avvisi |
+|---|---|---|
+| Cavaliere (storico) | tipo dal settore, indirizzo ok, P.IVA ok, 5 servizi, logo = simbolo, image = foto reale; omesso sameAs (nessun social) | nessuno |
+| Mattia Saggin (form nuovo, demo) | tipo dal mestiere, indirizzo ok, 5 servizi, sameAs | P.IVA che non passa il controllo → omessa |
+| Costruzioni Generali (storico) | tipo dal settore, P.IVA ok, 3 servizi; omessi logo, image, sameAs | prima della calibrazione: indirizzo senza comune («via civico, CAP») → omesso |
+
+**Calibrazione dell'indirizzo**: il terzo cliente scrive solo «via, CAP» e il comune compare nella città del
+sito (`meta.city` «San Severo, Foggia», mostrata nel title). Regola aggiunta: se il testo non nomina un
+comune con quel CAP, vale la città del sito se è un comune con **quel** CAP (CAP e città si confermano a
+vicenda; la via è il testo prima del CAP). Il testo vince sempre sulla città. Con la regola il terzo
+cliente ha l'indirizzo; «Foggia» nella stessa stringa non interferisce perché non ha quel CAP. Banco: tre
+casi in linea + uno sul `comuni.json` reale.
+
+Telefono: `+39…` storico e numero nazionale del form (10 cifre da 3) riconosciuti. Nessun cliente con
+social non valido; la regola (https sull'host della rete o suo sottodominio) resta com'è.
+
+### Normalizzazione per l'hash di `lastmod`
+
+- Home di Cavaliere reale (dominio vero, sito Umami vero, action del modulo e media con slug
+  `cavaliere-build-srls`) contro la home della fixture (dominio di prova, altro sito Umami, slug
+  `zz-test-t1a`): **stesso `testoIndicizzabile`, zero differenze**. Dominio, statistiche, modulo e path dei
+  media non muovono `lastmod`.
+- E2E: ribuild senza cambi → hash e sitemap identici (F8); cambio di una parola del sottotitolo hero → solo
+  `index.html` e `sitemap.xml` cambiano, `lastmod` nuovo (F9); cambio dell'accent → cambiano le pagine per lo
+  stile inline, sitemap identica (F10).
+- Nel banco: stesso hash con class, hash `_astro`, style, script Umami, action, commenti, svg e spazi
+  diversi; hash diverso per testo, alt, href, title, description e JSON-LD; `&` scritto dal renderer come escape
+  unicode (backslash-u0026) = `&` letterale.
+- Nessuna soglia da tarare: l'hash è esatto sul testo normalizzato. Limite noto: `aria-label`, `title` e
+  `placeholder` non entrano (non sono contenuto principale per Google).
+
+### Soglie dei controlli
+
+Title 60 e description 160 = limiti Zod di `seoTitle`/`seoDescription`, così l'avviso parla la stessa lingua
+della scheda Copy («SEO title»/«SEO description»). Sui dati reali: un solo avviso, il title di 63 caratteri
+del terzo cliente (fallback senza SEO title), coerente con il piano.
+
+### `_headers` su workers.dev (decisione 6)
+
+Worker di prova `zz-test-t1a` (assets minimi: `index.html` di prova, `robots.txt`, `_headers`; nessun
+contenuto di clienti), deploy con wrangler 4.108 il 2026-09-14: `_headers` non caricato come asset;
+`curl -sI` su `https://zz-test-t1a.<account>.workers.dev/` e `/robots.txt` → `x-robots-tag: noindex`;
+`/_headers` → 404. Worker cancellato (`wrangler delete`), poi 10007 «does not exist» e 404 sull'host.
+Resta da verificare al primo deploy reale con dominio: sul dominio l'intestazione deve essere **assente**.
+
+### Durante lo sviluppo
+
+- Il file di escape del renderer non può contenere U+2028/U+2029 letterali (terminano la regex e la build
+  fallisce): la classe usa `\p{Zl}\p{Zp}` con flag `u`.
+- Ordinamenti per codepoint (non `localeCompare`): sitemap e registro identici su ogni macchina.
+- Controllo aggiunto fuori dal piano, sulla fixture: dopo una build con fondamenta, una build a servizio
+  spento (stato messo a mano nella fixture) non lascia sitemap, chiave, `_headers` né JSON-LD (Astro svuota
+  la dist) e `robots.txt` torna ai 23 byte statici.
 
 ## Verifica
 
