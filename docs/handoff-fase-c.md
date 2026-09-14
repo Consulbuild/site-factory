@@ -79,6 +79,22 @@ prossime schede.
   catena; errore del contesto visibile nell'editor con «Riprova»; `client.json`
   fuori schema non viene più rinominato/azzerato: banner rosso, scritture rifiutate.
   Fuori scope: «Va bene così» per la build, staleness sui sorgenti del renderer.
+- **Scheda «Build & Pubblica» unificata** (2026-09-14, studio UX impeccable modo
+  Operate + piano): UNA scheda per tutta la pubblicazione — blocco demo
+  (`components/pubblicazione-demo.tsx`: pubblica/ripubblica/riaccendi, WhatsApp, copia
+  link, proroga con dialog, spegni, «Il cliente si è abbonato» in ogni stato, demo
+  scaduta/spenta-da-te/scaduta-e-spenta, spegnimento fallito con riprova, dominio
+  legacy da rimuovere) e blocco sito (`pubblicazione-sito.tsx`: chiavi Cloudflare,
+  dominio, motivi di ribuild in elenco, online/integrazioni, deploy fallito persistito
+  in `steps.build.deployErrore`, demo ancora accesa). `build-panel.tsx` decide stato →
+  (primaria, frase della bar, azioni): la primaria vive SOLO nell'action bar fissa, a
+  sinistra il perché («Pronto per …» / «… bloccata: …» / «Niente da fare»), mai
+  `title`; tutto disabilitato con un run vivo; «Anteprima parziale» chiede conferma se
+  c'è qualcosa online. La card Catena dell'hub tiene solo stato + Avvia/Riprendi/Ferma
+  + «Apri Build & Pubblica →»; badge «demo scaduta» (predicato `demoScaduta`);
+  `lib/preview.ts previewRoot()` dice di quale cliente è l'anteprima :4399. Verificato
+  su un cliente di prova per gli stati A1/A6/A8/B2/B8, entrambi i temi, 1280 e 400 px;
+  detector impeccable pulito. Fuori scope: storico delle pubblicazioni, verifica DNS.
 
 ## Clienti in `site-renderer/out/` (fuori git)
 

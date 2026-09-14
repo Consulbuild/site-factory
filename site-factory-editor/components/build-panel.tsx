@@ -1,31 +1,88 @@
 "use client";
 
-// Scheda Build & Pubblica (DESIGN-BRIEF.md §Scheda Build): tre momenti in
-// sequenza reale (1·Build → 2·Revisione → 3·Pubblicazione), UNA azione
-// primaria contestuale allo stato, esiti in riga dati mono. La build è
-// deterministica (io.script): il RunLog mostra le fasi assemble/validate/astro.
+// Scheda «Build & Pubblica» (piano 2026-09-14): UNA scheda per tutta la
+// pubblicazione, demo e sito reale. Tre momenti in sequenza reale
+// (1·Build → 2·Revisione → 3·Pubblicazione, il terzo diverso per percorso),
+// UNA azione primaria che vive SOLO nella action bar fissa, e a sinistra della
+// bar il motivo — scritto, mai in un tooltip — per cui si è pronti o bloccati.
+// Le sezioni rendono le altre azioni (secondary/ghost/danger) e omettono la
+// primaria. Con un run vivo per il cliente tutto è disabilitato.
+// La build è deterministica (io.script): il RunLog mostra assemble/validate/astro.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ExternalLink, LinkIcon, MessageCircle } from "lucide-react";
 import type { ClientState } from "@/lib/schemas";
-import { Badge, Banner, StepBadge, btnPrimary, btnSecondary, btnGhost } from "./ui";
+import { formatElapsed, nomeStep } from "@/lib/agenti";
+import { Badge, Banner, StepBadge, btnPrimary, btnSecondary, btnGhost, btnDanger } from "./ui";
 import { useStepRun, RunLog } from "./use-step-run";
+import { useRuns } from "./run-provider";
 import { BackBar } from "./back-bar";
 import { ConfirmDialog } from "./confirm-dialog";
 import { useUnsavedGuard } from "./use-unsaved-guard";
-import { KeySetup } from "./home";
+import { ggmm } from "./portafoglio-ui";
+import { PubblicazioneDemo, dtBreve, giorniA, numeroWa, testoWa } from "./pubblicazione-demo";
+import { PubblicazioneSito } from "./pubblicazione-sito";
 
 type BuildState = ClientState["steps"]["build"];
+type Demo = NonNullable<ClientState["demo"]>;
+type Catena = NonNullable<ClientState["catena"]>;
 
-const dt = (iso?: string) =>
-  iso ? new Date(iso).toLocaleString("it-IT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
+const NOME_PASSO: Record<string, string> = {
+  intake: "Intake",
+  contesto: "Contesto",
+  palette: "Palette",
+  logo: "Logo",
+  copy: "Copy",
+  lavori: "Foto dei lavori",
+  images: "Immagini",
+  legale: "Legale",
+  build: "Build",
+  deploy: "Pubblicazione",
+};
+
+/** Un'azione della scheda: la primaria va nella bar, le altre nella sezione. */
+type Azione = {
+  key: string;
+  label: string;
+  tone: "secondary" | "ghost" | "danger";
+  onClick?: () => void;
+  href?: string;
+  disabled?: boolean;
+  icon?: React.ReactNode;
+};
+const CLASSE: Record<Azione["tone"], string> = { secondary: btnSecondary, ghost: btnGhost, danger: btnDanger };
+
+function Bottone({ a, bloccata }: { a: Azione; bloccata: boolean }) {
+  const disabled = bloccata || !!a.disabled;
+  if (a.href && !disabled) {
+    return (
+      <a href={a.href} target="_blank" rel="noreferrer" className={CLASSE[a.tone]}>
+        {a.icon} {a.label}
+      </a>
+    );
+  }
+  return (
+    <button type="button" className={CLASSE[a.tone]} onClick={a.onClick} disabled={disabled}>
+      {a.icon} {a.label}
+    </button>
+  );
+}
 
 export function BuildPanel({
   slug,
   businessName,
+  referente,
+  telefono,
   build,
   percorso,
+  demo,
+  catena,
+  catenaViva,
+  demoScaduta,
+  hostPrevisto,
+  anteprimaAttiva,
   imagesOk,
   staleFiles,
   cfTokenOk,
@@ -35,8 +92,19 @@ export function BuildPanel({
 }: {
   slug: string;
   businessName: string;
+  referente?: string;
+  telefono?: string;
   build: BuildState;
   percorso: ClientState["percorso"];
+  demo?: Demo;
+  catena?: Catena;
+  /** La catena è viva nel processo (coda o in corso). */
+  catenaViva: boolean;
+  /** Demo accesa oltre la scadenza (predicato del sweep, lib/portafoglio-shared.ts). */
+  demoScaduta: boolean;
+  hostPrevisto: string;
+  /** Slug del cliente servito ora su :4399 (null = nessuno). */
+  anteprimaAttiva: string | null;
   imagesOk: boolean;
   staleFiles: string[];
   cfTokenOk: boolean;
@@ -47,53 +115,72 @@ export function BuildPanel({
 }) {
   const router = useRouter();
   const runner = useStepRun(slug, "build");
+  const { vivi } = useRuns();
+  const runVivo = vivi.find((r) => r.kind === "cliente" && r.slug === slug);
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!runVivo) return;
+    const t = setInterval(() => setTick((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, [runVivo]);
 
   const [busy, setBusy] = useState(false);
   const [errore, setErrore] = useState<string | null>(null);
+  const [esito, setEsito] = useState<string | null>(null);
   const [dominio, setDominio] = useState(build.dominio ?? "");
   const [dominioMsg, setDominioMsg] = useState<string | null>(null);
-  const [chiediPubblica, setChiediPubblica] = useState(false);
+  const [dialog, setDialog] = useState<"pubblica" | "demo" | "spegni" | "abbonato" | "proroga" | "parziale" | null>(null);
   // Guardia sull'unico campo editabile della scheda: il dominio non salvato.
   const dominioDirty = dominio !== (build.dominio ?? "");
-  const { navigate, dialog } = useUnsavedGuard(dominioDirty);
+  const { navigate, dialog: guardia } = useUnsavedGuard(dominioDirty);
 
+  /* ---------------- stato derivato ---------------- */
+  const isDemo = percorso === "demo";
   const completa = build.stato !== "assente" && !build.partial;
   const daConfermare = build.stato === "da_verificare" && completa;
   const verificata = build.stato === "verificato" && completa;
-  const buildNonPubblicata =
-    !!build.deploy && !!build.builtAt && build.builtAt > build.deploy.deployedAt;
-  // canonical e og: assoluti si fissano nell'HTML alla build (SITE_URL dal
-  // dominio): dominio cambiato dopo l'ultima build → il deploy rifiuta, qui
-  // si spiega e si riporta la primaria su «Builda».
-  const rebuildPerDominio =
-    completa && build.siteUrl !== (build.dominio ? `https://${build.dominio}` : undefined);
-  // Specchio dell'interlock del deploy sulle integrazioni cotte nell'HTML
-  // (script Umami, action del modulo): col dominio devono esserci e puntare al
-  // sito Umami corrente; senza dominio non devono esserci.
-  const rebuildPerIntegrazioni =
-    completa &&
-    (build.dominio
-      ? !build.integrazioni || build.integrazioni.umamiWebsiteId !== build.umamiWebsiteId
-      : !!build.integrazioni);
-  // Specchio dell'interlock sul noindex: la demo si pubblica solo da una build
-  // noindex, il sito reale solo da una build senza (percorso cambiato → ribuilda).
-  const rebuildPerPercorso = completa && !!build.noindex !== (percorso === "demo");
-  const rebuild = rebuildPerDominio || rebuildPerIntegrazioni || rebuildPerPercorso;
+  const catenaAttiva = !!catena && ["in_coda", "in_corso", "attesa_limite"].includes(catena.stato) && catenaViva;
+  const inCorso = runner.running || !!runVivo || catenaAttiva;
+
+  const demoAccesa = !!demo && !demo.spentaAt;
+  const demoSpenta = !!demo?.spentaAt;
+  const nuovaBuildDemo = demoAccesa && !!build.builtAt && build.builtAt > demo!.pubblicataAt;
+  const giorniDemo = demoAccesa ? giorniA(demo!.scadenza) : 0;
+  const inScadenza = demoAccesa && !demo!.congelata && !demoScaduta && giorniDemo <= 3;
+  const dominioLegacy = isDemo && build.dominio ? build.dominio : undefined;
+
+  const buildNonPubblicata = !!build.deploy && !!build.builtAt && build.builtAt > build.deploy.deployedAt;
   const vpsOk = vpsKeysOk.umami && vpsKeysOk.n8n;
 
-  // Una sola primaria contestuale: build → conferma → pubblica.
-  const momento: "build" | "conferma" | "pubblica" =
-    staleFiles.length > 0 || !completa || rebuild ? "build" : daConfermare ? "conferma" : "pubblica";
+  // Perché l'ultima build non è pubblicabile così com'è: specchio degli
+  // interlock di deployClient/deployDemo (noindex vs percorso, SITE_URL e
+  // integrazioni cotte nell'HTML alla build) — così la primaria torna su «Builda».
+  const rebuildMotivi: string[] = [];
+  if (completa && !!build.noindex !== isDemo) {
+    rebuildMotivi.push(build.noindex ? "build demo (noindex): il cliente è abbonato, serve il sito reale" : "build reale: il cliente è in percorso demo, serve la build noindex");
+  }
+  if (completa && !isDemo && build.siteUrl !== (build.dominio ? `https://${build.dominio}` : undefined)) {
+    rebuildMotivi.push(
+      build.dominio
+        ? `build prodotta ${build.siteUrl ? `con ${build.siteUrl}` : "senza dominio"}: canonical e og: devono puntare a https://${build.dominio}`
+        : `build prodotta col dominio ${build.siteUrl} ora rimosso`,
+    );
+  }
+  if (completa && !isDemo && (build.dominio ? !build.integrazioni || build.integrazioni.umamiWebsiteId !== build.umamiWebsiteId : !!build.integrazioni)) {
+    rebuildMotivi.push(build.dominio ? "integrazioni del dominio (Umami, modulo reale) assenti o di un altro sito Umami" : "integrazioni del dominio rimosso ancora nell'HTML");
+  }
+  const rebuild = rebuildMotivi.length > 0;
+  const buildBloccataVps = !isDemo && !!build.dominio && !vpsOk;
 
-  async function azione(body: Record<string, string>): Promise<Record<string, unknown> | null> {
+  /* ---------------- chiamate ---------------- */
+  async function post(url: string, body?: Record<string, unknown>): Promise<Record<string, unknown> | null> {
     setBusy(true);
     setErrore(null);
-    const res = await fetch(`/api/clients/${slug}/build`, {
+    const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      ...(body ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {}),
     });
-    const data = await res.json().catch(() => ({}));
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
     setBusy(false);
     if (!res.ok) {
       setErrore(String(data.error ?? `errore ${res.status}`));
@@ -101,79 +188,318 @@ export function BuildPanel({
     }
     return data;
   }
+  const azioneBuild = (body: Record<string, string>) => post(`/api/clients/${slug}/build`, body);
 
   async function apriAnteprima() {
-    const data = await azione({ action: "preview" });
-    if (data?.url) window.open(String(data.url), "_blank");
+    const data = await azioneBuild({ action: "preview" });
+    if (data?.url) {
+      window.open(String(data.url), "_blank");
+      router.refresh();
+    }
   }
-
   async function conferma() {
-    if (await azione({ action: "confirm" })) router.refresh();
+    if (await azioneBuild({ action: "confirm" })) router.refresh();
   }
-
-  async function salvaDominio() {
+  async function salvaDominio(valore = dominio) {
     setDominioMsg(null);
-    const data = await azione({ action: "domain", dominio });
+    const data = await azioneBuild({ action: "domain", dominio: valore });
     if (data) {
-      setDominioMsg(dominio ? "Dominio salvato: sarà usato alla prossima pubblicazione." : "Dominio rimosso.");
+      setDominio(valore);
+      setDominioMsg(valore ? "Dominio salvato: sarà usato alla prossima build e pubblicazione." : "Dominio rimosso.");
       router.refresh(); // riallinea build.dominio (spegne la guardia unsaved)
     }
   }
-
-  async function pubblica() {
-    setBusy(true);
-    setErrore(null);
-    const res = await fetch(`/api/clients/${slug}/deploy`, { method: "POST" });
-    const data = await res.json().catch(() => ({}));
-    setBusy(false);
-    if (!res.ok) {
-      setErrore(String(data.error ?? `errore ${res.status}`));
-      return;
-    }
+  async function pubblicaSito() {
+    const data = await post(`/api/clients/${slug}/deploy`);
+    if (data) router.refresh();
+  }
+  async function demoAzione(action: "pubblica" | "spegni" | "abbonato" | "proroga"): Promise<boolean> {
+    setEsito(null);
+    const data = await post(`/api/clients/${slug}/demo`, { action });
+    if (!data) return false;
+    if (action === "proroga" && typeof data.scadenza === "string") setEsito(`Prorogata fino al ${ggmm(data.scadenza)}.`);
+    if (action === "spegni") setEsito("Demo spenta.");
+    if (action === "pubblica") setEsito(demoAccesa ? "Demo ripubblicata." : "Demo online.");
     router.refresh();
+    return true;
+  }
+  function copiaLink(url: string) {
+    void navigator.clipboard.writeText(url);
+    setEsito("Link copiato.");
+  }
+  const lanciaBuild = () => runner.run("generate", "Build completa: media → assemble → validate → astro build…");
+  const lanciaParziale = () => runner.run("partial", "Build parziale: gli artifact mancanti restano ai segnaposto del blueprint…");
+
+  /* ---------------- azioni per stato ---------------- */
+  const wa = telefono ? numeroWa(telefono) : null;
+  const A = {
+    builda: { key: "builda", label: "Builda il sito", tone: "secondary", onClick: lanciaBuild, disabled: !imagesOk || buildBloccataVps || !!dominioLegacy } as Azione,
+    parziale: {
+      key: "parziale",
+      label: "Anteprima parziale",
+      tone: "ghost",
+      onClick: () => (verificata || build.deploy || demoAccesa ? setDialog("parziale") : lanciaParziale()),
+    } as Azione,
+    anteprima: { key: "anteprima", label: "Apri anteprima", tone: "secondary", onClick: apriAnteprima, icon: <ExternalLink className="size-3.5" aria-hidden /> } as Azione,
+    conferma: { key: "conferma", label: "Conferma build", tone: "secondary", onClick: conferma, disabled: !daConfermare } as Azione,
+    pubblicaDemo: { key: "pubblica-demo", label: demoSpenta ? "Riaccendi demo" : demoAccesa ? "Ripubblica demo" : "Pubblica demo", tone: "secondary", onClick: () => setDialog("demo") } as Azione,
+    whatsapp: demoAccesa && wa
+      ? ({ key: "whatsapp", label: "Invia su WhatsApp", tone: "secondary", href: `https://wa.me/${wa}?text=${encodeURIComponent(testoWa(businessName, referente, demo!))}`, icon: <MessageCircle className="size-3.5" aria-hidden /> } as Azione)
+      : null,
+    copia: demoAccesa ? ({ key: "copia", label: "Copia link", tone: "secondary", onClick: () => copiaLink(demo!.url), icon: <LinkIcon className="size-3.5" aria-hidden /> } as Azione) : null,
+    apriDemo: demoAccesa ? ({ key: "apri-demo", label: "Apri demo", tone: "ghost", href: demo!.url, icon: <ExternalLink className="size-3.5" aria-hidden /> } as Azione) : null,
+    abbonato: { key: "abbonato", label: "Il cliente si è abbonato", tone: "secondary", onClick: () => setDialog("abbonato") } as Azione,
+    proroga: demoAccesa && !demo!.congelata ? ({ key: "proroga", label: "Proroga +15 gg", tone: "ghost", onClick: () => setDialog("proroga") } as Azione) : null,
+    spegni: demoAccesa ? ({ key: "spegni", label: demoScaduta ? "Spegni demo adesso" : "Spegni demo", tone: "danger", onClick: () => setDialog("spegni") } as Azione) : null,
+    pubblicaSito: { key: "pubblica-sito", label: build.deployErrore ? "Riprova la pubblicazione" : build.deploy ? "Ripubblica" : "Pubblica su Cloudflare", tone: "secondary", onClick: () => setDialog("pubblica") } as Azione,
+    copiaSito: build.deploy ? ({ key: "copia-sito", label: "Copia link", tone: "ghost", onClick: () => copiaLink(build.deploy!.url), icon: <LinkIcon className="size-3.5" aria-hidden /> } as Azione) : null,
+  };
+
+  // Decisione: (primaria, frase della bar, azioni della sezione 3). Una sola
+  // primaria; se non c'è nulla da fare la bar lo dice.
+  let primaria: Azione | null = null;
+  let bar = "";
+  let azioni3: Array<Azione | null> = [];
+
+  if (inCorso) {
+    primaria = null;
+    bar = runner.running
+      ? "Build in corso: le azioni tornano quando finisce."
+      : catenaAttiva
+        ? `Catena in corso · passo ${NOME_PASSO[catena?.passo ?? ""] ?? catena?.passo ?? "—"}${runVivo ? ` · ${runVivo.fase ?? `${nomeStep(runVivo)}: avvio…`} · ${formatElapsed(Date.now() - runVivo.startedAt)}` : ""}: le azioni tornano quando finisce.`
+        : `${nomeStep(runVivo!)} in corso${runVivo?.fase ? ` · ${runVivo.fase}` : ""} · ${formatElapsed(Date.now() - runVivo!.startedAt)}: le azioni tornano quando finisce.`;
+    azioni3 = isDemo ? [A.whatsapp, A.copia, A.apriDemo, A.abbonato, A.proroga, A.spegni] : [A.pubblicaSito, A.copiaSito];
+  } else if (dominioLegacy) {
+    primaria = null;
+    bar = "Demo bloccata: rimuovi il dominio salvato e ribuilda.";
+    azioni3 = [A.abbonato];
+  } else if (buildBloccataVps) {
+    primaria = null;
+    bar = "Build bloccata: chiavi del VPS mancanti (UMAMI_PASSWORD, N8N_REGISTRA_KEY) — aggiungile in Impostazioni.";
+    azioni3 = [A.pubblicaSito, A.copiaSito];
+  } else if (staleFiles.length > 0 || !completa || rebuild) {
+    primaria = { ...A.builda, disabled: !imagesOk };
+    bar = !imagesOk
+      ? "Build bloccata: immagini non verificate — conferma prima la scheda Immagini."
+      : staleFiles.length > 0
+        ? `Pronto per ribuildare: cambiato a monte (${staleFiles.join(", ")}).`
+        : build.partial
+          ? "Conferma bloccata: l'ultima build è parziale (segnaposto del blueprint) — builda il sito completo."
+          : rebuild
+            ? `Pronto per ribuildare: ${rebuildMotivi[0]}.`
+            : "Prossimo passo: builda il sito.";
+    azioni3 = isDemo ? [A.whatsapp, A.copia, A.apriDemo, A.abbonato, A.proroga, A.spegni] : [A.copiaSito];
+  } else if (daConfermare) {
+    primaria = A.conferma;
+    bar = "Pronto per la conferma: guardala come la vedrebbe il titolare, desktop e telefono.";
+    azioni3 = isDemo ? [A.whatsapp, A.copia, A.apriDemo, A.abbonato, A.proroga, A.spegni] : [A.copiaSito];
+  } else if (isDemo) {
+    if (demoScaduta) {
+      primaria = { key: "proroga", label: "Proroga +15 gg", tone: "secondary", onClick: () => setDialog("proroga") };
+      bar = "Demo scaduta: proroga se il cliente è ancora interessato, altrimenti spegnila.";
+      azioni3 = [A.whatsapp, A.copia, A.apriDemo, A.abbonato, A.spegni];
+    } else if (nuovaBuildDemo) {
+      primaria = A.pubblicaDemo;
+      bar = `Pronto per ripubblicare: la build del ${dtBreve(build.builtAt)} è più recente della demo online (${dtBreve(demo!.pubblicataAt)}).`;
+      azioni3 = [A.whatsapp, A.copia, A.apriDemo, A.abbonato, A.proroga, A.spegni];
+    } else if (inScadenza) {
+      primaria = { key: "proroga", label: "Proroga +15 gg", tone: "secondary", onClick: () => setDialog("proroga") };
+      bar = `La demo scade tra ${Math.max(0, giorniDemo)} ${giorniDemo === 1 ? "giorno" : "giorni"}: proroga o lascia che si spenga.`;
+      azioni3 = [A.whatsapp, A.copia, A.apriDemo, A.abbonato, A.spegni];
+    } else if (demoAccesa) {
+      primaria = A.whatsapp ?? A.copia;
+      bar = "Demo online e aggiornata: mandala al cliente.";
+      azioni3 = [A.whatsapp, A.copia, A.apriDemo, A.abbonato, A.proroga, A.spegni];
+    } else if (demoSpenta) {
+      primaria = A.pubblicaDemo;
+      bar = `Pronto per riaccendere la demo su ${demo!.host}.`;
+      azioni3 = [A.anteprima, A.abbonato];
+    } else {
+      primaria = A.pubblicaDemo;
+      bar = `Pronto per pubblicare la demo su ${hostPrevisto} (15 giorni).`;
+      azioni3 = [A.anteprima, A.abbonato];
+    }
+  } else if (!cfTokenOk || !cfAccountOk) {
+    primaria = null;
+    bar = "Pubblicazione bloccata: chiavi Cloudflare mancanti.";
+    azioni3 = [];
+  } else if (build.deployErrore && !buildNonPubblicata) {
+    primaria = A.pubblicaSito;
+    bar = "Pubblicazione fallita: correggi la causa e riprova.";
+    azioni3 = [A.copiaSito];
+  } else if (!build.deploy) {
+    primaria = A.pubblicaSito;
+    bar = build.dominio ? `Pronto per pubblicare su https://${build.dominio}.` : "Pronto per pubblicare su workers.dev (senza dominio: anteprima, niente statistiche né modulo).";
+    azioni3 = [A.anteprima];
+  } else if (buildNonPubblicata) {
+    primaria = A.pubblicaSito;
+    bar = `Pronto per ripubblicare: la build del ${dtBreve(build.builtAt)} è più recente del sito online (${dtBreve(build.deploy.deployedAt)}).`;
+    azioni3 = [A.copiaSito];
+  } else if (build.infra?.errore) {
+    primaria = A.pubblicaSito;
+    bar = "Sito online, ma monitor o registro non aggiornati: ripubblica per riprovare.";
+    azioni3 = [A.copiaSito];
+  } else {
+    primaria = null;
+    bar = "Niente da fare: sito online e aggiornato all'ultima build.";
+    azioni3 = [A.pubblicaSito, A.copiaSito];
   }
 
+  const bloccata = inCorso || busy;
+  const rendi = (lista: Array<Azione | null>) =>
+    lista.filter((a): a is Azione => !!a && a.key !== primaria?.key).map((a) => <Bottone key={a.key} a={a} bloccata={bloccata} />);
+
+  const anteprimaAltrui = anteprimaAttiva && anteprimaAttiva !== slug ? anteprimaAttiva : null;
+
   return (
-    <div className="pb-16">
-      {dialog}
-      <BackBar slug={slug} businessName={businessName} step="Build" onNavigate={navigate} />
+    <div className="pb-28">
+      {guardia}
+      <BackBar slug={slug} businessName={businessName} step="Build & Pubblica" onNavigate={navigate} />
 
-      <div className="mt-4">
-        <h1 className="text-xl font-semibold">Build &amp; pubblicazione</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted">
-          Montaggio deterministico degli artifact confermati (niente AI): assemble → validazione → build statica.
-          Rivedi l&apos;anteprima, conferma, pubblica su Cloudflare.
-        </p>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <h1 className="text-xl font-semibold">Build &amp; Pubblica</h1>
+        <Badge tone={isDemo ? "brand" : "ok"}>{isDemo ? "percorso demo" : "percorso completo"}</Badge>
       </div>
+      <p className="mt-1 max-w-2xl text-sm text-muted">
+        {isDemo ? (
+          <>
+            Build noindex → demo su <span className="mono">{hostPrevisto}</span> per 15 giorni. Il sito reale si builda dopo
+            l&apos;abbonamento.
+          </>
+        ) : (
+          <>Build reale col dominio → Cloudflare, con statistiche e modulo attivi. Montaggio deterministico, niente AI.</>
+        )}
+      </p>
 
+      {/* dialog */}
       <ConfirmDialog
-        open={chiediPubblica}
+        open={dialog === "pubblica"}
         title={build.deploy ? "Ripubblicare il sito?" : "Pubblicare il sito?"}
         message={
           (build.deploy
             ? "Il sito online su Cloudflare verrà sostituito con questa build. L'operazione può richiedere qualche minuto."
             : "La build confermata va online su Cloudflare Workers. L'operazione può richiedere qualche minuto.") +
-          (build.dominio ? " Col dominio: sito registrato su Umami e nel monitor, modulo reale attivo." : "")
+          (build.dominio ? " Col dominio: sito registrato su Umami e nel monitor, modulo reale attivo; la demo si spegne da sola." : "")
         }
-        confirmLabel={build.deploy ? "Ripubblica" : "Pubblica"}
-        onConfirm={() => {
-          setChiediPubblica(false);
-          pubblica();
+        confirmLabel={busy ? "Pubblico…" : build.deploy ? "Ripubblica" : "Pubblica"}
+        confirmDisabled={busy}
+        onConfirm={async () => {
+          setDialog(null);
+          await pubblicaSito();
         }}
-        onCancel={() => setChiediPubblica(false)}
+        onCancel={() => setDialog(null)}
+      />
+      <ConfirmDialog
+        open={dialog === "demo"}
+        title={demoAccesa ? "Ripubblicare la demo?" : demoSpenta ? "Riaccendere la demo?" : "Pubblicare la demo?"}
+        message={
+          <>
+            La build confermata va online su <span className="mono">{demoAccesa ? demo!.host : hostPrevisto}</span>: modulo
+            simulato, nessuna statistica, fuori dai motori di ricerca.{" "}
+            {demoAccesa ? "La scadenza non cambia." : "Resta online 15 giorni, poi si spegne da sola."} Al primo avvio il
+            certificato può richiedere qualche minuto.
+          </>
+        }
+        confirmLabel={busy ? "Pubblico…" : demoAccesa ? "Ripubblica" : demoSpenta ? "Riaccendi" : "Pubblica"}
+        confirmDisabled={busy}
+        onConfirm={async () => {
+          if (await demoAzione("pubblica")) setDialog(null);
+        }}
+        onCancel={() => setDialog(null)}
+      />
+      <ConfirmDialog
+        open={dialog === "spegni"}
+        title="Spegnere la demo?"
+        message={
+          <>
+            <span className="mono">{demo?.host}</span> smette di rispondere. Solo il worker della demo viene cancellato: la
+            build resta e la puoi riaccendere.
+          </>
+        }
+        confirmLabel={busy ? "Spengo…" : "Spegni"}
+        tone="danger"
+        confirmDisabled={busy}
+        onConfirm={async () => {
+          if (await demoAzione("spegni")) setDialog(null);
+        }}
+        onCancel={() => setDialog(null)}
+      />
+      <ConfirmDialog
+        open={dialog === "proroga"}
+        title="Prorogare la demo di 15 giorni?"
+        message={
+          demo ? (
+            <>
+              Nuova scadenza: <span className="mono">{ggmm(new Date(Math.max(Date.parse(demo.scadenza), Date.now()) + 15 * 86_400_000).toISOString())}</span>{" "}
+              (15 giorni da oggi o dalla scadenza attuale, la più lontana).
+            </>
+          ) : (
+            ""
+          )
+        }
+        confirmLabel={busy ? "Prorogo…" : "Proroga"}
+        confirmDisabled={busy}
+        onConfirm={async () => {
+          if (await demoAzione("proroga")) setDialog(null);
+        }}
+        onCancel={() => setDialog(null)}
+      />
+      <ConfirmDialog
+        open={dialog === "abbonato"}
+        title="Il cliente si è abbonato?"
+        message={
+          <>
+            Il cliente passa al percorso completo: la demo non scade più e la catena riparte da sola con i documenti
+            legali. Quando avrai comprato il dominio, inseriscilo qui e la catena pubblicherà il sito.
+          </>
+        }
+        confirmLabel={busy ? "Confermo…" : "Sì, si è abbonato"}
+        confirmDisabled={busy}
+        onConfirm={async () => {
+          if (await demoAzione("abbonato")) setDialog(null);
+        }}
+        onCancel={() => setDialog(null)}
+      />
+      <ConfirmDialog
+        open={dialog === "parziale"}
+        title="Sovrascrivere la build?"
+        message="L'anteprima parziale sostituisce la dist dell'ultima build e annulla la conferma. Ciò che è online resta online, ma da qui non potrai ripubblicarlo finché non ribuildi il sito completo."
+        confirmLabel="Builda parziale"
+        tone="danger"
+        onConfirm={() => {
+          setDialog(null);
+          lanciaParziale();
+        }}
+        onCancel={() => setDialog(null)}
       />
 
       {staleFiles.length > 0 && !runner.running && (
-        <div className="mt-4 rounded-ctl border border-warn/40 bg-warn-bg px-4 py-3 text-sm">
-          <p className="font-medium text-warn">⚠ Cambiato a monte dopo l&apos;ultima build</p>
-          <p className="mono mt-1 text-warn">{staleFiles.join(" · ")}</p>
-          <p className="mt-1 text-warn">Ribuilda per portare le correzioni nel sito.</p>
+        <div className="mt-4">
+          <Banner tone="warn" title="Cambiato a monte dopo l'ultima build">
+            <span className="mono">{staleFiles.join(" · ")}</span> — ribuilda per portare le correzioni nel sito.
+          </Banner>
         </div>
       )}
-
+      {catena?.stato === "ferma" && (
+        <div className="mt-4">
+          <Banner
+            tone="warn"
+            title={`Catena ferma a ${NOME_PASSO[catena.passo ?? ""] ?? catena.passo ?? "—"}`}
+            actions={
+              <Link href={`/clienti/${slug}`} className={btnGhost}>
+                Riprendi dal cliente →
+              </Link>
+            }
+          >
+            {catena.errore}
+          </Banner>
+        </div>
+      )}
       {errore && (
-        <div className="mt-4 rounded-ctl border border-err/40 bg-err-bg px-4 py-3 text-sm text-err">
-          <p className="whitespace-pre-wrap">{errore}</p>
+        <div className="mt-4">
+          <Banner tone="err" title="Errore">
+            <span className="whitespace-pre-wrap">{errore}</span>
+          </Banner>
         </div>
       )}
 
@@ -181,25 +507,10 @@ export function BuildPanel({
       <section className="mt-8 border-t border-line pt-6 first:border-t-0">
         <h2 className="mb-3 text-xs font-semibold tracking-wide text-faint uppercase">1 · Build</h2>
         <div className="flex flex-wrap items-center gap-3">
-          <button
-            className={momento === "build" ? btnPrimary : btnSecondary}
-            onClick={() => runner.run("generate", "Build completa: media → assemble → validate → astro build…")}
-            disabled={runner.running || !imagesOk}
-            title={!imagesOk ? "Prima verifica le immagini: la build completa monta gli artifact confermati." : undefined}
-          >
-            {runner.running ? "Build in corso…" : "Builda il sito"}
-          </button>
-          <button
-            className={btnGhost}
-            onClick={() => runner.run("partial", "Build parziale: gli artifact mancanti restano ai segnaposto del blueprint…")}
-            disabled={runner.running}
-            title="Builda anche a metà pipeline: gli artifact mancanti usano i testi d'esempio del blueprint. Non pubblicabile."
-          >
-            Anteprima parziale
-          </button>
+          {rendi([A.builda, A.parziale])}
           {build.builtAt && (
-            <span className="mono ml-auto text-xs text-muted">
-              ultima: {dt(build.builtAt)} · {build.pages} pagine · {build.sizeKb} KB{" "}
+            <span className="mono ml-auto flex items-center gap-2 text-xs text-muted">
+              ultima: {dtBreve(build.builtAt)} · {build.pages} pagine · {build.sizeKb} KB
               {build.partial && <Badge tone="warn">parziale</Badge>}
               {build.noindex && <Badge tone="idle">noindex</Badge>}
             </span>
@@ -216,28 +527,21 @@ export function BuildPanel({
           <p className="text-sm text-faint">Dopo la build, qui apri l&apos;anteprima e la confermi.</p>
         ) : (
           <div className="flex flex-wrap items-center gap-3">
-            <button className={btnSecondary} onClick={apriAnteprima} disabled={busy || runner.running}>
-              Apri anteprima ↗
-            </button>
+            {rendi([A.anteprima])}
             <span className="text-xs text-muted">
               localhost:4399 — guardala come la vedrebbe il titolare, desktop e mobile.
+              {anteprimaAltrui && (
+                <>
+                  {" "}
+                  <span className="text-warn">
+                    L&apos;anteprima mostra ora <span className="mono">{anteprimaAltrui}</span>: riaprila per vedere questo cliente.
+                  </span>
+                </>
+              )}
             </span>
             <span className="ml-auto flex items-center gap-3">
               <StepBadge stato={build.stato} />
-              <button
-                className={momento === "conferma" ? btnPrimary : btnSecondary}
-                onClick={conferma}
-                disabled={busy || runner.running || !daConfermare}
-                title={
-                  build.partial
-                    ? "L'ultima build è parziale: si conferma solo una build completa."
-                    : build.stato !== "da_verificare"
-                      ? "Nulla da confermare in questo stato."
-                      : undefined
-                }
-              >
-                Conferma build
-              </button>
+              {daConfermare && rendi([A.conferma])}
             </span>
           </div>
         )}
@@ -245,209 +549,71 @@ export function BuildPanel({
 
       {/* 3 · PUBBLICAZIONE */}
       <section className="mt-8 border-t border-line pt-6">
-        <h2 className="mb-3 text-xs font-semibold tracking-wide text-faint uppercase">3 · Pubblicazione</h2>
-
-        {!cfTokenOk || !cfAccountOk ? (
-          <div className="space-y-4">
-            {!cfTokenOk && (
-              <KeySetup
-                name="CLOUDFLARE_API_TOKEN"
-                title="Token Cloudflare"
-                description="Token API con permesso «Edit Cloudflare Workers» (dash.cloudflare.com → My Profile → API Tokens). Salvato nel portachiavi macOS, mai in chiaro su disco."
-                placeholder="token…"
-              />
-            )}
-            {!cfAccountOk && (
-              <KeySetup
-                name="CLOUDFLARE_ACCOUNT_ID"
-                title="Account ID Cloudflare"
-                description="L'ID account (32 caratteri esadecimali, in dashboard sotto Workers & Pages → Overview)."
-                placeholder="0123abcd…"
-              />
-            )}
-          </div>
+        <h2 className="mb-3 text-xs font-semibold tracking-wide text-faint uppercase">3 · Pubblicazione {isDemo ? "· demo" : "· sito"}</h2>
+        {isDemo ? (
+          <PubblicazioneDemo
+            demo={demo}
+            hostPrevisto={hostPrevisto}
+            scaduta={demoScaduta}
+            nuovaBuild={nuovaBuildDemo}
+            builtAt={build.builtAt}
+            buildConfermata={verificata && !!build.noindex}
+            dominioLegacy={dominioLegacy}
+            azioni={rendi(azioni3)}
+            esito={esito}
+            busy={bloccata}
+            onRiprovaSpegni={() => setDialog("spegni")}
+            onRimuoviDominio={() => void salvaDominio("")}
+          />
         ) : (
-          <>
-            <div className="flex flex-wrap items-center gap-2">
-              <label className="text-sm text-muted" htmlFor="dominio">
-                Dominio custom (opzionale)
-              </label>
-              <input
-                id="dominio"
-                value={dominio}
-                onChange={(e) => {
-                  setDominio(e.target.value);
-                  setDominioMsg(null);
-                }}
-                placeholder="impresarossi.it"
-                className="max-w-xs"
-                autoComplete="off"
-              />
-              <button className={btnSecondary} onClick={salvaDominio} disabled={busy || dominio === (build.dominio ?? "")}>
-                Salva
-              </button>
-              <span className="text-xs text-faint">richiede la zona DNS già attiva sull&apos;account Cloudflare</span>
-            </div>
-            {dominioMsg && <p className="mt-2 text-sm text-ok">{dominioMsg}</p>}
-
-            {build.dominio && !vpsOk && (
-              <div className="mt-4">
-                <Banner tone="warn" title="Chiavi del VPS mancanti">
-                  Col dominio la build registra il sito su Umami e il modulo sul registro n8n: servono{" "}
-                  {!vpsKeysOk.umami && <span className="mono">UMAMI_PASSWORD</span>}
-                  {!vpsKeysOk.umami && !vpsKeysOk.n8n && " e "}
-                  {!vpsKeysOk.n8n && <span className="mono">N8N_REGISTRA_KEY</span>} in{" "}
-                  <Link href="/impostazioni" className="text-brand hover:underline">
-                    Impostazioni → Chiavi API
-                  </Link>
-                  .
-                </Banner>
-              </div>
-            )}
-
-            {rebuild && (
-              <div className="mt-4">
-                <Banner tone="warn" title="Ribuilda prima di pubblicare">
-                  {rebuildPerPercorso ? (
-                    build.noindex ? (
-                      <>
-                        L&apos;ultima build è la demo (noindex) ma il cliente è in percorso completo: ribuilda e riconferma
-                        per avere il sito reale, indicizzabile.
-                      </>
-                    ) : (
-                      <>
-                        L&apos;ultima build è un sito reale ma il cliente è in percorso demo: ribuilda e riconferma per
-                        avere la build noindex della demo.
-                      </>
-                    )
-                  ) : rebuildPerDominio ? (
-                    build.dominio ? (
-                      <>
-                        L&apos;ultima build è stata prodotta{" "}
-                        {build.siteUrl ? (
-                          <>con un altro dominio (<span className="mono">{build.siteUrl}</span>)</>
-                        ) : (
-                          "senza dominio"
-                        )}
-                        : canonical e og: assoluti si fissano nell&apos;HTML al momento della build. Ribuilda e
-                        riconferma per pubblicare con <span className="mono">https://{build.dominio}</span> nei metadati.
-                      </>
-                    ) : (
-                      <>
-                        L&apos;ultima build è stata prodotta col dominio ora rimosso (
-                        <span className="mono">{build.siteUrl}</span>): canonical e og: assoluti nell&apos;HTML puntano
-                        ancora lì. Ribuilda e riconferma prima di pubblicare.
-                      </>
-                    )
-                  ) : build.dominio ? (
-                    <>
-                      L&apos;ultima build non contiene le integrazioni del dominio (statistiche Umami e modulo reale),
-                      o punta a un sito Umami diverso: si fissano nell&apos;HTML al momento della build. Ribuilda e
-                      riconferma prima di pubblicare.
-                    </>
-                  ) : (
-                    <>
-                      L&apos;ultima build contiene ancora le integrazioni del dominio ora rimosso (statistiche e
-                      modulo): un sito senza dominio deve restare demo. Ribuilda e riconferma prima di pubblicare.
-                    </>
-                  )}
-                </Banner>
-              </div>
-            )}
-
-            <div className="mt-4 card px-4 py-3 text-sm">
-              {build.deploy ? (
-                <div className="flex flex-wrap items-center gap-3">
-                  <Badge tone="ok">● online</Badge>
-                  <a href={build.deploy.url} target="_blank" rel="noreferrer" className="mono text-brand hover:underline">
-                    {build.deploy.url}
-                  </a>
-                  <button
-                    className={btnGhost}
-                    onClick={() => navigator.clipboard.writeText(build.deploy!.url)}
-                    title="Copia l'URL da mandare al cliente"
-                  >
-                    copia
-                  </button>
-                  <span className="mono ml-auto text-xs text-muted">pubblicato il {dt(build.deploy.deployedAt)}</span>
-                </div>
-              ) : (
-                <span className="text-muted">Non ancora pubblicato.</span>
-              )}
-              {buildNonPubblicata && (
-                <p className="mt-2 text-xs text-warn">⚠ La build più recente non è ancora pubblicata: ripubblica.</p>
-              )}
-              {build.deploy?.dominio && (
-                <div className="mono mt-3 grid gap-1 border-t border-line pt-3 text-xs text-muted">
-                  <p>
-                    Statistiche ·{" "}
-                    {build.umamiWebsiteId ? (
-                      <a
-                        href={`${umamiHost}/websites/${build.umamiWebsiteId}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-brand hover:underline"
-                      >
-                        Umami {build.umamiWebsiteId}
-                      </a>
-                    ) : (
-                      "non registrate"
-                    )}
-                  </p>
-                  <p>Modulo · {build.integrazioni?.formAction ?? `form-lead?slug=${slug}`}</p>
-                  <p>
-                    Monitor e registro ·{" "}
-                    {build.infra
-                      ? `${build.infra.commit ? `commit ${build.infra.commit} · ` : ""}push ${build.infra.pushed ? "ok" : "non riuscito"} · registro n8n ${build.infra.n8nOk ? "ok" : "KO"} · ${dt(build.infra.at)}`
-                      : "non ancora sincronizzati"}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {build.infra?.errore && (
-              <div className="mt-4">
-                <Banner tone="err" title="Integrazioni non sincronizzate">
-                  Il sito è online, ma monitor o registro del modulo non sono aggiornati:{" "}
-                  <span className="mono">{build.infra.errore}</span>. Ripubblica per riprovare.
-                </Banner>
-              </div>
-            )}
-
-            {build.noindex && (
-              <div className="mt-4">
-                <Banner tone="brand" title="Build demo (noindex)">
-                  Questa build è fuori dai motori di ricerca: si pubblica come demo dalla card «Demo» dell&apos;hub, su{" "}
-                  <span className="mono">demo.consulbuild.com</span>. Il sito reale si builda dopo «Il cliente si è
-                  abbonato», col dominio.
-                </Banner>
-              </div>
-            )}
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <button
-                className={momento === "pubblica" && !build.noindex ? btnPrimary : btnSecondary}
-                onClick={() => setChiediPubblica(true)}
-                disabled={busy || runner.running || !verificata || rebuild || !!build.noindex}
-                title={
-                  build.noindex
-                    ? "Build demo: si pubblica dalla card «Demo» dell'hub."
-                    : rebuild
-                    ? "Il dominio o le integrazioni sono cambiati dopo l'ultima build: ribuilda e riconferma prima di pubblicare."
-                    : !verificata
-                      ? "Si pubblica solo una build completa, rivista e confermata."
-                      : undefined
-                }
-              >
-                {busy ? "Pubblicazione in corso… (può richiedere qualche minuto)" : build.deploy ? "Ripubblica" : "Pubblica su Cloudflare"}
-              </button>
-              <span className="text-xs text-faint">
-                URL standard: https://{slug}.&lt;account&gt;.workers.dev — al primissimo deploy dell&apos;account
-                Cloudflare può servire registrare il subdomain workers.dev dalla dashboard (una tantum).
-              </span>
-            </div>
-          </>
+          <PubblicazioneSito
+            slug={slug}
+            build={build}
+            umamiHost={umamiHost}
+            cfTokenOk={cfTokenOk}
+            cfAccountOk={cfAccountOk}
+            vpsKeysOk={vpsKeysOk}
+            dominio={dominio}
+            setDominio={(v) => {
+              setDominio(v);
+              setDominioMsg(null);
+            }}
+            dominioMsg={dominioMsg}
+            onSalvaDominio={() => void salvaDominio()}
+            rebuildMotivi={rebuildMotivi}
+            buildNonPubblicata={buildNonPubblicata}
+            demo={demo}
+            azioni={rendi(azioni3)}
+            esito={esito}
+            busy={bloccata}
+            onSpegniDemo={() => setDialog("spegni")}
+          />
         )}
       </section>
+
+      {/* action bar fissa: il motivo a sinistra, l'unica primaria a destra */}
+      <div className="fixed inset-x-0 bottom-(--statusbar-offset) z-10 border-t border-line bg-bg/95 backdrop-blur-sm">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-6 py-3">
+          <span className="text-xs text-faint" role="status">
+            {bar}
+          </span>
+          {primaria ? (
+            primaria.href && !bloccata ? (
+              <a href={primaria.href} target="_blank" rel="noreferrer" className={`${btnPrimary} shrink-0`}>
+                {primaria.icon} {primaria.label}
+              </a>
+            ) : (
+              <button type="button" className={`${btnPrimary} shrink-0`} onClick={primaria.onClick} disabled={bloccata || !!primaria.disabled}>
+                {busy ? "Un momento…" : primaria.label}
+              </button>
+            )
+          ) : inCorso ? (
+            <Link href={`/clienti/${slug}`} className={`${btnGhost} shrink-0`}>
+              Gestisci la catena nel cliente →
+            </Link>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

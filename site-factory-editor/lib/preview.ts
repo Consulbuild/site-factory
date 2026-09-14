@@ -77,6 +77,9 @@ function createServer(): http.Server {
   return server;
 }
 
+/** Dist attualmente servita su :4399 (null = nessuna): la scheda dice di quale cliente è l'anteprima. */
+export const previewRoot = (): string | null => globalThis.__previewServer?.root ?? null;
+
 /** Punta l'anteprima sulla dist data e ritorna l'URL locale. */
 export function setPreviewRoot(distDir: string): string {
   globalThis.__previewServer ??= { server: createServer(), root: null };

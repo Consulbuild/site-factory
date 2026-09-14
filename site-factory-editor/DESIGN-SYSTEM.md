@@ -183,6 +183,10 @@ su click voce via `closest("details")?.removeAttribute("open")`).
 - **Eliminazioni forti**: `ConfirmDialog tone="danger"` con `children` = input in cui
   digitare il nome esatto (`confirmDisabled` finché non combacia); il server
   **riverifica** (422). Vedi `EliminaClienteDialog`.
+- **Il motivo del blocco si scrive, mai in un tooltip**: nelle schede con action bar
+  fissa (Legale, Build & Pubblica) la primaria sta SOLO nella bar e a sinistra c'è la
+  frase «Pronto per …» / «… bloccata: motivo»; un bottone disabilitato non ha mai il
+  perché nascosto in `title`. Se non c'è nulla da fare la bar lo dice («Niente da fare: …»).
 - **Staleness**: il banner dice **cosa** è cambiato (elenco file mono), non solo "è
   cambiato". Tre azioni tipiche: «Aggiorna con l'AI» (update, primaria) / «Rigenera da
   zero» (secondaria) / «Va bene così» (ghost, ack).

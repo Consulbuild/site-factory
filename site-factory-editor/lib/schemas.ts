@@ -137,6 +137,8 @@ export const ClientStateSchema = z.object({
             dominio: z.string().optional(),
           })
           .optional(),
+        /** Ultima pubblicazione FALLITA (route o catena): la scheda la mostra finché un deploy non riesce. */
+        deployErrore: z.object({ quando: z.string(), messaggio: z.string() }).optional(),
         /** Esito dell'ultima proiezione sull'infra al deploy (registro n8n, monitor Gatus + git). */
         infra: z
           .object({

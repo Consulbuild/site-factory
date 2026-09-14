@@ -76,7 +76,32 @@ async function wrangler(args: string[], cwd: string): Promise<{ stdout: string; 
   return { stdout, stderr };
 }
 
+/**
+ * Pubblica il sito reale. Un fallimento (interlock o wrangler) resta in
+ * steps.build.deployErrore — così la scheda lo mostra anche dopo un refresh e
+ * anche quando a pubblicare è la catena — e un deploy riuscito lo cancella.
+ */
 export async function deployClient(slug: string): Promise<DeployResult> {
+  try {
+    const r = await deployClientInner(slug);
+    patchClientState(slug, (s) => {
+      delete s.steps.build.deployErrore;
+    });
+    return r;
+  } catch (e) {
+    const messaggio = e instanceof Error ? e.message : String(e);
+    try {
+      patchClientState(slug, (s) => {
+        s.steps.build.deployErrore = { quando: new Date().toISOString(), messaggio };
+      });
+    } catch {
+      /* client.json non scrivibile: l'errore arriva comunque al chiamante */
+    }
+    throw e;
+  }
+}
+
+async function deployClientInner(slug: string): Promise<DeployResult> {
   chiaviCloudflare();
   const dir = clientDir(slug);
   if (!fs.existsSync(path.join(dir, "dist", "index.html"))) {

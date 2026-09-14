@@ -6,6 +6,7 @@ import { staleFiles, type Upstream } from "@/lib/staleness";
 import { leggiStatoCliente } from "@/lib/portafoglio";
 import { catenaViva, posizioneInCoda } from "@/lib/catena";
 import { etichettaDemo, DEMO_ZONA } from "@/lib/deploy";
+import { demoScaduta } from "@/lib/portafoglio-shared";
 import { Badge, Banner, StepBadge, formatDate, btnPrimary, btnSecondary, Breadcrumb } from "@/components/ui";
 import { ClienteAzioni } from "@/components/cliente-azioni";
 import { ClienteStato } from "@/components/cliente-stato";
@@ -197,6 +198,7 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
   // Il legale è parte del percorso completo: in demo la riga resta ma non è nel cammino.
   const mostraCard = !bundle.corrotto && (client.percorso === "demo" || !!client.catena || !!client.demo || client.steps.build.stato !== "verificato");
   const hostPrevisto = client.demo?.host ?? `${etichettaDemo(brief.azienda, slug)}.${DEMO_ZONA}`;
+  const scaduta = demoScaduta({ slug, steps: client.steps, percorso: client.percorso, demo: client.demo });
 
   return (
     <div>
@@ -238,18 +240,15 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
       {mostraCard && (
         <CatenaCard
           slug={slug}
-          azienda={azienda}
-          referente={brief.referente ? String(brief.referente) : undefined}
-          telefono={brief.telefono ? String(brief.telefono) : undefined}
           percorso={client.percorso}
           catena={client.catena}
           demo={client.demo}
+          demoScaduta={scaduta}
           build={{
             stato: client.steps.build.stato,
             partial: client.steps.build.partial,
             noindex: client.steps.build.noindex,
             builtAt: client.steps.build.builtAt,
-            dominio: client.steps.build.dominio,
             deployUrl,
           }}
           viva={viva}
@@ -296,7 +295,7 @@ export default async function ClientePage({ params }: { params: Promise<{ slug: 
                 )}
                 {r.key === "build" && client.demo && !client.demo.spentaAt && (
                   <a href={client.demo.url} target="_blank" rel="noreferrer">
-                    <Badge tone="ok">● demo online</Badge>
+                    <Badge tone={scaduta ? "warn" : "ok"}>{scaduta ? "● demo scaduta" : "● demo online"}</Badge>
                   </a>
                 )}
                 {r.stale && <Badge tone="warn">⚠ cambiato a monte</Badge>}
