@@ -1,7 +1,7 @@
 # Piano T0 — Area «Traffico»: forma e scheletro
 
-Stato: **fasi 2 (sviluppo) e 3 (calibrazione) completate** il 2026-09-14 (commit `fb2ade6`, `a6e10b9` e quello
-dei documenti); restano le fasi 4-5 all'orchestratore. Il piano approvato vale con le decisioni del §12 applicate
+Stato: **fatto** il 2026-09-14 — fasi 2-3 (commit `fb2ade6`, `a6e10b9`, `ff95365`), due giri di revisione con
+14 correzioni (`4d859cc`, `e307917`), fasi 4-5 di collaudo finale (§Verifica) e chiusura dei documenti. Il piano approvato vale con le decisioni del §12 applicate
 sopra (dove il testo sotto dice altro, vince il §12). Fonti: `docs/traffico/README.md`
 (§1 decisioni, §3 architettura, §4 ciclo, §5 regole), `docs/traffico/brief-T0.md`.
 
@@ -528,3 +528,60 @@ all'orchestratore.
   `1c4403788718bce06c2dde0d80aaff7ca71c22d89a5d6be94772dea3446833ef` prima e dopo.
 - Fuori perimetro, visto di passaggio: a 400 px l'hub del cliente scorre in orizzontale per le azioni della testata
   (`ClienteAzioni`) e le righe degli step; preesistente, non toccato.
+
+### Fasi 4-5 — collaudo finale (2026-09-14, dopo i due giri di revisione, HEAD `e307917`)
+
+Suite rilanciata da zero, dev server :3311:
+
+| Comando | Esito |
+|---|---|
+| `npx tsc --noEmit` | exit 0, nessun errore |
+| `npm run build` | exit 0; route `/api/clients/[slug]/traffico`, `/traffico`, `/traffico/[slug]` dinamiche; unico warning Turbopack preesistente (NFT di `next.config.ts` via `img/[file]/route.ts`) |
+| `test-traffico-stato.ts` | 58 passati, 0 falliti (i 19 punti del §9 più i casi aggiunti nelle revisioni) |
+| `test-stati.ts` | 30 passati, 0 falliti |
+| `test-portafoglio.ts` | 43 passati, 0 falliti |
+| `test-demo.ts` | 19 passati, 0 falliti |
+| `impeccable detect --json` sui 6 file UI | `[]` |
+
+Criteri di accettazione del brief, uno per uno:
+
+1. **Attivare, sospendere, riattivare Cavaliere; vietate → 400** — via route: `{sito, attivo}` → 200 con
+   `primaAttivazioneAt` = `attivatoAt`, scheda spenta; di nuovo attivo → 400 «Il servizio è già attivo…»;
+   `{sito, spento}` e `{scheda, sospeso}` → 400 col «si può solo…»; sospendi → 200 con `sospesoAt`; riattiva → 200
+   con `attivatoAt` nuova e `primaAttivazioneAt`/`sospesoAt` conservate. Corpo non JSON, `servizio:"x"`, chiave in
+   più, array → 400 leggibili; senza `content-type` JSON → 415; `Sec-Fetch-Site: cross-site` → 403; slug `../x` e
+   `Maiuscolo` → 400; inesistente → 404. Dal dialog nel browser (1280, chiaro): Sospendi → «Sospeso dal 14/09/2026»,
+   dialog chiuso, focus di nuovo sul bottone; dialog «Riattiva» aperto e stato cambiato fuori (curl) → conferma →
+   400 in `role="alert"` con il focus sul messaggio, «Riattiva» disabilitato, `Esc` chiude e rilegge: «Attivo dal
+   14/09/2026», bottone «Sospendi…» col focus.
+2. **Cliente demo** — `mattia-saggin-costruzioni` `{sito, attivo}` e `{scheda, attivo}` → 409 con `MOTIVO_DEMO`,
+   sha del file invariato; nel dettaglio (400 px, scuro) i due bottoni disabilitati con `aria-describedby` =
+   `traffico-motivo-blocco` e la frase visibile in testa, nessuno scroll orizzontale.
+3. **Client.json senza `traffico` letto come spento, mai riscritto dalla lettura** — sha256 dei 5 `client.json`
+   (3 clienti + 2 fixture) identici prima e dopo aver aperto home, `/traffico`, 5 dettagli, 5 hub e i due 404
+   (`/traffico/inesistente-zz`, `/traffico/Bad_Slug`). Fixture `zz-test-traffico-mano` (campo ritoccato a mano:
+   solo `sito` sospeso con `sospesoAt: "01/09/2026"`, niente `scheda`): letto valido, scheda «Mai attivato», Sito
+   «Sospeso» senza data inventata né «Invalid Date», avviso dominio da servizio già acceso. Fixture
+   `zz-test-traffico-rotto` (`{"version":1}`): portafoglio in «Stato non leggibile», dettaglio col banner err e
+   «Non leggibile», nessuna riga date, POST → 409 col dettaglio dello schema e file invariato.
+4. **tsc, build, banchi** — tabella sopra.
+5. **UI nei due temi a 1280 e 400 px** — portafoglio, dettagli (Cavaliere, senza dominio con avviso warn, demo,
+   fixture) e riga dell'hub controllati; sidebar: «Traffico» `aria-current` su `/traffico/[slug]`, «Clienti» su
+   `/clienti/[slug]`; riga hub «Traffico · Sito Attivo · Scheda Google Spento · Apri Traffico →» con la primaria
+   dell'hub invariata. Critique fatta in fase 3 (§Calibrazione) e nei due giri di revisione: nessun problema grave
+   aperto.
+6. **Nessun altro comportamento cambia** — `git diff --name-only 987df90 HEAD` = esattamente i file del §6 (con
+   `traffico-ui.tsx` al posto di `ui.tsx`/`DESIGN-SYSTEM.md`, §12-d); nessun riferimento a `traffico` in `steps`,
+   `catena`, `build`, `deploy`, `conferme`, `stati`; `test-stati`/`test-portafoglio`/`test-demo` verdi.
+
+Ripristino: Cavaliere riportato con Edit (via `traffico`, via `steps.logo` e `percorso` materializzati dalla
+scrittura, `updatedAt` originale) → sha256 `1c4403788718bce06c2dde0d80aaff7ca71c22d89a5d6be94772dea3446833ef`
+identico a quello iniziale; fixture `zz-test-traffico-*` spostate nel Cestino, `out/` = i 3 clienti reali.
+
+Debug finale: revisione riga per riga di `lib/traffico.ts`, route, `traffico-ui.tsx`, `traffico-azione.tsx`, le due
+pagine e i diff di `schemas.ts`, `clients.ts`, `sidebar.tsx`, hub; nessun difetto nuovo oltre ai 14 già corretti
+nelle revisioni. File toccati = piano; nessuna modifica non committata del piano. `docs/DEBUG.md` non cambia (T0 non
+produce log). Osservazioni lasciate aperte, non difetti di T0: con `client.json` illeggibile il bottone disabilitato
+mostra l'etichetta dello stato sintetizzato («Attiva…»); il dettaglio prende il nome da `brief.azienda` (come l'hub),
+il portafoglio da `intake["meta.businessName"]` (come la home): un cliente senza `brief.json` mostra lo slug nel
+dettaglio.

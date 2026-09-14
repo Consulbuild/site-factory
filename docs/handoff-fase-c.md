@@ -95,6 +95,16 @@ prossime schede.
   `lib/preview.ts previewRoot()` dice di quale cliente è l'anteprima :4399. Verificato
   su un cliente di prova per gli stati A1/A6/A8/B2/B8, entrambi i temi, 1280 e 400 px;
   detector impeccable pulito. Fuori scope: storico delle pubblicazioni, verifica DNS.
+- **Traffico T0 — area «Traffico»: forma e scheletro** (2026-09-14, piano chiuso in
+  `docs/traffico/piano-T0.md`): voce «Traffico» in sidebar → portafoglio `/traffico`
+  (gruppi non leggibile / accesi / spenti / demo) → dettaglio `/traffico/[slug]` con le
+  sezioni Sito e Scheda Google (Attiva… / Sospendi… / Riattiva… con conferma, date,
+  vuoti onesti), riga compatta nell'hub dopo gli step. Stato in `client.json` →
+  `traffico` opzionale (assente = spento, mai scritto dalla lettura); regole pure in
+  `lib/traffico.ts` (`fondamentaAccese`, `cicloAttivo` per i piani successivi), banco
+  `scripts/test-traffico-stato.ts`, route `POST /api/clients/[slug]/traffico` (400
+  transizione, 409 demo e file illeggibile, 403/415 anti-CSRF). In T0 attivare registra
+  solo stato e date: online non cambia nulla. Prossimo: T1a (fondamenta SEO).
 
 ## Clienti in `site-renderer/out/` (fuori git)
 
