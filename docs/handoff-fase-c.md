@@ -86,11 +86,19 @@ prossime schede.
 
 ## Prossime schede (una per volta, sempre pianificando prima)
 
-1. **Crescita e lead** (ricerca 2026-09-07 in
-   `docs/archivio/ricerca-crescita-siti-2026-09.md`, sintesi nella memoria
-   `strategia-traffico-lead`): Piano A = SEO tecnica e misura al deploy (JSON-LD,
-   sitemap, Search Console, IndexNow) + scheda «Visibilità»; poi pagine servizio×zona,
-   Google Business assistito, recensioni, speed-to-lead.
+1. **Traffico ai siti dei clienti** (ricerca profonda 2026-09-14 in
+   `docs/ricerca-traffico-2026-09.md`, fonti primarie in `~/knowledge/seo/`, sintesi
+   nella memoria `strategia-traffico-lead`; supera la parte traffico della ricerca del
+   07/09). Quattro piani in ordine: **A' Fondamenta e sensori** (sitemap, JSON-LD,
+   Search Console e Bing verificati via API al deploy, IndexNow, PageSpeed, scheda
+   «Visibilità», aspettative nel report) → **B' Sito strutturato** (pagina per
+   servizio, zone servite con OSRM, lavori, FAQ, link interni, 4 componenti mancanti)
+   → **C' Volano** (open data comunali + pagine-comune con gate anti-doorway, regole
+   Search Console → proposta di pagina, rank sampling DataForSEO) → **D' Kit presenza**
+   (portfolio consulbuild.com/clienti, kit NAP/QR/e-mail a un clic). Da fare subito
+   senza codice: chiave DataForSEO nel Keychain e campione di 384 SERP; developer token
+   Google Ads; service account Google Cloud. La scheda Google Business resta fuori
+   scope per decisione di Mattia.
 2. **Badge «da cancellare»** in home per i lead non convertiti a 60 gg (automatizza
    l'obbligo operativo sopra).
 3. Idee minori: eventi Chiama/WhatsApp nell'hub; Gatus su scadenza certificati e disco
