@@ -2,6 +2,8 @@
 import type { PropsOf, SiteConfig } from "@/lib/schema";
 import Button from "@/components/Button.astro";
 import Icon from "@/components/Icon.astro";
+import Foto from "@/components/Foto.astro";
+import { SIZES } from "@/lib/media";
 import { renderAccent, sectionPad } from "@/lib/ui";
 
 interface Props {
@@ -45,11 +47,12 @@ const imageRight = variant !== "left";
     <div
       class:list={["lg:col-span-7", imageRight ? "lg:order-2" : "lg:order-1"]}
     >
-      <img
+      <Foto
         src={data.image.src}
         alt={data.image.alt}
         class="media-frame aspect-[4/3] w-full object-cover shadow-card"
         loading="lazy"
+        sizes={SIZES.evidenza}
       />
     </div>
   </div>

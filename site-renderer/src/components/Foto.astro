@@ -1,0 +1,41 @@
+---
+import { manifest, type Candidato } from "@/lib/media";
+
+// Ogni immagine dei componenti passa da qui (piano T1b, «pagine leggere»).
+// Senza manifest delle varianti (servizio Traffico «Sito» spento, anteprime, dev) rende
+// l'<img> di sempre, con gli stessi attributi nello stesso ordine: l'HTML dei siti non cambia.
+// Con la voce nel manifest rende <picture> con AVIF e il ripiego JPEG/PNG, `srcset` e
+// `sizes` per l'uso, `width`/`height` (solo il rapporto: il riquadro lo decidono le classi)
+// e `decoding="async"` sulle foto pigre. SVG e GIF ricevono solo le dimensioni.
+interface Props {
+  src: string;
+  alt: string;
+  class?: string;
+  loading?: "lazy" | "eager";
+  fetchpriority?: "high";
+  /** Da SIZES / sizesGalleria / sizesLogo di lib/media.ts. */
+  sizes: string;
+}
+const { src, alt, class: cls, loading, fetchpriority, sizes } = Astro.props;
+
+const v = manifest?.immagini[src];
+const ripiego = v?.jpeg ?? v?.png;
+const srcset = (c: Candidato[]) => c.map(([url, w]) => `${url} ${w}w`).join(", ");
+// `src` dell'<img> per i browser senza srcset: la variante più larga fino a 1280 px.
+const srcRipiego = ripiego ? (ripiego.filter(([, w]) => w <= 1280).at(-1) ?? ripiego[0])[0] : src;
+const decoding = loading === "lazy" ? "async" : undefined;
+---
+
+{/* alt vuoto (decorativa) come alt="" letterale: con un valore dinamico vuoto Astro
+    stamperebbe il solo `alt` e l'HTML a servizio spento cambierebbe */}
+{!v && alt !== "" && <img src={src} alt={alt} class={cls} loading={loading} fetchpriority={fetchpriority} />}
+{!v && alt === "" && <img src={src} alt="" class={cls} loading={loading} fetchpriority={fetchpriority} />}
+{v && !ripiego && <img src={src} width={v.w} height={v.h} alt={alt} class={cls} loading={loading} decoding={decoding} fetchpriority={fetchpriority} />}
+{
+  v && ripiego && (
+    <picture>
+      {v.avif && <source type="image/avif" srcset={srcset(v.avif)} sizes={sizes} />}
+      <img src={srcRipiego} srcset={srcset(ripiego)} sizes={sizes} width={v.w} height={v.h} alt={alt} class={cls} loading={loading} decoding={decoding} fetchpriority={fetchpriority} />
+    </picture>
+  )
+}

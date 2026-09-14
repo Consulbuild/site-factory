@@ -1,6 +1,8 @@
 ---
 import type { PropsOf, SiteConfig } from "@/lib/schema";
 import SectionHeader from "@/components/SectionHeader.astro";
+import Foto from "@/components/Foto.astro";
+import { SIZES } from "@/lib/media";
 import { sectionPad } from "@/lib/ui";
 
 interface Props {
@@ -46,11 +48,12 @@ const isTimeline = variant === "timeline";
               <h3 class="t-h4 font-bold">{step.title}</h3>
               <p class="mt-2 max-w-[55ch] text-muted">{step.desc}</p>
               {step.image && (
-                <img
+                <Foto
                   src={step.image.src}
                   alt={step.image.alt}
                   class="media-frame mt-5 aspect-[16/9] w-full max-w-md object-cover"
                   loading="lazy"
+                  sizes={SIZES.processo}
                 />
               )}
             </div>

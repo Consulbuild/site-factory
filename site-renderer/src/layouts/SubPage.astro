@@ -3,6 +3,8 @@ import Base from "@/layouts/Base.astro";
 import Footer from "@/sections/Footer.astro";
 import StickyCta from "@/sections/StickyCta.astro";
 import Icon from "@/components/Icon.astro";
+import Foto from "@/components/Foto.astro";
+import { sizesLogo } from "@/lib/media";
 import { type PropsOf } from "@/lib/schema";
 import { brandLockup } from "@/lib/ui";
 import { site } from "@/lib/loadSite";
@@ -51,15 +53,15 @@ const stickySec = site.sections.find((s) => s.type === "StickyCta");
       </a>
       <a href="/#top" class="flex min-w-0 items-center gap-2.5" aria-label={`${meta.businessName} — pagina principale`}>
         {brand.logo ? (
-          <img src={brand.logo.src} alt={brand.logo.alt} class="h-8 w-auto" />
+          <Foto src={brand.logo.src} alt={brand.logo.alt} class="h-8 w-auto" sizes={sizesLogo(brand.logo.src, 32)} />
         ) : brand.mark?.lockup ? (
           /* stessa misura dell'Header (lockup orizzontale, 40/48 px): il marchio
              non cambia dimensione tra home e sottopagine */
-          <img src={brand.mark.src} alt={brand.mark.alt} class="h-10 w-auto max-w-full object-contain object-right md:h-12" />
+          <Foto src={brand.mark.src} alt={brand.mark.alt} class="h-10 w-auto max-w-full object-contain object-right md:h-12" sizes={sizesLogo(brand.mark.src, 48)} />
         ) : brand.mark ? (
           <>
             <span class="hidden truncate font-heading text-[0.85rem] font-strong uppercase tracking-tight text-ink sm:block">{nomeLockup}</span>
-            <img src={brand.mark.src} alt="" class="h-8 w-auto shrink-0" />
+            <Foto src={brand.mark.src} alt="" class="h-8 w-auto shrink-0" sizes={sizesLogo(brand.mark.src, 32)} />
           </>
         ) : (
           <>

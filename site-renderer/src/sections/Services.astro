@@ -3,6 +3,8 @@ import type { PropsOf, SiteConfig } from "@/lib/schema";
 import Button from "@/components/Button.astro";
 import Icon from "@/components/Icon.astro";
 import SectionHeader from "@/components/SectionHeader.astro";
+import Foto from "@/components/Foto.astro";
+import { SIZES } from "@/lib/media";
 import { sectionPad } from "@/lib/ui";
 
 interface Props {
@@ -52,11 +54,12 @@ const cardCols = (i: number) => [
             class:list={["surface-card surface-card--hover flex flex-col overflow-hidden", ...cardCols(i)]}
           >
             {item.image && (
-              <img
+              <Foto
                 src={item.image.src}
                 alt={item.image.alt}
                 class="aspect-[4/3] w-full object-cover"
                 loading="lazy"
+                sizes={SIZES.card}
               />
             )}
             <div class="flex grow flex-col p-6">
@@ -85,11 +88,12 @@ const cardCols = (i: number) => [
             class="surface-card surface-card--hover grid overflow-hidden sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]"
           >
             {item.image && (
-              <img
+              <Foto
                 src={item.image.src}
                 alt={item.image.alt}
                 class="h-full min-h-48 w-full object-cover"
                 loading="lazy"
+                sizes={SIZES.cardRiga}
               />
             )}
             <div class="p-6 sm:p-8">

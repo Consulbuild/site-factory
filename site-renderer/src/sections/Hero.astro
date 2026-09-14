@@ -2,6 +2,8 @@
 import type { PropsOf, SiteConfig } from "@/lib/schema";
 import Button from "@/components/Button.astro";
 import Icon from "@/components/Icon.astro";
+import Foto from "@/components/Foto.astro";
+import { SIZES } from "@/lib/media";
 import { renderAccent, renderDotted } from "@/lib/ui";
 
 interface Props {
@@ -29,12 +31,13 @@ const statDi = (badge: string) => {
 
 {!isSplit && (
   <section class="section-dark hero-photo relative isolate overflow-hidden">
-    <img
+    <Foto
       src={data.image.src}
       alt={data.image.alt}
       class="absolute inset-0 -z-20 h-full w-full object-cover"
       loading="eager"
       fetchpriority="high"
+      sizes={SIZES.hero}
     />
     <div class:list={["absolute inset-0 -z-10", isCentered ? "bg-black/70" : "hero-overlay"]} aria-hidden="true"></div>
 
@@ -146,12 +149,13 @@ const statDi = (badge: string) => {
       </div>
       <div class="area-focale">
         <div class="media-frame aspect-[4/3] shadow-float">
-          <img
+          <Foto
             src={data.image.src}
             alt={data.image.alt}
             class="h-full w-full object-cover"
             loading="eager"
             fetchpriority="high"
+            sizes={SIZES.heroSplit}
           />
         </div>
       </div>

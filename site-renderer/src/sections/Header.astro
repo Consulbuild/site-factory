@@ -1,6 +1,8 @@
 ---
 import type { PropsOf, SiteConfig } from "@/lib/schema";
 import Icon from "@/components/Icon.astro";
+import Foto from "@/components/Foto.astro";
+import { sizesLogo } from "@/lib/media";
 import { brandLockup, ctaClass, telHref } from "@/lib/ui";
 
 interface Props {
@@ -31,17 +33,17 @@ const lockup = brandLockup(meta.businessName);
   <div class="site-header__bar container-site grid h-16 grid-cols-[1fr_auto] items-center gap-3 md:h-[4.5rem] md:grid-cols-[1fr_auto_1fr] md:gap-6">
     <a href="/#top" class="flex min-w-0 items-center gap-2.5" aria-label={meta.businessName}>
       {brand.logo ? (
-        <img src={brand.logo.src} alt={brand.logo.alt} class="h-9 w-auto md:h-10" />
+        <Foto src={brand.logo.src} alt={brand.logo.alt} class="h-9 w-auto md:h-10" sizes={sizesLogo(brand.logo.src, 40)} />
       ) : brand.mark?.lockup ? (
         /* lockup orizzontale (nome a destra del simbolo, standard dal 2026-09-14):
            40/48 px riempiono la barra; max-w-full evita che un nome lungo
            schiacci il menu su mobile e object-contain lo rimpicciolisce senza
            deformarlo quando la larghezza è vincolata */
-        <img src={brand.mark.src} alt={brand.mark.alt} class="h-10 w-auto max-w-full object-contain object-left md:h-12" />
+        <Foto src={brand.mark.src} alt={brand.mark.alt} class="h-10 w-auto max-w-full object-contain object-left md:h-12" sizes={sizesLogo(brand.mark.src, 48)} />
       ) : brand.mark ? (
         <>
           {/* il link è già etichettato col nome: il simbolo è decorativo (alt vuoto) */}
-          <img src={brand.mark.src} alt="" class="h-9 w-auto shrink-0 md:h-10" />
+          <Foto src={brand.mark.src} alt="" class="h-9 w-auto shrink-0 md:h-10" sizes={sizesLogo(brand.mark.src, 40)} />
           <span class="flex min-w-0 flex-col gap-y-0.5">
             <span class="truncate font-heading text-[0.95rem] font-strong uppercase leading-none tracking-tight text-ink">{lockup.line1}</span>
             {lockup.line2 && (

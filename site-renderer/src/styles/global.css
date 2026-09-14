@@ -86,6 +86,11 @@
     text-underline-offset: 3px;
     text-decoration-thickness: 1px;
   }
+  /* <picture> delle varianti immagini (Foto.astro, pagine leggere): trasparente al layout,
+     l'<img> resta figlia diretta di griglie, flex e figure come senza varianti */
+  picture {
+    display: contents;
+  }
 }
 
 /* Motion (policy aggiornata 2026-07-14): AMMESSO il motion di INTERAZIONE
