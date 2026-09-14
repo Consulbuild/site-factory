@@ -165,11 +165,9 @@ Conseguenze:
    contratto ex art. 28: Anthropic tratta le conversazioni come **titolare autonomo**
    secondo la propria policy. Va scritto così, senza ambiguità: «Anthropic Ireland Ltd,
    titolare autonomo del trattamento delle conversazioni secondo la propria informativa».
-2. **Da fare subito, a costo zero**: verificare in claude.ai/settings/data-privacy-controls
-   che «Aiuta a migliorare Claude» sia **disattivato** sull'account usato dalla fabbrica, e
-   annotarlo nel registro dei trattamenti con data. Con l'opzione attiva i dati dei lead
-   (nome, telefono, sede) finirebbero in un dataset di addestramento conservato 5 anni:
-   incompatibile con «cancelliamo tutto entro 60 giorni».
+2. **Training: disattivato** (confermato da Mattia il 14/09/2026) → conservazione
+   Anthropic 30 giorni, nessun addestramento. Resta da annotare la data nel registro dei
+   trattamenti (§6) come evidenza.
 3. **Decisione per Mattia** (fuori dal mio perimetro, ma va detta): l'assetto conforme
    all'art. 28 per trattare dati di terzi con un fornitore AI è un contratto commerciale con
    DPA (API/Team). Restare su Max è una scelta di costo che va documentata come rischio
@@ -294,7 +292,7 @@ l'agenzia non dimostra la conformità (art. 5.2, 24 GDPR):
 
 1. Telegram: togliere referente e telefono dal messaggio «Avvisa» (`infra/n8n/bozza.json`,
    poi import). 10 minuti.
-2. Verificare e annotare l'opt-out training sull'account Max; decidere se restare su Max
+2. Training già disattivato (14/09/2026): annotarlo nel registro; decidere se restare su Max
    (rischio accettato e documentato) o passare a un piano con DPA per lo step contesto/copy.
 3. Informativa del form (breve + completa + `legale/*.md`): Anthropic come titolare
    autonomo con SCC; Google/Cloudflare con DPF; WhatsApp/Meta; conservazione 90 giorni
