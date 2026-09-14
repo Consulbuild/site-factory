@@ -47,6 +47,52 @@ restano anche se il contesto della sessione si perde. Valgono sopra il testo del
    principale** (token, componenti, motion, transizione «Sequenza» tra i passi). Nessun nuovo
    stile visivo: le domande nuove si costruiscono con i componenti e le regole esistenti di
    `site-intake/`; il confronto con il form principale fa parte dei test visivi.
+10. Dubbi della revisione (§14, punti 12-18), risolti:
+    - DataForSEO già in T3, solo per gli orari dalla scheda pubblica e solo con la chiave;
+      `lib/dataforseo.ts` nasce minimo in T3 e T4 lo estende (aggiornare il piano T4).
+    - SOA (dati aperti ANAC, CC BY-SA) e F-Gas trovati: pubblicabili senza documento, con fonte e
+      data registrate, dopo la conferma del titolare nel form.
+    - Ditte individuali: **nessuna** ricerca DataForSEO (il nome è un dato personale verso un
+      fornitore senza DPA verificato): gli orari si chiedono.
+    - fgas.it: una sola richiesta per cliente, su richiesta dell'operatore, con User-Agent
+      identificativo; se la pagina cambia o non risponde, si fa la domanda.
+    - Nome d'uso: conferma solo per i clienti arrivati da Tally; mai per il form v4.
+    - Anno delle foto: si chiede nel form (l'EXIF viene rimosso all'import dal 2026-09-14);
+      `inbox-form.ts` non si tocca.
+    - Sito attuale del cliente come fonte: solo i dati strutturati (JSON-LD) che pubblica, se
+      l'URL è nel brief e risponde; nessuna estrazione dal testo.
+
+## T5a — Contratto multipagina e renderer (piano pronto)
+
+1. **No alla disciplina di stile per l'identità byte per byte** (componenti esclusi dalla scansione
+   Tailwind, stili scoped con `@apply`): è diversa dal resto del renderer e fragile. I componenti
+   nuovi seguono le convenzioni del progetto (token, classi semantiche, utility Tailwind come le
+   sezioni esistenti). Criterio di sicurezza a servizio spento, al posto del diff byte per byte:
+   (a) HTML identico a meno del nome hash dei file CSS/JS; (b) CSS che cambia **solo per
+   aggiunta** (nessuna regola esistente tolta o modificata), verificato da uno script; (c) baseline
+   VRT esistenti identiche al pixel; (d) nessuna differenza in `robots.txt`, `_headers`, asset.
+2. Nessun sottomenu dei servizi; «Processo» esce dalla nav quando entra «Zone servite».
+3. Prezzo (con scadenza) e abilitazioni come campi opzionali nel contratto; il componente
+   `Certifications` non si costruisce in T5a.
+4. Pagina cantiere solo con almeno 3 foto reali.
+5. `ProcessSteps` della home riusata come chiusura quando ci sono Lavori ma non FAQ.
+6. Baseline VRT delle pagine senza screenshot a pagina intera.
+7. `lastmod` onesto con il footer che elenca i servizi: `testoIndicizzabile` in
+   `site-factory-editor/lib/fondamenta.ts` deve ignorare header, nav e footer (conta il contenuto
+   principale). Rientra nel perimetro di T5a con un caso nel banco `test-fondamenta.ts`.
+
+## T2a — Motori al deploy (piano pronto)
+
+1. Proprietario umano delle proprietà Search Console: `info@consulbuild.com`; aggiunto da subito
+   come proprietario anche il service account di lettura del VPS (serve ai sensori di T2b).
+2. Prova dal vivo su `zz-test-t2a.consulbuild.com` quando Mattia inserisce le chiavi, mai su un
+   dominio cliente.
+3. **Secondo token Cloudflare solo DNS** (`Zone: Read` + `DNS: Edit`), separato da quello del
+   deploy: nuova chiave nel Keychain con la sua prova; il token del deploy non si allarga.
+4. Registro: una riga per deploy con l'esito del primo tentativo; le riprese aggiornano
+   `steps.build.motori` in `client.json`.
+5. Servizio sospeso: nessuna chiamata ai motori.
+6. Tetto di 30 s atteso dentro il deploy; ciò che resta «in attesa» lo riprende il timer.
 
 ## T4 — Mappa query (piano pronto)
 

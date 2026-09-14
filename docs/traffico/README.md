@@ -95,7 +95,9 @@ personalmente le verifiche prima del commit finale.
   di un'altra sessione, fermarsi e segnalarlo.
 - Mai deploy su domini di clienti, mai import in n8n di workflow che mandano e-mail reali senza
   prova a secco (`dryRun`) e senza che il comportamento per i clienti non attivi resti identico.
-- Mai `git add -A`; mai modificare file via shell; niente refactoring non richiesti.
+- Mai `git add -A`; mai `git stash`, `git checkout -- <file>` o `git reset` (altre sessioni e agenti
+  lavorano sullo stesso working tree); mai modificare file via shell; niente refactoring non
+  richiesti.
 - Prima di scrivere codice nell'editor: leggere le guide in `site-factory-editor/node_modules/
   next/dist/docs/` per le API usate (Next 16 ha breaking changes).
 - Ogni funzione che dipende da una chiave esterna ha un banco senza rete con risposte registrate
