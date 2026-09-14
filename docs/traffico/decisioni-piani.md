@@ -130,6 +130,20 @@ restano anche se il contesto della sessione si perde. Valgono sopra il testo del
 5. Servizio sospeso: nessuna chiamata ai motori.
 6. Tetto di 30 s atteso dentro il deploy; ciò che resta «in attesa» lo riprende il timer.
 
+## T2b — Sensori VPS e pannello Sito (piano pronto)
+
+1. Bing fuori da T2b (volumi piccoli, nessun dettaglio per ricerca; IndexNow copre l'indicizzazione).
+2. Storico: `TrafficoGiorni` giornaliero per 486 giorni **più aggregati mensili per sito conservati
+   senza scadenza** (pochi KB: servono al caso studio e agli effetti di lungo periodo); le ricerche
+   degli utenti restano solo in Search Console.
+3. Prova B su Cavaliere in sola lettura approvata (Mattia aggiunge il lettore come utente limitato).
+4. La regola delle 8 settimane (M5) resta in T2b: T4 si sviluppa prima.
+5. Il webhook di lettura riusa `N8N_REGISTRA_KEY`.
+6. Telegram solo per i guasti della raccolta (passaggio ok → errore e dead-man a 36 h), mai dati
+   personali; le pagine uscite dall'indice si vedono nel pannello e nel report.
+7. Ispezione: pagine non indicizzate o cambiate ogni giorno, stabili ogni settimana, massimo 200 al giorno.
+8. Lettore con scope readonly; scope pieno solo come ripiego documentato.
+
 ## T4 — Mappa query (piano pronto)
 
 1. Solo DataForSEO; il client Google Ads non si costruisce (stessi dati, OAuth e approvazione

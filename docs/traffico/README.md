@@ -154,7 +154,6 @@ si calibra con 4-8 settimane di dati Search Console.
   alle Business Profile API (quota 0 finché Google non approva). Un solo refresh token, su n8n.
 - Bing Webmaster Tools: account e API key.
 - DataForSEO: account, ricarica 50 $, login e password API.
-- Google Ads: account senza campagne, developer token (Basic access).
 - Search Console e Bing: verifica manuale di cavalierebuild.it per la baseline (S0).
 - Inserire le chiavi in Impostazioni → Chiavi API e le credenziali in n8n.
 - Consenso di Cavaliere prima di cambiare il suo sito online.
