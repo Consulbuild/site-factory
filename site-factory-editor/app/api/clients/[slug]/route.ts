@@ -6,6 +6,7 @@ import { getRun, busIdCliente } from "@/lib/run-bus";
 import { STEPS, type StepKey } from "@/lib/steps";
 import { deleteUmamiWebsite, rimuoviInfra } from "@/lib/integrazioni";
 import { catenaViva } from "@/lib/catena";
+import { spegniDemo } from "@/lib/deploy";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ export const dynamic = "force-dynamic";
  * out/<slug> con tutti gli artifact. Difesa in profondità: il body deve
  * ripetere la ragione sociale esatta (la UI la fa digitare), e non si
  * elimina con un run in corso. La richiesta del form non è recuperabile (tolta da _inbox all'import);
+ * una demo accesa viene spenta (worker «<slug>-demo» cancellato) prima di tutto;
  * un eventuale sito già deployato resta online (fuori scope, detto nel dialog),
  * ma NON resta nel registro del modulo, nel monitor né su Umami: la
  * deregistrazione è best effort (la cartella è già via; gli errori tornano
@@ -45,7 +47,21 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ slug: st
     return NextResponse.json({ error: "conferma non valida: digita la ragione sociale esatta" }, { status: 422 });
   }
 
-  const build = readClientState(slug).steps.build;
+  const stato = readClientState(slug);
+  const build = stato.steps.build;
+
+  // Demo accesa: si spegne PRIMA di cancellare la cartella (serve il config
+  // wrangler e lo stato). Se Cloudflare non risponde non si elimina: un worker
+  // «<slug>-demo» orfano resterebbe online per sempre, fuori dallo sweep.
+  if (stato.demo && !stato.demo.spentaAt) {
+    try {
+      await spegniDemo(slug);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return NextResponse.json({ error: `demo non spenta, cliente non eliminato: ${msg}` }, { status: 502 });
+    }
+  }
+
   fs.rmSync(dir, { recursive: true, force: true });
 
   const avvisi: string[] = [];

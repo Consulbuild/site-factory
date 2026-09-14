@@ -30,7 +30,7 @@ import type { ClientSummary } from "@/lib/clients";
 import { type Portafoglio, dominioDi, isDemo, daSviluppare, attivo, giu, inRitardo, senzaAbbonamento } from "@/lib/portafoglio-shared";
 import { Badge, Banner, btnPrimary, btnSecondary, btnGhost, formatDate, EmptyState } from "./ui";
 import { AbbonamentoBadge, SitoStato, Skeleton, euro, faMin, ggmm, oraBreve } from "./portafoglio-ui";
-import { ImportButton } from "./home";
+import { ImportButton, EliminaRichiestaButton } from "./home";
 import { EliminaClienteDialog } from "./elimina-cliente-dialog";
 
 const norm = (s: string) =>
@@ -765,6 +765,11 @@ export function ClientsBrowser({ initial, q }: { initial: HomeData; q: string })
                       {["sito.consulbuild.com", s.ownerName, formatDate(s.submittedAt), s.phone].filter(Boolean).join(" · ")}
                     </div>
                   </div>
+                  <EliminaRichiestaButton
+                    submissionId={s.id}
+                    businessName={s.businessName}
+                    onDeleted={() => setData((d) => ({ ...d, nonImportati: d.nonImportati.filter((x) => x.id !== s.id) }))}
+                  />
                   <ImportButton submissionId={s.id} />
                 </li>
               ))}

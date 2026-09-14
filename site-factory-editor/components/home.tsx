@@ -230,3 +230,60 @@ export function ImportButton({ submissionId }: { submissionId: string }) {
     </div>
   );
 }
+
+/**
+ * Elimina una richiesta del form senza importarla (prove della pipeline, spam).
+ * Cancella l'intera cartella _inbox/<id> su Drive: è l'unico posto dove la
+ * richiesta esiste (n8n non conserva le esecuzioni riuscite).
+ */
+export function EliminaRichiestaButton({
+  submissionId,
+  businessName,
+  onDeleted,
+}: {
+  submissionId: string;
+  businessName: string;
+  onDeleted: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function elimina() {
+    setBusy(true);
+    setError(null);
+    const res = await fetch(`/api/inbox/${submissionId}`, { method: "DELETE" });
+    setBusy(false);
+    setOpen(false);
+    if (res.ok) {
+      onDeleted();
+      return;
+    }
+    const data = await res.json().catch(() => ({}));
+    setError(data.error ?? `errore ${res.status}`);
+  }
+
+  return (
+    <>
+      <button className={btnGhost} disabled={busy} onClick={() => setOpen(true)} aria-label={`Elimina la richiesta di ${businessName || "questa azienda"}`}>
+        {busy ? "Elimino…" : "Elimina"}
+      </button>
+      {error && <p className="max-w-xs text-right text-xs text-err">{error}</p>}
+      <ConfirmDialog
+        open={open}
+        title="Eliminare la richiesta?"
+        tone="danger"
+        message={
+          <>
+            La richiesta di <strong className="text-ink">{businessName || "(senza nome)"}</strong> sparisce con tutti i suoi
+            dati: risposte del form, foto e logo. Niente resta in n8n (non conserva le esecuzioni riuscite). La cartella
+            finisce nel Cestino di Google Drive, che si svuota da solo dopo 30 giorni.
+          </>
+        }
+        confirmLabel="Elimina la richiesta"
+        onConfirm={elimina}
+        onCancel={() => setOpen(false)}
+      />
+    </>
+  );
+}

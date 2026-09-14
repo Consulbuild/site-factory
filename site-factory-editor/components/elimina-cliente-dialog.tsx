@@ -49,8 +49,8 @@ export function EliminaClienteDialog({
       message={
         <>
           Verrà cancellata la cartella <span className="mono">out/{slug}</span> con tutti gli artifact (contesto,
-          palette, copy, immagini, build). La richiesta del form non è recuperabile: era già stata tolta da
-          _inbox all&apos;import.
+          palette, copy, immagini, build). Se la demo è accesa viene spenta. La richiesta del form non è
+          recuperabile: era già stata tolta da _inbox all&apos;import.
           {haSitoOnline && (
             <>
               {" "}

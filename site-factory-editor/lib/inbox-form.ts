@@ -355,3 +355,17 @@ export function importLeadForm(id: string, overwrite = false): string {
   fs.rmSync(src, { recursive: true, force: true }); // nella cartella sincronizzata = Cestino di Drive
   return slug;
 }
+
+/**
+ * Elimina una richiesta del form senza importarla (prove della pipeline, spam):
+ * sparisce l'intera cartella _inbox/<id> (lead.json, bozza.json, foto, logo).
+ * È l'unico posto dove vive: n8n (infra/n8n/bozza.json) non salva le esecuzioni
+ * riuscite e non ha tabelle per le bozze. Nella cartella sincronizzata la
+ * cancellazione finisce nel Cestino di Drive, che si svuota da solo dopo 30 giorni.
+ */
+export function eliminaLeadForm(id: string): void {
+  if (!ID_OK.test(id)) throw new Error("id non valido");
+  const dir = path.join(INBOX_DIR, id);
+  if (!fs.existsSync(dir)) throw new Error("richiesta non trovata in _inbox");
+  fs.rmSync(dir, { recursive: true, force: true });
+}
