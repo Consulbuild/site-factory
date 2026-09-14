@@ -11,7 +11,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { orientamentoExif, senzaMetadati } from "../lib/metadati-foto.ts";
-import { normalizeToJpg } from "../lib/lavori.ts";
+import { ImmagineIlleggibile, normalizeToJpg } from "../lib/lavori.ts";
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "sf-metadati-"));
 const f = (nome: string) => path.join(tmp, nome);
@@ -164,6 +164,18 @@ try {
   }
   const src1 = fs.readFileSync(f("o1.jpg"));
   assert.ok(struttura(fs.readFileSync(f("o1.jpg-max.out.jpg"))).dati.equals(struttura(src1).dati), "JPEG dritto e piccolo: nessuna ricodifica");
+  // File illeggibili: errore riconoscibile (l'import li salta), nessun file scritto.
+  const illeggibili: Record<string, Buffer> = {
+    "vuoto.jpg": Buffer.alloc(0),
+    "casuale.jpg": Buffer.from(Array.from({ length: 4000 }, (_, k) => (k * 7919) % 256)),
+    "solo-inizio.jpg": Buffer.from([0xff, 0xd8, 0xff, 0x78, 0x78]),
+    "pdf.jpg": Buffer.from("%PDF-1.4\n"),
+  };
+  for (const [nome, b] of Object.entries(illeggibili)) {
+    fs.writeFileSync(f(nome), b);
+    assert.throws(() => normalizeToJpg(f(nome), f(nome + ".out.jpg")), ImmagineIlleggibile, nome);
+    assert.equal(fs.existsSync(f(nome + ".out.jpg")), false, `${nome}: nessuna uscita`);
+  }
   console.log("✓ normalizeToJpg: orientamenti 1..8, HEIC e ridimensionata → dritta, dimensioni ruotate, zero metadati");
   ok = true;
 } finally {

@@ -27,6 +27,13 @@ export function nextLavoroName(existing: string[]): string {
 
 const MAX_SIDE = 1600; // una gallery 4/3 rende a ~1200px: oltre è solo peso
 
+/** Il file non si converte in immagine (vuoto, rovinato, formato sconosciuto): colpa del file, non del sistema. */
+export class ImmagineIlleggibile extends Error {
+  constructor() {
+    super("immagine illeggibile: file vuoto, rovinato o in un formato non supportato");
+  }
+}
+
 function sips(args: string[]): void {
   const r = spawnSync("sips", args, { encoding: "utf8", timeout: 30_000 });
   if (r.status !== 0) {
@@ -66,7 +73,8 @@ const regolare = (buf: Buffer) => {
  * Converte un file immagine qualsiasi (HEIC/PNG/WebP/JPG) in un JPEG dritto e senza
  * metadati. Ridimensiona il lato lungo a `maxLato` SOLO se più grande (`-Z` di sips
  * ingrandirebbe anche le foto piccole → sfocatura e peso inutile); un JPEG già a misura
- * non si ricodifica (`maxLato` Infinity = originale fedele). Lancia se sips fallisce.
+ * non si ricodifica (`maxLato` Infinity = originale fedele). File che sips non converte
+ * → `ImmagineIlleggibile`; altri errori (disco, sips assente) passano così come sono.
  * ponytail: foto grande e ruotata = due codifiche a qualità `high` (peso −0,8%, invisibile
  * a 1600px); se servisse, passare RADDRIZZA alla conversione quando la sorgente è JPEG.
  */
@@ -80,7 +88,14 @@ export function normalizeToJpg(srcTmp: string, outPath: string, maxLato = MAX_SI
     const src = fs.readFileSync(srcTmp);
     // JPEG irregolare (byte spuri tra i segmenti…): lo riscrive sips, che lo tollera.
     if (eJpeg(src) && max > 0 && max <= maxLato && regolare(src)) fs.writeFileSync(tmp, src);
-    else sips(["-s", "format", "jpeg", ...(max > maxLato ? ["-Z", String(maxLato)] : []), srcTmp, "--out", tmp]); // max 0 (dim illeggibili) → solo conversione
+    else {
+      const args = ["-s", "format", "jpeg", ...(max > maxLato ? ["-Z", String(maxLato)] : []), srcTmp, "--out", tmp]; // max 0 (dim illeggibili) → solo conversione
+      const r = spawnSync("sips", args, { encoding: "utf8", timeout: 30_000 });
+      // sips assente: non è colpa del file. Timeout (immagine enorme o patologica) sì.
+      if (r.error && (r.error as NodeJS.ErrnoException).code !== "ETIMEDOUT") throw r.error;
+      // Un file vuoto esce con codice 0 ma senza immagine.
+      if (r.status !== 0 || !fs.existsSync(tmp)) throw new ImmagineIlleggibile();
+    }
     pulisciJpeg(tmp);
     fs.copyFileSync(tmp, outPath);
   } finally {

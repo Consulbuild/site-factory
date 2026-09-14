@@ -119,8 +119,25 @@ try {
   assert.equal(dopo.percorso, "completo", "re-import: percorso preservato");
   assert.equal(dopo.steps.intake.stato, "da_verificare");
   assert.equal(fs.existsSync(path.join(dest, "foto-originali", "foto-01-vecchia.jpeg")), false, "re-import: originali di prima tolti");
+
+  // File illeggibili (foto vuota, logo JPEG rovinato): l'import non si blocca, valgono come non arrivati.
+  const rotto = { ...lead, foto: lead.foto.map((f: { n: number }) => (f.n === 3 ? { ...f, stato: "fatto", bytes: 0 } : f)), logo: { ...lead.logo, nome: "logo.jpg", tipo: "image/jpeg", bytes: 7 } };
+  fs.mkdirSync(dir);
+  fs.writeFileSync(path.join(dir, "lead.json"), JSON.stringify(rotto));
+  fs.copyFileSync(path.join(FOTO, "lavoro-1.jpg"), path.join(dir, "foto-01-lavoro-1.jpg"));
+  fs.copyFileSync(path.join(FOTO, "lavoro-2.jpg"), path.join(dir, "foto-02-lavoro-2.jpg"));
+  fs.writeFileSync(path.join(dir, "foto-03-piccola.png"), "");
+  fs.writeFileSync(path.join(dir, "logo.jpg"), Buffer.from([0xff, 0xd8, 0xff, 0x78, 0x78, 0x78, 0x78]));
+  assert.equal(importLeadForm(id, true), slug);
+  const flag = leggi("brief.json")._da_verificare as string[];
+  assert.ok(flag.some((f) => f.startsWith("foto illeggibili") && f.includes("«piccola.png»")), "flag foto illeggibile");
+  assert.ok(flag.some((f) => f.startsWith("logo «logo.jpg» illeggibile")), "flag logo illeggibile");
+  assert.equal(leggi("intake.json")["brand.logo"], null, "logo illeggibile: come non arrivato");
+  assert.equal(fs.existsSync(path.join(dest, "logo.jpg")), false);
+  assert.deepEqual(fs.readdirSync(path.join(dest, "foto-originali")).sort(), ["foto-01-lavoro-1.jpg", "foto-02-lavoro-2.jpg"]);
+  assert.equal(leggi("lavori.json").length, 2);
   ok = true;
-  console.log("✓ import dal form: lista, sincronizzazione, brief, intake, foto e originali senza metadati, logo, client.json, pulizia _inbox");
+  console.log("✓ import dal form: lista, sincronizzazione, brief, intake, foto e originali senza metadati, file illeggibili non bloccanti, logo, client.json, pulizia _inbox");
 } finally {
   fs.rmSync(dest, { recursive: true, force: true });
   fs.rmSync(tmp, { recursive: true, force: true });

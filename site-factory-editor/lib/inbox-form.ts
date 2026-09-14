@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { OUT_DIR, clientDir } from "./paths.ts";
-import { normalizeToJpg, pulisciJpeg } from "./lavori.ts";
+import { ImmagineIlleggibile, normalizeToJpg } from "./lavori.ts";
 import { eJpeg } from "./metadati-foto.ts";
 import type { Lavori } from "./schemas.ts";
 // Import con estensione e nessuna dipendenza da lib/clients.ts: così il banco di prova
@@ -297,7 +297,7 @@ export function importLeadForm(id: string, overwrite = false): string {
   }
 
   const logoVoce = lead.logo?.stato === "fatto" ? lead.logo : null;
-  const { brief, intake } = mappaLead(lead, logoVoce ? `./${nomeServer(logoVoce)}` : null);
+  let { brief, intake } = mappaLead(lead, logoVoce ? `./${nomeServer(logoVoce)}` : null);
   const slug = String(intake["meta.slug"]);
   if (!slug) throw new Error("slug vuoto");
   const dest = clientDir(slug);
@@ -309,22 +309,41 @@ export function importLeadForm(id: string, overwrite = false): string {
   fs.mkdirSync(path.join(tmpDir, "foto-originali"), { recursive: true });
 
   // Nessun file del cliente esce dall'import con i metadati del telefono (GPS compreso):
-  // la build pubblica img/ e il logo così come sono.
+  // la build pubblica img/ e il logo così come sono. Un file illeggibile (vuoto, rovinato)
+  // non blocca l'import: vale come non arrivato e resta tra i punti da verificare.
   if (logoVoce) {
     const logo = path.join(tmpDir, nomeServer(logoVoce));
     fs.copyFileSync(path.join(src, nomeServer(logoVoce)), logo);
-    if (eJpeg(fs.readFileSync(logo))) pulisciJpeg(logo); // PNG e SVG non portano il GPS della fotocamera
+    try {
+      if (eJpeg(fs.readFileSync(logo))) normalizeToJpg(logo, logo, Infinity); // PNG, SVG e PDF non portano il GPS della fotocamera
+    } catch (e) {
+      if (!(e instanceof ImmagineIlleggibile)) throw e;
+      fs.rmSync(logo, { force: true });
+      ({ brief, intake } = mappaLead(lead, null));
+      brief._da_verificare.push(`logo «${logoVoce.nome}» illeggibile (file vuoto o rovinato): non importato, chiederlo di nuovo al cliente`);
+    }
   }
   const lavori: Lavori = [];
+  const illeggibili: string[] = [];
   for (const v of lead.foto.filter((f) => f.stato === "fatto").sort((a, b) => a.n - b.n)) {
     const orig = path.join(src, nomeServer(v));
     // Originale fedele (nessun ridimensionamento; un JPEG dritto non si ricodifica) ma pulito.
-    normalizeToJpg(orig, path.join(tmpDir, "foto-originali", nomeServer(v).replace(/\.[^.]+$/, "") + ".jpg"), Infinity);
-    if (lavori.length < MAX_FOTO) {
-      const nome = `lavoro-${lavori.length + 1}.jpg`;
-      normalizeToJpg(orig, path.join(tmpDir, "img", nome));
-      lavori.push({ file: nome, alt: "", caption: "" });
+    const originale = path.join(tmpDir, "foto-originali", nomeServer(v).replace(/\.[^.]+$/, "") + ".jpg");
+    try {
+      normalizeToJpg(orig, originale, Infinity);
+      if (lavori.length < MAX_FOTO) {
+        const nome = `lavoro-${lavori.length + 1}.jpg`;
+        normalizeToJpg(orig, path.join(tmpDir, "img", nome));
+        lavori.push({ file: nome, alt: "", caption: "" });
+      }
+    } catch (e) {
+      if (!(e instanceof ImmagineIlleggibile)) throw e;
+      fs.rmSync(originale, { force: true });
+      illeggibili.push(`«${v.nome}»`);
     }
+  }
+  if (illeggibili.length) {
+    brief._da_verificare.push(`foto illeggibili (file vuoto o rovinato), non importate: ${illeggibili.join(", ")}: chiederle di nuovo al cliente`);
   }
   if (lead.foto.filter((f) => f.stato === "fatto").length > MAX_FOTO) {
     brief._da_verificare.push(`${lead.fotoArrivate} foto: in Gallery ne entrano ${MAX_FOTO}, le altre sono in foto-originali/`);
