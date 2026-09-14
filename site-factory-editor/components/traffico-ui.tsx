@@ -21,7 +21,10 @@ export function ServizioBadge({ stato }: { stato: StatoServizio | "non_leggibile
   return <Badge tone={tone}>{label}</Badge>;
 }
 
-/** «Sito [Attivo] dal 14/09 · Scheda Google [Spento]»: etichetta inline prima di ogni badge, regge a capo a 400 px. */
+/**
+ * «Sito [Attivo] dal 14/09 · Scheda Google [Spento]»: etichetta inline prima di ogni badge, regge a capo a 400 px.
+ * La data eredita muted, mai faint: sul fondo hover della riga (raise, tema scuro) faint scende sotto AA.
+ */
 export function StatoServizi({ traffico, corrotto, conData = false }: { traffico?: Traffico; corrotto: boolean; conData?: boolean }) {
   const t = leggiTraffico({ traffico });
   return (
@@ -33,7 +36,7 @@ export function StatoServizi({ traffico, corrotto, conData = false }: { traffico
           <span key={k} className="inline-flex items-center gap-1.5 text-sm text-muted">
             {ETICHETTA_SERVIZIO[k]}
             <ServizioBadge stato={corrotto ? "non_leggibile" : s.stato} />
-            {conData && !corrotto && dataValida(dal) && <span className="mono text-faint">dal {ggmm(dal)}</span>}
+            {conData && !corrotto && dataValida(dal) && <span className="mono">dal {ggmm(dal)}</span>}
           </span>
         );
       })}

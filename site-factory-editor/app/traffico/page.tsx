@@ -81,7 +81,8 @@ export default function TrafficoPage() {
                           className="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 transition-colors duration-150 hover:bg-raise"
                         >
                           <span className="min-w-0 flex-1 basis-60">
-                            <span className="block truncate font-medium">{c.businessName}</span>
+                            {/* A capo, mai troncato: la fine della ragione sociale distingue due clienti simili. */}
+                            <span className="block font-medium wrap-break-word">{c.businessName}</span>
                             <span className={`mt-0.5 block truncate text-sm ${corrotto ? "text-err" : "text-muted"}`}>
                               {[c.citta.trim(), meta].filter(Boolean).join(" · ")}
                             </span>

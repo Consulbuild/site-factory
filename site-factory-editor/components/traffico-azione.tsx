@@ -10,7 +10,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "./confirm-dialog";
 import { btnSecondary } from "./ui";
-import { ETICHETTA_SERVIZIO, type ServizioKey } from "@/lib/traffico";
+import { ETICHETTA_SERVIZIO, NOTA_DOMINIO, type ServizioKey } from "@/lib/traffico";
 
 type Props = {
   slug: string;
@@ -26,9 +26,8 @@ type Props = {
 };
 
 // Testi calibrati (docs/traffico/piano-T0.md §Calibrazione): cosa cambia davvero oggi,
-// mai posizioni, clienti in più o tempi. Il paragrafo sul dominio sta a parte: è la
-// sola informazione che può cambiare la decisione.
-const NOTA_DOMINIO = "Il sito non è ancora pubblicato con il suo dominio: fondamenta tecniche e sensori partiranno solo da quel momento.";
+// mai posizioni, clienti in più o tempi. Il paragrafo sul dominio (NOTA_DOMINIO) sta a
+// parte: è la sola informazione che può cambiare la decisione.
 
 function testi({ azienda, servizio, verso, etichetta, senzaDominio }: Props): { titolo: string; messaggio: React.ReactNode; bottone: string } {
   const nome = ETICHETTA_SERVIZIO[servizio];
@@ -129,6 +128,8 @@ export function TrafficoAzione(props: Props) {
         className={btnSecondary}
         disabled={disabilitato}
         aria-describedby={descrittoDa}
+        // Due sezioni, due bottoni «Attiva…»: il nome accessibile dice quale servizio (inizia col testo visibile, WCAG 2.5.3).
+        aria-label={`${etichetta} ${ETICHETTA_SERVIZIO[servizio]}…`}
         onClick={() => setAperto(true)}
       >
         {etichetta}…

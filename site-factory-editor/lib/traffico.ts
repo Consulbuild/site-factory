@@ -25,6 +25,21 @@ const VERBO = { spento: "attivare", attivo: "sospendere", sospeso: "riattivare" 
 /** Stessa frase per la route (409) e per il bottone disabilitato del dettaglio. */
 export const MOTIVO_DEMO = "In percorso demo i servizi Traffico non si attivano: segna prima «Il cliente si è abbonato» nell'hub del cliente";
 
+/** Sito senza dominio, detto come fatto: nella conferma e nel dettaglio a servizio già acceso. */
+export const NOTA_DOMINIO = "Il sito non è ancora pubblicato con il suo dominio: fondamenta tecniche e sensori partiranno solo da quel momento.";
+
+/**
+ * Avviso sul dominio nel dettaglio del Sito (null = nessuno). Attivare senza dominio è
+ * ammesso: da spento l'avviso accompagna l'invito, da attivo o sospeso l'azione è già
+ * fatta e resta solo il fatto (mai «Puoi attivare» accanto al badge «Attivo»).
+ */
+export function avvisoDominio(servizio: ServizioKey, s: Servizio, percorso: Percorso, senzaDominio: boolean): string | null {
+  if (servizio !== "sito" || !senzaDominio || percorso !== "completo") return null;
+  return s.stato === "spento"
+    ? "Il sito non è ancora pubblicato con il suo dominio. Puoi attivare il servizio, ma fondamenta tecniche e sensori partono solo dopo la pubblicazione col dominio."
+    : NOTA_DOMINIO;
+}
+
 /** Stato con i default (file senza campo = entrambi spenti). Oggetti nuovi a ogni chiamata: mutarli non tocca l'input. */
 export function leggiTraffico(state: { traffico?: ClientState["traffico"] }): Traffico {
   return {

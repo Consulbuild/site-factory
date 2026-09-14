@@ -16,7 +16,9 @@ import {
   fraseDate,
   dataValida,
   nessunServizioAcceso,
+  avvisoDominio,
   MOTIVO_DEMO,
+  NOTA_DOMINIO,
   type Traffico,
   type StatoServizio,
 } from "../lib/traffico.ts";
@@ -161,6 +163,20 @@ caso("attivo dal non ISO → «Attivo»", fraseDate({ stato: "attivo", attivatoA
 const sporco = fraseDate({ stato: "sospeso", primaAttivazioneAt: "14/09/2026", attivatoAt: "14/09/2026", sospesoAt: T1 }, vera);
 caso("sospeso con prima attivazione non ISO → la data illeggibile si omette", sporco === `Sospeso dal ${vera(T1)}` && !sporco.includes("Invalid"), sporco);
 caso("spento con prima attivazione non ISO → «Spento», mai «Mai attivato»", fraseDate({ stato: "spento", primaAttivazioneAt: "ieri" }, vera) === "Spento");
+
+console.log("\navvisoDominio:");
+const invito = avvisoDominio("sito", { stato: "spento" }, "completo", true);
+caso("sito spento senza dominio → invito ad attivare con avviso", !!invito && invito.includes("Puoi attivare"), invito);
+caso(
+  "sito attivo o sospeso senza dominio → il fatto, mai «Puoi attivare»",
+  avvisoDominio("sito", att.sito, "completo", true) === NOTA_DOMINIO && avvisoDominio("sito", sosp.sito, "completo", true) === NOTA_DOMINIO,
+);
+caso(
+  "con dominio, scheda o percorso demo → nessun avviso",
+  avvisoDominio("sito", att.sito, "completo", false) === null &&
+    avvisoDominio("scheda", { stato: "spento" }, "completo", true) === null &&
+    avvisoDominio("sito", { stato: "spento" }, "demo", true) === null,
+);
 
 console.log(`\n${passati} passati, ${falliti} falliti`);
 if (falliti) process.exit(1);

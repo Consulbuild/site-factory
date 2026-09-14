@@ -5,6 +5,7 @@ import {
   ETICHETTA_SERVIZIO,
   MOTIVO_DEMO,
   SERVIZI,
+  avvisoDominio,
   azioneServizio,
   fraseDate,
   leggiTraffico,
@@ -75,7 +76,7 @@ function SezioneServizio({
   const id = `servizio-${servizio}`;
   const c = CONTENUTI[servizio];
   // Decisione dell'orchestratore: attivare il Sito senza dominio è ammesso, con avviso.
-  const avvisoDominio = servizio === "sito" && senzaDominio && percorso === "completo" && !corrotto;
+  const avviso = corrotto ? null : avvisoDominio(servizio, s, percorso, senzaDominio);
 
   return (
     <section aria-labelledby={id} className="card p-5">
@@ -104,12 +105,9 @@ function SezioneServizio({
           {fraseDate(s, formatDate)}
         </p>
       )}
-      {avvisoDominio && (
+      {avviso && (
         <div className="mt-3">
-          <Banner tone="warn">
-            Il sito non è ancora pubblicato con il suo dominio. Puoi attivare il servizio, ma fondamenta tecniche e sensori
-            partono solo dopo la pubblicazione col dominio.
-          </Banner>
+          <Banner tone="warn">{avviso}</Banner>
         </div>
       )}
       <div className="mt-4 grid gap-x-8 gap-y-4 border-t border-line pt-4 md:grid-cols-2">
