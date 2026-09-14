@@ -35,8 +35,9 @@ const lockup = brandLockup(meta.businessName);
       ) : brand.mark?.lockup ? (
         /* lockup orizzontale (nome a destra del simbolo, standard dal 2026-09-14):
            40/48 px riempiono la barra; max-w-full evita che un nome lungo
-           schiacci il menu su mobile (l'aspect ratio resta intatto) */
-        <img src={brand.mark.src} alt={brand.mark.alt} class="h-10 w-auto max-w-full md:h-12" />
+           schiacci il menu su mobile e object-contain lo rimpicciolisce senza
+           deformarlo quando la larghezza è vincolata */
+        <img src={brand.mark.src} alt={brand.mark.alt} class="h-10 w-auto max-w-full object-contain object-left md:h-12" />
       ) : brand.mark ? (
         <>
           {/* il link è già etichettato col nome: il simbolo è decorativo (alt vuoto) */}
