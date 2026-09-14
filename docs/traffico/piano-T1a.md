@@ -691,6 +691,13 @@ vicenda; la via è il testo prima del CAP). Il testo vince sempre sulla città. 
 cliente ha l'indirizzo; «Foggia» nella stessa stringa non interferisce perché non ha quel CAP. Banco: tre
 casi in linea + uno sul `comuni.json` reale.
 
+**Correzione dalla revisione** (sostituisce il passo 3 di §2.6.2): il comune conta solo se è scritto
+**attaccato al CAP** (in mezzo solo separatori o la sigla), cioè subito dopo (forma del form, che vince) o
+subito prima con una via davanti (forma storica). Un nome altrove fa parte della via, anche se è un comune con lo stesso CAP: con «Via
+Gessate 12, 20060 Masate (MI)» (Gessate e Masate condividono il 20060) usciva Gessate con via «Via», ora
+esce Masate con «Via Gessate 12». «Via Vicenza 3, 36100» passa alla città del sito. Il nome più lungo vale
+solo tra nomi annidati («San Martino» dentro «San Martino Canavese»). Sui tre clienti reali l'esito non cambia.
+
 Telefono: `+39…` storico e numero nazionale del form (10 cifre da 3) riconosciuti. Nessun cliente con
 social non valido; la regola (https sull'host della rete o suo sottodominio) resta com'è.
 

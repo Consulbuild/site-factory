@@ -80,7 +80,13 @@ try {
     tipo("altro", "Impiantistica elettrica") === "Electrician" && tipo(undefined, "Serramenti") === "HomeAndConstructionBusiness",
   );
   caso("fonte leggibile nel riepilogo", tipoSchema("impresa-edile", undefined).fonte.includes("impresa-edile") && tipoSchema(undefined, "Edilizia").fonte.includes("Edilizia"));
-  const mancanti = Object.keys(TESTI.mestieri).filter((id) => !(id in TIPO_PER_MESTIERE));
+  const proto = ["constructor", "toString", "__proto__", "hasOwnProperty"];
+  caso(
+    "id del form uguali a proprietà di Object.prototype → nessun tipo dal prototipo (generico, o dal settore)",
+    proto.every((id) => tipo(id) === "HomeAndConstructionBusiness" && tipo(id, "Edilizia") === "GeneralContractor"),
+    proto.map((id) => String(tipoSchema(id, undefined).tipo)),
+  );
+  const mancanti = Object.keys(TESTI.mestieri).filter((id) => !Object.hasOwn(TIPO_PER_MESTIERE, id));
   caso("ogni mestiere del form (TESTI.mestieri) ha una voce esplicita", mancanti.length === 0, mancanti);
 
   /* ---------------------------------------------------------------- */
@@ -103,14 +109,30 @@ try {
     r9.ok && r9.address.streetAddress === "Via Roma 1" && r9.address.addressLocality === "Cologno Monzese" && r9.address.postalCode === "20093" && r9.address.addressRegion === "MI" && r9.address.addressCountry === "IT",
     r9,
   );
+  const r9b = ind("Via Roma 1, Cologno Monzese (MI) 20093");
+  caso("forma storica con la sigla tra comune e CAP", r9b.ok && r9b.address.streetAddress === "Via Roma 1" && r9b.address.addressLocality === "Cologno Monzese", r9b);
   const r10 = ind("Via Roma 1, 36100 Vicenza (VI)");
   caso("forma del form «Via Roma 1, 36100 Vicenza (VI)»", r10.ok && r10.address.streetAddress === "Via Roma 1" && r10.address.addressLocality === "Vicenza", r10);
   const rVia = ind("viale Sandrigo 24, 36066 Sandrigo (VI)");
   caso("via con il nome del comune → via intera", rVia.ok && rVia.address.streetAddress === "viale Sandrigo 24", rVia);
   const r11 = ind("Via Po 3, 10010 San Martino Canavese (TO)");
   caso("CAP condiviso: vince il comune nominato (nome più lungo)", r11.ok && r11.address.addressLocality === "San Martino Canavese", r11);
-  const r11b = ind("Via Po 3, 10010 Carema Samone (TO)");
-  caso("CAP condiviso con due comuni di pari lunghezza nominati → null", !r11b.ok && r11b.motivo.includes("ambiguo"), r11b);
+  const r11b = ind("Via Po 3, 10010 Castro (TO)", [{ nome: "Castro", sigla: "TO", cap: ["10010"] }, { nome: "Castro", sigla: "BG", cap: ["10010"] }]);
+  caso("CAP condiviso da due comuni omonimi → null (ambiguo)", !r11b.ok && r11b.motivo.includes("ambiguo"), r11b);
+  const rNonAttaccato = ind("Via Po 3, 10010 Carema Samone (TO)");
+  caso("CAP condiviso: conta il comune attaccato al CAP, non un nome che segue", rNonAttaccato.ok && rNonAttaccato.address.addressLocality === "Carema" && rNonAttaccato.address.streetAddress === "Via Po 3", rNonAttaccato);
+  const rViaCitta = indirizzoStrutturato("Via Vicenza 3, 36100", COMUNI, "Vicenza");
+  const rViaCittaNoCivico = indirizzoStrutturato("Via Vicenza, 36100", COMUNI, "Vicenza");
+  const rViaSola = ind("Via Vicenza 3, 36100");
+  const rViaPrimaCap = ind("Via Vicenza 36100");
+  caso(
+    "via col nome del comune e nessun comune accanto al CAP: la via resta intera, il comune viene dalla città del sito o manca",
+    rViaCitta.ok && rViaCitta.address.streetAddress === "Via Vicenza 3" && rViaCitta.address.addressLocality === "Vicenza" &&
+      rViaCittaNoCivico.ok && rViaCittaNoCivico.address.streetAddress === "Via Vicenza" &&
+      !rViaSola.ok && rViaSola.motivo.includes("nessun comune") &&
+      !rViaPrimaCap.ok && rViaPrimaCap.motivo.includes("nessun comune"),
+    [rViaCitta, rViaCittaNoCivico, rViaSola, rViaPrimaCap],
+  );
   const r12 = ind("Via Roma 1, 36100 Vicenza (MI)");
   caso("sigla tra parentesi diversa → null con motivo", !r12.ok && r12.motivo.includes("(MI)") && r12.motivo.includes("VI"), r12);
   const r13 = [ind("Via Roma 1, Vicenza"), ind("Via Roma 1, 36100 20121 Vicenza"), ind("Via Roma 1, 36100 Padova"), ind("36100 Vicenza (VI)"), ind("  ")];
@@ -147,6 +169,20 @@ try {
     caso("comuni.json reale: trattini e accenti («Antey-Saint-André»)", r15d.ok && r15d.address.addressLocality === "Antey-Saint-André", r15d);
     const r15e = indirizzoStrutturato("Via Po 101, 71016", comuniReali, "San Severo, Foggia");
     caso("comuni.json reale: «via, CAP» con città del sito «San Severo, Foggia» → San Severo (FG), non Foggia", r15e.ok && r15e.address.addressLocality === "San Severo" && r15e.address.addressRegion === "FG", r15e);
+    // Gessate e Masate condividono il 20060: la via intitolata al paese vicino non diventa il comune.
+    const g1 = ind("Via Gessate 12, 20060 Masate (MI)", comuniReali);
+    const g2 = indirizzoStrutturato("Via Gessate 12, 20060", comuniReali, "Masate");
+    const g3 = ind("Via Gessate (senza numero civico), 20060 Masate (MI)", comuniReali);
+    const g4 = ind("Via Gessate, 20060 Masate (MI)", comuniReali);
+    caso(
+      "comuni.json reale: «Via Gessate 12, 20060 Masate» (CAP condiviso) → Masate con via intera, anche dalla città del sito e senza civico",
+      [g1, g2, g3, g4].every((g) => g.ok && g.address.addressLocality === "Masate") &&
+        g1.ok && g1.address.streetAddress === "Via Gessate 12" &&
+        g2.ok && g2.address.streetAddress === "Via Gessate 12" &&
+        g3.ok && g3.address.streetAddress === "Via Gessate (senza numero civico)" &&
+        g4.ok && g4.address.streetAddress === "Via Gessate",
+      [g1, g2, g3, g4],
+    );
   } else {
     caso("site-intake/data-src/comuni.json leggibile", false, "file assente o illeggibile");
   }
@@ -211,6 +247,10 @@ try {
   const dSocial = datiStrutturati(input({ site: sito({ contact: { social: { instagram: "@edilprova", facebook: "https://instagram.com/edilprova", tiktok: "http://tiktok.com/@x" } } }) }));
   caso("social non URL, su altro host o http → fuori da sameAs con avviso", !("sameAs" in dSocial.jsonld) && dSocial.avvisi.filter((a) => a.includes("sameAs")).length === 3, dSocial.avvisi);
   caso("indirizzo non riconosciuto → omesso con avviso e motivo", avv({ site: sito({ contact: { address: "Via Roma 1, Vicenza" } }) }, "address", "CAP assente"));
+  caso(
+    "avviso sull'indirizzo (non riconosciuto o vuoto) → nomina il campo reale «Indirizzo» della scheda Intake",
+    avv({ site: sito({ contact: { address: "Via Roma 1, Vicenza" } }) }, "address", "«Indirizzo» nella scheda Intake") && avv({ site: sito({ contact: { address: "" } }) }, "address", "«Indirizzo» nella scheda Intake"),
+  );
   caso("comuni non leggibili → indirizzo omesso con avviso", avv({ comuni: null }, "address", "comuni"));
   caso("niente Services → makesOffer omesso con avviso", avv({ site: sito({ sections: [{ type: "Hero", props: {} }] }) }, "makesOffer", "Servizi"));
   const dNiente = datiStrutturati(input({ site: sito({ brand: { logo: null, mark: null }, contact: { social: {} } }), lavori: [] }));

@@ -89,7 +89,8 @@ const TIPO_PER_SETTORE: [prefissi: string[], tipo: TipoSchema][] = [
  * generico. Nessuna parola nota → HomeAndConstructionBusiness. Mai un tipo senza fonte.
  */
 export function tipoSchema(mestiereId: string | undefined, settore: string | undefined): { tipo: TipoSchema; fonte: string } {
-  const daMestiere = mestiereId ? TIPO_PER_MESTIERE[mestiereId] : undefined;
+  // hasOwn: l'id arriva dal form pubblico, «constructor» o «toString» non devono pescare dal prototipo.
+  const daMestiere = mestiereId && Object.hasOwn(TIPO_PER_MESTIERE, mestiereId) ? TIPO_PER_MESTIERE[mestiereId] : undefined;
   if (daMestiere) return { tipo: daMestiere, fonte: `mestiere «${mestiereId}»` };
   const parole = parolePer(settore ?? "");
   const trovati = new Set<TipoSchema>();
@@ -132,29 +133,37 @@ export type PostalAddressLd = {
 
 const escRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-/** Comuni con quel CAP nominati in `testo` a parola intera, con la posizione dell'ultima occorrenza. */
-function comuniNominati(testo: string, cap: string, comuni: Comune[]): { comune: Comune; pos: number; lung: number }[] {
+/** Occorrenze a parola intera, in `testo`, dei comuni con quel CAP: inizio e fine di ciascuna. */
+function comuniNominati(testo: string, cap: string, comuni: Comune[]): { comune: Comune; inizio: number; fine: number; lung: number }[] {
   const norm = perConfronto(testo);
-  const trovati: { comune: Comune; pos: number; lung: number }[] = [];
+  const trovati: { comune: Comune; inizio: number; fine: number; lung: number }[] = [];
   for (const c of comuni) {
     if (!c.cap.includes(cap)) continue;
     const parole = parolePer(c.nome);
     if (!parole.length) continue;
     const re = new RegExp(`(?<![a-z0-9])${parole.map(escRegex).join("[^a-z0-9]+")}(?![a-z0-9])`, "g");
-    const m = [...norm.matchAll(re)];
-    if (m.length) trovati.push({ comune: c, pos: m[m.length - 1].index ?? 0, lung: parole.join(" ").length });
+    for (const m of norm.matchAll(re)) {
+      const inizio = m.index ?? 0;
+      trovati.push({ comune: c, inizio, fine: inizio + m[0].length, lung: parole.join(" ").length });
+    }
   }
   return trovati;
 }
 
+/** Tra comune e CAP solo separatori, al più la sigla («Cologno Monzese (MI) 20093»). */
+const attaccatoAlCap = (s: string) => /^[\s,;:–-]*(?:\([A-Za-z]{2}\)[\s,;:–-]*)?$/.test(s);
+
 /**
  * Indirizzo MOSTRATO in pagina → PostalAddress, con l'elenco ISTAT dei comuni. Stesse
  * regole per la forma storica («Via Roma 1 Cologno Monzese 20093») e per quella del form
- * («Via Roma 1, 36100 Vicenza (VI)»): un solo CAP; comune con quel CAP nominato nel testo
- * (vince il nome più lungo, pareggio = ambiguo); sigla tra parentesi coerente; via = testo
- * prima del CAP o dell'ULTIMA occorrenza del comune (una via può chiamarsi come il comune).
- * Indirizzo senza comune («Via Roma 1, 71016»): vale la città mostrata dal sito
- * (`cittaSito`, meta.city) se è un comune con quel CAP — CAP e città si confermano a vicenda.
+ * («Via Roma 1, 36100 Vicenza (VI)»): un solo CAP; comune con quel CAP scritto ATTACCATO al
+ * CAP, subito dopo (forma del form, che vince) o subito prima con una via davanti (forma
+ * storica). Un nome altrove è parte della via, anche quando è un comune con lo stesso CAP
+ * («Via Gessate 12, 20060 Masate» → Masate). Tra nomi annidati («San Martino» in «San
+ * Martino Canavese») vince il più lungo, pareggio = ambiguo; sigla tra parentesi coerente;
+ * via = testo prima del CAP o del comune. Nessun comune accanto al CAP («Via Vicenza 3,
+ * 36100»): vale la città mostrata dal sito (`cittaSito`, meta.city) se è un comune con quel
+ * CAP — CAP e città si confermano a vicenda.
  */
 export function indirizzoStrutturato(testo: string, comuni: Comune[], cittaSito = ""): { ok: true; address: PostalAddressLd } | { ok: false; motivo: string } {
   const t = testo.replace(/\s+/g, " ").trim();
@@ -165,23 +174,28 @@ export function indirizzoStrutturato(testo: string, comuni: Comune[], cittaSito 
   const cap = caps[0][0];
   const posCap = caps[0].index ?? 0;
 
-  let candidati = comuniNominati(t, cap, comuni);
+  const fineCap = posCap + cap.length;
+  const nominati = comuniNominati(t, cap, comuni);
+  const dopo = nominati.filter((c) => c.inizio >= fineCap && attaccatoAlCap(t.slice(fineCap, c.inizio)));
+  // Prima del CAP serve una via davanti: in «Via Masate 20060» Masate è la via, non il comune.
+  const prima = nominati.filter((c) => c.fine <= posCap && attaccatoAlCap(t.slice(c.fine, posCap)) && parolePer(t.slice(0, c.inizio)).length >= 2);
+  let candidati = dopo.length ? dopo : prima;
   if (!candidati.length && cittaSito.trim()) {
-    candidati = comuniNominati(cittaSito, cap, comuni).map((c) => ({ ...c, pos: t.length })); // via = tutto ciò che precede il CAP
+    candidati = comuniNominati(cittaSito, cap, comuni).map((c) => ({ ...c, inizio: t.length })); // via = tutto ciò che precede il CAP
   }
   if (!candidati.length) {
-    return { ok: false, motivo: `nessun comune col CAP ${cap} nominato in «${t}»${cittaSito.trim() ? ` né nella città del sito («${cittaSito.trim()}»)` : ""}` };
+    return { ok: false, motivo: `nessun comune col CAP ${cap} subito prima o dopo il CAP in «${t}»${cittaSito.trim() ? ` né nella città del sito («${cittaSito.trim()}»)` : ""}` };
   }
   candidati.sort((a, b) => b.lung - a.lung);
   if (candidati.length > 1 && candidati[1].lung === candidati[0].lung) {
     return { ok: false, motivo: `comune ambiguo per il CAP ${cap}: ${candidati.filter((c) => c.lung === candidati[0].lung).map((c) => c.comune.nome).join(" o ")}` };
   }
-  const { comune, pos } = candidati[0];
+  const { comune, inizio } = candidati[0];
 
   const sigla = [...t.matchAll(/\(([A-Za-z]{2})\)/g)].map((m) => m[1].toUpperCase()).find((s) => s !== comune.sigla);
   if (sigla) return { ok: false, motivo: `sigla (${sigla}) diversa da ${comune.sigla} di ${comune.nome}` };
 
-  const via = t.slice(0, Math.min(posCap, pos)).replace(/[\s,;:–-]+$/, "").trim();
+  const via = t.slice(0, Math.min(posCap, inizio)).replace(/[\s,;:–-]+$/, "").trim();
   if (!/\p{L}/u.test(via)) return { ok: false, motivo: `via assente prima di CAP e comune in «${t}»` };
 
   return {
@@ -286,13 +300,13 @@ export function datiStrutturati(i: InputDatiStrutturati): { jsonld: Rec; avvisi:
   if (!i.comuni) {
     avvisi.push("indirizzo omesso: elenco dei comuni (site-intake/data-src/comuni.json) non leggibile");
   } else if (!str(contact.address)) {
-    avvisi.push("indirizzo omesso: nessun indirizzo nei contatti (Google lo richiede per le attività locali)");
+    avvisi.push("indirizzo omesso: vuoto (Google lo richiede per le attività locali) — compila «Indirizzo» nella scheda Intake (via e civico, CAP e comune)");
   } else {
     const a = indirizzoStrutturato(str(contact.address), i.comuni, str(meta.city));
     if (a.ok) {
       ld.address = a.address;
       esitoIndirizzo = "ok";
-    } else avvisi.push(`indirizzo omesso: ${a.motivo} — correggi l'indirizzo nei contatti`);
+    } else avvisi.push(`indirizzo omesso: ${a.motivo} — correggi «Indirizzo» nella scheda Intake (via e civico, CAP e comune)`);
   }
 
   const piva = str(rec(i.brief).partita_iva).replace(/\s/g, "").replace(/^IT/i, "");

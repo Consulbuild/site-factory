@@ -276,7 +276,7 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
   });
   yield {
     type: "text",
-    text: `build ok — ${pages} pagine, ${sizeKb} KB${partial ? " (parziale)" : ""}${noindex ? " · noindex (demo)" : ""}${integrazioni ? " · integrazioni attive" : ""}${fondamenta ? ` · fondamenta SEO${avvisiFondamenta.length ? ` (${avvisiFondamenta.length} avvisi)` : ""}` : ""}`,
+    text: `build ok — ${pages} pagine, ${sizeKb} KB${partial ? " (parziale)" : ""}${noindex ? " · noindex (demo)" : ""}${integrazioni ? " · integrazioni attive" : ""}${fondamenta ? ` · fondamenta SEO${avvisiFondamenta.length ? ` (${avvisiFondamenta.length} ${avvisiFondamenta.length === 1 ? "avviso" : "avvisi"})` : ""}` : ""}`,
   };
   return { ok: true };
 }
