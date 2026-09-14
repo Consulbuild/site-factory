@@ -1,8 +1,10 @@
 # Piano T6a — Fatti comunali da open data
 
-Stato: **chiuso il 2026-09-14 (fasi 2-5), dataset dichiarato incompleto** finché `esploradati.istat.it`
-non risponde: edifici 2011 e famiglie 2021 mancano (vedi «Calibrazione» e «Verifica», punti aperti). Commit
-`14f2fe3`, `8561389`, `1f66586`, `c22a76e`, `866e6f6`, `4997dad` + chiusura documenti. Piano del 2026-09-14. Fonti: `docs/traffico/README.md`
+Stato: **chiuso il 2026-09-14 (fasi 2-5), dataset dichiarato incompleto**; **completamento** della sera
+(fasi 2-3, «Calibrazione» § Completamento): edifici 2011 presenti dal file per sezioni di censimento di
+`www.istat.it`, **mancano solo le famiglie 2021** finché `esploradati.istat.it` non risponde (comando per
+completarle in «Verifica», punti aperti). Commit `14f2fe3`, `8561389`, `1f66586`, `c22a76e`, `866e6f6`,
+`4997dad` + chiusura documenti; completamento `04d6203` + documenti. Piano del 2026-09-14. Fonti: `docs/traffico/README.md`
 (§1-§5), `docs/traffico/brief-T6a.md`, `~/knowledge/seo/ricerche-2026-09-14/w2-3-opendata.md` e i tre script di
 prova, `docs/ricerca-traffico-2026-09.md` §6.3, `site-intake/data-src/comuni.json` e `scripts/build-comuni.mjs`,
 i due `package.json`, `site-factory-editor/scripts/test-portafoglio.ts`. Verifiche di sola lettura fatte oggi
@@ -79,9 +81,9 @@ obbligatoria «Fonte: Dipartimento della Protezione Civile-Presidenza del Consig
 | `istat-variazioni` | Variazioni amministrative e territoriali dal 1991 | `https://www.istat.it/storage/codici-unita-amministrative/Variazioni-amministrative-e-territoriali-dal-1991.zip` | ZIP → CSV `;` latin1 CRLF, campi multiriga | a gennaio (ultima: 09/01/2025, righe fino al 10/12/2024) | 228 KB | **scaricato e parsato**: tipi CS, ES, AQES, AQ, CE, CECS, AP, CD |
 | `istat-sardegna-2026` | Codici statistici delle unità amministrative della Sardegna, in vigore dal 1/1/2026 (codice nuovo ↔ precedente) | `https://www.istat.it/wp-content/uploads/2024/09/Codici-statistici-e-denominazioni-delle-unita-amministrative-della-Sardegna.zip` | ZIP → CSV `;` latin1 (nome file con byte non UTF-8: estrarre con `unzip -p '*.csv'`) | una tantum (riordino) | 62 KB | **scaricato**: 384 righe, es. `112001;Alghero;090003` |
 | `istat-posas-2025` | Popolazione residente al 1° gennaio 2025 per età e sesso, per comune | `https://demo.istat.it/data/posas/POSAS_2025_it_Comuni.zip` | ZIP → CSV `;`, titolo in riga 1, totale in «Età 999» | annuale; il definitivo esce a gennaio dell'anno dopo | 8,5 MB (CSV 46,8 MB) | **scaricato**: 7.896 comuni, 5 valori identici. Il 2026 esiste ma è «(stima)»: escluso finché non è definitivo |
-| `istat-edifici-2011` | Censimento 2011, edifici residenziali per epoca di costruzione (9 classi) | `https://esploradati.istat.it/databrowser/DWL/censtatv5db/Popolazione/DICA_EDIFICIRES-data.zip` | ZIP → CSV `\|` (46 MB secondo la ricerca) | congelato | da misurare | host in timeout: **verifica in M0** |
+| `istat-edifici-2011` | Censimento 2011, variabili censuarie per sezione di censimento: edifici residenziali (E3) e per epoca di costruzione (E8-E16, 9 classi), sommati per comune. *Sostituisce il bulk comunale* `…/censtatv5db/Popolazione/DICA_EDIFICIRES-data.zip` *di esploradati (host in timeout), decisione dell'orchestratore del 14/09 sera* | `https://www.istat.it/storage/cartografia/variabili-censuarie/dati-cpa_2011.zip` (pagina `https://www.istat.it/notizia/basi-territoriali-e-variabili-censuarie/`) | ZIP → 20 CSV regionali `Sezioni di Censimento/R01…R20_indicatori_2011_sezioni.csv` `;` windows-1252 CRLF senza virgolette, 152 colonne, + `tracciato_2011_sezioni.csv` | congelato (`last-modified` 29/08/2022) | 52,4 MB (CSV sezioni 165 MB) | **scaricato e letto**: 366.863 sezioni, 8.092 comuni del 2011, sha256 `c62af5f6…9bcd` |
 | `istat-asia-2011` | Censimento industria e servizi 2011, unità locali e addetti Ateco F | `https://esploradati.istat.it/databrowser/DWL/censtatv5db/Industria%20e%20servizi/DICA_ASIAUL-data.zip` | ZIP 166 MB → CSV 177 MB `\|` solo codici | congelato | 166 MB | host in timeout: **verifica in M0** |
-| `istat-famiglie-2021` | Censimento permanente 2021, famiglie per titolo di godimento (`DF_DCSS_HUDW_1_COM`) | `https://esploradati.istat.it/SDMXWS/rest/data/IT1,DF_DCSS_HUDW_1_COM,1.0/<chiave>/ALL?detail=full&format=csv` | SDMX → CSV | censimento permanente (ricontrollare se esce il 2022+) | da misurare | host in timeout: **in M0** si legge la DSD e si sceglie **una** query per tutti i comuni (fallback: una per provincia), mai 7.896 chiamate |
+| `istat-famiglie-2021` | Censimento permanente 2021, famiglie per titolo di godimento (`DF_DCSS_HUDW_1_COM`) | `https://esploradati.istat.it/SDMXWS/rest/data/IT1,DF_DCSS_HUDW_1_COM,1.0/<chiave>/ALL?detail=full&format=csv` | SDMX → CSV | censimento permanente (ricontrollare se esce il 2022+) | da misurare | host in timeout (anche i 3 tentativi del 14/09 sera; nessuna copia ufficiale altrove, § Completamento): **in M0** si legge la DSD e si sceglie **una** query per tutti i comuni (fallback: una per provincia), mai 7.896 chiamate |
 | `dpc-sismica-2025` | Classificazione sismica aggiornata al 31 maggio 2025 | `https://rischi.protezionecivile.gov.it/static/4717c6a369cdc298b69730c9d740e39a/classificazione-sismica-aggiornata-maggio-2025.csv` | CSV `;` UTF-8 con BOM, codice senza zeri iniziali | quando le Regioni riclassificano; il file cambia **allo stesso URL** | 332 KB | **scaricato**: 7.896 righe, sha256 `89568b25…a324`, `last-modified` 02/09/2026 |
 | `dpr412-allegato-a` | DPR 26 agosto 1993 n. 412, allegato A (zona, gradi giorno, altitudine della casa comunale) | `https://www.gazzettaufficiale.it/atto/serie_generale/caricaArticolo?art.versione=1&art.idGruppo=0&art.flagTipoArticolo=1&art.codiceRedazionale=093G0451&art.idArticolo=1&art.idSottoArticolo=1&art.idSottoArticolo1=10&art.dataPubblicazioneGazzetta=1993-10-14&art.progressivo=<1\|2\|3>` (User-Agent browser) | 3 frammenti HTML | testo del 1993; modificabile per decreto (art. 2 c. 2) | 80 + 81 + 57 KB | **scaricato e parsato**: 2.987 + 2.998 + 2.103 = 8.088 righe; sha256 `c9a22e4d…`, `fa0705b8…`, `7cf0cf11…` |
 | `dpr74-2013-art4` | Periodi e ore di accensione per zona | Normattiva `urn:nir:stato:decreto.del.presidente.della.repubblica:2013-01-01;74~art4` | tabella di 6 righe nel modulo | a ogni aggiornamento con `cite_law` | — | **verificato** 14/09/2026 |
@@ -165,7 +167,7 @@ Campi opzionali per comune: `nomeAltraLingua` (`COMUNE_A`), `nomiPrecedenti` (da
 | `nome`, `sigla`, `nomeAltraLingua` | stringhe | anagrafica | 1/1/2026 | `istat-confini-2026` | — | 7.896 comuni; sigla presente |
 | `centro`, `raggioKm` | `[lat, lon]`, raggio del cerchio di pari area | `distanzaKm` (km, linea d'aria) | 1/1/2026 | `istat-confini-2026` (elaborazione) | codici 2026 nativi | punto **dentro il proprio poligono**; lat 35,2-47,2, lon 6,5-18,6 |
 | `popolazione` | intero | `popolazione` (residenti) | 1 gennaio 2025 | `istat-posas-2025` | cambio codice | 0 < p ≤ 3.000.000; totale «999» = somma delle età |
-| `edificiEpoca` | 9 conteggi (≤1918, 1919-45, 1946-60, 1961-70, 1971-80, 1981-90, 1991-2000, 2001-05, ≥2006) | `edifici_residenziali` (edifici), `edifici_ante_1981` (edifici e %) | 2011 | `istat-edifici-2011` | additivo | somma classi = riga «ALL»; totale > 0 |
+| `edificiEpoca` | 9 conteggi (≤1918, 1919-45, 1946-60, 1961-70, 1971-80, 1981-90, 1991-2000, 2001-05, ≥2006) | `edifici_residenziali` (edifici), `edifici_ante_1981` (edifici e %), entrambi come elaborazione con `metodo` | 2011 | `istat-edifici-2011` | additivo | per comune E3 = somma delle 9 classi; totale > 0; 8.092 comuni del 2011; tracciato verbatim |
 | `clima` | `[zona, gradi giorno, altitudine]` | `zona_climatica`, `gradi_giorno` (GG), `altitudine_casa_comunale` (m s.l.m.), `periodo_riscaldamento` (dal DPR 74/2013) | allegato A, 1993 | `dpr412-allegato-a`, `dpr74-2013-art4` | non additivo | zona coerente con le soglie dell'art. 2 c. 1; GG 500-5.200; quota -5-2.100 |
 | `sismica` | stringa verbatim (`"3"`, `"2A-3A-3B"`) | `zona_sismica` | 31 maggio 2025 | `dpc-sismica-2025` | cambio codice | `^[1-4][A-Da-dS]?(-[1-4][A-Da-dS]?)*$` |
 | `famiglie` | `[in proprietà, totale]` | `famiglie_proprietarie` (%) | 2021 | `istat-famiglie-2021` | additivo | 0 < proprietà ≤ totale |
@@ -450,17 +452,18 @@ come passati). I lettori di quei due file e la query SDMX unica non sono ancora 
 file veri appena l'host risponde (colonne, DSD, data territoriale reale delle famiglie). Il gate di chiusura
 dirà se la data territoriale dichiarata (`2021-12-31`) è sbagliata. Nuovo gate di **copertura**: una fonte
 presente che dà il suo fatto a meno del 90% dei comuni ferma l'aggiornamento (provato marcando presente la
-fonte edifici senza lettore: errore, niente `completo: true`).
+fonte edifici senza lettore: errore, niente `completo: true`). *(Stato al primo collaudo: il completamento
+della sera ha adottato il file per sezioni per gli edifici e lasciato mancanti solo le famiglie, § Completamento.)*
 
-**Alternativa verificata per gli edifici 2011, da decidere** (non adottata: cambia la tabella §2): le
+**Alternativa verificata per gli edifici 2011, da decidere** (poi **adottata** nel completamento): le
 «variabili censuarie per sezione di censimento 2011» di Istat,
 `https://www.istat.it/storage/cartografia/variabili-censuarie/dati-cpa_2011.zip` (52,4 MB, `last-modified`
 29/08/2022, su `www.istat.it`, che risponde), stesso censimento e stessa licenza. Colonne `PROCOM`, `E3`
 (edifici residenziali) ed `E8`-`E16` (le stesse 9 epoche). Sommate per comune riproducono **identici** i 5
 valori della ricerca: Cologno 3.087 e 2.151 ante 1981 (69,7%), Monza 8.879 (75,8%), Sandrigo 1.628
 (74,4%), Treviso 13.696 (83,2%), San Severo 7.539 (75,2%); in tutti e 5 `E3` = somma delle epoche. Per le
-famiglie 2021 non c'è un'alternativa equivalente fuori da esploradati (il file per sezioni 2021 non esiste;
-quello 2011 dà un altro anno).
+famiglie 2021 non c'è un'alternativa equivalente fuori da esploradati (il file per sezioni 2021 sta anch'esso su
+esploradati; quello 2011 dà un altro anno).
 
 ### DPR 412/1993, allegato A
 
@@ -534,6 +537,85 @@ parziali. 1.483 alias (95 KB) coprono codici soppressi, cambi di provincia e il 
 
 Dataset 1,31 MB con le fonti oggi disponibili (budget 2,5 MB); lettura + `JSON.parse` 12 ms; build del
 renderer invariata (nessuna pagina importa il modulo). Con edifici e famiglie la stima resta 1,6-1,8 MB.
+Con gli edifici (completamento): **1,72 MB**, lettura + `JSON.parse` 14 ms (una misura a 112 ms con la macchina
+carica, rientrata a 14-51 ms rilanciando: soglia indicativa di 100 ms lasciata com'è).
+
+### Completamento del 14 settembre sera (edifici 2011 e famiglie 2021)
+
+Decisioni dell'orchestratore: edifici dal file ufficiale Istat delle variabili per sezione; famiglie solo con
+un limite fisso di ricerca (3 tentativi su esploradati distanziati di 5 minuti, al massimo 10 ricerche o fetch
+di altre copie ufficiali), senza inventare nulla.
+
+**Edifici 2011 — adottati.**
+
+- *Licenza*: la pagina «Basi territoriali e variabili censuarie» non indica licenze diverse; le note legali
+  Istat (rilette il 14/09) dicono «Salvo diversa indicazione, tutti i contenuti pubblicati su questo sito sono
+  soggetti alla licenza Creative Commons – Attribuzione – versione 4.0», con menzione, link e **indicazione
+  delle modifiche**.
+- *Tracciato*: `Sezioni di Censimento/tracciato_2011_sezioni.csv` dentro lo zip. Campi usati: `PROCOM` (codice
+  del comune), `CODREG`, `E3` «Edifici ad uso residenziale», `E8`-`E16` «Edifici ad uso residenziale costruiti
+  prima del 1919 / dal 1919 al 1945 / … / dopo il 2005» (le stesse 9 classi del record). Le 10 definizioni sono
+  nel lettore alla lettera: se Istat le cambia, lo zip non entra in cache.
+- *Metodo* (scritto in `fonti.istat-edifici-2011.metodo` del dataset e in ogni fatto `edifici_*`): somma per
+  comune di tutte le sezioni (fittizie comprese, senza edifici) di `E8`-`E16`; controllo `E3` = somma delle 9
+  classi per ogni comune (8.092 su 8.092). Poiché il conteggio comunale non è pubblicato così nel file, anche
+  «N edifici residenziali» si cita con `dicituraElaborazione` («Elaborazione su dati Istat, Censimento della
+  popolazione e delle abitazioni 2011, dati per sezione di censimento»): una fonte con `metodo` rende
+  elaborazione ogni suo fatto (`src/lib/fatti-comuni.ts`).
+- *Gate*: 20 file regionali R01-R20, `CODREG` coerente col nome del file, stesso numero di campi
+  dell'intestazione, soli interi (un campo vuoto è un errore, mai 0), un comune in una sola regione, totale > 0,
+  **8.092 comuni** (i comuni al 9/10/2011). Poi le regole §3.4 e il gate di chiusura: tutti i 8.092 codici si
+  risolvono al 2026, nessun «non esisteva al 2011».
+- *Verifica indipendente*: i 5 comuni di prova **identici** alla ricerca (Cologno Monzese 3.087 e 2.151 ante
+  1981 = 69,7% · San Severo 7.539 / 75,2% · Sandrigo 1.628 / 74,4% · Monza 8.879 / 75,8% · Treviso 13.696 /
+  83,2%); i totali per ripartizione della somma delle sezioni coincidono al singolo edificio con la tavola della
+  «Nota edifici e abitazioni» Istat (`www.istat.it/wp-content/uploads/2014/08/Nota-edifici-e-abitazioni_rev.pdf`):
+  Nord-ovest 2.740.018, Nord-est 2.392.384, Centro 2.046.272, Sud 3.065.295, Isole 1.943.729, **Italia 12.187.698**.
+- *Comuni fusi o ricodificati dopo il 2011* (regole già in vigore, nessuna nuova): **135 somme per fusione**
+  dichiarate in `derivati`, **66 scarti `scambio_parziale`**, 0 `origine_senza_dato`; copertura **7.830 su 7.896**
+  (99,2%, sopra il gate del 90%). Due dei 66 erano senza dato *e senza motivo* (Mappano 2017 e Misiliscemi 2021,
+  nati solo da parti di altri comuni: nessun codice della fonte li raggiunge): `portaAl2026` ora li dichiara
+  come gli altri scambi parziali; per popolazione e sismica non cambia nulla (nessuno scambio dopo il 2025).
+- *Distribuzione* (controllo di plausibilità, nessuna soglia nuova): quota ante 1981 per comune min 4,1%, p10
+  57,9%, mediana 77,3%, p90 92,3%, max 100%; Italia 74,1%. Edifici per comune 2026: min 22, mediana 849, max
+  137.021.
+- *Tempi*: `aggiorna --offline` 6-21 s (prima 2,2 s): lettura delle sezioni ≈ 2-4 s, il resto è `unzip -t` e i
+  controlli del contenuto della cache. Accettato per un aggiornamento annuale.
+
+**Famiglie 2021 — non trovate, fonte ancora mancante.**
+
+| # | Tentativo (14/09) | Esito |
+|---|---|---|
+| esploradati 1 | 20:27 `SDMXWS/rest/dataflow/IT1/DF_DCSS_HUDW_1_COM/1.0` | timeout di connessione a 30 s (IP 193.204.90.13) |
+| esploradati 2 | 20:33, stessa richiesta | timeout a 30 s |
+| esploradati 3 | 20:38, stessa richiesta | timeout a 30 s; **fine dei tentativi** |
+| ricerca 1 | `dati-censimentipermanenti.istat.it` (I.Stat del censimento permanente) | redirect 302 verso esploradati, timeout |
+| ricerca 2 | `sdmx.istat.it/SDMXWS/rest/dataflow/IT1` (SDMX storico) | redirect in ciclo (50 salti) |
+| ricerca 3 | ricerca web su istat.it «famiglie per titolo di godimento» 2021 comuni | solo link a esploradati, I.Stat 2011 (`DICA_FAM_CARATT1`) e indagine campionaria regionale (`DCCV_TITGODABIT`) |
+| ricerca 4 | `contact.istat.it`, articolo «Abitazioni, alloggi e famiglie per titolo di godimento» | applicazione Salesforce, 404 senza contenuto |
+| ricerca 5 | ricerca web tavole comunali xlsx | trovati gli allegati statistici regionali del Censimento permanente 2021 |
+| ricerca 6 | `LAZIO_Allegato_statistico-2021_Censimento-permanente.xlsx` | 13 tavole (bilancio, età, stranieri, titolo di studio, lavoro): **nessuna sul titolo di godimento** |
+| ricerca 7 | pagina «Dati per sezioni di censimento» | i dati per sezione 2021 e 2023 sono solo su esploradati (`DWL/PERMPOP/SUBCOM/…`) |
+| ricerca 8 | `esploradati.censimentopopolazione.istat.it` | stesso IP del filtro Istat, timeout |
+| ricerca 9 | ricerca web `DCSS_HUDW` | nessun file fuori da esploradati; un rapporto Istat 2026 «Abitazioni occupate 2021-2023» |
+| ricerca 10 | quel rapporto (PDF) | nessun link ai dati oltre `ottomilacensus` (indicatori 2011) e contact centre |
+
+Conclusione: il dato comunale 2021 esiste solo su IstatData (esploradati), oggi irraggiungibile da qui. Le alternative
+viste danno **un altro anno** (2011: `A46`-`A48` del file per sezioni, `DICA_FAM_CARATT1`) o **un altro dato**
+(indagine campionaria regionale): non si usano al posto del 2021. Il dataset resta `completo: false` con
+`fontiMancanti: ["istat-famiglie-2021"]`; il banco conta 5 valori «non verificabili» (famiglie dei 5 comuni),
+mai come passati. Comando per completare: «Verifica», punti aperti.
+
+**Verifiche delle milestone del completamento** (da `site-renderer/`, prima del commit `04d6203`; il collaudo
+finale di fase 4-5 resta da fare): banco → exit 0, «137 passati, 0 falliti, 5 NON VERIFICABILI» (nuovi casi:
+tracciato verbatim e ridefinito, somma delle 2 sezioni di Pedesina, E3 incoerente, regione sbagliata, colonna
+assente, campo vuoto, comune in due regioni, zip senza tutte le regioni rifiutato dalla cache, Mappano, fatto con
+`metodo` citato come elaborazione, attribuzione e scarti degli edifici sul dataset committato; golden edifici dei 5
+comuni ora verificati) · `npm run build` → 18 pagine · `npm run check` → solo l'errore atteso su
+`src/lib/registry.ts` · `fatti-comuni.ts mostra --json` di 015081, 071051, 024091, 108033, 026086 → popolazione,
+edifici e quota ante 1981 (con `base`), zona/GG/altitudine e sismica uguali alla ricerca, nessun fatto famiglie,
+`avviso` «dataset incompleto … (istat-famiglie-2021)». La cache è stata aggiornata con il codice dello script
+escludendo la sola fonte famiglie, per non superare i 3 tentativi su esploradati.
 
 ## Verifica
 
@@ -580,9 +662,26 @@ sono di altre sessioni e restano fuori da questi commit). Revisione: 9 problemi 
 
 ### Punti aperti
 
-1. **M0**: `esploradati.istat.it` ancora in timeout alle 20:15 del 14/09. Quando risponde: lettori di edifici 2011
-   e famiglie 2021 sui file veri, query SDMX unica, `aggiorna` senza `--parziale`, golden completi nel banco.
-2. **Decisione**: adottare per gli edifici 2011 le variabili censuarie per sezione (`dati-cpa_2011.zip` su
-   `www.istat.it`, stessi 5 valori della ricerca) invece del bulk di esploradati (§«Calibrazione»).
+1. **M0, solo famiglie 2021**: `esploradati.istat.it` ancora in timeout alle 20:38 del 14/09 (§ Completamento).
+   Lo script riprova la fonte a ogni `aggiorna`, ma **il lettore delle famiglie non esiste** (colonne e chiave
+   SDMX non sono verificabili senza l'host: non si scrivono a memoria), quindi con l'host di nuovo su il gate di
+   copertura ferma l'aggiornamento (famiglie su 0 comuni con la fonte presente) e il dataset committato resta
+   intatto. Per completarla, da `site-renderer/`:
+   1. `curl -sS -o /dev/null -w "%{http_code}\n" --connect-timeout 30 "https://esploradati.istat.it/SDMXWS/rest/dataflow/IT1/DF_DCSS_HUDW_1_COM/1.0"` → `200`.
+   2. Leggere la DSD (`https://esploradati.istat.it/SDMXWS/rest/dataflow/IT1/DF_DCSS_HUDW_1_COM/1.0?references=all`),
+      scegliere **una** chiave con i soli totali (tutti i comuni, famiglie totali e in proprietà) e metterla
+      nell'URL di `FONTI["istat-famiglie-2021"]` al posto di `ALL/ALL`; verificare anche la data territoriale
+      (`riferimentoTerritoriale`).
+   3. `node --experimental-strip-types scripts/fatti-comuni.ts aggiorna --solo-verifica` → scarica il CSV in
+      cache; atteso l'errore di copertura sulle famiglie.
+   4. Scrivere `leggiFamiglie2021` sul CSV vero (usato anche da `controllaContenuto`), in `costruisciDataset`
+      `applica("famiglie", "istat-famiglie-2021", letti, { additivo: true, somma })` sui conteggi `[in proprietà,
+      totale]`, estratto verbatim nel banco; le 5 quote devono uscire identiche: Cologno Monzese 78,1% ·
+      San Severo 79,0% · Sandrigo 80,8% · Monza 74,2% · Treviso 65,9%.
+   5. `node --experimental-strip-types scripts/fatti-comuni.ts aggiorna --offline` (**senza** `--parziale`) →
+      `completo: true`; `node --experimental-strip-types scripts/test-fatti-comuni.ts` → 0 non verificabili;
+      commit di script, banco e dataset.
+2. ~~**Decisione** sugli edifici 2011 dal file per sezioni~~: adottata dall'orchestratore e fatta (`04d6203`,
+   § Completamento).
 3. `site-intake/data-src/comuni.json` resta con i codici precedenti al 2026: T3 usa i codici di T6a
    (`cercaComune` o gli alias), come da `decisioni-piani.md` §T3 punto 6.

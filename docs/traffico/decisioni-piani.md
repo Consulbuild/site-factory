@@ -24,6 +24,10 @@ restano anche se il contesto della sessione si perde. Valgono sopra il testo del
 3. Zona climatica: pubblicabile citando l'allegato A del DPR 412/1993, con campione di controllo.
 4. Unità locali e addetti nelle costruzioni (ASIA 2011): **tolti** (non servono a chi cerca).
 5. Sviluppo dopo T1a (scope.json unico), prima di T3 (T3 usa i codici ISTAT 2026 di T6a).
+6. Completamento (14/09 sera): edifici 2011 dalle variabili censuarie per sezione di `www.istat.it`
+   (`dati-cpa_2011.zip`) sommate per comune, con metodo e licenza dichiarati; famiglie 2021 con al
+   massimo 3 tentativi su esploradati distanziati di 5 minuti e 10 ricerche di altre copie ufficiali,
+   poi `completo: false` solo per quella fonte e comando per completarla nel piano. Niente dipendenze.
 
 ## T3 — Mini-form (piano pronto)
 
