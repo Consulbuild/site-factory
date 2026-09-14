@@ -99,6 +99,14 @@ restano anche se il contesto della sessione si perde. Valgono sopra il testo del
 5. `sizeKb` nella scheda Build invariato.
 6. Nel perimetro anche il `favicon` (148 KB scaricati a ogni pagina: obiettivo ≤ 10 KB senza toccare
    la pipeline del logo, ottimizzando la copia della build) e una variante `og:image` 1200×630 JPEG.
+7. Avvio dello sviluppo (14/09 sera): T5a non è chiuso, quindi niente file di `src/pagine/`. Il budget
+   è un avviso (punto 2, sopra il §11-2 del piano): gli avvisi del budget si accodano agli avvisi delle
+   fondamenta che `lib/build.ts` salva in `steps.build.fondamenta.avvisi`, già mostrati nel blocco
+   Pubblicazione, con il prefisso «Pagine leggere:», così la UI dell'editor non si tocca. Le
+   calibrazioni che il piano rimette a Mattia (C1 qualità, C3 hero da mobile) si chiudono con l'opzione
+   che passa i gate oggettivi e, a parità, la più nitida; le schermate di confronto vanno in
+   `~/.cache/site-factory/revisione-T1b/` (fuori da git e da `out/`) e sono elencate in «Calibrazione»
+   per la revisione di Mattia.
 
 ## G1 — Scheda Google consigliata (piano pronto)
 

@@ -27,15 +27,16 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
 | Id | Stato |
 |---|---|
 | T0, R1, T1a (+ integrazione) | chiusi e verificati |
-| T6a | chiuso incompleto (ISTAT esploradati giù); **giro «T6a-completamento» in corso** (workflow `wf_ba69c864-398`): edifici 2011 dal file censuario per sezione (M1 già committato `04d6203`), famiglie 2021 cercate con limite fisso |
-| T1b, T3, T4, T5a, T2a, T2b, G1 | piano scritto e decisioni registrate, da sviluppare |
+| T6a | chiuso e verificato dall'orchestratore (banco 141/0/5, build, check): edifici 2011 presenti (`04d6203`…`673bbb3`); mancano solo le famiglie 2021 (esploradati giù, comando in `piano-T6a.md`) |
+| T1b | **in sviluppo** col workflow «piano-traffico» |
+| T3, T4, T5a, T2a, T2b, G1 | piano scritto e decisioni registrate, da sviluppare |
 | T5b, T5c, T6b, T7a, T7b, T8, G2, G3 | da pianificare (fase 1) |
 | S0 | lavoro manuale di Mattia (README §8) |
 
 ## Ordine di sviluppo deciso
 
-1. T6a-completamento (in corso)
-2. **T1b** pagine leggere (prima di T5a: le pagine interne usano `Foto.astro`)
+1. T6a-completamento (chiuso)
+2. **T1b** pagine leggere (in sviluppo) (prima di T5a: le pagine interne usano `Foto.astro`)
 3. **T3** mini-form (solo dati mancanti, stesso design del form lead; usa i codici ISTAT 2026 di T6a)
 4. **T4** mappa query (solo DataForSEO; esclusione reversibile «Riammetti»)
 5. **T5a** multipagina renderer (criterio di sicurezza: HTML uguale a meno degli hash, CSS solo
