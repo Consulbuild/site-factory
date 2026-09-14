@@ -237,7 +237,8 @@ try {
     jsonld: pagina({ ld: '{"@context":"https://schema.org","@type":"Plumber","name":"Edil Prova"}' }),
   };
   for (const [k, html] of Object.entries(diversi)) caso(`${k} diverso → hash diverso`, hashPagina(html) !== hashPagina(base));
-  caso("JSON-LD con spazi ed escape \\u003c diversi → stesso hash", hashPagina(pagina({ ld: '{ "@context": "https://schema.org",  "@type":"GeneralContractor","@id":"https://edilprova.it/#azienda","name":"Edil Prova","url":"https://edilprova.it/" }' })) === hashPagina(base));
+  caso("JSON-LD con spazi diversi → stesso hash", hashPagina(pagina({ ld: '{ "@context": "https://schema.org",  "@type":"GeneralContractor","@id":"https://edilprova.it/#azienda","name":"Edil Prova","url":"https://edilprova.it/" }' })) === hashPagina(base));
+  caso("JSON-LD con escape \\u0026 del renderer e con & → stesso hash", hashPagina(pagina({ ld: '{"name":"A\\u0026B"}' })) === hashPagina(pagina({ ld: '{"name":"A&B"}' })));
   caso("&amp; e & → stesso testo", testoIndicizzabile(pagina({ desc: "A &amp; B" })) === testoIndicizzabile(pagina({ desc: "A &#38; B" })));
 
   /* ---------------------------------------------------------------- */

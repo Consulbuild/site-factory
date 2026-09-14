@@ -7,10 +7,11 @@ interface Props {
   site: SiteConfig;
   pageTitle?: string; // sottopagine (legali, grazie): "Titolo · NomeAzienda"
   noindex?: boolean; // sottopagine di servizio fuori dai motori
+  jsonLd?: Record<string, unknown> | null; // dati strutturati (solo home, fondamenta SEO)
 }
 // NOINDEX=1 (env di build, come UMAMI_*): tutto il sito fuori dai motori — è la
 // build demo dell'editor (lib/build.ts), pubblicata su <nome>.demo.consulbuild.com.
-const { site, pageTitle, noindex = !!process.env.NOINDEX } = Astro.props;
+const { site, pageTitle, noindex = !!process.env.NOINDEX, jsonLd = null } = Astro.props;
 const { brand, meta } = site;
 const preset = brand.preset as Preset;
 
@@ -60,6 +61,14 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : nu
 const heroSrc = site.sections.find((s) => s.type === "Hero")?.props.image?.src;
 const ogImage = Astro.site && heroSrc ? new URL(heroSrc, Astro.site).href : null;
 
+// JSON-LD dentro <script>: < > & e U+2028/U+2029 diventano \uXXXX, così nessun valore
+// (nome, indirizzo) può chiudere il tag. Riserializzato sempre, anche se il file è
+// stato ritoccato a mano.
+const jsonLdHtml =
+  jsonLd == null
+    ? null
+    : JSON.stringify(jsonLd).replace(/[<>&\p{Zl}\p{Zp}]/gu, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
+
 // Statistiche senza cookie (Umami self-hosted UE): solo nelle build del sito
 // pubblicato su dominio. Le env arrivano dall'editor come SITE_URL — sono
 // infrastruttura dell'agenzia, mai site.json. Assenti in dev, test e anteprime
@@ -86,6 +95,7 @@ const umamiDomains = Astro.site?.host;
     <meta property="og:type" content="website" />
     {canonical && <meta property="og:url" content={canonical} />}
     {ogImage && <meta property="og:image" content={ogImage} />}
+    {jsonLdHtml && <script is:inline type="application/ld+json" set:html={jsonLdHtml} />}
     {
       fontsHref && (
         <>

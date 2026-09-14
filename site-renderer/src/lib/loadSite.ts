@@ -13,3 +13,10 @@ const BLUEPRINT = fileURLToPath(
 
 export const siteData: unknown = JSON.parse(readFileSync(process.env.SITE_JSON ?? BLUEPRINT, "utf8"));
 export const site: SiteConfig = parseSiteConfig(siteData);
+
+// DATI_STRUTTURATI_JSON (path assoluto): JSON-LD dell'attività per la home, generato
+// dall'editor SOLO con le fondamenta SEO del servizio Traffico «Sito» accese
+// (site-factory-editor/lib/fondamenta.ts). Assente = nessun dato strutturato, come prima.
+export const datiStrutturati: Record<string, unknown> | null = process.env.DATI_STRUTTURATI_JSON
+  ? JSON.parse(readFileSync(process.env.DATI_STRUTTURATI_JSON, "utf8"))
+  : null;

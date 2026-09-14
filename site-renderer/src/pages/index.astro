@@ -1,13 +1,14 @@
 ---
 import Base from "@/layouts/Base.astro";
 import { registry } from "@/lib/registry";
-import { site } from "@/lib/loadSite";
+import { site, datiStrutturati } from "@/lib/loadSite";
 
 // Il site.json arriva da loadSite (validato Zod): di default è il blueprint
 // golden; con SITE_JSON è il sito di un cliente prodotto dalla pipeline.
+// Il JSON-LD dell'attività (fondamenta SEO) va solo in home.
 ---
 
-<Base site={site}>
+<Base site={site} jsonLd={datiStrutturati}>
   <span id="top"></span>
   {site.sections.map((section) => {
     const Comp = registry[section.type];
