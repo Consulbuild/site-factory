@@ -139,7 +139,8 @@ prossime schede.
   dichiarato incompleto** (`completo: false`) solo per le famiglie 2021: aspettano
   `esploradati.istat.it`, in timeout dal pomeriggio del 14/09 (3 tentativi e 10 ricerche di
   altre copie ufficiali la sera, senza esito); gli edifici 2011 arrivano dal file per sezioni
-  di censimento su `www.istat.it` (completamento `04d6203`, collaudo finale da fare). Il
+  di censimento su `www.istat.it` (completamento `04d6203`, revisione `42edae0`/`ed8041c`,
+  collaudato e chiuso: ricalcolo indipendente identico per 7.830 comuni). Il
   comando per completare le famiglie è nei punti aperti del piano. Tutti i 7.904 comuni del
   form si risolvono in un solo codice 2026: T3 parte da qui.
 

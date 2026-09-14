@@ -1,10 +1,11 @@
 # Piano T6a — Fatti comunali da open data
 
 Stato: **chiuso il 2026-09-14 (fasi 2-5), dataset dichiarato incompleto**; **completamento** della sera
-(fasi 2-3, «Calibrazione» § Completamento): edifici 2011 presenti dal file per sezioni di censimento di
-`www.istat.it`, **mancano solo le famiglie 2021** finché `esploradati.istat.it` non risponde (comando per
-completarle in «Verifica», punti aperti). Commit `14f2fe3`, `8561389`, `1f66586`, `c22a76e`, `866e6f6`,
-`4997dad` + chiusura documenti; completamento `04d6203` + documenti. Piano del 2026-09-14. Fonti: `docs/traffico/README.md`
+(fasi 2-5, «Calibrazione» § Completamento, «Verifica» § Collaudo finale del completamento): edifici 2011
+presenti dal file per sezioni di censimento di `www.istat.it`, **mancano solo le famiglie 2021** finché
+`esploradati.istat.it` non risponde (comando per completarle in «Verifica», punti aperti). Commit `14f2fe3`,
+`8561389`, `1f66586`, `c22a76e`, `866e6f6`, `4997dad` + chiusura documenti; completamento `04d6203`,
+`a87bd75`, revisione `42edae0`, `ed8041c` + chiusura documenti. Piano del 2026-09-14. Fonti: `docs/traffico/README.md`
 (§1-§5), `docs/traffico/brief-T6a.md`, `~/knowledge/seo/ricerche-2026-09-14/w2-3-opendata.md` e i tre script di
 prova, `docs/ricerca-traffico-2026-09.md` §6.3, `site-intake/data-src/comuni.json` e `scripts/build-comuni.mjs`,
 i due `package.json`, `site-factory-editor/scripts/test-portafoglio.ts`. Verifiche di sola lettura fatte oggi
@@ -137,7 +138,7 @@ Forma:
   "fonti": {
     "istat-edifici-2011": {
       "titolo": "Censimento della popolazione e delle abitazioni 2011 — edifici residenziali per epoca di costruzione",
-      "ente": "Istat", "url": "https://esploradati.istat.it/…/DICA_EDIFICIRES-data.zip",
+      "ente": "Istat", "url": "https://www.istat.it/storage/cartografia/variabili-censuarie/dati-cpa_2011.zip",
       "licenza": "CC BY 4.0", "licenzaUrl": "https://creativecommons.org/licenses/by/4.0/deed.it",
       "dicitura": "Fonte: Istat, Censimento della popolazione e delle abitazioni 2011",
       "dicituraElaborazione": "Elaborazione su dati Istat, Censimento della popolazione e delle abitazioni 2011",
@@ -607,7 +608,7 @@ viste danno **un altro anno** (2011: `A46`-`A48` del file per sezioni, `DICA_FAM
 mai come passati. Comando per completare: «Verifica», punti aperti.
 
 **Verifiche delle milestone del completamento** (da `site-renderer/`, prima del commit `04d6203`; il collaudo
-finale di fase 4-5 resta da fare): banco → exit 0, «137 passati, 0 falliti, 5 NON VERIFICABILI» (nuovi casi:
+finale di fase 4-5 è in «Verifica» § Collaudo finale del completamento): banco → exit 0, «137 passati, 0 falliti, 5 NON VERIFICABILI» (nuovi casi:
 tracciato verbatim e ridefinito, somma delle 2 sezioni di Pedesina, E3 incoerente, regione sbagliata, colonna
 assente, campo vuoto, comune in due regioni, zip senza tutte le regioni rifiutato dalla cache, Mappano, fatto con
 `metodo` citato come elaborazione, attribuzione e scarti degli edifici sul dataset committato; golden edifici dei 5
@@ -619,9 +620,64 @@ escludendo la sola fonte famiglie, per non superare i 3 tentativi su esploradati
 
 ## Verifica
 
+### Collaudo finale del completamento
+
+Fasi 4-5 del completamento, 2026-09-14 alle 21:30 circa, sul commit `ed8041c`, da `site-renderer/`, rilanciato per
+intero. Nessun difetto nuovo trovato (4 già corretti nei giri di revisione, `42edae0` e `ed8041c`); nessuna
+chiamata a `esploradati.istat.it` (i 3 tentativi decisi per le famiglie sono già stati usati).
+
+| Comando | Esito reale |
+|---|---|
+| `node --experimental-strip-types scripts/test-fatti-comuni.ts` | exit 0 · «141 passati, 0 falliti, 5 NON VERIFICABILI» (le famiglie dei 5 comuni, fonte non raggiungibile: mai contate come passate) · lettura + `JSON.parse` del dataset 19 ms |
+| … lo stesso con `fetch` e `net.Socket.connect` che lanciano (`node --import`) e `FATTI_COMUNI_CACHE` inesistente | identico: 141 / 0 / 5; nessuna cartella `fatti-comuni-*` lasciata in `tmpdir` |
+| `npm run build` | exit 0 · «18 page(s) built in 2.42s»; nessun file di `src/pages`, `src/sections`, `src/layouts`, `src/components` importa il modulo |
+| `npm run check` | «Result (63 files): 1 error, 0 warnings, 8 hints»: solo l'errore atteso su `src/lib/registry.ts` (ts 2740) |
+| `node --experimental-strip-types scripts/validate-site.ts blueprints/conversione-locale-v1/blueprint.json` | «OK — site.json valido · 12 sezioni · preset "meridian"» |
+| `node --experimental-strip-types scripts/fatti-comuni.ts mostra --json <codice>` per `015081`, `071051`, `024091`, `108033`, `026086` | exit 0 per tutti e 5, valori sotto; ogni JSON con `avviso` «dataset incompleto: fonti non raggiungibili all'ultimo aggiornamento (istat-famiglie-2021)» e nessun fatto famiglie |
+
+| | Cologno Monzese `015081` | San Severo `071051` | Sandrigo `024091` | Monza `108033` | Treviso `026086` |
+|---|---|---|---|---|---|
+| residenti 1/1/2025 | 46.994 | 49.136 | 8.303 | 123.032 | 85.652 |
+| edifici residenziali 2011 / ante 1981 | 3.087 / 69,7% (2.151) | 7.539 / 75,2% (5.673) | 1.628 / 74,4% (1.212) | 8.879 / 75,8% (6.733) | 13.696 / 83,2% (11.397) |
+| zona / GG / casa comunale | E / 2.404 / 131 m | D / 1.494 / 86 m | E / 2.343 / 64 m | E / 2.404 / 162 m | E / 2.378 / 15 m |
+| zona sismica | 3 | 2 | 2 | 3 | 2 |
+| famiglie proprietarie | non emesso | non emesso | non emesso | non emesso | non emesso |
+
+Tutti i valori emessi coincidono con la tabella di `docs/ricerca-traffico-2026-09.md` §6.3 (unità locali delle
+costruzioni tolte per decisione dell'orchestratore).
+
+**Criteri del brief, uno per uno** (prove nuove rispetto al primo collaudo; le altre righe della tabella del primo
+collaudo restano valide e sono state rilanciate):
+
+| Criterio | Prova | Esito |
+|---|---|---|
+| Script TS riproducibile, cache fuori da git, verifica, dataset | `aggiorna({ offline, parziale })` importato da uno script nello scratchpad su una **copia** del dataset: gate verdi in 16,3 s, 366.863 sezioni in 8.092 comuni del 2011, **file identico a quello committato salvo `generatoIl`** (diff di una riga), report «0 comuni cambiati» per ogni campo. `--offline --solo-verifica` senza `--parziale` → exit 1 «aggiornamento fermato: fonti non disponibili istat-famiglie-2021», copia intatta (sha256 prima e dopo). `manifest.json` della cache con lo stesso sha256 prima e dopo tutte le prove; nessun `.part`/`.prec`/`.tmp` rimasto | sì |
+| Lettura delle sezioni e controllo del contenuto | `controllaContenuto("istat-edifici-2011", [<copia dello zip rinominata .part>])` → accettato in 6,4 s: il nome `.part` dei download nuovi non ostacola `unzip` (percorso del codice cambiato da `42edae0`) | sì |
+| Edifici 2011 senza errori di aggregazione | **ricalcolo indipendente con `awk`** dai 20 CSV regionali dello zip in cache: 366.863 sezioni, 8.092 comuni, E3 = somma delle 9 epoche per 8.092 su 8.092; confrontato col dataset: **7.695 comuni con codice uguale o solo cambiato identici** e **135 somme per fusione identiche** alla somma dei codici in `derivati.edificiEpoca.da` (7.830 = copertura); i 66 comuni senza edifici sono tutti in `scarti.edificiEpoca.scambio_parziale` | sì |
+| Soppressi e fusi mai attribuiti senza regola | `mostra Valsamoggia` → edifici con «somma dei dati dei comuni d'origine: Bazzano, Castello di Serravalle, Crespellano, Monteveglio, Savigno»; `mostra 037004` → Valsamoggia «fusione dal 2014-01-01»; `mostra "Borgo Virgilio"` e `mostra Mappano` → solo popolazione e sismica; `mostra 090003` → Alghero `112001` con edifici (5.915, 57,9%) portati dal codice sardo precedente; 1.483 alias, 0 con destinazione inesistente | sì |
+| I 5 comuni identici alla ricerca | tabella sopra: popolazione, edifici e quota ante 1981, zona/GG, sismica identici per tutti e 5; famiglie non verificabili (fonte giù) | **in parte** (solo famiglie) |
+| Copertura e nessun valore fuori range | `copertura`: comuni 7.896, centro 7.896, popolazione 7.896, edificiEpoca 7.830, clima 7.727, sismica 7.896, famiglie 0. Controllo indipendente su tutti i record (codice a 6 cifre, sigla, centro nel riquadro dell'Italia, raggio 0-25 km, popolazione intera 1-3.000.000, sismica con la regex del gate, zona coerente con le soglie dell'art. 2 c. 1, GG 500-5.200, quota -5-2.100, 9 epoche intere ≥ 0 con totale > 0, `derivati` solo `somma_fusione` con valore presente, nessun campo `famiglie`): **0 fuori range**. Quota ante 1981 sull'Italia coperta 74,1% | sì |
+| Distanza | `mostra 015081 --da 108033 --json` → 6 km `citabile: true`; `mostra 024116 --da 024091 --json` → 13 km, citazione «in linea d'aria … non su strada» | sì |
+| Dimensione e build | 1.723.305 byte (budget 2,5 MB), `JSON.parse` 20 ms su 3 misure, build invariata | sì |
+| Utilità per T3 | 7.904 comuni di `site-intake/data-src/comuni.json`: `cercaComune(nome, sigla)` → 1 candidato per 7.904; `fattiComune(codice del form)` → stesso codice 2026 in 7.904 su 7.904 | sì |
+
+CLI: `mostra 999999` → exit 1 «codice Istat «999999» sconosciuto»; `mostra abc` → exit 1; `mostra Castro` → exit 1
+con `016065` e `075096`; `mostra 108012 --da` → exit 2 con l'uso.
+
+**File toccati contro il §5.** I commit del completamento toccano `site-renderer/scripts/fatti-comuni.ts`,
+`site-renderer/scripts/test-fatti-comuni.ts`, `site-renderer/src/lib/fatti-comuni.ts`, `site-renderer/data/comuni-fatti.json`
+(`04d6203`, `42edae0`, `ed8041c`) e `docs/traffico/piano-T6a.md`, `docs/traffico/README.md`, `docs/handoff-fase-c.md`,
+`docs/DEBUG.md` (`a87bd75` e questa chiusura). **Unico file fuori dall'elenco del §5**: `docs/traffico/decisioni-piani.md`
+in `a87bd75` (4 righe: la decisione 6 dell'orchestratore sul completamento, trascritta perché resti oltre la
+sessione); contenuto coerente con la decisione, lasciato com'è e segnalato. `6517aa1` è dell'orchestratore, non del
+piano. Nessuna modifica non committata del piano: nel working tree resta solo `factory/assignments.json` di un'altra
+sessione. Nessun `client.json` né fixture coinvolti (T6a non tocca clienti); file di prova solo nello scratchpad.
+
+### Primo collaudo (sul dataset senza edifici)
+
 Collaudo finale (fasi 4-5) del 2026-09-14 sul commit `4997dad`, da `site-renderer/`, rilanciato per intero.
 
-### Suite
+#### Suite
 
 | Comando | Esito reale |
 |---|---|
@@ -632,7 +688,7 @@ Collaudo finale (fasi 4-5) del 2026-09-14 sul commit `4997dad`, da `site-rendere
 | `node --experimental-strip-types scripts/validate-site.ts blueprints/conversione-locale-v1/blueprint.json` | «OK — site.json valido · 12 sezioni · preset "meridian"» |
 | `node --experimental-strip-types scripts/fatti-comuni.ts mostra --json 015081` | exit 0 · Cologno Monzese (MI), centro 45,5333; 9,2802, raggio 1,65 km; 46.994 residenti, zona E, 2.404 GG, 131 m, riscaldamento 15/10-15/4 14 h, zona sismica 3; `avviso` «dataset incompleto: … (istat-edifici-2011, istat-famiglie-2021)» |
 
-### Criteri del brief, uno per uno
+#### Criteri del brief, uno per uno
 
 | Criterio | Prova | Esito |
 |---|---|---|
@@ -650,7 +706,7 @@ Collaudo finale (fasi 4-5) del 2026-09-14 sul commit `4997dad`, da `site-rendere
 CLI: `mostra 999999` → exit 1 «codice Istat sconosciuto»; `mostra abc` → exit 1; `mostra Castro` → exit 1 con i
 2 candidati; `mostra 090003` → Alghero 112001 «richiesto 090003: cambio_codice dal 2026-01-01».
 
-### File toccati contro il §5
+#### File toccati contro il §5
 
 I sei commit del piano toccano solo `site-renderer/scripts/fatti-comuni.ts`, `site-renderer/scripts/test-fatti-comuni.ts`,
 `site-renderer/src/lib/fatti-comuni.ts`, `site-renderer/data/comuni-fatti.json` e `docs/traffico/piano-T6a.md`; la
@@ -662,7 +718,8 @@ sono di altre sessioni e restano fuori da questi commit). Revisione: 9 problemi 
 
 ### Punti aperti
 
-1. **M0, solo famiglie 2021**: `esploradati.istat.it` ancora in timeout alle 20:38 del 14/09 (§ Completamento).
+1. **M0, solo famiglie 2021**: `esploradati.istat.it` ancora in timeout alle 20:38 del 14/09 (§ Completamento;
+   non ritentato nel collaudo finale del completamento).
    Lo script riprova la fonte a ogni `aggiorna`, ma **il lettore delle famiglie non esiste** (colonne e chiave
    SDMX non sono verificabili senza l'host: non si scrivono a memoria), quindi con l'host di nuovo su il gate di
    copertura ferma l'aggiornamento (famiglie su 0 comuni con la fonte presente) e il dataset committato resta
