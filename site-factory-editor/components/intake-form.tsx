@@ -119,6 +119,10 @@ export function IntakeForm({
 
   const flags = (brief._da_verificare ?? []) as string[];
   const social = (brief.social ?? {}) as Record<string, string>;
+  // Lead del form sito.consulbuild.com (lib/inbox-form.ts mappaLead): i campi
+  // che quel form non chiede restano vuoti per sempre e non si mostrano.
+  // I clienti vecchi (Tally) li conservano.
+  const dalForm = brief.fonte === "form";
 
   const set = (k: string, v: unknown) => {
     setBrief((b) => ({ ...b, [k]: v }));
@@ -202,9 +206,11 @@ export function IntakeForm({
                 ))}
             </div>
           </Riga>
-          <Riga label="Anno inizio attività" campo="anno_inizio">
-            <input className="mono max-w-32" value={str("anno_inizio")} onChange={(e) => set("anno_inizio", e.target.value)} />
-          </Riga>
+          {!dalForm && (
+            <Riga label="Anno inizio attività" campo="anno_inizio">
+              <input className="mono max-w-32" value={str("anno_inizio")} onChange={(e) => set("anno_inizio", e.target.value)} />
+            </Riga>
+          )}
           <Riga label="Indirizzo" campo="indirizzo">
             <input value={str("indirizzo")} onChange={(e) => set("indirizzo", e.target.value)} />
           </Riga>
@@ -235,34 +241,44 @@ export function IntakeForm({
           <Riga label="Punti di forza" campo="punti_di_forza" hint="Uno per riga: solo ciò che il cliente ha dichiarato.">
             <textarea rows={4} value={righe("punti_di_forza")} onChange={(e) => setRighe("punti_di_forza", e.target.value)} />
           </Riga>
-          <Riga label="Descrizione" campo="descrizione">
-            <textarea rows={3} value={str("descrizione")} onChange={(e) => set("descrizione", e.target.value)} />
-          </Riga>
-          <Riga label="Azione principale" campo="azione_principale" hint="Cosa deve fare il visitatore del sito.">
-            <input value={str("azione_principale")} onChange={(e) => set("azione_principale", e.target.value)} />
-          </Riga>
+          {!dalForm && (
+            <>
+              <Riga label="Descrizione" campo="descrizione">
+                <textarea rows={3} value={str("descrizione")} onChange={(e) => set("descrizione", e.target.value)} />
+              </Riga>
+              <Riga label="Azione principale" campo="azione_principale" hint="Cosa deve fare il visitatore del sito.">
+                <input value={str("azione_principale")} onChange={(e) => set("azione_principale", e.target.value)} />
+              </Riga>
+            </>
+          )}
         </Gruppo>
 
-        <Gruppo titolo="Clienti e obiettivi">
-          <Riga label="Clienti" campo="clienti">
-            <select className="max-w-48" value={str("clienti")} onChange={(e) => set("clienti", e.target.value)}>
-              <option>Privati</option>
-              <option>Aziende</option>
-              <option>Entrambi</option>
-            </select>
-          </Riga>
+        <Gruppo titolo={dalForm ? "Clienti" : "Clienti e obiettivi"}>
+          {!dalForm && (
+            <Riga label="Clienti" campo="clienti">
+              <select className="max-w-48" value={str("clienti")} onChange={(e) => set("clienti", e.target.value)}>
+                <option>Privati</option>
+                <option>Aziende</option>
+                <option>Entrambi</option>
+              </select>
+            </Riga>
+          )}
           <Riga label="Cliente tipo" campo="cliente_tipo">
             <textarea rows={3} value={str("cliente_tipo")} onChange={(e) => set("cliente_tipo", e.target.value)} />
           </Riga>
           <Riga label="Area geografica" campo="area_geografica">
             <input className="max-w-64" value={str("area_geografica")} onChange={(e) => set("area_geografica", e.target.value)} />
           </Riga>
-          <Riga label="Obiettivi sito" campo="obiettivi_sito" hint="Uno per riga.">
-            <textarea rows={4} value={righe("obiettivi_sito")} onChange={(e) => setRighe("obiettivi_sito", e.target.value)} />
-          </Riga>
-          <Riga label="Canali attuali" campo="canali_attuali" hint="Uno per riga.">
-            <textarea rows={3} value={righe("canali_attuali")} onChange={(e) => setRighe("canali_attuali", e.target.value)} />
-          </Riga>
+          {!dalForm && (
+            <>
+              <Riga label="Obiettivi sito" campo="obiettivi_sito" hint="Uno per riga.">
+                <textarea rows={4} value={righe("obiettivi_sito")} onChange={(e) => setRighe("obiettivi_sito", e.target.value)} />
+              </Riga>
+              <Riga label="Canali attuali" campo="canali_attuali" hint="Uno per riga.">
+                <textarea rows={3} value={righe("canali_attuali")} onChange={(e) => setRighe("canali_attuali", e.target.value)} />
+              </Riga>
+            </>
+          )}
         </Gruppo>
 
         <Gruppo titolo="Presenza online">
@@ -272,9 +288,11 @@ export function IntakeForm({
           <Riga label="Sito attuale" campo="sito_attuale">
             <input className="max-w-64" value={str("sito_attuale")} onChange={(e) => set("sito_attuale", e.target.value)} />
           </Riga>
-          <Riga label="Problemi sito attuale" campo="problemi_sito_attuale">
-            <input value={str("problemi_sito_attuale")} onChange={(e) => set("problemi_sito_attuale", e.target.value)} />
-          </Riga>
+          {!dalForm && (
+            <Riga label="Problemi sito attuale" campo="problemi_sito_attuale">
+              <input value={str("problemi_sito_attuale")} onChange={(e) => set("problemi_sito_attuale", e.target.value)} />
+            </Riga>
+          )}
           <Riga label="Social" campo="social" hint="Solo link reali e verificati: finiscono nel footer del sito.">
             <div className="space-y-2">
               {SOCIAL_KEYS.map((k) => (
@@ -309,9 +327,11 @@ export function IntakeForm({
           <Riga label="Tono preferito" campo="tono_preferito">
             <input value={str("tono_preferito")} onChange={(e) => set("tono_preferito", e.target.value)} />
           </Riga>
-          <Riga label="Da evitare" campo="da_evitare">
-            <input value={str("da_evitare")} onChange={(e) => set("da_evitare", e.target.value)} />
-          </Riga>
+          {!dalForm && (
+            <Riga label="Da evitare" campo="da_evitare">
+              <input value={str("da_evitare")} onChange={(e) => set("da_evitare", e.target.value)} />
+            </Riga>
+          )}
         </Gruppo>
 
         <Gruppo titolo="Contatti">
