@@ -120,7 +120,7 @@ si calibra con 4-8 settimane di dati Search Console.
 | Id | Piano | Obiettivo in una riga | Stato | Commit |
 |---|---|---|---|---|
 | S0 | Baseline e richieste esterne | account (Mattia), GSC/Bing verificati su cavalierebuild.it, baseline congelata | da fare (Mattia) | — |
-| T0 | Area Traffico: forma e scheletro | pagina portafoglio + dettaglio Sito/Scheda, stati spento/attivo/sospeso, chiavi con prova | da fare | — |
+| T0 | Area Traffico: forma e scheletro | pagina portafoglio + dettaglio Sito/Scheda, stati spento/attivo/sospeso, chiavi con prova | fasi 2-3 fatte, fasi 4-5 all'orchestratore | `fb2ade6`, `a6e10b9` |
 | T1a | Fondamenta SEO | sitemap, robots per cliente, JSON-LD reale, title/H1/description per pagina, chiave IndexNow, interlock deploy | da fare | — |
 | T5a | Contratto multipagina e renderer | `pages` additivo, pagine servizio/zone/lavori, navbar/footer, 404, breadcrumb | da fare | — |
 | T3 | Mini-form «Dati per farti trovare» | link firmato → form → `traffico/dati.json` | da fare | — |

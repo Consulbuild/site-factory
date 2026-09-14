@@ -317,3 +317,81 @@ con «Usa questa» per variante (ricoloro offline deterministico → logo
 Nessuna percentuale, nessun banner flottante, nessuna card annidata, nessun
 timer che riannuncia (tempo `aria-hidden`), nessuna azione distruttiva senza
 `ConfirmDialog`, nessun bottone blu oltre l'unico della catena.
+
+---
+
+# Area Traffico: portafoglio, dettaglio, riga nell'hub (shape /impeccable — 2026-09-14)
+
+Modo: **Operate**. Piano: `docs/traffico/piano-T0.md` (§2 lo studio completo,
+§Calibrazione i testi). Chi arriva: Mattia, dalla sidebar per sapere per quali
+clienti lavora sul traffico, o dall'hub quando un cliente compra o disdice un
+servizio. Verità specifica: **due servizi separati** (Sito, Scheda Google), rari
+da cambiare, una decisione commerciale e non il prossimo passo di una pipeline.
+Successo = zero ambiguità tra spento e sospeso, nessuna attivazione accidentale,
+mai «Spento» su un file che non si sa leggere, nessuna promessa di risultati.
+
+## Layout
+
+```
+PORTAFOGLIO /traffico  (sola lettura, niente JS client)
+  Traffico
+  intro: i due servizi, si attivano dal dettaglio · «Nessun servizio acceso per ora.»
+  Stato non leggibile · 1        riga → nome · «client.json fuori schema»   [Non leggibile] ×2
+  Con un servizio acceso · 1     riga → nome · città · dominio   Sito [Attivo] dal 14/09 · Scheda Google [Spento]  ›
+  Spenti · 1
+  In demo · 1 — si attivano dopo «Il cliente si è abbonato»
+
+DETTAGLIO /traffico/[slug]
+  Traffico / Azienda                                             [Apri il cliente →]
+  Azienda · città · percorso · dominio ↗ | senza dominio
+  (demo) frase del blocco  ·  (file illeggibile) Banner err
+  ┌ card ── Sito [badge] ─────────────────────── [Attiva… | Sospendi… | Riattiva…]
+  │ descrizione · riga date (role=status) · (senza dominio) Banner warn
+  │ Cosa comparirà qui            │ Cosa servirà
+  └ card ── Scheda Google: stessa anatomia
+
+HUB /clienti/[slug]  (dopo la lista degli step)
+  ┌ card ── Traffico   Sito [badge]   Scheda Google [badge]          [Apri Traffico →]
+```
+
+## Decisioni UX
+
+1. **Portafoglio in sola lettura raggruppato per stato** (non leggibile → accesi →
+   spenti → demo, nomi A–Z): nessuno switch in lista, l'errore di mira costerebbe
+   troppo. Riga = un solo `Link` a blocco, etichetta inline prima di ogni badge
+   (regge a 400 px senza intestazioni di colonna).
+2. **Dettaglio a due sezioni impilate**, niente tab: lo stato di entrambi i servizi
+   è sempre visibile e le sezioni a tutta larghezza reggono i pannelli futuri.
+3. **Bottoni con conferma, non interruttori** (approvato): `btnSecondary` con i
+   puntini, la primaria sta solo nel `ConfirmDialog`. **Nessuna primaria in T0**:
+   il blu inviterebbe al clic. Quando un piano porterà un prossimo passo del
+   servizio (es. l'invio del mini-form), diventerà lui la primaria della sezione.
+4. **Dopo il cambio si resta nel dettaglio** (`router.refresh()`, focus di nuovo sul
+   bottone): il nuovo stato è l'esito visibile. Scostamento consapevole da
+   «Post-conferma → hub», che riguarda gli step della pipeline.
+5. **Date**: «Attivo dal …», «Sospeso dal …», con la prima attivazione (non cambia
+   mai) e l'ultima sospensione o riattivazione quando diverse.
+6. **Motivo del blocco scritto una volta, in testa** (demo: la stessa frase della
+   route 409; file illeggibile: il banner), richiamato dai bottoni disabilitati con
+   `aria-describedby`. Con client.json illeggibile nessuna riga date, nessun
+   percorso né dominio (sarebbero sintetizzati) e badge «Non leggibile».
+7. **Sito senza dominio**: attivazione ammessa, con `Banner warn` nella sezione e
+   un paragrafo a parte nella conferma («fondamenta tecniche e sensori partiranno
+   solo da quel momento»).
+8. **Errori nel dialog** (`role="alert"`): un 4xx (stato cambiato altrove, demo,
+   file illeggibile) disabilita la conferma e «Chiudi» rilegge la pagina; un errore
+   di rete o di disco offre «Riprova».
+9. **Stati vuoti onesti**: «Cosa comparirà qui» (chiude con «Per ora nessuna di
+   queste parti è disponibile») e «Cosa servirà», elenchi semplici senza spunte
+   finte; mai posizioni, clienti in più o tempi.
+10. **Badge**: `ServizioBadge` in `components/traffico-ui.tsx` (Spento idle, Attivo
+    ok, Sospeso warn: online resta ma nessuno lo cura, Non leggibile err); la parola
+    sempre oltre al colore. Icona sidebar `Signpost` («farsi trovare», senza
+    promettere crescita).
+
+## Anti-obiettivi
+
+Niente KPI card o numeri-eroe (nessun dato da mostrare), niente switch, niente
+tab, nessun bottone blu nel portafoglio, nel dettaglio o nell'hub, nessun motivo
+di blocco in un `title`, nessuna scrittura di `client.json` alla sola apertura
+delle pagine.
