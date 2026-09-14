@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import type { SiteConfig } from "@/lib/schema";
 import { customFontsHref, type Preset } from "@/lib/presets";
+import { manifest } from "@/lib/media";
 
 interface Props {
   site: SiteConfig;
@@ -58,8 +59,13 @@ const description =
 // consolida apex/www/workers.dev sui motori — più og:url e og:image (la foto
 // hero governa l'anteprima quando il link si condivide su WhatsApp/social).
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : null;
-const heroSrc = site.sections.find((s) => s.type === "Hero")?.props.image?.src;
-const ogImage = Astro.site && heroSrc ? new URL(heroSrc, Astro.site).href : null;
+// Pagine leggere (servizio Traffico «Sito», manifest delle varianti): og:image 1200×630
+// ritagliata dalla hero al posto dell'originale da ~1 MB e favicon alleggerita. Senza
+// manifest restano l'originale della hero e la favicon del cliente, come sempre.
+const ogSrc = manifest?.og?.src ?? site.sections.find((s) => s.type === "Hero")?.props.image?.src;
+const ogImage = Astro.site && ogSrc ? new URL(ogSrc, Astro.site).href : null;
+const ogDimensioni = ogImage ? manifest?.og : undefined;
+const favicon = manifest?.favicon ?? site.brand.favicon;
 
 // JSON-LD dentro <script>: < > & e U+2028/U+2029 diventano \uXXXX, così nessun valore
 // (nome, indirizzo) può chiudere il tag. Riserializzato sempre, anche se il file è
@@ -87,7 +93,7 @@ const umamiDomains = Astro.site?.host;
     <title>{title}</title>
     {noindex && <meta name="robots" content="noindex" />}
     {/* niente type: la favicon può essere PNG (simbolo dal logo GPT Image) o SVG storico */}
-    {site.brand.favicon && <link rel="icon" href={site.brand.favicon} />}
+    {favicon && <link rel="icon" href={favicon} />}
     <meta name="description" content={description} />
     {canonical && <link rel="canonical" href={canonical} />}
     <meta property="og:title" content={title} />
@@ -95,6 +101,8 @@ const umamiDomains = Astro.site?.host;
     <meta property="og:type" content="website" />
     {canonical && <meta property="og:url" content={canonical} />}
     {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogDimensioni && <meta property="og:image:width" content={String(ogDimensioni.w)} />}
+    {ogDimensioni && <meta property="og:image:height" content={String(ogDimensioni.h)} />}
     {jsonLdHtml && <script is:inline type="application/ld+json" set:html={jsonLdHtml} />}
     {
       fontsHref && (

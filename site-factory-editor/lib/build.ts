@@ -209,6 +209,33 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
     datiStrutturati = ds;
   }
 
+  // FASE pagine leggere (varianti immagini, docs/traffico/piano-T1b.md): stessa regola delle
+  // fondamenta. Le varianti vanno in public/media/<slug>/v/ (le copia astro, le ripulisce la
+  // fase media della build successiva), il manifest arriva al renderer come file
+  // (MEDIA_VARIANTI_JSON). A servizio spento non gira: HTML e media di sempre.
+  let mediaVarianti: string | null = null;
+  if (fondamenta) {
+    fs.mkdirSync(path.join(PUBLIC_MEDIA, slug), { recursive: true });
+    const mv = yield* io.script({
+      phase: "pagine leggere (varianti immagini)",
+      bin: NODE_BIN,
+      args: [
+        "--experimental-strip-types",
+        "scripts/media-varianti.ts",
+        `out/${slug}/site.json`,
+        "--media",
+        `public/media/${slug}`,
+        "-o",
+        `out/${slug}/traffico/media-varianti.json`,
+      ],
+      cwd: SITE_RENDERER,
+      // a freddo ~30 s per le 18 foto di Cavaliere; a caldo tutto dalla cache
+      timeoutMs: 300_000,
+    });
+    if (!mv.ok) return mv;
+    mediaVarianti = path.join(dir, "traffico", "media-varianti.json");
+  }
+
   // FASE astro build → out/<slug>/dist (path assoluti: fuori dal renderer).
   // Col dominio pubblicato la build riceve SITE_URL: attiva canonical e og:*
   // assoluti in Base.astro (consolidamento SEO apex/www/workers.dev); con le
@@ -226,6 +253,7 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
         ? { UMAMI_HOST, UMAMI_WEBSITE_ID: integrazioni.umamiWebsiteId, FORM_ACTION: integrazioni.formAction }
         : {}),
       ...(datiStrutturati ? { DATI_STRUTTURATI_JSON: datiStrutturati.file } : {}),
+      ...(mediaVarianti ? { MEDIA_VARIANTI_JSON: mediaVarianti } : {}),
     },
     timeoutMs: 180_000,
   });
@@ -236,6 +264,24 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
   // trovata pubblicata sul dominio al primo audit go-live 2026-07-22).
   for (const qa of ["anteprima", "anteprima-componenti"]) {
     fs.rmSync(path.join(dist, qa), { recursive: true, force: true });
+  }
+
+  // FASE budget pagine (pagine leggere): peso e richieste per pagina sulla dist finale. Un
+  // budget superato è un AVVISO (decisione dell'orchestratore T1b punto 2) che si accoda a
+  // quelli delle fondamenta con il prefisso «Pagine leggere:»; fermano la build solo i guasti
+  // tecnici (file assente, <img> di /media senza dimensioni o varianti).
+  let avvisiBudget: string[] = [];
+  if (fondamenta) {
+    const bp = yield* io.script({
+      phase: "budget pagine",
+      bin: NODE_BIN,
+      args: ["--experimental-strip-types", "scripts/budget-pagine.ts", dist],
+      cwd: SITE_RENDERER,
+      timeoutMs: 60_000,
+    });
+    if (!bp.ok) return bp;
+    const avvisi = bp.esito?.avvisi;
+    avvisiBudget = Array.isArray(avvisi) ? avvisi.filter((a): a is string => typeof a === "string").map((a) => `Pagine leggere: ${a}`) : [];
   }
 
   // FASE fondamenta SEO (sitemap, robots, IndexNow): sull'HTML finale, dopo la pulizia
@@ -251,7 +297,7 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
       text: `sitemap: ${c.urls} URL · lastmod ${c.cambiate.length ? `aggiornato per ${c.cambiate.join(", ")}` : "invariato"} · robots, chiave IndexNow e _headers (noindex su workers.dev) scritti`,
     };
     for (const a of c.avvisi) yield { type: "text", text: `avviso: ${a}` };
-    avvisiFondamenta = [...(datiStrutturati?.avvisi ?? []), ...c.avvisi];
+    avvisiFondamenta = [...(datiStrutturati?.avvisi ?? []), ...c.avvisi, ...avvisiBudget];
   }
   const { pages, sizeKb } = distStats(dist);
   patchClientState(slug, (s) => {

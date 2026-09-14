@@ -87,9 +87,14 @@
     text-decoration-thickness: 1px;
   }
   /* <picture> delle varianti immagini (Foto.astro, pagine leggere): trasparente al layout,
-     l'<img> resta figlia diretta di griglie, flex e figure come senza varianti */
+     l'<img> resta figlia diretta di griglie, flex e figure come senza varianti. Il <source>
+     non ha resa ma senza display:none conterebbe come elemento vuoto nel gap di un flex
+     (il marchio dell'intestazione si spostava di 10px); la scelta della variante non cambia. */
   picture {
     display: contents;
+  }
+  picture > source {
+    display: none;
   }
 }
 

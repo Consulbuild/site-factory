@@ -44,9 +44,10 @@ export const manifest: ManifestVarianti | null = process.env.MEDIA_VARIANTI_JSON
 // Grammatica chiusa, letta da scripts/budget-pagine.ts: voci «(max-width: Npx) LUNGHEZZA»
 // separate da virgola e una LUNGHEZZA finale, con LUNGHEZZA = Npx | Nvw | calc(Nvw - Nrem).
 export const SIZES = {
-  // A, C, D: foto a tutta pagina ritagliata a riempire; da mobile il riquadro è verticale e la
-  // foto larga copre ~1150 px (piano §2.4, calibrazione C3).
-  hero: "(max-width: 1279px) 1170px, 100vw",
+  // A, C, D: foto a tutta pagina ritagliata a riempire. Da mobile il riquadro è verticale e la
+  // foto larga copre ~1150 px (piano §2.4, calibrazione C3); da 768 px la sezione alta dei
+  // preset con titoli grandi la allarga oltre il viewport (1468 px a 1280 in canon): la più grande.
+  hero: "(max-width: 767px) 1170px, 1920px",
   // B: colonna 6/12 accanto al testo.
   heroSplit: "(max-width: 1023px) calc(100vw - 3rem), 600px",
   // Griglia dei servizi: una colonna, due da 640 px, tre-cinque da 1024 px.
