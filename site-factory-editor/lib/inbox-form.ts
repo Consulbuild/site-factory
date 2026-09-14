@@ -350,6 +350,9 @@ export function importLeadForm(id: string, overwrite = false): string {
     percorso: prev?.percorso ?? "demo",
     ...(prev?.catena ? { catena: prev.catena } : {}),
     ...(prev?.demo ? { demo: prev.demo } : {}),
+    // Stato dei servizi Traffico (docs/traffico/README.md): un re-import non spegne un
+    // servizio attivo né perde la data della prima attivazione.
+    ...(prev?.traffico ? { traffico: prev.traffico } : {}),
   });
 
   fs.rmSync(src, { recursive: true, force: true }); // nella cartella sincronizzata = Cestino di Drive

@@ -17,11 +17,14 @@ const { OUT_DIR } = await import("../lib/paths.ts");
 const T = await import("../../site-intake/src/data/tassonomia.ts");
 const mappa = (l: readonly { id: string; testo: string }[]) => Object.fromEntries(l.map((o) => [o.id, o.testo]));
 const mappaBrief = (l: readonly { id: string; testo: string; valoreBrief?: string }[]) => Object.fromEntries(l.map((o) => [o.id, o.valoreBrief ?? o.testo]));
+// Voci tolte dal form ma tenute nella copia per leggere i lead già inviati (commento in
+// lib/inbox-form.ts): ammesse solo queste, con il loro testo esatto.
+const STORICHE = { punti: { "cantiere-pulito": "Puliamo il cantiere ogni giorno" } };
 assert.deepEqual(TESTI, {
   mestieri: mappa(T.MESTIERI),
   lavori: Object.fromEntries(Object.entries(T.LAVORI).map(([k, l]) => [k, mappa(l)])),
   anni: mappaBrief(T.ANNI),
-  punti: mappa(T.PUNTI_DI_FORZA),
+  punti: { ...mappa(T.PUNTI_DI_FORZA), ...STORICHE.punti },
   clienti: mappa(T.CLIENTI),
   stili: mappaBrief(T.STILI),
   colori: mappa(T.COLORI),
@@ -92,6 +95,21 @@ try {
   assert.equal(leggi("client.json").steps.intake.stato, "da_verificare");
   assert.equal(fs.existsSync(dir), false, "cartella tolta da _inbox");
   assert.equal(listLeadsForm().length, 0);
+
+  // Re-import con sovrascrittura: step, percorso e servizi Traffico si preservano
+  const traffico = { sito: { stato: "attivo", primaAttivazioneAt: "2026-09-01T10:00:00.000Z", attivatoAt: "2026-09-01T10:00:00.000Z" }, scheda: { stato: "spento" } };
+  const cj = leggi("client.json");
+  fs.writeFileSync(path.join(dest, "client.json"), JSON.stringify({ ...cj, percorso: "completo", traffico }));
+  fs.mkdirSync(dir);
+  fs.writeFileSync(path.join(dir, "lead.json"), JSON.stringify(lead));
+  fs.copyFileSync(path.join(FOTO, "lavoro-1.jpg"), path.join(dir, "foto-01-lavoro-1.jpg"));
+  fs.copyFileSync(path.join(FOTO, "lavoro-2.jpg"), path.join(dir, "foto-02-lavoro-2.jpg"));
+  fs.copyFileSync(path.join(FOTO, "logo.png"), path.join(dir, "logo.png"));
+  assert.equal(importLeadForm(id, true), slug);
+  const dopo = leggi("client.json");
+  assert.deepEqual(dopo.traffico, traffico, "re-import: stato Traffico preservato");
+  assert.equal(dopo.percorso, "completo", "re-import: percorso preservato");
+  assert.equal(dopo.steps.intake.stato, "da_verificare");
   ok = true;
   console.log("✓ import dal form: lista, sincronizzazione, brief, intake, foto, logo, client.json, pulizia _inbox");
 } finally {
