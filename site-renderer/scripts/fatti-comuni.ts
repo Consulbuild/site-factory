@@ -942,14 +942,15 @@ export function controllaTracciatoEdifici2011(testo: string): void {
  * CSV regionali delle variabili per sezione 2011 («;», windows-1252, niente virgolette) → per comune le 9
  * classi di epoca (E8-E16) sommate su tutte le sezioni. Errore se: nome file o regione incoerenti,
  * colonne assenti, numero di campi diverso dall'intestazione, valori non interi, un comune in due regioni,
- * E3 diverso dalla somma delle classi o nessun edificio residenziale.
+ * una sezione (SEZ2011) ripetuta, E3 diverso dalla somma delle classi o nessun edificio residenziale.
  */
 export function leggiEdificiSezioni2011(file: { nome: string; testo: string }[]): ValoriFonte<number[]> {
   const somme = new Map<string, number[]>(); // [E3, E8 … E16]
   const regioneDi = new Map<string, string>();
   const nomi = new Map<string, string>();
   const campi = TRACCIATO_EDIFICI_2011.map(([c]) => c);
-  let sezioni = 0;
+  // una sezione ripetuta raddoppierebbe E3 e le classi insieme: nessun altro controllo se ne accorgerebbe
+  const sezioni = new Set<string>();
   for (const { nome, testo } of file) {
     const m = FILE_SEZIONI_2011.exec(nome);
     if (!m) throw new Error(`sezioni 2011: file «${nome}» inatteso`);
@@ -964,6 +965,7 @@ export function leggiEdificiSezioni2011(file: { nome: string; testo: string }[])
     const iRegione = indice("CODREG");
     const iCodice = indice("PROCOM");
     const iNome = indice("COMUNE");
+    const iSezione = indice("SEZ2011");
     const iCampi = campi.map(indice);
     for (let k = 1; k < righe.length; k++) {
       const riga = righe[k]!;
@@ -978,6 +980,9 @@ export function leggiEdificiSezioni2011(file: { nome: string; testo: string }[])
       const altra = regioneDi.get(codice);
       if (altra !== undefined && altra !== regione) throw new Error(`${dove}: comune ${codice} anche nella regione ${altra}`);
       regioneDi.set(codice, regione);
+      const sezione = r[iSezione]!;
+      if (sezioni.has(sezione)) throw new Error(`${dove}: sezione ${sezione} ripetuta`);
+      sezioni.add(sezione);
       const valori = iCampi.map((i, j) => {
         const v = r[i]!;
         if (!/^\d+$/.test(v)) throw new Error(`${dove}: ${campi[j]} «${v}» non è un intero`);
@@ -989,7 +994,6 @@ export function leggiEdificiSezioni2011(file: { nome: string; testo: string }[])
         somme.set(codice, valori);
         nomi.set(codice, r[iNome]!);
       }
-      sezioni++;
     }
   }
   const valori = new Map<string, number[]>();
@@ -999,7 +1003,7 @@ export function leggiEdificiSezioni2011(file: { nome: string; testo: string }[])
     if (totale <= 0) throw new Error(`sezioni 2011: ${codice} ${nomi.get(codice)} senza edifici residenziali`);
     valori.set(codice, classi);
   }
-  return { valori, nomi, righe: sezioni };
+  return { valori, nomi, righe: sezioni.size };
 }
 
 /** File regionali R01-R20 dello zip delle variabili per sezione 2011, tutti presenti. */

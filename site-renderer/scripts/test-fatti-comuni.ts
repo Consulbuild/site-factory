@@ -464,7 +464,11 @@ console.log("\nEdifici 2011 per sezione di censimento:");
   caso("riga della Lombardia in un file di un'altra regione → errore", lancia(() => leggiEdificiSezioni2011([{ nome: NOME_R03.replace("R03", "R02"), testo: csv(PEDESINA) }]))?.includes("regione") === true);
   caso("colonna E16 assente → errore", lancia(() => leggiEdificiSezioni2011([{ nome: NOME_R03, testo: csv([], TESTA.replace(";E16;", ";E16bis;")) }]))?.includes("E16") === true);
   caso("valore vuoto in una classe → errore (mai contato come 0)", lancia(() => leggiEdificiSezioni2011([{ nome: NOME_R03, testo: csv([PEDESINA[0]!.replace(";20;16;16;2;2;", ";20;16;16;;2;")]) }]))?.includes("E15") === true);
-  caso("stesso comune in due regioni → errore", lancia(() => leggiEdificiSezioni2011([{ nome: NOME_R03, testo: csv(PEDESINA) }, { nome: NOME_R03.replace("R03", "R02"), testo: csv(PEDESINA.map((r) => r.replace(/^3;/, "2;"))) }]))?.includes("anche nella regione") === true);
+  caso(
+    "sezione di Pedesina ripetuta → errore (E3 e classi raddoppiati insieme passerebbero la somma)",
+    lancia(() => leggiEdificiSezioni2011([{ nome: NOME_R03, testo: csv([PEDESINA[0]!, PEDESINA[0]!, PEDESINA[1]!]) }]))?.includes("riga 3: sezione 140470000001 ripetuta") === true,
+  );
+  caso("stesso comune in due regioni → errore",lancia(() => leggiEdificiSezioni2011([{ nome: NOME_R03, testo: csv(PEDESINA) }, { nome: NOME_R03.replace("R03", "R02"), testo: csv(PEDESINA.map((r) => r.replace(/^3;/, "2;"))) }]))?.includes("anche nella regione") === true);
 
   // zip integro ma incompleto (solo tracciato e Lombardia): il controllo del contenuto della cache lo rifiuta
   const cartella = mkdtempSync(join(tmpdir(), "fatti-comuni-sezioni-"));
@@ -490,6 +494,8 @@ console.log("\nEdifici 2011 per sezione di censimento:");
   caso("zip con tracciato e R01-R20 ma CSV separati da virgole e senza righe → contenuto rifiutato", virgole?.includes("senza la colonna CODREG") === true, virgole);
   const campoInPiu = esitoControllo((nome) => csv(nome === NOME_R03 ? [`${PEDESINA[0]!};0`, PEDESINA[1]!] : []));
   caso("zip con tracciato e R01-R20 ma una riga con un campo in più → contenuto rifiutato", campoInPiu?.includes("campi, attesi") === true, campoInPiu);
+  const ripetuta = esitoControllo((nome) => csv(nome === NOME_R03 ? [...PEDESINA, ...PEDESINA] : []));
+  caso("zip con tracciato e R01-R20 ma sezioni ripetute in un CSV regionale → contenuto rifiutato", ripetuta?.includes("ripetuta") === true, ripetuta);
   rmSync(cartella, { recursive: true, force: true });
 }
 
