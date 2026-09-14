@@ -447,7 +447,19 @@ dalle 18:00 alle 18:45 circa, un tentativo ogni 2 minuti). Senza quell'host manc
 "non_raggiungibile"`; `mostra` lo avvisa e il banco conta 10 valori golden come «non verificabili» (mai
 come passati). I lettori di quei due file e la query SDMX unica non sono ancora scritti: vanno fatti sui
 file veri appena l'host risponde (colonne, DSD, data territoriale reale delle famiglie). Il gate di chiusura
-dirà se la data territoriale dichiarata (`2021-12-31`) è sbagliata.
+dirà se la data territoriale dichiarata (`2021-12-31`) è sbagliata. Nuovo gate di **copertura**: una fonte
+presente che dà il suo fatto a meno del 90% dei comuni ferma l'aggiornamento (provato marcando presente la
+fonte edifici senza lettore: errore, niente `completo: true`).
+
+**Alternativa verificata per gli edifici 2011, da decidere** (non adottata: cambia la tabella §2): le
+«variabili censuarie per sezione di censimento 2011» di Istat,
+`https://www.istat.it/storage/cartografia/variabili-censuarie/dati-cpa_2011.zip` (52,4 MB, `last-modified`
+29/08/2022, su `www.istat.it`, che risponde), stesso censimento e stessa licenza. Colonne `PROCOM`, `E3`
+(edifici residenziali) ed `E8`-`E16` (le stesse 9 epoche). Sommate per comune riproducono **identici** i 5
+valori della ricerca: Cologno 3.087 e 2.151 ante 1981 (69,7%), Monza 8.879 (75,8%), Sandrigo 1.628
+(74,4%), Treviso 13.696 (83,2%), San Severo 7.539 (75,2%); in tutti e 5 `E3` = somma delle epoche. Per le
+famiglie 2021 non c'è un'alternativa equivalente fuori da esploradati (il file per sezioni 2021 non esiste;
+quello 2011 dà un altro anno).
 
 ### DPR 412/1993, allegato A
 

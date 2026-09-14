@@ -1141,7 +1141,10 @@ async function scaricaUnaVolta(url: string, destinazione: string): Promise<{ sha
   const parte = `${destinazione}.part`;
   try {
     const res = await fetch(url, { headers: { "user-agent": UA }, signal: ctrl.signal, redirect: "follow" });
-    if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok || !res.body) {
+      await res.body?.cancel();
+      throw new Error(`HTTP ${res.status}`);
+    }
     clearTimeout(timer);
     timer = setTimeout(() => ctrl.abort(new Error(`download oltre ${TIMEOUT_CORPO_MS / 60000} minuti`)), TIMEOUT_CORPO_MS);
     const hash = createHash("sha256");
@@ -1235,16 +1238,16 @@ export async function preparaCache(cache: string, offline: boolean, log: (s: str
         const esito = await scarica(f.url, join(cache, f.nome));
         file.push({ nome: f.nome, url: f.url, ...esito });
       }
+      // prima si controllano tutti i file nuovi, poi si sostituisce la copia in cache
       for (const f of file) {
-        renameSync(join(cache, `${f.nome}.part`), join(cache, f.nome));
-        if (f.nome.endsWith(".zip")) {
-          try {
-            execFileSync("unzip", ["-tqq", join(cache, f.nome)], { stdio: "pipe" });
-          } catch {
-            throw new Error(`${f.nome}: zip scaricato ma corrotto (unzip -t)`);
-          }
+        if (!f.nome.endsWith(".zip")) continue;
+        try {
+          execFileSync("unzip", ["-tqq", join(cache, `${f.nome}.part`)], { stdio: "pipe" });
+        } catch {
+          throw new Error(`${f.nome}: zip scaricato ma corrotto (unzip -t)`);
         }
       }
+      for (const f of file) renameSync(join(cache, `${f.nome}.part`), join(cache, f.nome));
       const cambiato = precedente?.file.map((x) => x.sha256).join() !== file.map((x) => x.sha256).join();
       manifest[id] = { stato: "ok", file, scaricatoIl: ora, ultimoTentativo: ora };
       log(`✓ ${id}: scaricato (${file.map((x) => `${(x.byte / 1e6).toFixed(1)} MB`).join(" + ")})${precedente?.stato === "ok" && cambiato ? " — CAMBIATO rispetto alla copia precedente" : ""}`);
@@ -1279,6 +1282,8 @@ function membroZip(zip: string, membro: string): Buffer {
 const arrotonda = (x: number, decimali: number) => Math.round(x * 10 ** decimali) / 10 ** decimali;
 export const RIQUADRO_ITALIA = { lat: [35.2, 47.2], lon: [6.5, 18.6] } as const;
 export const INTERVALLO_NUMERO_COMUNI: [number, number] = [7700, 8100];
+/** Quota minima di comuni con il fatto quando la sua fonte è presente (tarata: popolazione e sismica 100%, clima 97,9%). */
+export const COPERTURA_MINIMA = 0.9;
 
 export interface EsitoCostruzione {
   dataset: DatasetFattiComuni;
@@ -1422,7 +1427,7 @@ export function costruisciDataset(cache: string, manifest: Manifest, generatoIl:
   /* ---- intestazione ---- */
   const fonti: DatasetFattiComuni["fonti"] = {};
   for (const id of Object.keys(FONTI) as IdFonte[]) {
-    const { file, strutturale: _s, ...def } = FONTI[id];
+    const { file: _file, strutturale: _strutturale, ...def } = FONTI[id];
     const voce = manifest[id];
     fonti[id] = {
       ...def,
@@ -1435,11 +1440,17 @@ export function costruisciDataset(cache: string, manifest: Manifest, generatoIl:
           }
         : {}),
     };
-    void file;
   }
   const campiCopertura = ["centro", "popolazione", "edificiEpoca", "clima", "sismica", "famiglie"] as const;
   const copertura: Record<string, number> = { comuni: Object.keys(comuni).length };
-  for (const c of campiCopertura) copertura[c] = Object.values(comuni).filter((r) => r[c] !== undefined).length;
+  for (const c of campiCopertura) {
+    copertura[c] = Object.values(comuni).filter((r) => r[c] !== undefined).length;
+    // una fonte presente che non dà il fatto quasi ovunque è un lettore rotto o mancante, mai un dataset «completo»
+    const id = FATTI[c]!;
+    if (presente(id) && copertura[c]! < COPERTURA_MINIMA * copertura.comuni!) {
+      errori.push(`copertura: ${c} su ${copertura[c]} comuni su ${copertura.comuni} con la fonte ${id} presente (minimo ${COPERTURA_MINIMA * 100}%)`);
+    }
+  }
 
   const ordinati: Record<string, RecordComune> = {};
   for (const k of Object.keys(comuni).sort()) ordinati[k] = comuni[k]!;
