@@ -34,17 +34,27 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmProps) {
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const hasChildren = !!children;
+  // Ultimo onCancel in un ref: una callback nuova a ogni render del genitore non riaggancia Esc né ruba il focus.
+  const onCancelRef = useRef(onCancel);
+  useEffect(() => {
+    onCancelRef.current = onCancel;
+  });
+
+  // Focus solo all'apertura: con contenuto interattivo (input) il focus va lì, non sul bottone.
+  useEffect(() => {
+    if (open && !hasChildren) confirmRef.current?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- conta il contenuto al momento dell'apertura
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
-    // Con contenuto interattivo (input) il focus va lì, non sul bottone.
-    if (!children) confirmRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCancel();
+      if (e.key === "Escape") onCancelRef.current();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onCancel, children]);
+  }, [open]);
 
   if (!open) return null;
 

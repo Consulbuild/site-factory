@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "node:fs";
 import { clientDir } from "@/lib/paths";
 import { listClients, readClientState } from "@/lib/clients";
-import { getRun, busIdCliente } from "@/lib/run-bus";
+import { getRun, busIdCliente, busIdTraffico } from "@/lib/run-bus";
 import { STEPS, type StepKey } from "@/lib/steps";
 import { deleteUmamiWebsite, rimuoviInfra } from "@/lib/integrazioni";
 import { catenaViva } from "@/lib/catena";
@@ -39,6 +39,10 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ slug: st
     if (run && !run.done) {
       return NextResponse.json({ error: "c'è un run in corso per questo cliente: fermalo prima di eliminare" }, { status: 409 });
     }
+  }
+  const mappa = getRun(busIdTraffico(slug, "mappa"));
+  if (mappa && !mappa.done) {
+    return NextResponse.json({ error: "calcolo della mappa query in corso per questo cliente: fermalo dalla barra dei lavori prima di eliminare" }, { status: 409 });
   }
 
   const body = await req.json().catch(() => ({}));

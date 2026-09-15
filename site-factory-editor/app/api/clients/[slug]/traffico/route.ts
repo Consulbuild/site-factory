@@ -5,6 +5,7 @@ import { clientDir } from "@/lib/paths";
 import { motivoCorrotto, patchClientState, readClientState } from "@/lib/clients";
 import { StatoServizioTraffico } from "@/lib/schemas";
 import { SERVIZI, leggiTraffico, transizione } from "@/lib/traffico";
+import { busIdTraffico, getRun } from "@/lib/run-bus";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,13 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
   const corrotto = motivoCorrotto(slug);
   if (corrotto) {
     return NextResponse.json({ error: `client.json non leggibile (${corrotto}): correggi il file a mano prima di continuare` }, { status: 409 });
+  }
+
+  if (body.data.servizio === "sito") {
+    const mappa = getRun(busIdTraffico(slug, "mappa"));
+    if (mappa && !mappa.done) {
+      return NextResponse.json({ error: "calcolo della mappa query in corso: fermalo dalla barra dei lavori o attendi che finisca prima di cambiare lo stato del Sito" }, { status: 409 });
+    }
   }
 
   const stato = readClientState(slug);

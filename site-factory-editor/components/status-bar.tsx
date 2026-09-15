@@ -116,8 +116,11 @@ export function StatusBar() {
           <AgentOrb agente={agente} stato={statoOrb(focused)} />
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline gap-2 text-sm">
-              <span className="font-semibold">{agente.nome}</span>
-              <span className="truncate text-muted">
+              <span className="truncate font-semibold" title={agente.nome}>
+                {agente.nome}
+              </span>
+              {/* basis 0: col poco spazio si stringe prima l'etichetta, poi il nome (con ellissi e title). */}
+              <span className="min-w-0 flex-1 basis-0 truncate text-muted">
                 {focused.label} · {nomeStep(focused)}
               </span>
             </div>
