@@ -109,6 +109,29 @@ la coda della transizione non blocca i tocchi.
 nell'HTML, il CSS è inline, il font è preloadato, i comuni si scaricano per lettera solo
 alla domanda «Dov'è la sede», Umami non sta nel percorso critico.
 
+## Statistiche (Umami)
+
+Sito Umami «Form bozza» (`sito.consulbuild.com`, id nel default di `Base.astro`; lo
+crea e lo aggiorna `site-factory-editor/scripts/umami-form-setup.ts`, che fa anche i
+report Funnel e Percorsi). Senza cookie, nessun dato personale; `data-domains` esclude
+locale e test. Disegno della misura (`src/lib/analytics.ts`, chiamate in `main.ts`):
+
+- **una pageview vera** all'apertura (URL con `utm_*`/`fbclid`: campagna, provenienza,
+  dispositivo, paese/città) e **una pageview virtuale per passo** `/passo/NN-id`: la
+  tabella Pagine è il funnel ordinato, i report Funnel/Percorsi lavorano su quegli URL;
+- **eventi**: `avvio` (ripresa, indice), `passo` (id, n, sezione, da, direzione
+  avanti/indietro/modifica, secondi sul passo lasciato, `tempo` = «passo:secondi»),
+  `avviso` (domanda, livello, `dove` = «domanda:livello», codice), `forzato`,
+  `modifica`, `nome_sito` (esito, personalizzato), `zone` (n, regione, italia), `orari`
+  (giorni, pausa, uguali, secondi), `telefono_orari` (come), `foto` (n, errori, secondi),
+  `logo`, `invio` (foto, secondi_totali, indietro, ripresa), `errore-invio`, `uscita`
+  (domanda, n, secondi, su `pagehide`).
+
+Lettura da terminale: `node --experimental-strip-types scripts/form-analisi.ts --giorni 7`
+nell'editor (funnel per passo, mediana dei secondi per domanda, avvisi e forzature,
+uscite per domanda, esiti delle domande, dispositivi e provenienza). Il resto nell'interfaccia
+di Umami.
+
 ## Accessibilità e dispositivi
 
 Testo ≥16 px (domande 26-30 px), target ≥48 px, contrasto AA (verificato con axe in

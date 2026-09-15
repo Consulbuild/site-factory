@@ -7,8 +7,9 @@ import { MESTIERI } from "../data/tassonomia";
 import { montaFatto } from "../components/fatto";
 import { montaRiepilogo, type RiepilogoMontato } from "../components/riepilogo";
 import { annuncia, focusTitolo } from "./a11y";
-import { traccia } from "./analytics";
+import { cambioPasso, pagina, secondiSulPasso, traccia, urlPasso } from "./analytics";
 import { caricaOAvvia, INDICE_FATTO, INDICE_RIEPILOGO, Motore, type Passo } from "./engine";
+import { proponiNomiSito } from "./validators";
 import { mostraAttesa, rivelazione, scaglioni, transizione } from "./motion";
 import { montaDomanda, type PassoMontato } from "./render";
 import { ErroreTrasporto, invia, salvaBozza } from "./transport";
@@ -24,8 +25,18 @@ const riempi = $("progresso-riempi");
 
 const url = new URL(location.href);
 const stato = caricaOAvvia(url);
+/** Vero se il form riparte da uno stato salvato (chi torna dopo aver lasciato a metà). */
+const ripresa = stato.indice > 0 || Object.keys(stato.risposte).length > 0;
 const motore = new Motore(stato);
 const coda = new CodaUpload(stato.leadId);
+
+// ---------- Statistiche (Umami, senza dati personali): nomi e tempi dei passi ----------
+const idPasso = (p: Passo) => (p.tipo === "domanda" ? p.domanda.id : p.tipo);
+const titoloPasso = (p: Passo) => (p.tipo === "domanda" ? p.domanda.testo : p.tipo === "riepilogo" ? "Controlla le tue risposte" : "Fatto");
+/** Pageview virtuale del passo corrente (`/passo/NN-id`). */
+const paginaPasso = () => pagina(urlPasso(motore.indice + 1, idPasso(motore.passo)), titoloPasso(motore.passo));
+const secondiTotali = () => Math.round((Date.now() - Date.parse(motore.stato.iniziatoAt)) / 1000);
+let ritorni = 0; // «Indietro», tasto del browser e «Modifica»: quante volte in questa compilazione
 
 // Il mestiere può arrivare dall'annuncio (?mestiere=idraulico o utm_content=idraulico): progresso «dotato».
 if (!motore.risposte.mestiere) {
@@ -107,6 +118,7 @@ function monta(adotta?: HTMLElement): HTMLElement {
       indietro: () => vai(motore.indice - 1, "indietro"),
       modifica: (indice) => {
         tornaAlRiepilogo = true;
+        traccia("modifica", { domanda: DOMANDE[indice]?.id ?? String(indice) });
         vai(indice, "indietro");
       },
       invia: () => void inviaLead(),
@@ -126,14 +138,53 @@ async function vai(indice: number, direzione: "avanti" | "indietro", spingi = tr
   const lasciata = motore.passo;
   if (corrente && lasciata.tipo === "domanda") motore.annota(lasciata.domanda.id, corrente.comp.leggi());
   corrente?.comp.distruggi?.();
+  const da = idPasso(lasciata);
+  const secondi = cambioPasso();
+  const verso = lasciata.tipo === "riepilogo" && tornaAlRiepilogo ? "modifica" : direzione;
+  if (verso !== "avanti") ritorni++;
   motore.vaiA(indice);
   if (spingi) history.pushState({ indice: motore.indice }, "");
   const nuovo = await transizione(direzione, stage, () => monta());
   aggiornaProgresso();
   focusTitolo(nuovo);
-  const p = motore.passo;
-  traccia("passo", { id: p.tipo === "domanda" ? p.domanda.id : p.tipo, sezione: motore.sezione });
+  paginaPasso();
+  // `tempo` = «passo lasciato:secondi», così Umami dà la distribuzione dei tempi per domanda.
+  traccia("passo", { id: idPasso(motore.passo), n: motore.indice + 1, sezione: motore.sezione, da, direzione: verso, secondi, tempo: `${da}:${secondi}` });
   inTransizione = false;
+}
+
+/** Dati anonimi sulla risposta appena confermata: cosa dicono le domande «difficili». */
+function tracciaRisposta(id: string): void {
+  const r = motore.risposte;
+  const secondi = secondiSulPasso();
+  switch (id) {
+    case "nome_sito": {
+      const n = r.nome_sito;
+      if (n) traccia("nome_sito", { esito: n.esito, personalizzato: !proponiNomiSito(r.azienda ?? "", r.mestiere?.id).includes(n.nome) });
+      break;
+    }
+    case "zone": {
+      const z = r.zone ?? [];
+      traccia("zone", { n: z.length, regione: z.some((x) => /region/i.test(x)), italia: z.includes("Tutta Italia") }); // «regione» e «regioni vicine»
+      break;
+    }
+    case "orari_lavoro": {
+      const o = r.orari_lavoro ?? {};
+      const fasce = Object.values(o);
+      const chiave = (f: { dalle: string; alle: string }[]) => f.map((x) => `${x.dalle}-${x.alle}`).join(",");
+      traccia("orari", { giorni: fasce.length, pausa: fasce.some((f) => f.length > 1), uguali: new Set(fasce.map(chiave)).size <= 1, secondi });
+      break;
+    }
+    case "orari_telefono":
+      if (r.orari_telefono) traccia("telefono_orari", { come: r.orari_telefono.come });
+      break;
+    case "foto":
+      traccia("foto", { n: coda.di("foto").length, errori: coda.inErrore.filter((v) => v.kind === "foto").length, secondi });
+      break;
+    case "logo":
+      traccia("logo", { caricato: coda.di("logo").length > 0, nessuno: !!r.logo?.nessuno });
+      break;
+  }
 }
 
 /** «Continua»: valida, salva, avanza. Un avviso già mostrato non ferma il secondo tocco. */
@@ -142,14 +193,18 @@ function continua(forza: boolean): void {
   const passo = motore.passo;
   if (passo.tipo !== "domanda") return;
   const valoreOra = JSON.stringify(corrente.comp.leggi() ?? null);
+  if (forza) traccia("forzato", { domanda: passo.domanda.id });
   const esito = corrente.comp.valida(forza || ultimoAvviso?.valore === valoreOra);
   if (!esito.ok) {
     ultimoAvviso = { messaggio: esito.messaggio, valore: valoreOra };
     corrente.mostraEsito(esito, esito.livello === "avviso" ? [{ testo: "Va bene così, continua", esegui: () => continua(true) }] : []);
+    // `dove` = «domanda:livello» per la distribuzione in Umami; `codice` = l'inizio del messaggio, per riconoscerlo.
+    traccia("avviso", { domanda: passo.domanda.id, livello: esito.livello, dove: `${passo.domanda.id}:${esito.livello}`, codice: esito.messaggio.slice(0, 40) });
     return;
   }
   corrente.mostraEsito(null);
   motore.rispondi(passo.domanda.id, corrente.comp.leggi());
+  tracciaRisposta(passo.domanda.id);
   salvaBozza(motore.stato.leadId, { risposte: motore.risposte, indice: motore.indice + 1, aggiornatoAt: new Date().toISOString() });
   if (tornaAlRiepilogo) {
     tornaAlRiepilogo = false;
@@ -199,7 +254,7 @@ async function inviaLead(): Promise<void> {
     await coda.attendiTutto();
     await invia(motore.stato.leadId, componiLead());
     attesa.aggiorna("Fatto!", "", 1);
-    traccia("invio", { foto: coda.manifesto("foto").length });
+    traccia("invio", { foto: coda.manifesto("foto").length, secondi_totali: secondiTotali(), indietro: ritorni, ripresa });
     motore.chiudi();
     inTransizione = true;
     await rivelazione(attesa.logo, () => {
@@ -213,6 +268,7 @@ async function inviaLead(): Promise<void> {
       attesa.chiudi();
       aggiornaProgresso();
       focusTitolo(nuovo);
+      paginaPasso();
     });
     inTransizione = false;
   } catch (e) {
@@ -226,7 +282,7 @@ async function inviaLead(): Promise<void> {
         : "Qualcosa non ha funzionato dal nostro lato. Riprova tra un minuto: le tue risposte sono salvate.",
       azioni: [{ testo: "Riprova", esegui: () => void inviaLead() }],
     });
-    traccia("errore-invio");
+    traccia("errore-invio", { ripetibile });
   } finally {
     stacca();
     invioInCorso = false;
@@ -271,5 +327,16 @@ window.addEventListener("beforeunload", (e) => {
   }
 });
 
-traccia("passo", { id: DOMANDE[motore.indice]?.id ?? "finale", sezione: motore.sezione });
+// Chi chiude la scheda prima dell'invio: su quale domanda, dopo quanto. (`pagehide`: Umami
+// spedisce con keepalive, quindi l'evento parte anche mentre la pagina se ne va.)
+window.addEventListener("pagehide", () => {
+  if (motore.indice >= INDICE_FATTO) return;
+  traccia("uscita", { domanda: idPasso(motore.passo), n: motore.indice + 1, secondi_sul_passo: secondiSulPasso(), secondi_totali: secondiTotali() });
+});
+
+// Statistiche all'apertura: la pageview vera (URL con utm/fbclid: provenienza e campagna),
+// poi la pagina virtuale del passo mostrato e l'evento di avvio.
+pagina();
+paginaPasso();
+traccia("avvio", { ripresa, indice: motore.indice, passo: idPasso(motore.passo) });
 export {};

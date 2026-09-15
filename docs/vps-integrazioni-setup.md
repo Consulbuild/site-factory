@@ -169,6 +169,11 @@ generata da Bitwarden **senza spazi** (Bitwarden: `Umami site-factory`). L'edito
 i siti con questo utente: se al primo deploy Umami risponde «creazione fallita (403)»,
 alza il ruolo ad Admin.
 
+Lo stesso utente possiede il sito **«Form bozza»** (`sito.consulbuild.com`, dal
+2026-09-16): lo crea/aggiorna `site-factory-editor/scripts/umami-form-setup.ts` insieme
+ai report Funnel e Percorsi; lettura da terminale con `scripts/form-analisi.ts`. Cosa
+misura il form: `site-intake/README.md` «Statistiche».
+
 ## 6. Editor: chiavi nel Keychain
 
 Editor → **Impostazioni → Chiavi API**: `UMAMI_PASSWORD` (§5), `N8N_REGISTRA_KEY` (il

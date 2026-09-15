@@ -2,8 +2,11 @@
 /**
  * Layout unico del form: head essenziale, font preloadato, CSS inline (astro.config:
  * inlineStylesheets "always"), niente script di terzi nel percorso critico.
- * Umami (statistiche senza cookie, come sui siti clienti) solo se le env pubbliche
- * PUBLIC_UMAMI_HOST e PUBLIC_UMAMI_WEBSITE_ID sono impostate alla build.
+ * Umami (statistiche senza cookie, come sui siti clienti): host e id del sito «Form
+ * bozza» sono i default qui sotto (l'id di un sito Umami è pubblico, sta nell'HTML), così
+ * nessun deploy parte senza statistiche; le env PUBLIC_UMAMI_HOST / PUBLIC_UMAMI_WEBSITE_ID
+ * li sostituiscono. `data-domains` limita la raccolta al dominio pubblicato: le prove in
+ * locale e i test non sporcano i dati.
  */
 import "../styles/tokens.css";
 import "../styles/base.css";
@@ -16,8 +19,9 @@ interface Props {
   descrizione: string;
 }
 const { titolo, descrizione } = Astro.props;
-const umamiHost = import.meta.env.PUBLIC_UMAMI_HOST;
-const umamiId = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID;
+const umamiHost = import.meta.env.PUBLIC_UMAMI_HOST || "https://stats.consulbuild.com";
+const umamiId = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID || "36fc183b-fa22-415a-bc0d-a333d1464db0"; // sito «Form bozza» (scripts/umami-form-setup.ts nell'editor)
+const umamiDomini = "sito.consulbuild.com";
 ---
 
 <!doctype html>
@@ -42,7 +46,7 @@ const umamiId = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID;
     />
     {
       umamiHost && umamiId && (
-        <script is:inline defer src={`${umamiHost}/script.js`} data-website-id={umamiId} data-auto-track="false" />
+        <script is:inline defer src={`${umamiHost}/script.js`} data-website-id={umamiId} data-domains={umamiDomini} data-auto-track="false" />
       )
     }
   </head>
