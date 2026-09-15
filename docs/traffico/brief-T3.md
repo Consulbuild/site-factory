@@ -1,83 +1,64 @@
-# Brief T3 — Mini-form «Dati per farti trovare»
+# Brief T3 — Zone servite dal form lead
 
-Leggi prima `docs/traffico/README.md` (§1-§5). Dipende da **T0** (stato del servizio in
-`client.json.traffico`, area Traffico nell'editor: `docs/traffico/piano-T0.md`).
+Leggi prima `docs/traffico/README.md` (§3-§5) e `docs/traffico/decisioni-piani.md` («Priorità assoluta», T3 punti 12-13:
+valgono sopra tutto). Piano: `docs/traffico/piano-T3.md`. La versione precedente (mini-form) è superata:
+`git show 550126f:docs/traffico/piano-T3.md`, solo per i fatti verificati sul codice.
 
 ## Obiettivo
 
-Raccogliere dal titolare, **dopo l'attivazione del servizio Sito**, i dati reali che servono alle
-pagine per servizio e per comune, alla mappa delle query e ai dati strutturati, senza toccare il
-form lead attuale. In ≤ 5 minuti da telefono. Nessun dato inventato se non risponde.
+Più traffico dall'Italia e dalle zone dove il cliente accetta davvero lavori. Le zone il cliente le ha già scelte nel form
+lead: T3 le **traduce in modo deterministico** in comuni, province e regioni col dataset T6a, le **salva per cliente** in un
+artifact letto da T4, G1, T5a, T2b/T8 e le fa **vedere, confermare e correggere** all'operatore nel dettaglio
+`/traffico/[slug]` dell'editor.
 
 ## Decisioni che riguardano T3
 
-- Mini-form separato dal form lead (decisione 5); il form lead su sito.consulbuild.com non cambia.
-- Dati: comuni serviti **precisi** (con codice ISTAT), nome d'uso cercabile (come lo chiamano i
-  clienti), orari in cui risponde al telefono, «prezzo da» per servizio (facoltativo, IVA inclusa
-  o dichiarata, con data di validità), attestati e certificazioni reali (tipo, numero o ente,
-  eventuale file), **foto per cantiere** con comune, servizio e anno (mai la via), i lavori su
-  cui vuole più clienti (priorità commerciale, serve a T4).
-- Nessuna raccolta di recensioni (decisione 9).
-- I dati finiscono in `out/<slug>/traffico/dati.json` (artifact separato: **mai** dentro
-  `contesto.json`, per non rendere stale copy e build) e restano «da verificare» finché Mattia non
-  li conferma nell'area Traffico.
+- **Niente mini-form** (punto 13): nessun link, nessun workflow n8n, nessuna modifica a `site-intake/`, nessun campo orari
+  (gli orari entrano nel form lead: li integra Mattia in un'altra chat), nessuna domanda al cliente.
+- Traduzione (punto 12): «Nome (SIGLA)» e la sede → quel comune; «X e dintorni» → X più i comuni entro un raggio in linea
+  d'aria (valore iniziale 20 km, da calibrare); «X e provincia», «Provincia di X» → la provincia; «Tutta la regione X» → la
+  regione; «X e regioni vicine» → la regione più le confinanti di `CONFINI` (`site-intake/src/data/regioni.ts`); «Tutta Italia»
+  → Italia. Brief Tally in prosa (Cavaliere, La Cecilia): solo nomi esatti di regioni, province e comuni del dataset; se nulla
+  è riconosciuto, «Zone da impostare». Mai un'estrazione AI.
+- Codici ISTAT 2026 dal dataset T6a (`site-renderer/data/comuni-fatti.json`, alias per fusioni e riordino sardo), non da
+  `site-intake/data-src/comuni.json`.
+- L'artifact conserva le etichette originali del lead e le aree tradotte con codici e `provenienza: lead | operatore`.
+- Consumatori: T4 (comuni dell'area pesati per popolazione e distanza dalla sede), G1 (area servita: province e regioni intere
+  dove l'etichetta è larga, comuni dove è precisa, massimo 20), T5a (pagina «Zone servite» e `areaServed`), T2b/T8 (quota di
+  visite dalle zone).
 
 ## Contesto da leggere
 
-- `site-intake/README.md`, `site-intake/DESIGN.md`, `site-intake/PRODUCT.md`
-- `site-intake/src/data/domande.ts`, `site-intake/src/data/tassonomia.ts`,
-  `site-intake/src/lib/engine.ts`, `site-intake/src/lib/render.ts`, `site-intake/src/lib/main.ts`,
-  `site-intake/src/lib/transport.ts`, `site-intake/src/lib/upload.ts`, `site-intake/src/lib/comuni.ts`,
-  `site-intake/src/components/{zone,sede,foto,scelte,testo}.ts`, `site-intake/src/pages/*.astro`
-- `site-intake/scripts/build-comuni.mjs` e `site-intake/data-src/comuni.json` (codici ISTAT)
-- `site-intake/tests/*.spec.ts`, `site-intake/playwright.config.ts`, `site-intake/wrangler.jsonc`
-- `site-intake/legale/informativa-breve.md`, `site-intake/legale/informativa-completa.md`,
-  `docs/audit-legale-form-bozza-2026-09-14.md`
-- `infra/n8n/bozza.json` e `infra/n8n/bozza-pulizia.json` (pattern webhook → Google Drive),
-  `site-factory-editor/scripts/n8n-import.ts`, `docs/vps-integrazioni-setup.md` §4 e §10
-- `site-factory-editor/lib/inbox-form.ts` (import dal Drive, EXIF, `lavori.json`),
-  `site-factory-editor/lib/secrets.ts`, `site-factory-editor/lib/traffico.ts` (T0),
-  `site-factory-editor/app/traffico/[slug]/page.tsx` (T0), `site-factory-editor/DESIGN-SYSTEM.md`
-- `docs/ricerca-traffico-2026-09.md` §6.3 e §9 (vincoli legali su prezzi e attestati)
+- `site-factory-editor/lib/inbox-form.ts` (dove l'import salva `raw-submission.json` e `brief.json`), i 3 clienti in
+  `site-renderer/out/` (senza copiare dati personali), `site-intake/src/components/zone.ts`, `site-intake/src/lib/comuni.ts`
+  (`cercaZone`), `site-intake/src/data/regioni.ts`, `site-intake/public/data/province.json`
+- `site-renderer/src/lib/fatti-comuni.ts` (lettore T6a: `cercaComune`, `comuniEntroKm`, `normalizzaNome`)
+- `site-factory-editor/lib/traffico.ts`, `lib/clients.ts` (scrittura atomica, sintesi pigra), `lib/paths.ts`,
+  `app/api/clients/[slug]/traffico/route.ts` (CSRF), `app/traffico/[slug]/page.tsx`, `components/traffico-azione.tsx`,
+  `scripts/test-import-form.ts` (copia + banco di parità), `DESIGN-SYSTEM.md`, `DESIGN-BRIEF.md` (Area Traffico)
+- Guide Next 16 in `site-factory-editor/node_modules/next/dist/docs/` per route handler, `page` e `useRouter`
 
-Non leggere: renderer, skill della pipeline, fabbrica.
+Non leggere: renderer oltre al lettore T6a, skill della pipeline, fabbrica, `infra/n8n/`.
 
 ## Cosa deve esistere a fine T3
 
-1. **Link personale** generato dall'editor per un cliente con servizio Sito attivo: non contiene
-   dati personali, non è indovinabile né riusabile per un altro cliente, scade, può essere
-   rigenerato (il vecchio smette di funzionare). Il piano sceglie il meccanismo (token opaco
-   registrato lato n8n o firma HMAC con segreto condiviso Keychain ↔ credenziale n8n) motivando
-   sicurezza e semplicità.
-2. **Mini-form** in `site-intake/` (stessa grammatica visiva e motore del form lead, pagina
-   separata), con verifica del link prima di mostrare le domande, autosalvataggio, foto in
-   originale come nel form lead, informativa dedicata.
-3. **Workflow n8n** versionato in `infra/n8n/` che valida il link, salva risposte e file su Drive
-   in una cartella separata da `_inbox`, e rifiuta link scaduti o manomessi.
-4. **Import nell'editor**: dall'area Traffico del cliente, «Importa dati» → `traffico/dati.json`
-   validato (schema Zod) + foto dei cantieri in una cartella dedicata con EXIF rimosso e
-   manifest (comune ISTAT, servizio, anno, alt) → stato «da verificare» → conferma di Mattia. Il
-   pannello mostra i dati in lettura, con correzione a mano dei campi e conferma.
-5. **Legale**: informativa del mini-form (dati dell'impresa, foto, conservazione) coerente con
-   l'audit del 14/09.
-6. **Documenti**: piano chiuso, stato in README §7, handoff, `docs/vps-integrazioni-setup.md`
-   (nuovo workflow e segreto), `docs/DEBUG.md` (log dell'import).
+1. `site-factory-editor/lib/zone-servite.ts`: regole di traduzione pure, lettura e scrittura di
+   `out/<slug>/traffico/zone-servite.json`, contratto per i consumatori (`leggiZoneServite`, `zoneUsabili`, `comuniServiti`,
+   `etichettaArea`, `regioneDiSigla`, `improntaZone`).
+2. `POST /api/clients/[slug]/traffico/zone` (anteprima, salva, ricalcola) con CSRF e codici leggibili.
+3. Card «Zone servite» nel dettaglio Traffico, sopra Sito e Scheda: stati vuoto, riconosciute, da controllare, da impostare,
+   confermate o corrette, lead cambiato, non leggibile; conferma con un clic, modifica inline; entrambi i temi, 400 px.
+4. Documenti: piano chiuso, README §3 e §7, `docs/handoff-fase-c.md`, `docs/DEBUG.md`, `DESIGN-BRIEF.md`.
 
 ## Uscita verificabile
 
-- Link generato per `zz-test-t3` (fixture) → form compilato in Playwright (mobile 390 px) →
-  dati e foto arrivano a n8n in ambiente di prova o in una cartella Drive di test → import
-  nell'editor → `traffico/dati.json` valido, foto senza EXIF, manifest coerente.
-- Link scaduto, manomesso o di un altro cliente: rifiutato sia dal form sia da n8n.
-- Il form lead esistente: tutti i test Playwright esistenti verdi e comportamento invariato.
-- `contesto.json`, `copy.json` e build della fixture **non** diventano stale dopo l'import.
-- Banco `site-factory-editor/scripts/test-dati-traffico.ts` senza rete (schema, normalizzazioni,
-  comuni ISTAT, prezzi, casi limite); `npx tsc --noEmit` e `npm run build` (editor);
-  `npm run build`, `npm run check`, `npm test` (site-intake) verdi.
-- Deploy in produzione del mini-form e import del workflow n8n **solo** dopo la suite completa
-  verde; poi prova dal vivo con un link di test e pulizia dei dati di prova.
+- Banco `site-factory-editor/scripts/test-zone-servite.ts` senza rete: tutte le etichette, omonimi, comuni fusi e alias,
+  province sarde 2026, prosa Tally, input corrotti, parità con `CONFINI` e con il lettore T6a, lettura e scrittura
+  dell'artifact; `npx tsc --noEmit` e `npm run build` (editor) verdi.
+- E2E su fixture `site-renderer/out/zz-test-t3*` (API e UI); i clienti reali solo aperti, file identici prima e dopo.
+- Nessun file fuori perimetro toccato; `contesto.json`, `copy.json` e build non diventano stale.
 
 ## Calibrazione (fase 3)
 
-Durata di compilazione (< 5 minuti), testi d'aiuto su prezzo da, attestati e foto, ordine delle
-domande, numero massimo di comuni e foto.
+Raggio «dintorni» sulle sedi reali e di prova (comuni e residenti a 10/15/20/30 km), riconoscimento della prosa sui 2
+clienti Tally, testi della card.
