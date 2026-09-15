@@ -14,6 +14,7 @@ import { difficolta, livelloDaPunti, normalizzaDominio, riduciSerp, spazioOrgani
 import { ATTESE_MS, BASE_URL, ErroreDfs, creaClientDfs, corpoVolumi, fetchRegistrato, trovaLocalita, type Localita } from "../lib/dataforseo.ts";
 import { FASI, escludiRicerca, eseguiMappa, leggiContesto, leggiEsclusioni, leggiIngressi, leggiMappa, leggiRegole, riammettiRicerca } from "../lib/mappa-lavoro.ts";
 import { agenteDaFase, nomeStep, percorsoRun } from "../lib/agenti.ts";
+import { accordo, csvGiudizio, eseguiCampione, leggiCsv, matrice, selezionaGiudizio } from "./campione-serp.ts";
 import {
   MOTIVO_DA_CONTROLLARE,
   MOTIVO_DA_IMPOSTARE,
@@ -732,6 +733,38 @@ try {
     caso("26. impronta del contesto: campi non usati non contano, un servizio nuovo sì", sha0 !== null && sha0 === sha1 && sha2 !== sha0);
     const bk = leggiIngressi(nuovoCliente("senza-chiavi"), { ...stato, configurata: false }, regole);
     caso("27. chiavi assenti → blocco «non configurata» dagli ingressi", !bk.ok && bk.blocco.codice === "chiavi");
+  }
+  /* ---------- 31-33 campione ---------- */
+  {
+    const voci = matrice(d);
+    caso("31. matrice = 384 query uniche (testo + comune), 8 × 12 × 4", voci.length === 384 && new Set(voci.map((v) => `${v.query}|${v.comune.istat}`)).size === 384 && new Set(voci.map((v) => v.id)).size === 384);
+    caso("31. modificatori della ricerca §4.3, «costo» compreso", voci.some((v) => v.query === "costo idraulico sandrigo") && voci.some((v) => v.query === "imbianchino vicino a me" && v.comune.istat === "063049"));
+    let fuoriFascia: unknown = null;
+    try {
+      matrice(d, [{ istat: "015146", taglia: "piccolo" }]);
+    } catch (e) {
+      fuoriFascia = e;
+    }
+    caso("31. comune fuori dalla sua fascia → errore", fuoriFascia instanceof Error && fuoriFascia.message.includes("fuori dalla fascia"));
+    const nessunaChiamata = { chiamate: 0 };
+    const stima = await eseguiCampione({ d, domini, client: null, uscitaGrezzi: path.join(tmp, "no"), uscitaDocs: path.join(tmp, "no"), log: () => nessunaChiamata.chiamate++ });
+    caso("31. senza --conferma-spesa: solo la stima, nessuna chiamata né file", "eseguito" in stima && stima.eseguito === false && stima.stimaUsd === 1.54 && !fs.existsSync(path.join(tmp, "no")));
+
+    const uscita = path.join(tmp, "campione");
+    const esito = await eseguiCampione({ d, domini, client: creaClientDfs({ trasporto: { fetch: async () => json({}), getSecret: () => null }, registrate: RISPOSTE, cacheDir: cacheDir() }), uscitaGrezzi: uscita, uscitaDocs: uscita, data: "2026-09-15", log: () => {} });
+    const righe = "righe" in esito ? esito.righe : [];
+    caso("31. esecuzione su risposte registrate: 384 righe classificate e composizione scritta", righe.length === 384 && righe.every((r) => r.serp && r.difficolta) && fs.existsSync(path.join(uscita, "composizione-2026-09-15.json")));
+    const g1 = csvGiudizio(selezionaGiudizio(righe, 7));
+    const g2 = csvGiudizio(selezionaGiudizio(righe, 7));
+    const letto = leggiCsv(g1);
+    caso("32. giudizio: 20 righe, colonne cieche, stesso seme → stesso file", letto.length === 20 && g1 === g2 && isDeepStrictEqual(Object.keys(letto[0]!), ["id", "query", "comune", "abitanti", "top10", "local_pack", "ai_overview", "annunci", "check_url", "giudizio", "note"]) && letto.every((r) => r.giudizio === ""));
+    caso("32. seme diverso → ordine diverso", csvGiudizio(selezionaGiudizio(righe, 8)) !== g1);
+    const perId = new Map(righe.map((r) => [r.id, r]));
+    const compilate = letto.map((r, i) => ({ ...r, giudizio: i < 17 ? perId.get(r.id)!.difficolta!.livello : perId.get(r.id)!.difficolta!.livello === "bassa" ? "alta" : "bassa" }));
+    const a = accordo(compilate, perId);
+    const somma = a.matrice.flat().reduce((s, x) => s + x, 0);
+    const diagonale = a.matrice.reduce((s, r, i) => s + r[i]!, 0);
+    caso("33. accordo su 20 righe con 17 uguali → 85 %, matrice corretta", a.n === 20 && a.esatto === 0.85 && somma === 20 && diagonale === 17 && a.disaccordi.length === 3, a);
   }
   {
     const tutte = FASI.map((f) => agenteDaFase(f, "mappa", "traffico"));
