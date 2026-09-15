@@ -3,6 +3,25 @@
 Ogni piano scritto chiude con dubbi aperti; qui le risposte date prima dello sviluppo, così
 restano anche se il contesto della sessione si perde. Valgono sopra il testo del piano.
 
+## Priorità assoluta (decisione di Mattia, 2026-09-15) — vale per tutti i piani
+
+**Risultati concreti: più traffico possibile dall'Italia e dalle zone dove il cliente accetta davvero
+lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il resto è spreco.
+
+1. **Ordine di sviluppo rivisto** per mettere online prima ciò che porta visite: T3 (zone servite precise) →
+   T4 (ricerche per zona) → G1 (scheda Google con area servita: la leva più forte nelle mappe della zona) →
+   T5a → T5b (pagine per servizio e zone) → T2a (motori avvisati prima che le pagine vadano online) → T5c
+   (pagine online sul pilota) → T6b → T2b (misura) → T7a → T7b → T8 → G2 → G3.
+2. **Geografia in ogni piano**: zone servite = comuni verificati nel mini-form (T3), mai dedotti da prosa.
+   Ricerche e SERP solo in italiano, con località nei comuni o nelle province servite (T4, G1); nessuna
+   pagina, query o area servita fuori zona. I comuni senza cantiere verificato si coprono con la pagina
+   «Zone servite», l'`areaServed` dei dati strutturati e l'area servita della scheda Google, non con
+   pagine-comune sottili (le regole anti-doorway di T6b restano: rischio penalizzazione).
+3. **Misura del risultato** (T2b, T8): numeri di Search Console filtrati sull'Italia (`country = ita`) e
+   quota di visite dalle regioni e città delle zone servite dai dati di Umami, così il report dice quanto
+   traffico arriva da dove il cliente lavora, non solo il totale.
+4. Il controllore del workflow considera spreco tutto ciò che non porta o non misura quel traffico.
+
 ## T1a — Fondamenta SEO (in sviluppo dal 2026-09-14)
 
 1. Indirizzo non riconosciuto: JSON-LD senza `address`, avviso nella build, nessun blocco.

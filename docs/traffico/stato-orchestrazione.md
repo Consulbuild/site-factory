@@ -43,13 +43,18 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
 
 1. T6a-completamento (chiuso)
 2. **T1b** pagine leggere (in sviluppo) (prima di T5a: le pagine interne usano `Foto.astro`)
-3. **T3** mini-form (solo dati mancanti, stesso design del form lead; usa i codici ISTAT 2026 di T6a)
-4. **T4** mappa query (solo DataForSEO; esclusione reversibile «Riammetti»)
-5. **T5a** multipagina renderer (criterio di sicurezza: HTML uguale a meno degli hash, CSS solo
+Rivisto il 2026-09-15 sulla priorità di Mattia (traffico dall'Italia e dalle zone servite prima di tutto;
+`decisioni-piani.md`, sezione «Priorità assoluta»):
+
+3. **T3** mini-form (solo dati mancanti, stesso design del form lead; zone servite verificate; codici ISTAT 2026)
+4. **T4** mappa query (solo DataForSEO, solo zone servite; esclusione reversibile «Riammetti»)
+5. **G1** scheda Google consigliata (area servita dalle zone di T3)
+6. **T5a** multipagina renderer (criterio di sicurezza: HTML uguale a meno degli hash, CSS solo
    additivo, VRT esistenti identici; include `testoIndicizzabile` senza header/nav/footer)
-6. **T2a** motori al deploy (secondo token Cloudflare solo DNS)
-7. **T2b** sensori VPS e pannello
-8. poi fase 1 e sviluppo di T5b → T5c → T6b → T7a → T7b → T8, e G1 → G2 → G3
+7. **T5b** copy delle pagine (fase 1 da fare)
+8. **T2a** motori al deploy (secondo token Cloudflare solo DNS)
+9. **T5c** pagine online sul pilota (fase 1 da fare; online su Cavaliere solo col consenso di Mattia)
+10. poi T6b → T2b (misura Italia e zone servite) → T7a → T7b → T8 → G2 → G3
 
 ## Punti aperti da ricordare
 
