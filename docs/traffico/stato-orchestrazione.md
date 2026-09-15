@@ -82,7 +82,11 @@ Rivisto il 2026-09-15 sulla priorità di Mattia (traffico dall'Italia e dalle zo
   200), IndexNow (202). PageSpeed dal vivo prima → dopo: mobile 74 → 77, LCP 7,4 → 5,9 s, 3,45 → 2,29 MB; desktop 97 →
   98; SEO 100, accessibilità 98, best practice 100. Zone servite impostate dal testo del cliente («Lavoriamo in
   Lombardia…»): «Cologno Monzese e dintorni» + «Tutta la regione Lombardia» (le trasferte in Italia non tradotte).
-  Da fare: ricontrollo dell'indicizzazione (URL Inspection) tra 3-7 giorni; record `www` mancante (DNS: Mattia);
+  `www` sistemato da Mattia (15/09): record A proxied `192.0.2.1` + Redirect Rule «WWW to Root» → https://www 301 verso
+  l'apex con percorso e query. Restava `http://www` 522 e `http://` apex 200 senza passare a https → «Always Use HTTPS»
+  (SSL/TLS → Edge Certificates) da attivare; **standard per i clienti futuri** (www + https) da automatizzare in T2a o
+  al deploy (serve un permesso Zone Settings/Rules oltre al token solo DNS).
+  Da fare: ricontrollo dell'indicizzazione (URL Inspection) tra 3-7 giorni;
   proposta a Mattia sulla foto hero da mobile (LCP 5,9 s per la regola dello zoom 2×).
 
 - **Misura di riferimento per T1b** (14/09 sera, cavalierebuild.it dal vivo, telefono 390 px DPR 3, cache
