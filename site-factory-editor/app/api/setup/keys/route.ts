@@ -9,9 +9,11 @@ import {
   type KeyName,
   getSecret,
   hasSecret,
+  motivoValoreNonSalvabile,
   secretHint,
   setSecret,
 } from "@/lib/secrets";
+import { normalizzaServiceAccount, provaChiaveTraffico } from "@/lib/chiavi-traffico";
 import { umamiLogin, n8nPing, registraCliente } from "@/lib/integrazioni";
 import { stripePing } from "@/lib/stripe";
 import { gatusPing } from "@/lib/gatus";
@@ -82,21 +84,39 @@ async function provaKey(name: KeyName, key: string): Promise<string | null> {
   return `nessuna prova definita per ${name}`;
 }
 
-/** Valida la key con una chiamata reale, poi la salva nel Keychain macOS. */
+/** Valida la key con una chiamata reale, poi la salva nel Keychain macOS e la rilegge. */
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const name = String(body.name ?? "") as KeyName;
-  const key = String(body.key ?? "").trim();
+  let key = String(body.key ?? "").trim();
   if (!(KNOWN_KEYS as readonly string[]).includes(name)) {
     return NextResponse.json({ error: "key sconosciuta" }, { status: 400 });
   }
   if (!key) return NextResponse.json({ error: "key mancante" }, { status: 400 });
-  const err = await provaKey(name, key).catch((e) => (e instanceof Error ? e.message : String(e)));
-  if (err) return NextResponse.json({ error: `key non valida: ${err}` }, { status: 400 });
+  if (isChiaveTraffico(name)) {
+    // Traffico: forma salvata (service account compatto), limiti del Keychain prima
+    // della rete, prova gratuita con messaggio già in italiano e senza il valore.
+    if (name === "GOOGLE_SERVICE_ACCOUNT") {
+      const n = normalizzaServiceAccount(key);
+      if (!n.ok) return NextResponse.json({ error: n.errore }, { status: 400 });
+      key = n.valore;
+    }
+    const motivo = motivoValoreNonSalvabile(key);
+    if (motivo) return NextResponse.json({ error: motivo }, { status: 400 });
+    const err = await provaChiaveTraffico(name, key, { fetch: (url, init) => fetch(url, init), getSecret });
+    if (err) return NextResponse.json({ error: err }, { status: 400 });
+  } else {
+    const err = await provaKey(name, key).catch((e) => (e instanceof Error ? e.message : String(e)));
+    if (err) return NextResponse.json({ error: `key non valida: ${err}` }, { status: 400 });
+  }
   try {
     setSecret(name, key);
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
+  }
+  // Rilettura: un valore troncato dal Keychain non deve sembrare salvato.
+  if (getSecret(name) !== key) {
+    return NextResponse.json({ error: "salvataggio nel portachiavi incompleto: riprova" }, { status: 500 });
   }
   return NextResponse.json({ ok: true, hint: secretHint(name) });
 }
