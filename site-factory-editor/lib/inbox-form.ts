@@ -44,6 +44,8 @@ export interface Risposte {
   esperienza_anni?: { id: string };
   sito_attuale?: string;
   telefono?: string;
+  orari_lavoro?: Orari;
+  orari_telefono?: OrariTelefono;
   foto?: number;
   logo?: { nome?: string; nessuno?: boolean };
   punti_di_forza?: { ids: string[]; altro?: string; certificazioni?: string };
@@ -57,6 +59,37 @@ export interface Risposte {
   ricontatto?: { id: string };
   consenso?: boolean;
 }
+
+// Orari (specchio di site-intake/src/lib/orari.ts): per giorno, fasce «HH:MM»; giorno assente = chiuso.
+type Giorno = "lun" | "mar" | "mer" | "gio" | "ven" | "sab" | "dom";
+type Fascia = { dalle: string; alle: string };
+type Orari = Partial<Record<Giorno, Fascia[]>>;
+type OrariTelefono = { come: "lavoro" } | { come: "h24" } | { come: "diversi"; orari: Orari };
+const GIORNI: Giorno[] = ["lun", "mar", "mer", "gio", "ven", "sab", "dom"];
+const SIGLA: Record<Giorno, string> = { lun: "Lun", mar: "Mar", mer: "Mer", gio: "Gio", ven: "Ven", sab: "Sab", dom: "Dom" };
+const ora = (hhmm: string) => hhmm.replace(/^0(\d:)/, "$1");
+
+/** «Lun–Ven 8:00–12:00 e 13:30–18:00 · Sab 8:00–12:00»: stessa resa del riepilogo del form. */
+export function formattaOrari(o: Orari | undefined): string {
+  if (!o) return "";
+  const chiave = (g: Giorno) => (o[g]?.length ? o[g]!.map((f) => `${f.dalle}-${f.alle}`).join(",") : null);
+  const gruppi: { da: number; a: number }[] = [];
+  GIORNI.forEach((g, i) => {
+    const k = chiave(g);
+    if (!k) return;
+    const u = gruppi[gruppi.length - 1];
+    if (u && u.a === i - 1 && chiave(GIORNI[u.da]!) === k) u.a = i;
+    else gruppi.push({ da: i, a: i });
+  });
+  return gruppi
+    .map(({ da, a }) => {
+      const giorni = da === a ? SIGLA[GIORNI[da]!] : a === da + 1 ? `${SIGLA[GIORNI[da]!]} e ${SIGLA[GIORNI[a]!]}` : `${SIGLA[GIORNI[da]!]}–${SIGLA[GIORNI[a]!]}`;
+      return `${giorni} ${o[GIORNI[da]!]!.map((f) => `${ora(f.dalle)}–${ora(f.alle)}`).join(" e ")}`;
+    })
+    .join(" · ");
+}
+export const formattaOrariTelefono = (t: OrariTelefono | undefined): string =>
+  !t ? "" : t.come === "lavoro" ? "Negli stessi orari di lavoro" : t.come === "h24" ? "Sempre, 24 ore su 24" : formattaOrari(t.orari);
 
 /** Scrittura atomica come lib/clients.ts writeJson (copiata: quel modulo non gira sotto strip-types). */
 function writeJson(file: string, data: unknown): void {
@@ -238,6 +271,10 @@ export function mappaLead(lead: LeadForm, logoSrc: string | null) {
     referente: r.referente ?? "",
     email: r.email ?? "",
     telefono,
+    // Orari: testo per contesto e copy; l'oggetto grezzo per la scheda Google (docs/traffico/brief-G1.md §5).
+    orari_lavoro: formattaOrari(r.orari_lavoro),
+    orari_telefono: formattaOrariTelefono(r.orari_telefono),
+    orari: { lavoro: r.orari_lavoro ?? null, telefono: r.orari_telefono ?? null },
     ricontatto_preferito: r.ricontatto ? testoDi(TESTI.contatto, r.ricontatto.id) : "",
     origine: lead.origine?.utm ?? {},
     _da_verificare: flag,

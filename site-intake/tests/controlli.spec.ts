@@ -11,6 +11,7 @@ import {
   suggerisciDominioEmail,
 } from "../src/lib/validators";
 import { normalizza } from "../src/lib/comuni";
+import { formattaOrari, formattaOrariTelefono, giudicaOrari } from "../src/lib/orari";
 
 // Controlli puri (niente browser): messaggi che spiegano l'errore, mai un blocco senza uscita.
 test.describe("@controlli validators", () => {
@@ -50,6 +51,21 @@ test.describe("@controlli validators", () => {
     expect(proponiNomiSito("Impianti Rossi", "elettricista")).toEqual(["impiantirossi", "impianti-rossi", "elettricistaimpianti", "elettricista-impianti-rossi"]);
     expect(pulisciNomeSito("Impresa Città  Nuova!")).toBe("impresacittanuova");
     expect(pulisciNomeSito("--a--b--")).toBe("a-b");
+  });
+
+  test("orari: testo raggruppato e controlli", () => {
+    const f = [{ dalle: "08:00", alle: "12:00" }, { dalle: "13:30", alle: "18:00" }];
+    const m = [{ dalle: "08:00", alle: "12:00" }];
+    expect(formattaOrari({ lun: f, mar: f, mer: f, gio: f, ven: f, sab: m })).toBe("Lun–Ven 8:00–12:00 e 13:30–18:00 · Sab 8:00–12:00");
+    expect(formattaOrari({ lun: m, mar: m, gio: f })).toBe("Lun e Mar 8:00–12:00 · Gio 8:00–12:00 e 13:30–18:00");
+    expect(formattaOrari({ dom: [{ dalle: "07:00", alle: "" }] })).toBe(""); // incompleto: niente testo
+    expect(formattaOrariTelefono({ come: "h24" })).toBe("Sempre, 24 ore su 24");
+    expect(formattaOrariTelefono({ come: "diversi", orari: { sab: m } })).toBe("Sab 8:00–12:00");
+    expect(giudicaOrari({})).toMatchObject({ ok: false, livello: "blocco" });
+    expect(giudicaOrari({ mar: [{ dalle: "08:00", alle: "" }] })).toMatchObject({ ok: false, livello: "blocco", messaggio: "Manca l'orario di martedì." });
+    expect(giudicaOrari({ lun: [{ dalle: "18:00", alle: "08:00" }] })).toMatchObject({ ok: false, livello: "avviso", messaggio: expect.stringContaining("Lunedì") });
+    expect(giudicaOrari({ lun: [{ dalle: "08:00", alle: "13:00" }, { dalle: "12:00", alle: "18:00" }] })).toMatchObject({ ok: false, livello: "avviso" });
+    expect(giudicaOrari({ lun: f, sab: m })).toEqual({ ok: true });
   });
 
   test("sito attuale e social: forme accettate", () => {

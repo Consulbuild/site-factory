@@ -700,6 +700,92 @@
   margin-top: var(--s-2);
 }
 
+/* ---------- Orari: chip dei giorni, una riga per giorno, copia, conferma ---------- */
+.orari__giorni .scelta {
+  min-width: var(--tap);
+  justify-content: center;
+  padding-inline: var(--s-3);
+}
+.orari__righe {
+  display: flex;
+  flex-direction: column;
+}
+.orari__riga {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  padding: var(--s-3) 0;
+  border-top: 1px solid var(--line);
+}
+.orari__riga:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.orari__giorno {
+  font-weight: 700;
+  color: var(--ink);
+}
+.orari__pausa {
+  min-height: var(--tap);
+  padding: 0 var(--s-3);
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.orari__pausa:hover,
+.orari__pausa[aria-pressed="true"] {
+  background: var(--accent-soft);
+}
+.orari__fascia {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto minmax(7rem, 1fr) auto minmax(7rem, 1fr); /* «08:00» ci sta anche col formato 12 ore */
+  align-items: center;
+  gap: var(--s-2);
+}
+.orari__campo {
+  display: contents;
+}
+.orari__campo > span {
+  font-size: var(--fs-small);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.orari__ora {
+  min-height: var(--tap);
+  min-width: 0;
+  padding: 0 var(--s-2);
+  font-variant-numeric: tabular-nums;
+}
+.orari__ora::-webkit-date-and-time-value {
+  text-align: left;
+}
+.orari__copia {
+  margin-top: var(--s-2);
+}
+@media (min-width: 640px) {
+  .orari__riga {
+    grid-template-columns: 6.5rem 1fr auto;
+  }
+  .orari__riga .orari__fascia {
+    grid-column: 2;
+  }
+  .orari__riga .orari__pausa {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .orari__riga .orari__fascia--2 {
+    grid-row: 2;
+  }
+}
+
 /* ---------- Suggerimenti sotto un campo (comuni, zone) ---------- */
 .campo__cornice {
   flex-wrap: wrap;

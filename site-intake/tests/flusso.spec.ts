@@ -67,6 +67,23 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
   await expect(page.getByRole("alert")).toContainText("Sembra un numero fisso");
   await page.getByRole("textbox").fill("388 893 7188");
   await expect(page.locator(".campo--ok")).toBeVisible();
+  await continua(page, "Quando lavori?");
+
+  // orari: lunedì con pausa, «usa per tutti i giorni», poi il sabato a mezza giornata
+  await page.getByRole("button", { name: "Continua" }).click();
+  await expect(page.getByRole("alert")).toContainText("Manca l'orario di lunedì");
+  await page.getByLabel("Lunedì, dalle", { exact: true }).fill("08:00");
+  await page.getByLabel("Lunedì, alle", { exact: true }).fill("12:00");
+  await page.getByRole("button", { name: "Lunedì: pausa in mezzo" }).click();
+  await page.getByLabel("Lunedì, seconda fascia dalle", { exact: true }).fill("13:30");
+  await page.getByLabel("Lunedì, seconda fascia alle", { exact: true }).fill("18:00");
+  await page.getByRole("button", { name: "Usa questi orari per tutti i giorni" }).click();
+  await page.getByText("Sab", { exact: true }).click();
+  await page.getByLabel("Sabato, dalle", { exact: true }).fill("08:00");
+  await page.getByLabel("Sabato, alle", { exact: true }).fill("12:00");
+  await expect(page.locator(".conferma")).toContainText("Lun–Ven 8:00–12:00 e 13:30–18:00 · Sab 8:00–12:00");
+  await continua(page, "Quando rispondi al telefono?");
+  await page.getByText("Negli stessi orari di lavoro", { exact: true }).click();
   await continua(page, "Mostraci i tuoi lavori");
   await expect(page.getByText("Bene, il grosso è fatto.")).toBeVisible();
   await expect(page.locator("#progresso-eti")).toHaveText("Sezione 4 di 7");
@@ -143,7 +160,10 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
   await continua(page, "Controlla le tue risposte");
 
   // riepilogo: modifica e ritorno
-  await expect(page.locator(".riepilogo__riga")).toHaveCount(20); // 21 domande meno la privacy
+  await expect(page.locator(".riepilogo__riga")).toHaveCount(22); // 23 domande meno la privacy
+  // «Al telefono: negli stessi orari di lavoro» contiene lo stesso testo: si aggancia l'etichetta esatta
+  await expect(page.locator(".riepilogo__riga", { has: page.getByText("Orari di lavoro", { exact: true }) })).toContainText("Lun–Ven 8:00–12:00 e 13:30–18:00 · Sab 8:00–12:00");
+  await expect(page.locator(".riepilogo__riga", { hasText: "Al telefono" })).toContainText("Negli stessi orari di lavoro");
   await expect(page.locator(".riepilogo__riga", { hasText: "Sede" })).toContainText("Via Milano 89, 20093 Cologno Monzese (MI)");
   await expect(page.locator(".riepilogo__riga", { hasText: "Foto dei lavori" })).toContainText("2 foto caricate");
   await expect(page.locator(".riepilogo__riga", { hasText: "Logo" })).toContainText("logo.png");
@@ -181,6 +201,9 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
   expect(lead.risposte.sede).toMatchObject({ comune: "Cologno Monzese", provincia: "MI", cap: "20093", via: "Via Milano 89" });
   expect(lead.risposte.zone).toEqual(expect.arrayContaining(["Milano e provincia", "Bergamo e provincia"]));
   expect(lead.risposte.telefono).toBe("3888937188");
+  const feriale = [{ dalle: "08:00", alle: "12:00" }, { dalle: "13:30", alle: "18:00" }];
+  expect(lead.risposte.orari_lavoro).toEqual({ lun: feriale, mar: feriale, mer: feriale, gio: feriale, ven: feriale, sab: [{ dalle: "08:00", alle: "12:00" }] });
+  expect(lead.risposte.orari_telefono).toEqual({ come: "lavoro" });
   expect(lead.risposte.punti_di_forza).toEqual({ ids: ["referente-unico", "certificazioni"], certificazioni: "SOA OG1" });
   expect(lead.risposte.stile).toEqual(["tecnico"]);
   expect(lead.risposte.colori).toEqual({ ids: ["oro", "nero"] }); // ordine della tavolozza, non del tocco

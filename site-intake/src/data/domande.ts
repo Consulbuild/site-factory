@@ -1,6 +1,7 @@
 /**
- * LE 21 DOMANDE del form, come configurazione tipizzata: specchio esatto del
- * documento vivo «Domande del form bozza» v4 (2026-09-07), approvato da Mattia.
+ * LE 23 DOMANDE del form, come configurazione tipizzata: specchio del documento vivo
+ * «Domande del form bozza» v4 (2026-09-07) più le due sugli orari (2026-09-15),
+ * approvate da Mattia.
  *
  * Per cambiare un testo, un aiuto o l'ordine: si modifica QUI. Per un tipo di
  * risposta nuovo: si aggiunge il tipo a `TipoDomanda`, un componente in
@@ -22,11 +23,12 @@ import {
   type Colore,
   type Opzione,
 } from "./tassonomia";
+import type { Orari, OrariTelefono } from "../lib/orari";
 
 export const SEZIONI = [
   { n: 1, nome: "Il tuo lavoro" },
   { n: 2, nome: "La tua azienda" },
-  { n: 3, nome: "Il tuo numero" },
+  { n: 3, nome: "Numero e orari" },
   { n: 4, nome: "Le tue foto", incoraggiamento: "Bene, il grosso è fatto." },
   { n: 5, nome: "Perché scegliere te" },
   { n: 6, nome: "Lo stile del sito", incoraggiamento: "Ci siamo quasi." },
@@ -39,6 +41,8 @@ export type TipoDomanda =
   | "scelta-multipla" // più opzioni (righe o chip), con eventuale «altro» a testo
   | "testo" // una riga di testo
   | "telefono"
+  | "orari" // giorni + una riga per giorno (dalle/alle, pausa) + copia
+  | "orari-telefono" // stessi orari di lavoro / diversi (strumento) / 24 ore
   | "email"
   | "piva"
   | "sito" // indirizzo del sito attuale (Sì/No + casella)
@@ -93,6 +97,8 @@ export interface Risposte {
   esperienza_anni?: { id: string };
   sito_attuale?: string;
   telefono?: string;
+  orari_lavoro?: Orari;
+  orari_telefono?: OrariTelefono;
   /** Solo il conteggio: i file e i loro stati stanno nel manifesto della coda (lead.foto). */
   foto?: number;
   logo?: { nome?: string; nessuno?: boolean };
@@ -167,7 +173,7 @@ export const DOMANDE: readonly Domanda[] = [
     sezione: 2,
     tipo: "zone",
     testo: "In quali zone lavori?",
-    aiuto: "Tocca tutte le zone dove accetti lavori.",
+    aiuto: "Tocca tutte le zone dove accetti lavori. Più sei preciso, meglio i clienti vicini ti trovano.",
     obbligatoria: true,
     campo: "brief.area_geografica",
   },
@@ -191,7 +197,7 @@ export const DOMANDE: readonly Domanda[] = [
     obbligatoria: false,
     campo: "brief.sito_attuale",
   },
-  // ---- 3 · Il tuo numero ----
+  // ---- 3 · Numero e orari ----
   {
     id: "telefono",
     sezione: 3,
@@ -199,6 +205,24 @@ export const DOMANDE: readonly Domanda[] = [
     testo: "Il tuo numero di cellulare",
     obbligatoria: true,
     campo: "brief.telefono",
+  },
+  {
+    id: "orari_lavoro",
+    sezione: 3,
+    tipo: "orari",
+    testo: "Quando lavori?",
+    aiuto: "I giorni e gli orari in cui sei al lavoro. Li scriviamo sul sito.",
+    obbligatoria: true,
+    campo: "brief.orari_lavoro",
+  },
+  {
+    id: "orari_telefono",
+    sezione: 3,
+    tipo: "orari-telefono",
+    testo: "Quando rispondi al telefono?",
+    aiuto: "Quando un cliente può chiamarti e trovarti. Va sulla scheda Google.",
+    obbligatoria: true,
+    campo: "brief.orari_telefono",
   },
   // ---- 4 · Le tue foto ----
   {

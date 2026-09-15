@@ -1,6 +1,6 @@
 # site-intake — il form bozza (sito.consulbuild.com)
 
-Il lead che clicca l'annuncio risponde qui a 21 domande in 7 sezioni e carica foto e
+Il lead che clicca l'annuncio risponde qui a 23 domande in 7 sezioni e carica foto e
 logo; le risposte alimentano la pipeline Site-factory che produce il suo sito in 48 ore.
 Decisioni e ricerca: `docs/ricerca-storage-foto-lead-2026-09.md` (e, in archivio,
 `docs/archivio/ricerca-intake-lead-2026-09.md`), piano vivo `docs/piano-form-bozza.md`.
@@ -33,7 +33,8 @@ compare prima del JavaScript. Poi il motore prende il controllo:
 
 | Modulo | Ruolo |
 |---|---|
-| `src/data/domande.ts` | **Le 21 domande** come configurazione tipizzata (testo, aiuto, tipo, opzioni, obbligatoria, campo di destinazione). Specchio del documento v4. |
+| `src/data/domande.ts` | **Le 23 domande** come configurazione tipizzata (testo, aiuto, tipo, opzioni, obbligatoria, campo di destinazione). Specchio del documento v4 più le due sugli orari. |
+| `src/lib/orari.ts` · `components/orari.ts` | Orari di lavoro e del telefono: tipi per giorno con fasce (la forma della scheda Google), testo raggruppato («Lun–Ven 8:00–12:00 e 13:30–18:00»), controlli; lo strumento a righe per giorno con copia. |
 | `src/data/tassonomia.ts` | Mestieri → lavori, punti di forza, clienti, stili, colori, modi di contatto. |
 | `src/data/privacy.ts` | Informativa breve (art. 6.1.b, presa visione) generata con la skill `informativa-breve-form` da `legale/informativa-breve.md`. |
 | `src/lib/engine.ts` | Stato: passo corrente, risposte, avanti/indietro, salvataggio in `localStorage`, ripresa con `?r=<leadId>`. Niente DOM. |

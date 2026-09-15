@@ -71,6 +71,12 @@ offset 10 px. Target minimo 48 px (`--tap`), CTA e campi 56 px. Spazi su base 4 
 - **Avvisi**: riquadro tinta (rosso = blocco, ambra = attenzione) con icona, testo e
   bottoni-azione a pillola bianca («Va bene così, continua», «Sì, usa …»).
 - **Suggerimenti**: elenco sotto il campo, voci da 48 px, evidenza blu tenue.
+- **Orari** (schema della scheda Google, ridotto per il telefono): chip dei giorni
+  (Lun–Ven già toccati), una riga per giorno selezionato con «Dalle / Alle» nativi da
+  48 px e «+ pausa» per la seconda fascia, un solo bottone «Usa questi orari per tutti i
+  giorni» sotto la prima riga completa, conferma «Orari: Lun–Ven 8:00–12:00 e
+  13:30–18:00» in chiaro. Il telefono parte da tre scelte a righe (stessi orari /
+  diversi / 24 ore) e apre lo strumento già riempito solo se serve.
 - **Stile**: card con anteprima SVG 4:3 e nome. **Colori**: pallini 44 px con anello blu
   alla selezione. **Foto**: griglia 3 colonne di miniature quadrate con barra in basso,
   spunta verde, «×» da 48 px, «Riprova» rosso. **Logo**: anteprima 96 px + stato.

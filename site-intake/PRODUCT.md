@@ -25,7 +25,7 @@ più è un abbandono.
 
 Raccogliere in una sola compilazione tutto ciò che serve alla pipeline Site-factory per
 produrre in 48 ore il sito reale del lead (copy, palette, immagini, foto dei lavori,
-logo): 21 domande in 7 sezioni, fino a 15 foto in qualità originale, il logo se esiste.
+logo): 23 domande in 7 sezioni, fino a 15 foto in qualità originale, il logo se esiste.
 Il form è anche il filtro: chi lo completa è interessato davvero. Successo = lead che
 finisce con dati corretti e foto caricate, senza che l'agenzia debba richiedere nulla.
 
@@ -47,7 +47,7 @@ documento vivo «Domande del form bozza» v4 (2026-09-07). La ricerca alla base:
 
 ## Capabilities and Constraints
 
-- 21 domande, 7 sezioni, una decisione per schermata; riepilogo modificabile; consenso
+- 23 domande, 7 sezioni, una decisione per schermata; riepilogo modificabile; consenso
   privacy obbligatorio (unico blocco); ogni altro controllo lascia sempre andare avanti.
 - Foto: qualità originale, nessuna compressione sul telefono, massimo 15, JPEG/PNG/WebP,
   caricate in background da metà form; logo PNG/JPG/SVG/PDF.

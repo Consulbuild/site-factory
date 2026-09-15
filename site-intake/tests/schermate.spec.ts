@@ -60,6 +60,18 @@ test.describe("@schermate", () => {
       await page.getByRole("textbox").fill("388 893 7188");
       await shot("07-telefono");
       await continua(page);
+      await page.getByLabel("Lunedì, dalle", { exact: true }).fill("08:00");
+      await page.getByLabel("Lunedì, alle", { exact: true }).fill("12:00");
+      await page.getByRole("button", { name: "Lunedì: pausa in mezzo" }).click();
+      await page.getByLabel("Lunedì, seconda fascia dalle", { exact: true }).fill("13:30");
+      await page.getByLabel("Lunedì, seconda fascia alle", { exact: true }).fill("18:00");
+      await page.getByRole("button", { name: "Usa questi orari per tutti i giorni" }).click();
+      await shot("07b-orari");
+      await continua(page);
+      await page.locator("label.scelta", { hasText: "In orari diversi" }).click();
+      await shot("07c-orari-telefono");
+      await page.getByText("Negli stessi orari di lavoro", { exact: true }).click();
+      await continua(page);
       await page.locator("#foto-input").setInputFiles([FIX("lavoro-1.jpg"), FIX("lavoro-2.jpg"), FIX("piccola.png")]);
       await page.locator(".foto-voce.is-fatto").nth(2).waitFor({ timeout: 15_000 });
       await shot("08-foto");

@@ -11,6 +11,7 @@ import { creaConsenso } from "../components/consenso";
 import { creaFoto } from "../components/foto";
 import { creaLogo } from "../components/logo";
 import { creaNomeSito } from "../components/nome-sito";
+import { creaOrariLavoro, creaOrariTelefono } from "../components/orari";
 import { creaPiva } from "../components/piva";
 import { creaSceltaMultipla, creaSceltaSingola } from "../components/scelte";
 import { creaSede } from "../components/sede";
@@ -32,6 +33,8 @@ const REGISTRO: Record<TipoDomanda, FabbricaQualsiasi> = {
   "scelta-multipla": creaSceltaMultipla,
   testo: creaTesto,
   telefono: creaTelefono,
+  orari: creaOrariLavoro,
+  "orari-telefono": creaOrariTelefono,
   email: creaEmail,
   piva: creaPiva,
   sito: creaSito,

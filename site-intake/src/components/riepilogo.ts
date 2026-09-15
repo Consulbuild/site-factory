@@ -5,6 +5,7 @@
  */
 import { DOMANDE, SEZIONI, type Domanda, type Risposte } from "../data/domande";
 import { ANNI, CLIENTI, COLORI, CONTATTO, LAVORI, MESTIERI, PUNTI_DI_FORZA, STILI, ALTRO_LAVORO } from "../data/tassonomia";
+import { formattaOrari, formattaOrariTelefono } from "../lib/orari";
 import { formattaTelefono } from "../lib/validators";
 import { h, svgIcona, type Azione, type Esito } from "./base";
 
@@ -18,6 +19,8 @@ const ETICHETTE: Record<string, string> = {
   esperienza_anni: "Anni di mestiere",
   sito_attuale: "Sito attuale",
   telefono: "Cellulare",
+  orari_lavoro: "Orari di lavoro",
+  orari_telefono: "Al telefono",
   foto: "Foto dei lavori",
   logo: "Logo",
   punti_di_forza: "Punti di forza",
@@ -62,6 +65,10 @@ export function formattaRisposta(d: Domanda, r: Risposte): string {
       return r.sito_attuale ? r.sito_attuale : "No";
     case "telefono":
       return formattaTelefono(r.telefono!);
+    case "orari_lavoro":
+      return formattaOrari(r.orari_lavoro!) || "—";
+    case "orari_telefono":
+      return formattaOrariTelefono(r.orari_telefono!) || "—";
     case "punti_di_forza": {
       const p = r.punti_di_forza!;
       return p.ids
