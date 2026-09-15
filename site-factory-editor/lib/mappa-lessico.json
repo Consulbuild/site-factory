@@ -1,0 +1,138 @@
+{
+  "versione": "2026-09-a",
+  "fonti": [
+    "~/knowledge/seo/ricerche-2026-09-14/p4-serp-italia.md §1: «servizio + comune» senza preposizione; modificatori «vicino a me» e «preventivo»; ditta, impresa e azienda intercambiabili",
+    "docs/ricerca-traffico-2026-09.md §6.2",
+    "site-intake/src/data/tassonomia.ts: mestieri e lavori proposti dal form lead",
+    "docs/traffico/piano-T4.md §3.2: regole di abbinamento (prefissi a inizio parola sul nome normalizzato del servizio)"
+  ],
+  "mestieri": [
+    {
+      "id": "edile",
+      "settori": ["edil", "costruzion", "ristruttur"],
+      "teste": [
+        { "testo": "impresa edile", "gruppo": "impresa-edile" },
+        { "testo": "ditta edile", "gruppo": "impresa-edile" },
+        { "testo": "impresa di costruzioni", "gruppo": "impresa-costruzioni" },
+        { "testo": "impresa ristrutturazioni", "gruppo": "impresa-ristrutturazioni" }
+      ]
+    },
+    { "id": "idraulico", "settori": ["idraul", "termoidraul"], "teste": [{ "testo": "idraulico", "gruppo": "idraulico" }] },
+    { "id": "elettricista", "settori": ["elettric"], "teste": [{ "testo": "elettricista", "gruppo": "elettricista" }] },
+    {
+      "id": "imbianchino",
+      "settori": ["imbianc", "pittor", "pittur", "tinteggi"],
+      "teste": [
+        { "testo": "imbianchino", "gruppo": "tinteggiatura" },
+        { "testo": "pittore edile", "gruppo": "tinteggiatura" }
+      ]
+    },
+    { "id": "cartongessista", "settori": ["cartongess"], "teste": [{ "testo": "cartongessista", "gruppo": "cartongesso" }] },
+    { "id": "serramentista", "settori": ["serrament", "infiss"], "teste": [{ "testo": "serramentista", "gruppo": "serramenti" }] }
+  ],
+  "servizi": [
+    { "tutte": ["costruzion", "civil"], "teste": [{ "testo": "costruzione casa", "gruppo": "costruzione-casa" }] },
+    { "tutte": ["costruzion", "nuov"], "teste": [{ "testo": "costruzione casa", "gruppo": "costruzione-casa" }] },
+    { "tutte": ["costruzion", "industrial"], "teste": [{ "testo": "costruzione capannoni", "gruppo": "capannoni" }] },
+    { "tutte": ["ampliament"], "teste": [{ "testo": "ampliamento casa", "gruppo": "ampliamento" }] },
+    { "tutte": ["sopraelevazion"], "teste": [{ "testo": "sopraelevazione casa", "gruppo": "sopraelevazione" }] },
+    {
+      "tutte": ["ristruttur", "appartament"],
+      "teste": [
+        { "testo": "ristrutturazione appartamento", "gruppo": "appartamento" },
+        { "testo": "ristrutturazione casa", "gruppo": "appartamento" }
+      ]
+    },
+    {
+      "tutte": ["ristruttur", "complet"],
+      "teste": [
+        { "testo": "ristrutturazione appartamento", "gruppo": "appartamento" },
+        { "testo": "ristrutturazione casa", "gruppo": "appartamento" }
+      ]
+    },
+    {
+      "tutte": ["bagn"],
+      "teste": [
+        { "testo": "ristrutturazione bagno", "gruppo": "bagno" },
+        { "testo": "rifacimento bagno", "gruppo": "bagno" }
+      ]
+    },
+    { "tutte": ["cucin"], "teste": [{ "testo": "ristrutturazione cucina", "gruppo": "cucina" }] },
+    { "tutte": ["negoz"], "teste": [{ "testo": "ristrutturazione negozi", "gruppo": "negozi" }] },
+    { "tutte": ["uffic"], "teste": [{ "testo": "ristrutturazione uffici", "gruppo": "uffici" }] },
+    { "tutte": ["chiavi", "mano"], "teste": [{ "testo": "ristrutturazione chiavi in mano", "gruppo": "chiavi-in-mano" }] },
+    { "tutte": ["manutenzion", "ordinari"], "teste": [{ "testo": "manutenzione edile", "gruppo": "manutenzione" }] },
+    { "tutte": ["manutenzion", "condomin"], "teste": [{ "testo": "manutenzione condominio", "gruppo": "manutenzione-condominio" }] },
+    { "tutte": ["murari"], "teste": [{ "testo": "opere murarie", "gruppo": "opere-murarie" }] },
+    { "tutte": ["demolizion"], "teste": [{ "testo": "demolizioni", "gruppo": "demolizioni" }] },
+    { "tutte": ["cartongess"], "teste": [{ "testo": "cartongesso", "gruppo": "cartongesso" }] },
+    { "tutte": ["controsoffitt"], "teste": [{ "testo": "controsoffitti", "gruppo": "controsoffitti" }] },
+    { "tutte": ["paret", "divisori"], "teste": [{ "testo": "pareti divisorie", "gruppo": "pareti-divisorie" }] },
+    {
+      "tutte": ["posa", "paviment"],
+      "teste": [
+        { "testo": "posa pavimenti", "gruppo": "pavimenti" },
+        { "testo": "posa piastrelle", "gruppo": "pavimenti" }
+      ]
+    },
+    {
+      "tutte": ["paviment", "rivestiment"],
+      "teste": [
+        { "testo": "posa pavimenti", "gruppo": "pavimenti" },
+        { "testo": "posa piastrelle", "gruppo": "pavimenti" }
+      ]
+    },
+    { "tutte": ["intonac"], "teste": [{ "testo": "intonaci", "gruppo": "intonaci" }] },
+    { "tutte": ["rasatur"], "teste": [{ "testo": "rasatura pareti", "gruppo": "rasatura" }] },
+    {
+      "tutte": ["tinteggiatur"],
+      "teste": [
+        { "testo": "imbianchino", "gruppo": "tinteggiatura", "mestiere": "imbianchino" },
+        { "testo": "tinteggiatura pareti", "gruppo": "tinteggiatura" }
+      ]
+    },
+    { "tutte": ["impiant", "idraulic"], "teste": [{ "testo": "idraulico", "gruppo": "idraulico", "mestiere": "idraulico" }] },
+    { "tutte": ["impiant", "elettric"], "teste": [{ "testo": "elettricista", "gruppo": "elettricista", "mestiere": "elettricista" }] },
+    { "tutte": ["caldai", "scaldabagn"], "teste": [{ "testo": "installazione caldaia", "gruppo": "caldaia" }] },
+    { "tutte": ["install", "caldai"], "teste": [{ "testo": "installazione caldaia", "gruppo": "caldaia" }] },
+    { "tutte": ["manutenzion", "caldai"], "teste": [{ "testo": "manutenzione caldaia", "gruppo": "manutenzione-caldaia" }] },
+    { "tutte": ["riscaldament", "paviment"], "teste": [{ "testo": "riscaldamento a pavimento", "gruppo": "riscaldamento-pavimento" }] },
+    { "tutte": ["condizionator"], "teste": [{ "testo": "installazione condizionatori", "gruppo": "condizionatori" }] },
+    { "tutte": ["pomp", "calor"], "teste": [{ "testo": "pompa di calore", "gruppo": "pompa-calore" }] },
+    { "tutte": ["pannell", "solar"], "teste": [{ "testo": "pannelli solari", "gruppo": "solare" }] },
+    { "tutte": ["perdit"], "teste": [{ "testo": "riparazione perdite acqua", "gruppo": "perdite" }] },
+    { "tutte": ["impiant", "gas"], "teste": [{ "testo": "impianto gas", "gruppo": "gas" }] },
+    { "tutte": ["fotovoltaic"], "teste": [{ "testo": "impianto fotovoltaico", "gruppo": "fotovoltaico" }] },
+    { "tutte": ["domotic"], "teste": [{ "testo": "domotica", "gruppo": "domotica" }] },
+    { "tutte": ["videosorveglianz"], "teste": [{ "testo": "videosorveglianza", "gruppo": "videosorveglianza" }] },
+    { "tutte": ["antifurt"], "teste": [{ "testo": "antifurto casa", "gruppo": "antifurto" }] },
+    { "tutte": ["ricaric", "auto"], "teste": [{ "testo": "installazione colonnina ricarica", "gruppo": "colonnina" }] },
+    { "tutte": ["certificazion", "conformit"], "teste": [{ "testo": "certificazione impianto elettrico", "gruppo": "certificazione" }] },
+    { "tutte": ["impermeabilizzazion"], "teste": [{ "testo": "impermeabilizzazione terrazzo", "gruppo": "impermeabilizzazione-terrazzo" }] },
+    { "tutte": ["impermeabilizzazion", "balcon"], "teste": [{ "testo": "impermeabilizzazione balcone", "gruppo": "impermeabilizzazione-balcone" }] },
+    { "tutte": ["facciat"], "teste": [{ "testo": "rifacimento facciata", "gruppo": "facciata" }] },
+    { "tutte": ["cappott"], "teste": [{ "testo": "cappotto termico", "gruppo": "cappotto" }] },
+    { "tutte": ["pavimentazion", "estern"], "teste": [{ "testo": "pavimentazioni esterne", "gruppo": "pavimentazioni-esterne" }] },
+    { "tutte": ["tett"], "teste": [{ "testo": "rifacimento tetto", "gruppo": "tetto" }] },
+    {
+      "tutte": ["finestr"],
+      "teste": [
+        { "testo": "sostituzione finestre", "gruppo": "finestre" },
+        { "testo": "serramentista", "gruppo": "serramenti", "mestiere": "serramentista" }
+      ]
+    },
+    {
+      "tutte": ["infiss"],
+      "teste": [
+        { "testo": "sostituzione infissi", "gruppo": "finestre" },
+        { "testo": "serramentista", "gruppo": "serramenti", "mestiere": "serramentista" }
+      ]
+    },
+    { "tutte": ["port", "intern"], "teste": [{ "testo": "porte interne", "gruppo": "porte-interne" }] },
+    { "tutte": ["blindat"], "teste": [{ "testo": "porte blindate", "gruppo": "porte-blindate" }] },
+    { "tutte": ["tapparell"], "teste": [{ "testo": "sostituzione tapparelle", "gruppo": "tapparelle" }] },
+    { "tutte": ["zanzarier"], "teste": [{ "testo": "zanzariere", "gruppo": "zanzariere" }] },
+    { "tutte": ["verand"], "teste": [{ "testo": "verande", "gruppo": "verande" }] }
+  ],
+  "vietati": ["migliore", "migliori", "economico", "economici", "economica", "low cost", "gratis", "gratuito", "urgente", "24h"]
+}

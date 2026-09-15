@@ -1,0 +1,52 @@
+{
+  "version": "0.1.20260901",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "5.8112 sec.",
+  "cost": 0.004,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "id": "09151000-0000-0000-0000-000000000101",
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "time": "5.7011 sec.",
+      "cost": 0.004,
+      "result_count": 1,
+      "path": ["v3", "serp", "google", "organic", "live", "advanced"],
+      "data": { "api": "serp", "function": "live", "se": "google", "se_type": "organic", "keyword": "ristrutturazione bagno cologno monzese", "location_coordinate": "45.5286,9.2757,100000", "language_code": "it", "device": "mobile", "os": "android", "depth": 10, "load_async_ai_overview": true },
+      "result": [
+        {
+          "keyword": "ristrutturazione bagno cologno monzese",
+          "type": "organic",
+          "se_domain": "google.it",
+          "location_code": null,
+          "language_code": "it",
+          "check_url": "https://www.google.it/search?q=ristrutturazione%20bagno%20cologno%20monzese&num=10&hl=it&gl=IT",
+          "datetime": "2026-09-15 08:00:00 +00:00",
+          "spell": null,
+          "refinement_chips": null,
+          "item_types": ["local_pack", "organic"],
+          "se_results_count": 1840000,
+          "items_count": 13,
+          "items": [
+            {"type":"local_pack","rank_group":1,"rank_absolute":1,"position":"left","xpath":"/html[1]/body[1]/div[2]/div[1]","title":"Edil Prova Uno","description":"Impresa edile · Cologno Monzese","domain":"edilprovauno.example","phone":null,"url":"https://edilprovauno.example/","is_paid":false,"rating":{"rating_type":"Max5","value":4.8,"votes_count":23,"rating_max":5},"cid":"1000000000000000001"},
+            {"type":"local_pack","rank_group":2,"rank_absolute":2,"position":"left","xpath":"/html[1]/body[1]/div[2]/div[2]","title":"Bagni Prova Due","description":"Ristrutturazioni bagni · Brugherio","domain":"bagniprovadue.example","phone":null,"url":"https://bagniprovadue.example/","is_paid":false,"rating":{"rating_type":"Max5","value":4.6,"votes_count":11,"rating_max":5},"cid":"1000000000000000002"},
+            {"type":"local_pack","rank_group":3,"rank_absolute":3,"position":"left","xpath":"/html[1]/body[1]/div[2]/div[3]","title":"Costruzioni Prova Tre","description":"Impresa di costruzioni","domain":null,"phone":null,"url":null,"is_paid":false,"rating":null,"cid":"1000000000000000003"},
+            {"type":"organic","rank_group":1,"rank_absolute":4,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[1]","domain":"www.prontopro.it","title":"I 10 migliori ristrutturatori di bagni a Cologno Monzese","url":"https://www.prontopro.it/ristrutturazione-bagno/cologno-monzese","breadcrumb":"https://www.prontopro.it › ristrutturazione-bagno","description":"Confronta i preventivi dei professionisti vicino a te."},
+            {"type":"organic","rank_group":2,"rank_absolute":5,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[2]","domain":"edilprovauno.example","title":"Ristrutturazione bagno a Cologno Monzese | Edil Prova Uno","url":"https://edilprovauno.example/ristrutturazione-bagno","breadcrumb":"https://edilprovauno.example › ristrutturazione-bagno","description":"Rifacimento completo del bagno con preventivo in cantiere."},
+            {"type":"organic","rank_group":3,"rank_absolute":6,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[3]","domain":"www.paginegialle.it","title":"Ristrutturazioni Edili a Cologno Monzese (MI) - PagineGialle","url":"https://www.paginegialle.it/ricerca/ristrutturazioni/Cologno%20Monzese","breadcrumb":"https://www.paginegialle.it › ricerca","description":"Trova ristrutturazioni edili a Cologno Monzese."},
+            {"type":"organic","rank_group":4,"rank_absolute":7,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[4]","domain":"bagniprovaquattro.example","title":"Bagni chiavi in mano a Cologno Monzese - Bagni Prova Quattro","url":"https://bagniprovaquattro.example/","breadcrumb":"https://bagniprovaquattro.example","description":"Progettazione e posa di bagni completi."},
+            {"type":"organic","rank_group":5,"rank_absolute":8,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[5]","domain":"www.facebook.com","title":"Edil Prova Cinque | Facebook","url":"https://www.facebook.com/edilprovacinque","breadcrumb":"https://www.facebook.com › edilprovacinque","description":"Pagina Facebook di un'impresa edile."},
+            {"type":"organic","rank_group":6,"rank_absolute":9,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[6]","domain":"www.instapro.it","title":"Ristrutturazione bagno: prezzi e professionisti a Cologno Monzese","url":"https://www.instapro.it/ristrutturazione-bagno/cologno-monzese","breadcrumb":"https://www.instapro.it › ristrutturazione-bagno","description":"Ricevi fino a 4 preventivi."},
+            {"type":"organic","rank_group":7,"rank_absolute":10,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[7]","domain":"studioprovasei.example","title":"Studio Prova Sei - Architettura d'interni","url":"https://studioprovasei.example/progetti","breadcrumb":"https://studioprovasei.example › progetti","description":"Progetti residenziali."},
+            {"type":"organic","rank_group":8,"rank_absolute":11,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[8]","domain":"www.edilnet.it","title":"Quanto costa rifare un bagno? Guida ai prezzi","url":"https://www.edilnet.it/guide/rifacimento-bagno-costi","breadcrumb":"https://www.edilnet.it › guide","description":"Guida ai costi di ristrutturazione del bagno."},
+            {"type":"organic","rank_group":9,"rank_absolute":12,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[9]","domain":"www.virgilio.it","title":"Ristrutturazioni a Cologno Monzese - Virgilio","url":"https://www.virgilio.it/italia/cologno-monzese/ristrutturazioni","breadcrumb":"https://www.virgilio.it › italia","description":"Elenco di imprese."},
+            {"type":"organic","rank_group":10,"rank_absolute":13,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[10]","domain":"edilprovasette.example","title":"Edil Prova Sette - Ristrutturazioni Brugherio","url":"https://edilprovasette.example/","breadcrumb":"https://edilprovasette.example","description":"Ristrutturazioni in Brianza."}
+          ]
+        }
+      ]
+    }
+  ]
+}

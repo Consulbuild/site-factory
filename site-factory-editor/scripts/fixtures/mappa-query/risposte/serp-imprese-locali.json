@@ -1,0 +1,47 @@
+{
+  "version": "0.1.20260901",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "5.1201 sec.",
+  "cost": 0.004,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "id": "09151000-0000-0000-0000-000000000108",
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "time": "5.0111 sec.",
+      "cost": 0.004,
+      "result_count": 1,
+      "path": ["v3", "serp", "google", "organic", "live", "advanced"],
+      "data": { "api": "serp", "function": "live", "se": "google", "se_type": "organic", "keyword": "ristrutturazione bagno brugherio", "location_coordinate": "45.5520,9.3009,100000", "language_code": "it", "device": "mobile", "os": "android", "depth": 10, "load_async_ai_overview": true },
+      "result": [
+        {
+          "keyword": "ristrutturazione bagno brugherio",
+          "type": "organic",
+          "se_domain": "google.it",
+          "location_code": null,
+          "language_code": "it",
+          "check_url": "https://www.google.it/search?q=ristrutturazione%20bagno%20brugherio&num=10&hl=it&gl=IT",
+          "datetime": "2026-09-15 08:00:00 +00:00",
+          "spell": null,
+          "refinement_chips": null,
+          "item_types": ["organic"],
+          "se_results_count": 402000,
+          "items_count": 8,
+          "items": [
+            {"type":"organic","rank_group":1,"rank_absolute":1,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[1]","domain":"bagniprovadue.example","title":"Ristrutturazione bagni a Brugherio - Bagni Prova Due","url":"https://bagniprovadue.example/brugherio","breadcrumb":"https://bagniprovadue.example › brugherio","description":"Rifacimento bagno completo."},
+            {"type":"organic","rank_group":2,"rank_absolute":2,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[2]","domain":"edilprovasette.example","title":"Edil Prova Sette - Ristrutturazioni Brugherio","url":"https://edilprovasette.example/","breadcrumb":"https://edilprovasette.example","description":"Ristrutturazioni in Brianza."},
+            {"type":"organic","rank_group":3,"rank_absolute":3,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[3]","domain":"ceramicheprova.example","title":"Showroom bagno e ceramiche (MB)","url":"https://ceramicheprova.example/showroom","breadcrumb":"https://ceramicheprova.example › showroom","description":"Showroom di arredo bagno."},
+            {"type":"organic","rank_group":4,"rank_absolute":4,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[4]","domain":"www.edilnet.it","title":"Ristrutturazione bagno: guida e preventivi","url":"https://www.edilnet.it/preventivi/ristrutturazione-bagno","breadcrumb":"https://www.edilnet.it › preventivi","description":"Guida ai preventivi."},
+            {"type":"organic","rank_group":5,"rank_absolute":5,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[5]","domain":"termoidraulicaprova.example","title":"Rifacimento bagno e impianti a Monza e Brianza","url":"https://termoidraulicaprova.example/bagni","breadcrumb":"https://termoidraulicaprova.example › bagni","description":"Bagni e impianti."},
+            {"type":"organic","rank_group":6,"rank_absolute":6,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[6]","domain":"bagnobrugherioprova.example","title":"Bagno nuovo a Brugherio in 10 giorni","url":"https://bagnobrugherioprova.example/","breadcrumb":"https://bagnobrugherioprova.example","description":"Bagni chiavi in mano."},
+            {"type":"organic","rank_group":7,"rank_absolute":7,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[7]","domain":"blogcasaprova.example","title":"Idee per un bagno piccolo moderno","url":"https://blogcasaprova.example/idee-bagno-piccolo","breadcrumb":"https://blogcasaprova.example › idee-bagno-piccolo","description":"Articolo di arredamento."},
+            {"type":"organic","rank_group":8,"rank_absolute":8,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[8]","domain":"www.cylex-italia.it","title":"Ristrutturazioni a Brugherio - Cylex","url":"https://www.cylex-italia.it/brugherio/ristrutturazioni.html","breadcrumb":"https://www.cylex-italia.it › brugherio","description":"Aziende a Brugherio."}
+          ]
+        }
+      ]
+    }
+  ]
+}

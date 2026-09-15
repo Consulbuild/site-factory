@@ -1,0 +1,54 @@
+{
+  "version": "0.1.20260901",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "6.2211 sec.",
+  "cost": 0.004,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "id": "09151000-0000-0000-0000-000000000105",
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "time": "6.1208 sec.",
+      "cost": 0.004,
+      "result_count": 1,
+      "path": ["v3", "serp", "google", "organic", "live", "advanced"],
+      "data": { "api": "serp", "function": "live", "se": "google", "se_type": "organic", "keyword": "ristrutturazione appartamento milano", "location_coordinate": "45.4668,9.1905,100000", "language_code": "it", "device": "mobile", "os": "android", "depth": 10, "load_async_ai_overview": true },
+      "result": [
+        {
+          "keyword": "ristrutturazione appartamento milano",
+          "type": "organic",
+          "se_domain": "google.it",
+          "location_code": null,
+          "language_code": "it",
+          "check_url": "https://www.google.it/search?q=ristrutturazione%20appartamento%20milano&num=10&hl=it&gl=IT",
+          "datetime": "2026-09-15 08:00:00 +00:00",
+          "spell": null,
+          "refinement_chips": null,
+          "item_types": ["paid", "local_pack", "organic"],
+          "se_results_count": 9730000,
+          "items_count": 15,
+          "items": [
+            {"type":"paid","rank_group":1,"rank_absolute":1,"position":"left","xpath":"/html[1]/body[1]/div[1]/div[1]","title":"Ristrutturazione chiavi in mano a Milano","domain":"www.annuncioprova.example","description":"Preventivo in 24 ore.","url":"https://www.annuncioprova.example/milano"},
+            {"type":"paid","rank_group":2,"rank_absolute":2,"position":"left","xpath":"/html[1]/body[1]/div[1]/div[2]","title":"Ristruttura casa a Milano","domain":"www.annuncioprovadue.example","description":"Sopralluogo gratuito.","url":"https://www.annuncioprovadue.example/"},
+            {"type":"local_pack","rank_group":1,"rank_absolute":3,"position":"left","xpath":"/html[1]/body[1]/div[2]/div[1]","title":"Milano Ristrutturazioni Prova","description":"Impresa di ristrutturazioni","domain":"milanoristrutturazioniprova.example","phone":null,"url":"https://milanoristrutturazioniprova.example/","is_paid":false,"rating":null,"cid":"2000000000000000001"},
+            {"type":"local_pack","rank_group":2,"rank_absolute":4,"position":"left","xpath":"/html[1]/body[1]/div[2]/div[2]","title":"Edil Prova Navigli","description":"Impresa edile","domain":"edilprovanavigli.example","phone":null,"url":"https://edilprovanavigli.example/","is_paid":false,"rating":null,"cid":"2000000000000000002"},
+            {"type":"local_pack","rank_group":3,"rank_absolute":5,"position":"left","xpath":"/html[1]/body[1]/div[2]/div[3]","title":"Casa Prova Milano","description":"Ristrutturazioni","domain":"casaprovamilano.example","phone":null,"url":"https://casaprovamilano.example/","is_paid":false,"rating":null,"cid":"2000000000000000003"},
+            {"type":"organic","rank_group":1,"rank_absolute":6,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[1]","domain":"www.ristrutturazioni.com","title":"Ristrutturazione appartamento Milano: 55 imprese","url":"https://www.ristrutturazioni.com/milano/ristrutturazione-appartamento","breadcrumb":"https://www.ristrutturazioni.com › milano","description":"Confronta le imprese di Milano."},
+            {"type":"organic","rank_group":2,"rank_absolute":7,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[2]","domain":"www.prontopro.it","title":"Le migliori imprese di ristrutturazione a Milano","url":"https://www.prontopro.it/ristrutturazione-appartamento/milano","breadcrumb":"https://www.prontopro.it › milano","description":"Preventivi gratuiti."},
+            {"type":"organic","rank_group":3,"rank_absolute":8,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[3]","domain":"www.instapro.it","title":"Ristrutturazione appartamento Milano: prezzi 2026","url":"https://www.instapro.it/ristrutturazione-appartamento/milano","breadcrumb":"https://www.instapro.it › milano","description":"Prezzi e professionisti."},
+            {"type":"organic","rank_group":4,"rank_absolute":9,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[4]","domain":"milanoristrutturazioniprova.example","title":"Ristrutturazione appartamento Milano chiavi in mano","url":"https://milanoristrutturazioniprova.example/appartamenti","breadcrumb":"https://milanoristrutturazioniprova.example › appartamenti","description":"Impresa di Milano."},
+            {"type":"organic","rank_group":5,"rank_absolute":10,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[5]","domain":"ristrutturazioneappartamentomilanoprova.example","title":"Ristrutturazione appartamento Milano | Preventivo","url":"https://ristrutturazioneappartamentomilanoprova.example/","breadcrumb":"https://ristrutturazioneappartamentomilanoprova.example","description":"Ristrutturiamo appartamenti a Milano."},
+            {"type":"organic","rank_group":6,"rank_absolute":11,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[6]","domain":"edilprovanavigli.example","title":"Ristrutturazioni appartamenti a Milano - Edil Prova Navigli","url":"https://edilprovanavigli.example/ristrutturazioni","breadcrumb":"https://edilprovanavigli.example › ristrutturazioni","description":"Dal progetto alla consegna."},
+            {"type":"organic","rank_group":7,"rank_absolute":12,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[7]","domain":"casaprovamilano.example","title":"Ristrutturare casa a Milano: appartamento in 90 giorni","url":"https://casaprovamilano.example/ristrutturare-casa-milano","breadcrumb":"https://casaprovamilano.example › ristrutturare-casa-milano","description":"Impresa milanese."},
+            {"type":"organic","rank_group":8,"rank_absolute":13,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[8]","domain":"studioprovamilano.example","title":"Ristrutturazione appartamenti Milano - Studio Prova","url":"https://studioprovamilano.example/","breadcrumb":"https://studioprovamilano.example","description":"Studio di progettazione e impresa."},
+            {"type":"organic","rank_group":9,"rank_absolute":14,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[9]","domain":"www.paginegialle.it","title":"Ristrutturazioni Edili a Milano (MI) - PagineGialle","url":"https://www.paginegialle.it/ricerca/ristrutturazioni/Milano","breadcrumb":"https://www.paginegialle.it › ricerca","description":"Imprese a Milano."},
+            {"type":"organic","rank_group":10,"rank_absolute":15,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[10]","domain":"nuovaedilprovamilano.example","title":"Nuova Edil Prova Milano - Ristrutturazioni appartamenti","url":"https://nuovaedilprovamilano.example/","breadcrumb":"https://nuovaedilprovamilano.example","description":"Ristrutturazioni a Milano."}
+          ]
+        }
+      ]
+    }
+  ]
+}

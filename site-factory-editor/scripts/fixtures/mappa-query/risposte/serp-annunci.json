@@ -1,0 +1,54 @@
+{
+  "version": "0.1.20260901",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "6.0210 sec.",
+  "cost": 0.004,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "id": "09151000-0000-0000-0000-000000000103",
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "time": "5.9105 sec.",
+      "cost": 0.004,
+      "result_count": 1,
+      "path": ["v3", "serp", "google", "organic", "live", "advanced"],
+      "data": { "api": "serp", "function": "live", "se": "google", "se_type": "organic", "keyword": "impresa edile monza", "location_coordinate": "45.5836,9.2744,100000", "language_code": "it", "device": "mobile", "os": "android", "depth": 10, "load_async_ai_overview": true },
+      "result": [
+        {
+          "keyword": "impresa edile monza",
+          "type": "organic",
+          "se_domain": "google.it",
+          "location_code": null,
+          "language_code": "it",
+          "check_url": "https://www.google.it/search?q=impresa%20edile%20monza&num=10&hl=it&gl=IT",
+          "datetime": "2026-09-15 08:00:00 +00:00",
+          "spell": null,
+          "refinement_chips": null,
+          "item_types": ["paid", "local_pack", "organic"],
+          "se_results_count": 2210000,
+          "items_count": 15,
+          "items": [
+            {"type":"paid","rank_group":1,"rank_absolute":1,"position":"left","xpath":"/html[1]/body[1]/div[1]/div[1]","title":"Impresa edile a Monza - Preventivo","domain":"www.annuncioprova.example","description":"Ristrutturazioni e costruzioni.","url":"https://www.annuncioprova.example/monza"},
+            {"type":"paid","rank_group":2,"rank_absolute":2,"position":"left","xpath":"/html[1]/body[1]/div[1]/div[2]","title":"Trova un'impresa edile","domain":"www.annuncioprovatre.example","description":"Confronta preventivi.","url":"https://www.annuncioprovatre.example/"},
+            {"type":"paid","rank_group":3,"rank_absolute":3,"position":"left","xpath":"/html[1]/body[1]/div[1]/div[3]","title":"Costruzioni Brianza","domain":"www.annuncioprovaquattro.example","description":"Nuove costruzioni.","url":"https://www.annuncioprovaquattro.example/"},
+            {"type":"local_pack","rank_group":1,"rank_absolute":4,"position":"left","xpath":"/html[1]/body[1]/div[2]/div[1]","title":"Edil Prova Monza","description":"Impresa edile · Monza","domain":"edilprovamonza.example","phone":null,"url":"https://edilprovamonza.example/","is_paid":false,"rating":null,"cid":"4000000000000000001"},
+            {"type":"local_pack","rank_group":2,"rank_absolute":5,"position":"left","xpath":"/html[1]/body[1]/div[2]/div[2]","title":"Brianza Costruzioni Prova","description":"Impresa di costruzioni","domain":"brianzacostruzioniprova.example","phone":null,"url":"https://brianzacostruzioniprova.example/","is_paid":false,"rating":null,"cid":"4000000000000000002"},
+            {"type":"local_pack","rank_group":3,"rank_absolute":6,"position":"left","xpath":"/html[1]/body[1]/div[2]/div[3]","title":"Annuncio in mappa","description":"Sponsorizzato","domain":"annuncioprova.example","phone":null,"url":"https://www.annuncioprova.example/","is_paid":true,"rating":null,"cid":"4000000000000000003"},
+            {"type":"organic","rank_group":1,"rank_absolute":7,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[1]","domain":"www.instapro.it","title":"Imprese edili a Monza: i migliori professionisti","url":"https://www.instapro.it/impresa-edile/monza","breadcrumb":"https://www.instapro.it › impresa-edile","description":"Preventivi gratuiti."},
+            {"type":"organic","rank_group":2,"rank_absolute":8,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[2]","domain":"edilprovamonza.example","title":"Impresa edile Monza | Edil Prova Monza","url":"https://edilprovamonza.example/","breadcrumb":"https://edilprovamonza.example","description":"Costruzioni e ristrutturazioni a Monza."},
+            {"type":"organic","rank_group":3,"rank_absolute":9,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[3]","domain":"impresaedilemonzaprova.example","title":"Impresa Edile Monza e Brianza","url":"https://impresaedilemonzaprova.example/","breadcrumb":"https://impresaedilemonzaprova.example","description":"Servizi edili in Brianza."},
+            {"type":"organic","rank_group":4,"rank_absolute":10,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[4]","domain":"www.paginegialle.it","title":"Imprese Edili a Monza (MB) - PagineGialle","url":"https://www.paginegialle.it/ricerca/imprese%20edili/Monza","breadcrumb":"https://www.paginegialle.it › ricerca","description":"Imprese edili a Monza."},
+            {"type":"organic","rank_group":5,"rank_absolute":11,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[5]","domain":"brianzacostruzioniprova.example","title":"Brianza Costruzioni Prova - Impresa edile Monza","url":"https://brianzacostruzioniprova.example/chi-siamo","breadcrumb":"https://brianzacostruzioniprova.example › chi-siamo","description":"Dal 1990 in Brianza."},
+            {"type":"organic","rank_group":6,"rank_absolute":12,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[6]","domain":"it.indeed.com","title":"Offerte di lavoro: impresa edile a Monza","url":"https://it.indeed.com/q-impresa-edile-l-monza-offerte-lavoro.html","breadcrumb":"https://it.indeed.com › offerte","description":"Offerte di lavoro."},
+            {"type":"organic","rank_group":7,"rank_absolute":13,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[7]","domain":"www.comune.monza.it","title":"Edilizia privata - Comune di Monza","url":"https://www.comune.monza.it/it/servizi/edilizia-privata","breadcrumb":"https://www.comune.monza.it › servizi","description":"Pratiche edilizie."},
+            {"type":"organic","rank_group":8,"rank_absolute":14,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[8]","domain":"edilprovabrianzasei.example","title":"Edil Prova Brianza Sei - Lavori edili (MB)","url":"https://edilprovabrianzasei.example/","breadcrumb":"https://edilprovabrianzasei.example","description":"Lavori edili."},
+            {"type":"organic","rank_group":9,"rank_absolute":15,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[9]","domain":"www.starofservice.it","title":"Imprese edili a Monza - StarOfService","url":"https://www.starofservice.it/imprese-edili/lombardia/monza","breadcrumb":"https://www.starofservice.it › imprese-edili","description":"Professionisti vicino a te."}
+          ]
+        }
+      ]
+    }
+  ]
+}

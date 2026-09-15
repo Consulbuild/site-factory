@@ -1,0 +1,51 @@
+{
+  "version": "0.1.20260901",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "5.5530 sec.",
+  "cost": 0.004,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "id": "09151000-0000-0000-0000-000000000107",
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "time": "5.4412 sec.",
+      "cost": 0.004,
+      "result_count": 1,
+      "path": ["v3", "serp", "google", "organic", "live", "advanced"],
+      "data": { "api": "serp", "function": "live", "se": "google", "se_type": "organic", "keyword": "idraulico sesto san giovanni", "location_coordinate": "45.5344,9.2336,100000", "language_code": "it", "device": "mobile", "os": "android", "depth": 10, "load_async_ai_overview": true },
+      "result": [
+        {
+          "keyword": "idraulico sesto san giovanni",
+          "type": "organic",
+          "se_domain": "google.it",
+          "location_code": null,
+          "language_code": "it",
+          "check_url": "https://www.google.it/search?q=idraulico%20sesto%20san%20giovanni&num=10&hl=it&gl=IT",
+          "datetime": "2026-09-15 08:00:00 +00:00",
+          "spell": null,
+          "refinement_chips": null,
+          "item_types": ["local_services", "local_pack", "organic"],
+          "se_results_count": 1210000,
+          "items_count": 12,
+          "items": [
+            {"type":"local_services","rank_group":1,"rank_absolute":1,"position":"left","xpath":"/html[1]/body[1]/div[1]","title":"Idraulici nella tua zona","items":[]},
+            {"type":"local_pack","rank_group":1,"rank_absolute":2,"position":"left","xpath":"/html[1]/body[1]/div[2]/div[1]","title":"Idraulica Prova Sesto","description":"Idraulico · Sesto San Giovanni","domain":"idraulicaprovasesto.example","phone":null,"url":"https://idraulicaprovasesto.example/","is_paid":false,"rating":null,"cid":"5000000000000000001"},
+            {"type":"local_pack","rank_group":2,"rank_absolute":3,"position":"left","xpath":"/html[1]/body[1]/div[2]/div[2]","title":"Termoidraulica Prova","description":"Idraulico","domain":"termoidraulicaprova.example","phone":null,"url":"https://termoidraulicaprova.example/","is_paid":false,"rating":null,"cid":"5000000000000000002"},
+            {"type":"organic","rank_group":1,"rank_absolute":4,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[1]","domain":"idraulicosestosangiovanniprova.example","title":"Idraulico Sesto San Giovanni - Pronto intervento","url":"https://idraulicosestosangiovanniprova.example/","breadcrumb":"https://idraulicosestosangiovanniprova.example","description":"Idraulici a Sesto San Giovanni."},
+            {"type":"organic","rank_group":2,"rank_absolute":5,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[2]","domain":"www.prontopro.it","title":"I migliori idraulici a Sesto San Giovanni","url":"https://www.prontopro.it/idraulico/sesto-san-giovanni","breadcrumb":"https://www.prontopro.it › idraulico","description":"Preventivi."},
+            {"type":"organic","rank_group":3,"rank_absolute":6,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[3]","domain":"idraulicaprovasesto.example","title":"Idraulica Prova Sesto | Impianti e riparazioni","url":"https://idraulicaprovasesto.example/impianti","breadcrumb":"https://idraulicaprovasesto.example › impianti","description":"Impianti idraulici."},
+            {"type":"organic","rank_group":4,"rank_absolute":7,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[4]","domain":"www.paginegialle.it","title":"Idraulici a Sesto San Giovanni (MI) - PagineGialle","url":"https://www.paginegialle.it/ricerca/idraulici/Sesto%20San%20Giovanni","breadcrumb":"https://www.paginegialle.it › ricerca","description":"Idraulici in zona."},
+            {"type":"organic","rank_group":5,"rank_absolute":8,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[5]","domain":"termoidraulicaprova.example","title":"Termoidraulica Prova - Caldaie e bagni","url":"https://termoidraulicaprova.example/","breadcrumb":"https://termoidraulicaprova.example","description":"Caldaie e impianti."},
+            {"type":"organic","rank_group":6,"rank_absolute":9,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[6]","domain":"www.idraulico24.net","title":"Idraulico 24 ore Sesto San Giovanni","url":"https://www.idraulico24.net/lombardia/sesto-san-giovanni","breadcrumb":"https://www.idraulico24.net › lombardia","description":"Elenco idraulici."},
+            {"type":"organic","rank_group":7,"rank_absolute":10,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[7]","domain":"www.subito.it","title":"Idraulico - Annunci a Sesto San Giovanni","url":"https://www.subito.it/annunci-lombardia/vendita/servizi/milano/sesto-san-giovanni/","breadcrumb":"https://www.subito.it › annunci","description":"Annunci di servizi."},
+            {"type":"organic","rank_group":8,"rank_absolute":11,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[8]","domain":"www.instagram.com","title":"Idraulica Prova Sesto (@idraulicaprovasesto)","url":"https://www.instagram.com/idraulicaprovasesto/","breadcrumb":"https://www.instagram.com › idraulicaprovasesto","description":"Foto e video."},
+            {"type":"organic","rank_group":9,"rank_absolute":12,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[9]","domain":"www.tuttocitta.it","title":"Idraulici Sesto San Giovanni - Tuttocittà","url":"https://www.tuttocitta.it/idraulici/sesto-san-giovanni","breadcrumb":"https://www.tuttocitta.it › idraulici","description":"Mappa e indirizzi."}
+          ]
+        }
+      ]
+    }
+  ]
+}

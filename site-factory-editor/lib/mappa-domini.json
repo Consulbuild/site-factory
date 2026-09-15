@@ -1,0 +1,37 @@
+{
+  "versione": "2026-09-a",
+  "aggiornato": "2026-09-15",
+  "portali": [
+    { "dominio": "prontopro.it", "nome": "ProntoPro", "nota": "p4 §4.1: impresa edile Cologno Monzese, San Severo; imbianchino Vicenza" },
+    { "dominio": "instapro.it", "nome": "Instapro", "nota": "p4 §4.1: impresa edile Cologno Monzese, San Severo; elettricista Bergamo" },
+    { "dominio": "edilnet.it", "nome": "Edilnet", "nota": "p4 §4.1: impresa edile, ristrutturazione bagno Monza, idraulico Sandrigo" },
+    { "dominio": "starofservice.it", "nome": "StarOfService", "nota": "p4 §4.1: impresa edile San Severo" },
+    { "dominio": "quotalo.it", "nome": "Quotalo", "nota": "p4 §4.1: imbianchino Vicenza" },
+    { "dominio": "habitissimo.it", "nome": "Habitissimo", "nota": "piano T4 §4.2 (semi della misura p4)" },
+    { "dominio": "cronoshare.it", "nome": "Cronoshare", "nota": "p4 §2: citato nel brief della ricerca" },
+    { "dominio": "ristrutturazioni.com", "nome": "Ristrutturazioni.com", "nota": "p4 §4.1: ristrutturazione appartamento Milano" },
+    { "dominio": "artinrete.it", "nome": "Artinrete", "nota": "p4 §4.1: cappotto termico Treviso" },
+    { "dominio": "starcasa.it", "nome": "StarCasa", "nota": "p4 §4.1: elettricista Bergamo" }
+  ],
+  "directory": [
+    { "dominio": "paginegialle.it", "nome": "PagineGialle", "nota": "p4 §4.1" },
+    { "dominio": "paginebianche.it", "nome": "PagineBianche", "nota": "p4 §4.1" },
+    { "dominio": "virgilio.it", "nome": "Virgilio", "nota": "p4 §4.1" },
+    { "dominio": "tuttocitta.it", "nome": "Tuttocittà", "nota": "piano T4 §4.2" },
+    { "dominio": "cylex-italia.it", "nome": "Cylex", "nota": "piano T4 §4.2" },
+    { "dominio": "infobel.com", "nome": "Infobel", "nota": "piano T4 §4.2" },
+    { "dominio": "misterimprese.it", "nome": "Misterimprese", "nota": "piano T4 §4.2" },
+    { "dominio": "idraulico24.net", "nome": "Idraulico24", "nota": "p4 §4.1: idraulico Sandrigo" },
+    { "dominio": "phixmate.it", "nome": "Phixmate", "nota": "p4 §4.1: idraulico Sandrigo" }
+  ],
+  "altro": [
+    { "dominio": "facebook.com", "nome": "Facebook", "nota": "social" },
+    { "dominio": "instagram.com", "nome": "Instagram", "nota": "social" },
+    { "dominio": "tiktok.com", "nome": "TikTok", "nota": "social" },
+    { "dominio": "youtube.com", "nome": "YouTube", "nota": "video" },
+    { "dominio": "linkedin.com", "nome": "LinkedIn", "nota": "social e lavoro" },
+    { "dominio": "indeed.com", "nome": "Indeed", "nota": "lavoro (p4 §4.1: it.indeed.com su elettricista Bergamo)" },
+    { "dominio": "subito.it", "nome": "Subito", "nota": "annunci" },
+    { "dominio": "wikipedia.org", "nome": "Wikipedia", "nota": "enciclopedia" }
+  ]
+}

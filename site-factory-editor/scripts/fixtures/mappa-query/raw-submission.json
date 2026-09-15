@@ -1,0 +1,9 @@
+{
+  "versione": 1,
+  "formVersione": "v4-2026-09-07",
+  "leadId": "zz-test-t4",
+  "risposte": {
+    "sede": { "comune": "Cologno Monzese", "provincia": "MI", "provinciaNome": "Milano", "regione": "Lombardia", "cap": "20093", "via": "Via di Prova 1" },
+    "zone": ["Cologno Monzese e dintorni"]
+  }
+}

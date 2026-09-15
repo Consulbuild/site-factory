@@ -1,0 +1,50 @@
+{
+  "version": "0.1.20260901",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "7.4410 sec.",
+  "cost": 0.004,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "id": "09151000-0000-0000-0000-000000000102",
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "time": "7.3301 sec.",
+      "cost": 0.004,
+      "result_count": 1,
+      "path": ["v3", "serp", "google", "organic", "live", "advanced"],
+      "data": { "api": "serp", "function": "live", "se": "google", "se_type": "organic", "keyword": "cappotto termico vicino a me", "location_coordinate": "45.5286,9.2757,100000", "language_code": "it", "device": "mobile", "os": "android", "depth": 10, "load_async_ai_overview": true },
+      "result": [
+        {
+          "keyword": "cappotto termico vicino a me",
+          "type": "organic",
+          "se_domain": "google.it",
+          "location_code": null,
+          "language_code": "it",
+          "check_url": "https://www.google.it/search?q=cappotto%20termico%20vicino%20a%20me&num=10&hl=it&gl=IT",
+          "datetime": "2026-09-15 08:00:00 +00:00",
+          "spell": null,
+          "refinement_chips": null,
+          "item_types": ["ai_overview", "local_pack", "organic", "people_also_ask"],
+          "se_results_count": 3120000,
+          "items_count": 13,
+          "items": [
+            {"type":"ai_overview","rank_group":1,"rank_absolute":1,"position":"left","xpath":"/html[1]/body[1]/div[1]","asynchronous_ai_overview":true,"items":[{"type":"ai_overview_element","title":null,"text":"Per trovare chi posa il cappotto termico vicino a te confronta imprese edili e installatori della zona.","references":null}],"references":null},
+            {"type":"local_pack","rank_group":1,"rank_absolute":2,"position":"left","xpath":"/html[1]/body[1]/div[2]/div[1]","title":"Isolamenti Prova Brianza","description":"Isolamento termico","domain":"isolamentiprovabrianza.example","phone":null,"url":"https://isolamentiprovabrianza.example/","is_paid":false,"rating":null,"cid":"3000000000000000001"},
+            {"type":"local_pack","rank_group":2,"rank_absolute":3,"position":"left","xpath":"/html[1]/body[1]/div[2]/div[2]","title":"Edil Prova Uno","description":"Impresa edile","domain":"edilprovauno.example","phone":null,"url":"https://edilprovauno.example/","is_paid":false,"rating":null,"cid":"1000000000000000001"},
+            {"type":"organic","rank_group":1,"rank_absolute":4,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[1]","domain":"www.habitissimo.it","title":"Cappotto termico: professionisti vicino a te","url":"https://www.habitissimo.it/preventivi/cappotto-termico","breadcrumb":"https://www.habitissimo.it › preventivi","description":"Chiedi preventivi."},
+            {"type":"organic","rank_group":2,"rank_absolute":5,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[2]","domain":"isolamentiprovabrianza.example","title":"Cappotto termico in Brianza e a Monza - Isolamenti Prova","url":"https://isolamentiprovabrianza.example/cappotto-termico","breadcrumb":"https://isolamentiprovabrianza.example › cappotto-termico","description":"Posa di cappotti termici."},
+            {"type":"organic","rank_group":3,"rank_absolute":6,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[3]","domain":"www.youtube.com","title":"Come si posa un cappotto termico - video","url":"https://www.youtube.com/watch?v=prova0000001","breadcrumb":"https://www.youtube.com › watch","description":"Video dimostrativo."},
+            {"type":"organic","rank_group":4,"rank_absolute":7,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[4]","domain":"it.wikipedia.org","title":"Isolamento a cappotto - Wikipedia","url":"https://it.wikipedia.org/wiki/Isolamento_a_cappotto","breadcrumb":"https://it.wikipedia.org › wiki","description":"Voce enciclopedica."},
+            {"type":"organic","rank_group":5,"rank_absolute":8,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[5]","domain":"www.artinrete.it","title":"Cappotto termico: aziende e prezzi","url":"https://www.artinrete.it/cappotto-termico","breadcrumb":"https://www.artinrete.it › cappotto-termico","description":"Aziende specializzate."},
+            {"type":"organic","rank_group":6,"rank_absolute":9,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[6]","domain":"produttoreprova.example","title":"Sistemi a cappotto certificati - Produttore Prova","url":"https://produttoreprova.example/sistemi-cappotto","breadcrumb":"https://produttoreprova.example › sistemi-cappotto","description":"Catalogo prodotti."},
+            {"type":"organic","rank_group":7,"rank_absolute":10,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[7]","domain":"edilprovauno.example","title":"Cappotti termici e facciate - Edil Prova Uno","url":"https://edilprovauno.example/cappotto-termico","breadcrumb":"https://edilprovauno.example › cappotto-termico","description":"Cappotti termici per condomini e villette."},
+            {"type":"organic","rank_group":8,"rank_absolute":11,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[8]","domain":"www.infobel.com","title":"Isolamento termico in Lombardia - Infobel","url":"https://www.infobel.com/it/italy/isolamento_termico/lombardia","breadcrumb":"https://www.infobel.com › it","description":"Elenco aziende."}
+          ]
+        }
+      ]
+    }
+  ]
+}

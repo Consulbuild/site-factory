@@ -1,0 +1,30 @@
+{
+  "version": "0.1.20260901",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0421 sec.",
+  "cost": 0,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "id": "09151000-0000-0000-0000-000000000002",
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "time": "0.0104 sec.",
+      "cost": 0,
+      "result_count": 1,
+      "path": ["v3", "appendix", "user_data"],
+      "data": { "api": "appendix", "function": "user_data" },
+      "result": [
+        {
+          "login": "prova@esempio.it",
+          "timezone": "Europe/Rome",
+          "rates": { "limits": { "day": { "total": 0 }, "minute": { "total": 2000 } } },
+          "money": { "total": 50, "balance": 48.2, "limits": { "day": { "total": 0 }, "minute": { "total": 0 } } },
+          "price": {}
+        }
+      ]
+    }
+  ]
+}

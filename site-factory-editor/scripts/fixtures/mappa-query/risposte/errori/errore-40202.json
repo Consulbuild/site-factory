@@ -1,0 +1,10 @@
+{
+  "version": "0.1.20260901",
+  "status_code": 40202,
+  "status_message": "Rate limit per minute exceeded.",
+  "time": "0 sec.",
+  "cost": 0,
+  "tasks_count": 0,
+  "tasks_error": 0,
+  "tasks": null
+}

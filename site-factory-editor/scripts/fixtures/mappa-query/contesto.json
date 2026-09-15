@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "generatedAt": "2026-09-15T08:00:00.000Z",
+  "submissionId": "zz-test-t4",
+  "verificato": true,
+  "identita": {
+    "frase": "Impresa edile di prova per il banco della mappa query (piano T4): servizi e macro-categorie come quelli di Cavaliere Build, nessun dato reale di un'azienda.",
+    "fonte": ["fixture scripts/fixtures/mappa-query"]
+  },
+  "settore_normalizzato": "Edilizia",
+  "sottosettore": "Costruzioni e ristrutturazioni chiavi in mano",
+  "servizi_atomizzati": [
+    { "servizio": "Costruzioni edili civili", "fonte": "fixture" },
+    { "servizio": "Costruzioni edili industriali", "fonte": "fixture" },
+    { "servizio": "Ristrutturazioni complete di appartamenti", "fonte": "fixture" },
+    { "servizio": "Ristrutturazione bagni", "fonte": "fixture" },
+    { "servizio": "Ristrutturazione cucine", "fonte": "fixture" },
+    { "servizio": "Ristrutturazione negozi, uffici e locali commerciali", "fonte": "fixture" },
+    { "servizio": "Manutenzioni ordinarie e straordinarie", "fonte": "fixture" },
+    { "servizio": "Opere murarie e demolizioni", "fonte": "fixture" },
+    { "servizio": "Cartongesso e controsoffitti", "fonte": "fixture" },
+    { "servizio": "Posa pavimenti e rivestimenti", "fonte": "fixture" },
+    { "servizio": "Intonaci", "fonte": "fixture" },
+    { "servizio": "Rasature", "fonte": "fixture" },
+    { "servizio": "Tinteggiature", "fonte": "fixture" },
+    { "servizio": "Finiture interne ed esterne", "fonte": "fixture" },
+    { "servizio": "Impianti idraulici", "fonte": "fixture" },
+    { "servizio": "Impianti elettrici", "fonte": "fixture" },
+    { "servizio": "Assistenza tecnica in cantiere", "fonte": "fixture" },
+    { "servizio": "Coordinamento delle lavorazioni", "fonte": "fixture" },
+    { "servizio": "Gestione lavori chiavi in mano", "fonte": "fixture" },
+    { "servizio": "Impermeabilizzazioni di terrazzi e balconi", "fonte": "fixture" },
+    { "servizio": "Rifacimento facciate", "fonte": "fixture" },
+    { "servizio": "Cappotti termici", "fonte": "fixture" },
+    { "servizio": "Pavimentazioni esterne", "fonte": "fixture" },
+    { "servizio": "Ripristini e manutenzioni esterne", "fonte": "fixture" }
+  ],
+  "macro_categorie": [
+    { "nome": "Costruzioni civili e industriali", "servizi": ["Costruzioni edili civili", "Costruzioni edili industriali"] },
+    {
+      "nome": "Ristrutturazioni e manutenzioni",
+      "servizi": ["Ristrutturazioni complete di appartamenti", "Ristrutturazione bagni", "Ristrutturazione cucine", "Ristrutturazione negozi, uffici e locali commerciali", "Manutenzioni ordinarie e straordinarie"]
+    },
+    {
+      "nome": "Opere e finiture",
+      "servizi": ["Opere murarie e demolizioni", "Cartongesso e controsoffitti", "Posa pavimenti e rivestimenti", "Intonaci", "Rasature", "Tinteggiature", "Finiture interne ed esterne"]
+    },
+    {
+      "nome": "Impianti e servizi tecnici",
+      "servizi": ["Impianti idraulici", "Impianti elettrici", "Assistenza tecnica in cantiere", "Coordinamento delle lavorazioni", "Gestione lavori chiavi in mano"]
+    },
+    {
+      "nome": "Esterni e impermeabilizzazioni",
+      "servizi": ["Impermeabilizzazioni di terrazzi e balconi", "Rifacimento facciate", "Cappotti termici", "Pavimentazioni esterne", "Ripristini e manutenzioni esterne"]
+    }
+  ],
+  "target": { "tipo": "entrambi", "descrizione": "Privati e aziende (fixture).", "tipo_lavori": "Costruzioni e ristrutturazioni (fixture)." },
+  "zona": { "sede": "Cologno Monzese (MI)", "area_intervento": "Cologno Monzese e dintorni" },
+  "punti_di_forza": [],
+  "promesse_consentite": [],
+  "promesse_vietate": [],
+  "promessa_martello": "",
+  "tono": { "registro": "professionale", "da_evitare": "" },
+  "materiali": { "logo": false, "foto_reali": "nessuna", "colori": "" },
+  "note_operatore": "Fixture del banco T4: nessun dato reale."
+}

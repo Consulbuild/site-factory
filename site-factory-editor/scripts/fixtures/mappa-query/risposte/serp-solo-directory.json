@@ -1,0 +1,44 @@
+{
+  "version": "0.1.20260901",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "4.9001 sec.",
+  "cost": 0.004,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "id": "09151000-0000-0000-0000-000000000104",
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "time": "4.8110 sec.",
+      "cost": 0.004,
+      "result_count": 1,
+      "path": ["v3", "serp", "google", "organic", "live", "advanced"],
+      "data": { "api": "serp", "function": "live", "se": "google", "se_type": "organic", "keyword": "cappotto termico vimodrone", "location_coordinate": "45.5146,9.2861,100000", "language_code": "it", "device": "mobile", "os": "android", "depth": 10, "load_async_ai_overview": true },
+      "result": [
+        {
+          "keyword": "cappotto termico vimodrone",
+          "type": "organic",
+          "se_domain": "google.it",
+          "location_code": null,
+          "language_code": "it",
+          "check_url": "https://www.google.it/search?q=cappotto%20termico%20vimodrone&num=10&hl=it&gl=IT",
+          "datetime": "2026-09-15 08:00:00 +00:00",
+          "spell": null,
+          "refinement_chips": null,
+          "item_types": ["organic"],
+          "se_results_count": 52100,
+          "items_count": 5,
+          "items": [
+            {"type":"organic","rank_group":1,"rank_absolute":1,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[1]","domain":"www.paginegialle.it","title":"Isolamento termico a Vimodrone (MI) - PagineGialle","url":"https://www.paginegialle.it/ricerca/isolamento%20termico/Vimodrone","breadcrumb":"https://www.paginegialle.it › ricerca","description":"Aziende di isolamento termico a Vimodrone."},
+            {"type":"organic","rank_group":2,"rank_absolute":2,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[2]","domain":"www.paginebianche.it","title":"Cappotto termico Vimodrone - PagineBianche","url":"https://www.paginebianche.it/cerca-da-cosa?qs=cappotto%20termico&dv=Vimodrone","breadcrumb":"https://www.paginebianche.it › cerca","description":"Numeri e indirizzi."},
+            {"type":"organic","rank_group":3,"rank_absolute":3,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[3]","domain":"www.virgilio.it","title":"Isolamento termico Vimodrone - Virgilio","url":"https://www.virgilio.it/italia/vimodrone/isolamento-termico","breadcrumb":"https://www.virgilio.it › italia","description":"Elenco di aziende."},
+            {"type":"organic","rank_group":4,"rank_absolute":4,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[4]","domain":"www.facebook.com","title":"Isolamenti Prova | Facebook","url":"https://www.facebook.com/isolamentiprova","breadcrumb":"https://www.facebook.com › isolamentiprova","description":"Pagina Facebook."},
+            {"type":"organic","rank_group":5,"rank_absolute":5,"position":"left","xpath":"/html[1]/body[1]/div[3]/div[5]","domain":"www.misterimprese.it","title":"Imprese di isolamento a Vimodrone - Misterimprese","url":"https://www.misterimprese.it/lombardia/milano/vimodrone/isolamento","breadcrumb":"https://www.misterimprese.it › lombardia","description":"Elenco imprese."}
+          ]
+        }
+      ]
+    }
+  ]
+}
