@@ -964,6 +964,25 @@ Somma prevista 2,46 $ (campione 1,54 + mappa 0,66 + C4-C5 0,26), sotto il tetto 
   (`app/api/clients/[slug]/route.ts`), guard 409 sulla transizione del Sito con la mappa in calcolo
   (`app/api/clients/[slug]/traffico/route.ts`), effetto del focus in `components/confirm-dialog.tsx` per gli altri dialog.
 
+### Correzioni dopo la seconda revisione (2026-09-15)
+
+- Corretti: la stima prima di spendere usa la regola della cache di `volumi()` e `serp()` (`volumiInCache`/`serpInCache` su
+  `vocePronta`): una voce fuori forma scritta dal codice di prima conta «da pagare» e il saldo si controlla, niente «volumi dalla
+  cache» a lavoro che paga; `registraCosto` crea solo `traffico/` e mai la cartella di un cliente eliminato a calcolo in corso (le
+  chiamate già partite non la fanno rinascere); il run-bus chiude «interrotto» (stato giallo) un lavoro Traffico che termina col
+  prefisso `MESSAGGIO_INTERROTTO`, la stessa regola della vista: Sito sospeso, spento o cliente eliminato durante il calcolo non è
+  più un errore rosso nella status bar.
+- Banco `test-mappa-query.ts` **165 passati, 0 falliti** (3 casi nuovi: stima con voci fuori forma nel client e nel lavoro con 2
+  controlli del saldo, cartella del cliente eliminato non ricreata; tutti e 3 falliti sul codice di `9e25c60`). La regola del bus non
+  è nel banco (`run-bus.ts` importa senza estensione): verificata E2E.
+- E2E (`next start -p 3312`, risposte registrate con latenza 700 ms, cache vuota nello scratchpad, fixture sintetiche: `zz-test-t4` poi
+  nel Cestino, `zz-test-t4b` eliminata dalla prova stessa): DELETE di `zz-test-t4b` con 5 pagine di Google in volo → 200, run «interrotto», cartella assente
+  anche 3 s dopo la fine; Sospendi su `zz-test-t4` con 5 pagine in volo → run «interrotto» (`text-warn` nella status bar), mappa
+  precedente identica (sha), righe di costo 59 → 64 (solo le chiamate già partite); Riattiva e ricalcolo → «completa», 18 target, 40
+  comuni. Browser 1280 e 400 px, chiaro e scuro: nessuno scroll orizzontale.
+- Resta fuori perimetro: il guard 409 del DELETE sul lavoro `traffico:<slug>:mappa` (`app/api/clients/[slug]/route.ts`), ora senza
+  cartelle orfane ma col cliente eliminato mentre il calcolo finisce.
+
 ## Fonti verificate il 2026-09-14
 
 - https://docs.dataforseo.com/v3/keywords_data-google_ads-search_volume-live/ (parametri, limiti, 12 richieste/min, varianti sommate)

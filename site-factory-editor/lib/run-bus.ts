@@ -8,6 +8,7 @@ import { STEPS, setStepState, type StepKey, type RunCtx } from "./steps";
 import { listClients, readClientState } from "./clients";
 import { listRuns, aggiornaRun } from "./factory/state";
 import { makeSink, rollClientRecords } from "./run-record";
+import { MESSAGGIO_INTERROTTO } from "./mappa-query";
 
 // Bus dei run in background (DESIGN-REFACTOR §6.1): i run AI vivono nel
 // processo Next, NON nel ciclo di vita della richiesta HTTP — navigare o
@@ -74,7 +75,9 @@ function emit(run: BusRun, ev: RunEvent) {
     run.fase = ev.label;
     run.fasi.push({ label: ev.label, at: conT.t });
   } else if (ev.type === "error") {
-    run.esito = "errore";
+    // Traffico: un lavoro fermato da una scelta dell'operatore (stop, Sito sospeso) lo dice col prefisso della vista
+    // (MESSAGGIO_INTERROTTO): «interrotto» anche qui, mai l'errore rosso per la stessa azione.
+    run.esito = run.kind === "traffico" && ev.message.startsWith(MESSAGGIO_INTERROTTO) ? "interrotto" : "errore";
     run.errore = ev.message;
   } else if (ev.type === "done") {
     run.esito = "ok";

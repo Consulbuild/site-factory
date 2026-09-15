@@ -301,6 +301,52 @@ export const corpoSerp = (keyword: string, coordinate: string) => [
   { keyword, location_coordinate: coordinate, language_code: "it", device: "mobile", os: "android", depth: 10, load_async_ai_overview: true },
 ];
 
+/* ---------- lettori dei task (ErroreDfs «forma» se fuori forma): gli stessi per la risposta, la cache e la stima ---------- */
+
+function leggiTaskVolumi(task: Task): Map<string, VolumeLetto> {
+  const voci = z.array(VoceVolumeSchema).safeParse(task.result ?? []);
+  if (!voci.success) throw new ErroreDfs("forma", percorsoZod("tasks[0].result", voci.error));
+  const letti = new Map<string, VolumeLetto>();
+  for (const v of voci.data) {
+    const mesi = (v.monthly_searches ?? []).map((m) => m.year * 12 + (m.month - 1));
+    const ultimo = mesi.length ? Math.max(...mesi) : null;
+    const datiAl = ultimo === null ? null : `${Math.floor(ultimo / 12)}-${String((ultimo % 12) + 1).padStart(2, "0")}`;
+    letti.set(v.keyword.normalize("NFC").toLowerCase(), { valore: v.search_volume, datiAl, spell: v.spell ?? null });
+  }
+  return letti;
+}
+
+function leggiTaskSerp(keyword: string, task: Task): SerpGrezza {
+  if (task.status_code === 40102 || !task.result?.length) {
+    return { checkUrl: `https://www.google.it/search?q=${encodeURIComponent(keyword)}&hl=it&gl=it`, vuota: true, organici: [], localPack: [], aiOverview: false, annunci: 0, localServices: false };
+  }
+  const r = RisultatoSerpSchema.safeParse(task.result[0]);
+  if (!r.success) throw new ErroreDfs("forma", percorsoZod("tasks[0].result[0]", r.error));
+  const items = r.data.items ?? [];
+  const organici: SerpGrezza["organici"] = [];
+  const localPack: SerpGrezza["localPack"] = [];
+  for (const [i, item] of items.entries()) {
+    if (item.type === "organic") {
+      const x = OrganicoSchema.safeParse(item);
+      if (!x.success) throw new ErroreDfs("forma", percorsoZod(`tasks[0].result[0].items[${i}]`, x.error));
+      organici.push({ rankAbsolute: x.data.rank_absolute, dominio: x.data.domain, url: x.data.url, titolo: x.data.title ?? "" });
+    } else if (item.type === "local_pack") {
+      const x = LocalPackSchema.safeParse(item);
+      if (!x.success) throw new ErroreDfs("forma", percorsoZod(`tasks[0].result[0].items[${i}]`, x.error));
+      localPack.push({ dominio: x.data.domain ?? null, pagata: x.data.is_paid === true });
+    }
+  }
+  return {
+    checkUrl: r.data.check_url,
+    vuota: organici.length === 0,
+    organici,
+    localPack,
+    aiOverview: items.some((x) => x.type === "ai_overview"),
+    annunci: items.filter((x) => x.type === "paid").length,
+    localServices: items.some((x) => x.type === "local_services"),
+  };
+}
+
 export type ClientDfs = ReturnType<typeof creaClientDfs>;
 
 export function creaClientDfs(o: OpzioniDfs = {}) {
@@ -335,10 +381,24 @@ export function creaClientDfs(o: OpzioniDfs = {}) {
     }
   }
 
+  /** Voce di cache fresca che il lettore del task accetta; una voce fuori forma vale come assente (si richiede e si riscrive). */
+  function vocePronta<T>(endpoint: EndpointPagato, sha: string, leggi: (task: Task) => T): { dati: T; voce: VoceCache } | null {
+    const voce = leggiCache(endpoint, sha);
+    if (!voce) return null;
+    try {
+      return { dati: leggi(voce.risposta as Task), voce };
+    } catch {
+      return null;
+    }
+  }
+
   function registraCosto(riga: RigaCosto): void {
     if (!o.costi) return;
     const r = RigaCostoSchema.parse(riga);
-    fs.mkdirSync(path.dirname(o.costi.file), { recursive: true });
+    const dir = path.dirname(o.costi.file);
+    // Solo l'ultima cartella (traffico/): un cliente eliminato a calcolo in corso non rinasce dalle chiamate già partite.
+    if (!fs.existsSync(path.dirname(dir))) return;
+    fs.mkdirSync(dir, { recursive: true });
     fs.appendFileSync(o.costi.file, JSON.stringify(r) + "\n");
   }
 
@@ -379,19 +439,14 @@ export function creaClientDfs(o: OpzioniDfs = {}) {
   /**
    * Chiamata pagata con tentativi, spaziatura Google Ads, riga di costo per ogni tentativo partito e cache. `leggi` valida
    * il task e ne estrae i dati (ErroreDfs «forma» se fuori forma): in cache va solo un task letto, e una voce di cache che
-   * non si legge vale come assente.
+   * non si legge vale come assente (vocePronta, la stessa regola della stima).
    */
   async function pagata<T>(endpoint: EndpointPagato, corpo: unknown[], voci: number, taskOk: (codice: number) => boolean, leggi: (task: Task) => T): Promise<{ dati: T; fonte: Fonte; dallaCache: boolean }> {
     const sha = chiaveRichiesta(endpoint, corpo);
-    const inCache = leggiCache(endpoint, sha);
-    if (inCache) {
-      try {
-        const dati = leggi(inCache.risposta as Task);
-        stat.dallaCache += 1;
-        return { dati, fonte: { endpoint, richiestaSha: sha, lettoAt: inCache.lettoAt, costoUsd: inCache.costoUsd }, dallaCache: true };
-      } catch {
-        /* voce fuori forma: si richiede e si riscrive */
-      }
+    const pronta = vocePronta(endpoint, sha, leggi);
+    if (pronta) {
+      stat.dallaCache += 1;
+      return { dati: pronta.dati, fonte: { endpoint, richiestaSha: sha, lettoAt: pronta.voce.lettoAt, costoUsd: pronta.voce.costoUsd }, dallaCache: true };
     }
     for (let tentativo = 1; ; tentativo++) {
       // Spaziatura solo al primo tentativo: le attese dei tentativi (≥ 5 s) la coprono già.
@@ -453,8 +508,9 @@ export function creaClientDfs(o: OpzioniDfs = {}) {
     configurata: (): boolean => credenziali() !== null,
     statistiche: () => ({ ...stat, costoUsd: Math.round(stat.costoUsd * 10000) / 10000 }),
 
-    /** La risposta a questa richiesta è già in cache e fresca (stima del costo prima di spendere). */
-    inCache: (endpoint: EndpointPagato, corpo: unknown[]): boolean => leggiCache(endpoint, chiaveRichiesta(endpoint, corpo)) !== null,
+    /** Stima del costo prima di spendere: true solo se volumi() e serp() userebbero la cache (fresca e leggibile), non la pagherebbero. */
+    volumiInCache: (keywords: readonly string[], locationCode: number): boolean => vocePronta(EP_VOLUMI, chiaveRichiesta(EP_VOLUMI, corpoVolumi(keywords, locationCode)), leggiTaskVolumi) !== null,
+    serpInCache: (keyword: string, coordinate: string): boolean => vocePronta(EP_SERP, chiaveRichiesta(EP_SERP, corpoSerp(keyword, coordinate)), (task) => leggiTaskSerp(keyword, task)) !== null,
 
     /** Saldo in dollari (user_data, gratuito, mai in cache). */
     saldo: leggiSaldo,
@@ -487,55 +543,13 @@ export function creaClientDfs(o: OpzioniDfs = {}) {
 
     /** Volumi Google Ads di ≤ 1.000 keyword in una località (un task Live). */
     async volumi(keywords: readonly string[], locationCode: number): Promise<EsitoVolumi> {
-      const corpo = corpoVolumi(keywords, locationCode);
-      const { dati: risultati, fonte, dallaCache } = await pagata(EP_VOLUMI, corpo, keywords.length, (c) => c === 20000, (task) => {
-        const voci = z.array(VoceVolumeSchema).safeParse(task.result ?? []);
-        if (!voci.success) throw new ErroreDfs("forma", percorsoZod("tasks[0].result", voci.error));
-        const letti = new Map<string, VolumeLetto>();
-        for (const v of voci.data) {
-          const mesi = (v.monthly_searches ?? []).map((m) => m.year * 12 + (m.month - 1));
-          const ultimo = mesi.length ? Math.max(...mesi) : null;
-          const datiAl = ultimo === null ? null : `${Math.floor(ultimo / 12)}-${String((ultimo % 12) + 1).padStart(2, "0")}`;
-          letti.set(v.keyword.normalize("NFC").toLowerCase(), { valore: v.search_volume, datiAl, spell: v.spell ?? null });
-        }
-        return letti;
-      });
+      const { dati: risultati, fonte, dallaCache } = await pagata(EP_VOLUMI, corpoVolumi(keywords, locationCode), keywords.length, (c) => c === 20000, leggiTaskVolumi);
       return { risultati, fonte, dallaCache };
     },
 
     /** Pagina di Google da mobile per una ricerca e un punto (un task Live, primi 10 risultati, AI Overview). */
     async serp(keyword: string, coordinate: string): Promise<EsitoSerp> {
-      const corpo = corpoSerp(keyword, coordinate);
-      const { dati: grezza, fonte, dallaCache } = await pagata(EP_SERP, corpo, 1, (c) => c === 20000 || c === 40102, (task): SerpGrezza => {
-        if (task.status_code === 40102 || !task.result?.length) {
-          return { checkUrl: `https://www.google.it/search?q=${encodeURIComponent(keyword)}&hl=it&gl=it`, vuota: true, organici: [], localPack: [], aiOverview: false, annunci: 0, localServices: false };
-        }
-        const r = RisultatoSerpSchema.safeParse(task.result[0]);
-        if (!r.success) throw new ErroreDfs("forma", percorsoZod("tasks[0].result[0]", r.error));
-        const items = r.data.items ?? [];
-        const organici: SerpGrezza["organici"] = [];
-        const localPack: SerpGrezza["localPack"] = [];
-        for (const [i, item] of items.entries()) {
-          if (item.type === "organic") {
-            const x = OrganicoSchema.safeParse(item);
-            if (!x.success) throw new ErroreDfs("forma", percorsoZod(`tasks[0].result[0].items[${i}]`, x.error));
-            organici.push({ rankAbsolute: x.data.rank_absolute, dominio: x.data.domain, url: x.data.url, titolo: x.data.title ?? "" });
-          } else if (item.type === "local_pack") {
-            const x = LocalPackSchema.safeParse(item);
-            if (!x.success) throw new ErroreDfs("forma", percorsoZod(`tasks[0].result[0].items[${i}]`, x.error));
-            localPack.push({ dominio: x.data.domain ?? null, pagata: x.data.is_paid === true });
-          }
-        }
-        return {
-          checkUrl: r.data.check_url,
-          vuota: organici.length === 0,
-          organici,
-          localPack,
-          aiOverview: items.some((x) => x.type === "ai_overview"),
-          annunci: items.filter((x) => x.type === "paid").length,
-          localServices: items.some((x) => x.type === "local_services"),
-        };
-      });
+      const { dati: grezza, fonte, dallaCache } = await pagata(EP_SERP, corpoSerp(keyword, coordinate), 1, (c) => c === 20000 || c === 40102, (task) => leggiTaskSerp(keyword, task));
       return { grezza, fonte, dallaCache };
     },
   };

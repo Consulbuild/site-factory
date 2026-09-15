@@ -449,9 +449,20 @@ try {
     fs.mkdirSync(path.join(dirRotta, EP_S.replace(/\//g, "_")), { recursive: true });
     fs.writeFileSync(path.join(dirRotta, EP_S.replace(/\//g, "_"), `${shaZ}.json`), JSON.stringify({ richiesta: { endpoint: EP_S, corpo: corpoZ }, lettoAt: ADESSO, costoUsd: 0.004, risposta: serpRelativa.tasks[0] }));
     const fRotta = finto({ [EP_S]: [json(serpBuona)] });
-    const daRotta = await creaClientDfs({ trasporto: fRotta.trasporto, registrate: null, cacheDir: dirRotta, attendi, adesso: () => new Date(ADESSO) }).serp("z", "45.0000,9.0000,100000");
-    const riletta = await creaClientDfs({ trasporto: fRotta.trasporto, registrate: null, cacheDir: dirRotta, attendi, adesso: () => new Date(ADESSO) }).serp("z", "45.0000,9.0000,100000");
+    const cRotta = () => creaClientDfs({ trasporto: fRotta.trasporto, registrate: null, cacheDir: dirRotta, attendi, adesso: () => new Date(ADESSO) });
+    const stimaPrima = cRotta().serpInCache("z", "45.0000,9.0000,100000");
+    const daRotta = await cRotta().serp("z", "45.0000,9.0000,100000");
+    const riletta = await cRotta().serp("z", "45.0000,9.0000,100000");
     caso("11. voce di cache fuori forma → come assente: nuova chiamata e cache riscritta", fRotta.chiamate.length === 1 && !daRotta.dallaCache && riletta.dallaCache, fRotta.chiamate.length);
+    const corpoX = corpoVolumi(["x"], 2380);
+    const shaX = crypto.createHash("sha256").update(`${EP_V}\n${JSON.stringify(corpoX)}`).digest("hex");
+    fs.mkdirSync(path.join(dirRotta, EP_V.replace(/\//g, "_")), { recursive: true });
+    fs.writeFileSync(path.join(dirRotta, EP_V.replace(/\//g, "_"), `${shaX}.json`), JSON.stringify({ richiesta: { endpoint: EP_V, corpo: corpoX }, lettoAt: ADESSO, costoUsd: 0.09, risposta: { status_code: 20000, cost: 0.09, result: [{ keyword: "x", search_volume: "tanti" }] } }));
+    caso(
+      "11. stima con la regola di serp() e volumi(): voce fuori forma (SERP o lotto) → da pagare, voce riscritta → in cache",
+      !stimaPrima && cRotta().serpInCache("z", "45.0000,9.0000,100000") && !cRotta().volumiInCache(["x"], 2380),
+      { stimaPrima, volumi: cRotta().volumiInCache(["x"], 2380) },
+    );
 
     // 14. stop dalla status bar durante una chiamata pagata: la riga del tentativo partito resta
     const costiStop = path.join(tmp, "costi-stop.ndjson");
@@ -472,6 +483,19 @@ try {
       "14. stop durante una chiamata pagata → riga «errore» (costo e codice 0), poi l'interruzione; a stop già dato nessuna riga",
       !(eStop instanceof ErroreDfs) && ac.signal.aborted && righeStop.length === 1 && righeStop[0]!.esito === "errore" && righeStop[0]!.statusCode === 0 && righeStop[0]!.costoUsd === 0 && righeDopo === 1,
       { e: String(eStop), righeStop, righeDopo },
+    );
+
+    // 14. cliente eliminato con una chiamata già partita: la riga di costo non ricrea la sua cartella
+    const fEl = finto({ [EP_V]: [json(bustaVolumi([{ keyword: "k", search_volume: 1, monthly_searches: null }]))] });
+    const costiIn = (dir: string) => creaClientDfs({ trasporto: fEl.trasporto, registrate: null, cacheDir: cacheDir(), costi: { file: path.join(dir, mq.FILE_COSTI), lavoro: "mappa" }, attendi });
+    const dirEliminato = path.join(tmp, "cliente-eliminato");
+    const dirVivo = fs.mkdtempSync(path.join(tmp, "cliente-vivo-"));
+    const vEl = await costiIn(dirEliminato).volumi(["k"], 2380);
+    await costiIn(dirVivo).volumi(["k"], 2380);
+    caso(
+      "14. cartella del cliente sparita → nessuna cartella ricreata; cliente presente → traffico/costi.ndjson creato",
+      !fs.existsSync(dirEliminato) && vEl.risultati.has("k") && righeDi(path.join(dirVivo, mq.FILE_COSTI)).length === 1,
+      { eliminatoRicreato: fs.existsSync(dirEliminato) },
     );
   }
 
@@ -827,6 +851,34 @@ try {
       "29. una pagina di Google in errore permanente → mappa «parziale» con avviso",
       l29.stato === "ok" && l29.mappa.stato === "parziale" && isDeepStrictEqual(l29.mappa.serpNonLette, [guasta]) && l29.mappa.avvisi.some((a) => a.includes(`«${guasta}»`)) && l29.mappa.universo.find((r) => r.testo === guasta)!.serp === null,
       l29.stato === "ok" ? [l29.mappa.stato, l29.mappa.serpNonLette] : [l29, ev29.filter((e) => e.type === "error")],
+    );
+
+    // Stima con voci di cache fuori forma (scritte dal codice di prima di 9e25c60): lotto e pagina contati da pagare, saldo controllato.
+    const urlStima: string[] = [];
+    const clientStima = (cache: string) =>
+      creaClientDfs({
+        trasporto: { getSecret: (k: KeyName) => (k === "DATAFORSEO_LOGIN" ? "login-prova" : "password-segreta-123"), fetch: async (url, init) => (urlStima.push(url.slice(BASE_URL.length)), registrato(url, init)) },
+        registrate: null,
+        cacheDir: cache,
+        attendi,
+      });
+    const cacheStima = cacheDir();
+    const dirStima = nuovoCliente("job-stima");
+    await esegui(dirStima, clientStima(cacheStima));
+    const rompi = (ep: string, risposta: unknown) => {
+      const cartella = path.join(cacheStima, ep.replace(/\//g, "_"));
+      const file = path.join(cartella, fs.readdirSync(cartella).sort()[0]!);
+      fs.writeFileSync(file, JSON.stringify({ ...leggi(file), risposta }));
+    };
+    rompi(EP_V, { status_code: 20000, cost: 0.09, result: [{ keyword: "x", search_volume: "tanti" }] });
+    rompi(EP_S, { status_code: 20000, cost: 0.004, result: [{ check_url: "https://www.google.it/search?q=z", items: [{ type: "organic", rank_absolute: 1, domain: "x.it", url: "/relativo" }] }] });
+    urlStima.length = 0;
+    const evStima = await esegui(dirStima, clientStima(cacheStima), "2026-09-16T10:00:00.000Z");
+    const conta = (ep: string) => urlStima.filter((u) => u === ep).length;
+    caso(
+      "28. voce di cache fuori forma → lottiDaPagare 1 e serpDaPagare 1: saldo controllato prima di ciascuna, niente «volumi dalla cache»",
+      conta("appendix/user_data") === 2 && conta(EP_V) === 1 && conta(EP_S) === 1 && !evStima.some((e) => e.text?.includes("volumi dalla cache")) && evStima.some((e) => e.type === "done"),
+      { chiamate: urlStima, testi: evStima.filter((e) => e.type !== "text" || e.text?.includes("saldo") || e.text?.includes("cache")) },
     );
 
     // Esclusione e riammissione sul disco: nessuna chiamata, file delle esclusioni scritto.

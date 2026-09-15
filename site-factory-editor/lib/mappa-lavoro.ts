@@ -11,7 +11,7 @@ import { REPO_ROOT } from "./paths.ts";
 import { caricaDati, comuniServiti, leggiZoneServite, regioneDiSigla, zoneUsabili, ErroreDati, type Dati, type Zone } from "./zone-servite.ts";
 import * as mq from "./mappa-query.ts";
 import { dominiIgnoti, formatoIntero, riduciSerp, type Domini } from "./serp-classifica.ts";
-import { EP_SERP, EP_VOLUMI, ErroreDfs, corpoSerp, corpoVolumi, trovaLocalita, type ClientDfs } from "./dataforseo.ts";
+import { ErroreDfs, trovaLocalita, type ClientDfs } from "./dataforseo.ts";
 
 /* ---------- letture ---------- */
 
@@ -274,7 +274,7 @@ export async function* eseguiMappa(ing: IngressiMappa, client: ClientDfs, opz: {
     }
     const lotti = mq.lottiVolumi(ing.universo, sedeGeo);
     if (lotti.length > mq.MAX_TASK_VOLUMI) throw new ErroreDfs("richiesta", `Troppi lotti di volumi (${lotti.length}, massimo ${mq.MAX_TASK_VOLUMI}): difetto dell'editor, vedi docs/DEBUG.md.`);
-    const lottiDaPagare = lotti.filter((l) => !client.inCache(EP_VOLUMI, corpoVolumi(l.keywords, l.locationCode))).length;
+    const lottiDaPagare = lotti.filter((l) => !client.volumiInCache(l.keywords, l.locationCode)).length;
     const stima = mq.stimaCostoUsd(lottiDaPagare, mq.serpMassime(ing.universo, ing.contesto.macro_categorie.length));
     const saldo = lottiDaPagare > 0 ? await client.assicuraSaldo(stima) : null;
     yield {
@@ -303,7 +303,7 @@ export async function* eseguiMappa(ing: IngressiMappa, client: ClientDfs, opz: {
     const escluse = new Set(ing.esclusioni.voci.map((v) => v.testo));
     const candidati = mq.candidatiSerp(universo, escluse, ing.contesto.macro_categorie.map((m) => m.nome));
     const coordinate = (r: mq.Riga) => mq.coordinateDi(ing.dati.comuni[r.comune!.istat]!.centro);
-    const serpDaPagare = candidati.filter((r) => !client.inCache(EP_SERP, corpoSerp(r.testo, coordinate(r)))).length;
+    const serpDaPagare = candidati.filter((r) => !client.serpInCache(r.testo, coordinate(r))).length;
     if (serpDaPagare > 0) await client.assicuraSaldo(mq.stimaCostoUsd(0, serpDaPagare));
     const perTesto = new Map(universo.map((r, i) => [r.testo, i]));
     const serpNonLette: string[] = [];
