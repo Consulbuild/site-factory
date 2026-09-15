@@ -308,6 +308,24 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
       non è realistico per i risultati locali (la coda lunga sono proprio le imprese): si misura invece l'errore sui domini
       frequenti.
     - 13 risposte 40101 (Google non ha risposto) su 397 chiamate: ritentate dopo la correzione di `lib/dataforseo.ts`.
+11. **Prima mappa reale di Cavaliere (15/09, 0,47 $, 13 target su 2.656 ricerche, 40 comuni su 1.502)** e calibrazione
+    decisa dall'orchestratore sui dati (vale sopra il piano):
+    - **Troppo lontano**: target «elettricista bergamo» (35 km), «elettricista brescia» (74 km), «ristrutturazione bagno
+      varese» (49 km), «impresa edile bergamo». Con la zona «Lombardia» il peso popolazione/(1 + km/10) porta dentro i
+      capoluoghi. Una piccola impresa non si posiziona a 50-70 km (la vicinanza guida i risultati locali) e una pagina per
+      un comune dove non lavora è a rischio doorway → i **comuni misurati** sono prima quelli entro **25 km** dalla sede (per
+      popolazione), poi, solo se non arrivano a 40, i successivi per distanza; i **target con comune** stanno entro 25 km
+      (o entro il raggio delle etichette «dintorni», se più ampio). Le zone larghe restano per `areaServed` e scheda.
+    - **Mestiere altrui**: «elettricista …» e «idraulico …» (i volumi più alti: idraulico milano 27.100, elettricista
+      milano 14.800) sono ricerche di chi vuole un artigiano di quel mestiere, non un'impresa edile che coordina gli
+      impianti → per un contesto di settore diverso da quel mestiere le teste di mestiere (elettricista, idraulico,
+      imbianchino, serramentista…) sono **mestiere altrui, non target**; restano le forme di servizio («rifacimento
+      impianto elettrico», «impianto idraulico bagno»).
+    - **Buoni** e da tenere: «demolizioni monza / cinisello balsamo / desio» (70-210 al mese, difficoltà bassa),
+      «impresa edile paderno dugnano» (10 km), le ricerche senza comune dei servizi misurate a Cologno.
+    - **Siti nazionali**: regola del punto 10 (dominio presente in più province del campione = non impresa locale).
+    - Si ricalcola la mappa dopo le correzioni: le pagine di Google già lette restano in cache (14 giorni), si pagano solo i
+      comuni nuovi entro 25 km (tetto 0,50 $, spesa totale del test finora 1,44 $).
 
 ## K1 — Chiavi per gruppi (piano pronto, sviluppo dopo T3; valgono sopra T2a, T2b, T4, G1)
 
