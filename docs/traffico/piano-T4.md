@@ -2,8 +2,9 @@
 
 Riallineato il 15/09 alle decisioni T3 12-14 e K1.
 
-Stato: **fasi 2-3 fatte il 2026-09-15** (sviluppo M1-M5 e calibrazione senza chiavi: § Calibrazione e § Verifica;
-calibrazione a pagamento in attesa delle chiavi DataForSEO; restano le fasi 4-5 e M6). Piano scritto il 2026-09-14, riallineato il 2026-09-15 («Priorità assoluta», T3
+Stato: **chiuso il 2026-09-15, da calibrare con chiave** (sviluppo M1-M5, calibrazione senza chiavi, due revisioni e
+collaudo finale delle fasi 4-5: § Calibrazione e § Verifica; la calibrazione a pagamento resta in attesa della ricarica
+DataForSEO e, per la mappa di Cavaliere, della sede nelle sue zone servite). Piano scritto il 2026-09-14, riallineato il 2026-09-15 («Priorità assoluta», T3
 punti 12-14, T4 punti 1-7, K1 di `decisioni-piani.md`). Contratti reali letti nel codice il 15/09: `lib/zone-servite.ts` (T3,
 chiuso), `lib/secrets.ts` e `lib/chiavi-traffico.ts` (K1, chiuso). Fonti: `docs/traffico/README.md` (§1-§5), `brief-T4.md`,
 `piano-T0.md` (§3-§4), `piano-T3.md` (§3 contratto delle zone), `piano-K1.md` (§8), `piano-T6a.md` (§3-§4 dataset),
@@ -880,6 +881,12 @@ Tutto passa dalla cache (`~/.cache/site-factory/dataforseo/`): un passo rilancia
    ≥ 80 %; sotto si ritoccano le soglie 2/3 e 5/6, poi i punti dei fattori, e si conferma su 20 righe nuove (`--seme` diverso).
 4. **Mappa di Cavaliere (≈ 0,66 $ al massimo)**: le sue zone sono «Da impostare» (brief Tally): Mattia le imposta nella card, poi
    «Calcola la mappa». **C6** revisione dei target con Mattia; **C7** costo reale da `out/cavaliere-build-srls/traffico/costi.ndjson`.
+   **Prima di spendere (collaudo finale, 15/09)**: le zone di Cavaliere ora sono impostate («Cologno Monzese e dintorni» + «Tutta la
+   regione Lombardia», `traffico/zone-servite.json` delle 16:36) ma con `sede: null` (lead Tally: la card di T3 non ha un campo per la
+   sede). Letti in sola lettura con `leggiIngressi`: 40 comuni su 1.502 scelti per sola popolazione (Milano, Brescia, Monza, Bergamo,
+   Busto Arsizio, Como, Varese… Mantova, Voghera, Crema; Cologno Monzese 19°), nessuna ricerca senza comune misurata e nessuna ricerca
+   assegnata alla home (A1 e A3 vogliono la sede). La mappa sarebbe coerente con le regole del §2.3 ma inutile per il pilota: **serve
+   prima la sede nelle zone di Cavaliere** (T3, fuori da questo perimetro), poi il passo 4.
 5. **C4 e C5 (≈ 0,26 $)**, dalla stessa cache: volumi di 10 ricerche senza comune della sede su City e su Municipality (2 task,
    `creaClientDfs().volumi(keywords, 1008436)` e `(keywords, 9201369)`); 10 ricerche con comune lette con `location_coordinate` e con
    `location_code` del comune (Jaccard dei domini ≥ 0,8, altrimenti si passa al `location_code`).
@@ -982,6 +989,64 @@ Somma prevista 2,46 $ (campione 1,54 + mappa 0,66 + C4-C5 0,26), sotto il tetto 
   comuni. Browser 1280 e 400 px, chiaro e scuro: nessuno scroll orizzontale.
 - Resta fuori perimetro: il guard 409 del DELETE sul lavoro `traffico:<slug>:mappa` (`app/api/clients/[slug]/route.ts`), ora senza
   cartelle orfane ma col cliente eliminato mentre il calcolo finisce.
+
+### Collaudo finale (fasi 4-5, 2026-09-15, su `a7126a6`)
+
+Suite rilanciata da zero (editor, `PATH=$HOME/.local/bin`):
+
+| Comando | Esito |
+|---|---|
+| `npx tsc --noEmit` | pulito (exit 0) |
+| `npm run build` | verde, route `/api/clients/[slug]/traffico/mappa` e `/traffico/[slug]` |
+| `node --experimental-strip-types scripts/test-mappa-query.ts` | **165 passati, 0 falliti** |
+| `scripts/test-zone-servite.ts` · `test-chiavi.ts` · `test-traffico-stato.ts` · `test-portafoglio.ts` | 110/0 · 121/0 · 58/0 · 43/0 |
+| `scripts/campione-serp.ts esegui` (senza opzioni) | «stima 1.54 $. Nessuna chiamata», exit 0 |
+
+**E2E** su fixture sintetica `zz-test-t4` (contesto e lead di `scripts/fixtures/mappa-query/`, Sito attivo, dominio `.example`) con
+`next start -p 3312`, `SF_DATAFORSEO_REGISTRATE` su una copia delle risposte nello scratchpad, cache nello scratchpad, latenza 150 ms:
+
+| Prova (M3 e brief) | Esito |
+|---|---|
+| 1 `calcola` | 202, 6 fasi nel log, mappa valida per `MappaQuerySchema`, «completa», 18 target su 7 pagine (≤ 3 per pagina, una principale), 40 comuni su 132, 2.656 righe; `costi.ndjson` 64 righe valide (4 volumi + 60 pagine), costo 0,60 $, nessuna credenziale; ogni target con fonte del volume, pagina di Google, fattori di difficoltà, 3 fattori di punteggio e almeno 3 frasi del perché |
+| 2 secondo `calcola` | mappa identica salvo `generataAt` e `costo` (0 $, 64 dalla cache), nessuna riga di costo nuova: **deterministica** |
+| 3-4 `escludi` e `riammetti` | 200, target rimpiazzato con universo invariato (sha), poi target e mappa identici a prima salvo le date, `generataAt` intatto, nessuna chiamata; 422 su testo non escluso, fuori universo («… bergamo»), motivo di 2 caratteri; 400 azione e slug, 404, 415, 403 `Sec-Fetch-Site: cross-site` |
+| 5 credito (40210, cache vuota) | «Credito DataForSEO esaurito (40210)…», mappa identica (sha), una riga di costo `errore` |
+| servizio (50000) | 3 tentativi a 0, 5 e 20 s (3 righe), poi «DataForSEO non risponde (50000)» |
+| 8 in parallelo | durante il calcolo: `escludi` e secondo `calcola` → 409 «Calcolo della mappa in corso»; `calcola` su `zz-test-t4b` → 409 «si calcola una mappa alla volta» |
+| 7 varianti su `zz-test-t4b` | lead Tally → 409 «Zone servite da impostare nel dettaglio Traffico» (`codice: zone`); Sito sospeso → 409; `client.json` fuori schema → 409 col campo; nessuna cartella `traffico/` creata |
+| 9 stop dalla status bar | «interrotto» (non errore), mappa identica, righe di costo solo per le chiamate partite |
+| Sospendi durante il calcolo | «run interrotto: il servizio Sito non è più attivo…», mappa identica; Riattiva e ricalcolo → «completa», 15 chiamate pagate e 49 dalla cache |
+| 6 senza chiavi | non ripetibile E2E: le chiavi vere sono nel Keychain dal 15/09 (il collaudo non le tocca); coperto dal banco caso 27 e dall'E2E di sviluppo |
+
+**Browser** (`/traffico/zz-test-t4` e `zz-test-t4b`, 1280 e 400 px, chiaro e scuro): «Pronta» col banner delle risposte registrate e i 7
+gruppi; Escludi col dialog (focus nel campo, conferma disabilitata sotto 3 caratteri, `Esc` chiude e rende il focus al bottone della
+riga, il poller di 3 s non sposta il focus), conferma → «Escluse da te (1)» e focus sull'h3; Riammetti → elenco vuoto e focus sull'h3;
+Ricalcola… col dialog e la stima «al massimo circa 0,66 $»; «Da ricalcolare» con banner «È cambiato: contesto.json» e unica primaria
+Ricalcola…; «In attesa delle zone» con unica primaria «Imposta le zone» della card zone; a 400 px nessuno scorrimento orizzontale
+(`scrollWidth` 400), volume, badge ed Escludi… vanno a capo. Nel riquadro di prova i tasti Invio e Spazio non attivano i bottoni
+(nemmeno un `<summary>`): limite dello strumento, conferme fatte col clic.
+
+**Criteri del brief**: universo deterministico dai servizi e dai soli comuni serviti (banco 1-5, E2E 2); client senza dipendenze nuove
+con costo reale per chiamata (E2E 1, 5); classificazione con elenco versionato e difficoltà spiegata (banco 16-19, perché nella UI);
+8-20 target con pagina e provenienza di ogni numero (E2E 1); lavoro `traffico:<slug>:mappa` con log NDJSON e cache (E2E 1-2, 9);
+campione pronto senza spesa; UI in lettura con Escludi e Riammetti; nessun client Google Ads. «Da calibrare con chiave» resta vero.
+
+**Perimetro**: i commit del piano (`ddcede0`, `16c0984`, `532f5ed`, `66e6482`, `d14714e`, `af04d29`, `4068be0`, `9e25c60`,
+`a7126a6`) toccano solo file del §10-§11 (in `site-factory-editor/components/home.tsx` c'è solo `1ffcc39` di K1); nessuna modifica
+del piano non committata. Cartelle dei clienti reali e `~/.cache/site-factory/dataforseo/` mai scritte; fixture `zz-test-t4` e
+`zz-test-t4b` nel Cestino (`ls site-renderer/out/` = i 3 clienti).
+
+**Revisione del diff** (route, `mappa-lavoro.ts`, `dataforseo.ts`, `mappa-query.ts`, `run-bus.ts`, `agenti.ts`, pagina e componente):
+nessun difetto nuovo nel perimetro. Scostamento notato e lasciato: nella selezione i doppioni d'intento per gruppo distinguono anche
+il tipo (così «impresa edile» e «impresa edile cologno monzese» restano due target della home; il §5.3 dice «stesso gruppo e stesso
+comune»): sono ricerche con pagine di Google diverse, e la regola di Jaccard le unisce se i risultati coincidono.
+
+Punti aperti emersi (fuori perimetro):
+- **Sede di Cavaliere assente** nelle zone servite (lead Tally, la card di T3 non ha il campo): la mappa sceglierebbe comuni solo per
+  popolazione in tutta la Lombardia e nessuna ricerca per la home (§ Calibrazione, passo 4). Da risolvere in T3 prima della spesa.
+- `components/confirm-dialog.tsx` non trattiene il focus: `Tab` dal bottone di conferma esce dal dialog (vale per tutti i dialog
+  dell'editor).
+- Il guard 409 del DELETE sul lavoro della mappa (già segnalato sopra).
 
 ## Fonti verificate il 2026-09-14
 

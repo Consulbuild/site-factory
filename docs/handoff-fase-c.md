@@ -191,12 +191,14 @@ prossime schede.
   risposte registrate con `SF_DATAFORSEO_REGISTRATE`), `lib/mappa-lavoro.ts` (lavoro `traffico:<slug>:mappa` sul
   run-bus, nuovo `kind: "traffico"`, una mappa alla volta). UI «Ricerche su cui puntare» nella card Sito di
   `/traffico/[slug]` con Escludi (col motivo) e Riammetti senza chiamate; `POST /api/clients/[slug]/traffico/mappa`.
-  `scripts/campione-serp.ts` (384 pagine, giudizio cieco, accordo). Banco `scripts/test-mappa-query.ts` 151/0, E2E e
-  browser su risposte registrate. Nessuna spesa: chiavi DataForSEO inserite a fine giornata ma saldo 1,00 $. Aperti per
-  Mattia: ricaricare DataForSEO e seguire il protocollo del piano (≈ 2,46 $: campione, giudizio di 20 righe, mappa di
-  Cavaliere), impostare prima le
-  zone di Cavaliere, decidere il peso della distanza per le aree regionali (Saggin: Rovigo e Chioggia dentro, comuni a
-  5 km fuori).
+  `scripts/campione-serp.ts` (384 pagine, giudizio cieco, accordo). Banco `scripts/test-mappa-query.ts` 165/0 dopo due
+  revisioni (`9e25c60`, `a7126a6`); **collaudo finale chiuso** (piano § Verifica: suite verde, E2E deterministico su
+  risposte registrate, browser 1280/400 chiaro e scuro). Nessuna spesa: chiavi DataForSEO inserite a fine giornata ma
+  saldo 1,00 $. Aperti per Mattia: ricaricare DataForSEO e seguire il protocollo del piano (≈ 2,46 $: campione, giudizio
+  di 20 righe, mappa di Cavaliere); **prima della mappa di Cavaliere serve la sede nelle sue zone servite** (lead Tally,
+  la card T3 non ha il campo: senza sede 40 comuni scelti per sola popolazione in tutta la Lombardia e nessuna ricerca
+  per la home); decidere il peso della distanza per le aree regionali (Saggin: Rovigo e Chioggia dentro, comuni a 5 km
+  fuori). Fuori perimetro: focus non trattenuto in `components/confirm-dialog.tsx`, guard del DELETE sul lavoro della mappa.
 
 ## Clienti in `site-renderer/out/` (fuori git)
 
