@@ -1,0 +1,2925 @@
+{
+  "data": "2026-09-15",
+  "registrate": false,
+  "regole": "2026-09-b",
+  "totale": {
+    "n": 384,
+    "lette": 384,
+    "quote": {
+      "portale": 0.298,
+      "directory": 0.144,
+      "impresa_locale": 0.433,
+      "cliente": 0,
+      "altro": 0.126
+    },
+    "senzaImpreseLocali": 0.018,
+    "localPack": {
+      "presenza": 0.753,
+      "schedeMedie": 5.754
+    },
+    "aiOverview": 0.234,
+    "annunciMedi": 0.672,
+    "localServices": 0,
+    "vuote": 0,
+    "quotaIgnoto": 0.461,
+    "difficolta": {
+      "bassa": 80,
+      "media": 107,
+      "alta": 197
+    }
+  },
+  "perTaglia": {
+    "grande": {
+      "n": 128,
+      "lette": 128,
+      "quote": {
+        "portale": 0.248,
+        "directory": 0.093,
+        "impresa_locale": 0.544,
+        "cliente": 0,
+        "altro": 0.116
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.805,
+        "schedeMedie": 5.796
+      },
+      "aiOverview": 0.18,
+      "annunciMedi": 0.813,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.576,
+      "difficolta": {
+        "bassa": 0,
+        "media": 14,
+        "alta": 114
+      }
+    },
+    "medio": {
+      "n": 128,
+      "lette": 128,
+      "quote": {
+        "portale": 0.32,
+        "directory": 0.134,
+        "impresa_locale": 0.435,
+        "cliente": 0,
+        "altro": 0.111
+      },
+      "senzaImpreseLocali": 0.023,
+      "localPack": {
+        "presenza": 0.742,
+        "schedeMedie": 5.779
+      },
+      "aiOverview": 0.242,
+      "annunciMedi": 0.555,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.454,
+      "difficolta": {
+        "bassa": 13,
+        "media": 35,
+        "alta": 80
+      }
+    },
+    "piccolo": {
+      "n": 128,
+      "lette": 128,
+      "quote": {
+        "portale": 0.325,
+        "directory": 0.205,
+        "impresa_locale": 0.319,
+        "cliente": 0,
+        "altro": 0.151
+      },
+      "senzaImpreseLocali": 0.031,
+      "localPack": {
+        "presenza": 0.711,
+        "schedeMedie": 5.681
+      },
+      "aiOverview": 0.281,
+      "annunciMedi": 0.648,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.354,
+      "difficolta": {
+        "bassa": 67,
+        "media": 58,
+        "alta": 3
+      }
+    }
+  },
+  "perMestiere": {
+    "cappotto termico": {
+      "n": 48,
+      "lette": 48,
+      "quote": {
+        "portale": 0.249,
+        "directory": 0.068,
+        "impresa_locale": 0.448,
+        "cliente": 0,
+        "altro": 0.235
+      },
+      "senzaImpreseLocali": 0.021,
+      "localPack": {
+        "presenza": 0.292,
+        "schedeMedie": 5.5
+      },
+      "aiOverview": 0.604,
+      "annunciMedi": 0.646,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.638,
+      "difficolta": {
+        "bassa": 18,
+        "media": 13,
+        "alta": 17
+      }
+    },
+    "elettricista": {
+      "n": 48,
+      "lette": 48,
+      "quote": {
+        "portale": 0.348,
+        "directory": 0.197,
+        "impresa_locale": 0.359,
+        "cliente": 0,
+        "altro": 0.096
+      },
+      "senzaImpreseLocali": 0.042,
+      "localPack": {
+        "presenza": 0.667,
+        "schedeMedie": 5.813
+      },
+      "aiOverview": 0.333,
+      "annunciMedi": 0.979,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.352,
+      "difficolta": {
+        "bassa": 9,
+        "media": 12,
+        "alta": 27
+      }
+    },
+    "idraulico": {
+      "n": 48,
+      "lette": 48,
+      "quote": {
+        "portale": 0.285,
+        "directory": 0.203,
+        "impresa_locale": 0.406,
+        "cliente": 0,
+        "altro": 0.106
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.958,
+        "schedeMedie": 5.913
+      },
+      "aiOverview": 0.042,
+      "annunciMedi": 0.542,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.44,
+      "difficolta": {
+        "bassa": 4,
+        "media": 15,
+        "alta": 29
+      }
+    },
+    "imbianchino": {
+      "n": 48,
+      "lette": 48,
+      "quote": {
+        "portale": 0.378,
+        "directory": 0.155,
+        "impresa_locale": 0.388,
+        "cliente": 0,
+        "altro": 0.079
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.771,
+        "schedeMedie": 5.703
+      },
+      "aiOverview": 0.229,
+      "annunciMedi": 0.604,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.354,
+      "difficolta": {
+        "bassa": 4,
+        "media": 14,
+        "alta": 30
+      }
+    },
+    "impresa edile": {
+      "n": 48,
+      "lette": 48,
+      "quote": {
+        "portale": 0.34,
+        "directory": 0.214,
+        "impresa_locale": 0.369,
+        "cliente": 0,
+        "altro": 0.077
+      },
+      "senzaImpreseLocali": 0.021,
+      "localPack": {
+        "presenza": 0.646,
+        "schedeMedie": 5.806
+      },
+      "aiOverview": 0.354,
+      "annunciMedi": 0.521,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.391,
+      "difficolta": {
+        "bassa": 8,
+        "media": 14,
+        "alta": 26
+      }
+    },
+    "posa pavimenti": {
+      "n": 48,
+      "lette": 48,
+      "quote": {
+        "portale": 0.347,
+        "directory": 0.106,
+        "impresa_locale": 0.413,
+        "cliente": 0,
+        "altro": 0.133
+      },
+      "senzaImpreseLocali": 0.063,
+      "localPack": {
+        "presenza": 0.854,
+        "schedeMedie": 5.683
+      },
+      "aiOverview": 0.146,
+      "annunciMedi": 0.521,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.492,
+      "difficolta": {
+        "bassa": 12,
+        "media": 13,
+        "alta": 23
+      }
+    },
+    "ristrutturazione bagno": {
+      "n": 48,
+      "lette": 48,
+      "quote": {
+        "portale": 0.303,
+        "directory": 0.058,
+        "impresa_locale": 0.496,
+        "cliente": 0,
+        "altro": 0.143
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.875,
+        "schedeMedie": 5.548
+      },
+      "aiOverview": 0.125,
+      "annunciMedi": 0.958,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.526,
+      "difficolta": {
+        "bassa": 12,
+        "media": 9,
+        "alta": 27
+      }
+    },
+    "serramenti": {
+      "n": 48,
+      "lette": 48,
+      "quote": {
+        "portale": 0.131,
+        "directory": 0.15,
+        "impresa_locale": 0.578,
+        "cliente": 0,
+        "altro": 0.14
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.958,
+        "schedeMedie": 5.891
+      },
+      "aiOverview": 0.042,
+      "annunciMedi": 0.604,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.502,
+      "difficolta": {
+        "bassa": 13,
+        "media": 17,
+        "alta": 18
+      }
+    }
+  },
+  "perModificatore": {
+    "base": {
+      "n": 96,
+      "lette": 96,
+      "quote": {
+        "portale": 0.22,
+        "directory": 0.177,
+        "impresa_locale": 0.507,
+        "cliente": 0,
+        "altro": 0.097
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.906,
+        "schedeMedie": 5.759
+      },
+      "aiOverview": 0.052,
+      "annunciMedi": 0.76,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.454,
+      "difficolta": {
+        "bassa": 17,
+        "media": 26,
+        "alta": 53
+      }
+    },
+    "costo": {
+      "n": 96,
+      "lette": 96,
+      "quote": {
+        "portale": 0.336,
+        "directory": 0.062,
+        "impresa_locale": 0.376,
+        "cliente": 0,
+        "altro": 0.226
+      },
+      "senzaImpreseLocali": 0.031,
+      "localPack": {
+        "presenza": 0.542,
+        "schedeMedie": 5.538
+      },
+      "aiOverview": 0.448,
+      "annunciMedi": 0.521,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.529,
+      "difficolta": {
+        "bassa": 27,
+        "media": 37,
+        "alta": 32
+      }
+    },
+    "preventivo": {
+      "n": 96,
+      "lette": 96,
+      "quote": {
+        "portale": 0.299,
+        "directory": 0.133,
+        "impresa_locale": 0.493,
+        "cliente": 0,
+        "altro": 0.075
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.604,
+        "schedeMedie": 5.638
+      },
+      "aiOverview": 0.396,
+      "annunciMedi": 0.625,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.489,
+      "difficolta": {
+        "bassa": 11,
+        "media": 29,
+        "alta": 56
+      }
+    },
+    "vicino_a_me": {
+      "n": 96,
+      "lette": 96,
+      "quote": {
+        "portale": 0.336,
+        "directory": 0.202,
+        "impresa_locale": 0.355,
+        "cliente": 0,
+        "altro": 0.107
+      },
+      "senzaImpreseLocali": 0.042,
+      "localPack": {
+        "presenza": 0.958,
+        "schedeMedie": 5.946
+      },
+      "aiOverview": 0.042,
+      "annunciMedi": 0.781,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.375,
+      "difficolta": {
+        "bassa": 25,
+        "media": 15,
+        "alta": 56
+      }
+    }
+  },
+  "perCella": {
+    "grande · cappotto termico · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.083,
+        "directory": 0.056,
+        "impresa_locale": 0.833,
+        "cliente": 0,
+        "altro": 0.028
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.5,
+        "schedeMedie": 6.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.75,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · cappotto termico · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.167,
+        "directory": 0,
+        "impresa_locale": 0.278,
+        "cliente": 0,
+        "altro": 0.556
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0,
+        "schedeMedie": 0
+      },
+      "aiOverview": 1,
+      "annunciMedi": 0.75,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.833,
+      "difficolta": {
+        "bassa": 0,
+        "media": 3,
+        "alta": 1
+      }
+    },
+    "grande · cappotto termico · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.139,
+        "directory": 0.028,
+        "impresa_locale": 0.722,
+        "cliente": 0,
+        "altro": 0.111
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0,
+        "schedeMedie": 0
+      },
+      "aiOverview": 1,
+      "annunciMedi": 2.5,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.833,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · cappotto termico · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.175,
+        "directory": 0.1,
+        "impresa_locale": 0.55,
+        "cliente": 0,
+        "altro": 0.175
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.7,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · elettricista · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.175,
+        "directory": 0.175,
+        "impresa_locale": 0.475,
+        "cliente": 0,
+        "altro": 0.175
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0.75,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.425,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · elettricista · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.385,
+        "directory": 0.026,
+        "impresa_locale": 0.359,
+        "cliente": 0,
+        "altro": 0.231
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.75,
+        "schedeMedie": 5
+      },
+      "aiOverview": 0.25,
+      "annunciMedi": 0.5,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.538,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · elettricista · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.389,
+        "directory": 0.111,
+        "impresa_locale": 0.472,
+        "cliente": 0,
+        "altro": 0.028
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0,
+        "schedeMedie": 0
+      },
+      "aiOverview": 1,
+      "annunciMedi": 2,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.472,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · elettricista · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.368,
+        "directory": 0.263,
+        "impresa_locale": 0.342,
+        "cliente": 0,
+        "altro": 0.026
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.289,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · idraulico · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.2,
+        "directory": 0.2,
+        "impresa_locale": 0.525,
+        "cliente": 0,
+        "altro": 0.075
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.525,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · idraulico · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.325,
+        "directory": 0,
+        "impresa_locale": 0.425,
+        "cliente": 0,
+        "altro": 0.25
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.675,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · idraulico · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.3,
+        "directory": 0.15,
+        "impresa_locale": 0.55,
+        "cliente": 0,
+        "altro": 0
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.525,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · idraulico · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.325,
+        "directory": 0.225,
+        "impresa_locale": 0.375,
+        "cliente": 0,
+        "altro": 0.075
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.45,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · imbianchino · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.205,
+        "directory": 0.103,
+        "impresa_locale": 0.513,
+        "cliente": 0,
+        "altro": 0.179
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.333,
+      "difficolta": {
+        "bassa": 0,
+        "media": 1,
+        "alta": 3
+      }
+    },
+    "grande · imbianchino · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.459,
+        "directory": 0,
+        "impresa_locale": 0.459,
+        "cliente": 0,
+        "altro": 0.081
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.25,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.75,
+      "annunciMedi": 1.5,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.459,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · imbianchino · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.308,
+        "directory": 0.026,
+        "impresa_locale": 0.615,
+        "cliente": 0,
+        "altro": 0.051
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.25
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.487,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · imbianchino · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.275,
+        "directory": 0.175,
+        "impresa_locale": 0.475,
+        "cliente": 0,
+        "altro": 0.075
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0.5,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.375,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · impresa edile · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.154,
+        "directory": 0.179,
+        "impresa_locale": 0.59,
+        "cliente": 0,
+        "altro": 0.077
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.59,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · impresa edile · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.405,
+        "directory": 0,
+        "impresa_locale": 0.486,
+        "cliente": 0,
+        "altro": 0.108
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.25,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.75,
+      "annunciMedi": 1.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.541,
+      "difficolta": {
+        "bassa": 0,
+        "media": 1,
+        "alta": 3
+      }
+    },
+    "grande · impresa edile · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.278,
+        "directory": 0.028,
+        "impresa_locale": 0.583,
+        "cliente": 0,
+        "altro": 0.111
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0,
+        "schedeMedie": 0
+      },
+      "aiOverview": 1,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.667,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · impresa edile · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.378,
+        "directory": 0.324,
+        "impresa_locale": 0.297,
+        "cliente": 0,
+        "altro": 0
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6.25
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.243,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · posa pavimenti · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.2,
+        "directory": 0.05,
+        "impresa_locale": 0.725,
+        "cliente": 0,
+        "altro": 0.025
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.7,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · posa pavimenti · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.4,
+        "directory": 0,
+        "impresa_locale": 0.325,
+        "cliente": 0,
+        "altro": 0.275
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.575,
+      "difficolta": {
+        "bassa": 0,
+        "media": 2,
+        "alta": 2
+      }
+    },
+    "grande · posa pavimenti · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.325,
+        "directory": 0.025,
+        "impresa_locale": 0.625,
+        "cliente": 0,
+        "altro": 0.025
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.625,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · posa pavimenti · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.25,
+        "directory": 0.175,
+        "impresa_locale": 0.55,
+        "cliente": 0,
+        "altro": 0.025
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.575,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · ristrutturazione bagno · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.128,
+        "directory": 0.026,
+        "impresa_locale": 0.769,
+        "cliente": 0,
+        "altro": 0.077
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 4
+      },
+      "aiOverview": 0,
+      "annunciMedi": 2,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.795,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · ristrutturazione bagno · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.263,
+        "directory": 0,
+        "impresa_locale": 0.474,
+        "cliente": 0,
+        "altro": 0.263
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 4.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1.75,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.658,
+      "difficolta": {
+        "bassa": 0,
+        "media": 1,
+        "alta": 3
+      }
+    },
+    "grande · ristrutturazione bagno · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.256,
+        "directory": 0,
+        "impresa_locale": 0.667,
+        "cliente": 0,
+        "altro": 0.077
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.25
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.615,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · ristrutturazione bagno · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.25,
+        "directory": 0.1,
+        "impresa_locale": 0.625,
+        "cliente": 0,
+        "altro": 0.025
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.525,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · serramenti · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.054,
+        "directory": 0.135,
+        "impresa_locale": 0.73,
+        "cliente": 0,
+        "altro": 0.081
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0.75,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.649,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "grande · serramenti · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.125,
+        "directory": 0,
+        "impresa_locale": 0.7,
+        "cliente": 0,
+        "altro": 0.175
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1.5,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.75,
+      "difficolta": {
+        "bassa": 0,
+        "media": 3,
+        "alta": 1
+      }
+    },
+    "grande · serramenti · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.05,
+        "directory": 0,
+        "impresa_locale": 0.775,
+        "cliente": 0,
+        "altro": 0.175
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.825,
+      "difficolta": {
+        "bassa": 0,
+        "media": 3,
+        "alta": 1
+      }
+    },
+    "grande · serramenti · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.15,
+        "directory": 0.275,
+        "impresa_locale": 0.5,
+        "cliente": 0,
+        "altro": 0.075
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.45,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "medio · cappotto termico · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.216,
+        "directory": 0.108,
+        "impresa_locale": 0.568,
+        "cliente": 0,
+        "altro": 0.108
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.25,
+        "schedeMedie": 3
+      },
+      "aiOverview": 0.5,
+      "annunciMedi": 1.5,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.676,
+      "difficolta": {
+        "bassa": 0,
+        "media": 3,
+        "alta": 1
+      }
+    },
+    "medio · cappotto termico · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.194,
+        "directory": 0.056,
+        "impresa_locale": 0.389,
+        "cliente": 0,
+        "altro": 0.361
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0,
+        "schedeMedie": 0
+      },
+      "aiOverview": 0.75,
+      "annunciMedi": 0.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.75,
+      "difficolta": {
+        "bassa": 2,
+        "media": 2,
+        "alta": 0
+      }
+    },
+    "medio · cappotto termico · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.222,
+        "directory": 0.083,
+        "impresa_locale": 0.556,
+        "cliente": 0,
+        "altro": 0.139
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0,
+        "schedeMedie": 0
+      },
+      "aiOverview": 1,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.694,
+      "difficolta": {
+        "bassa": 0,
+        "media": 2,
+        "alta": 2
+      }
+    },
+    "medio · cappotto termico · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.395,
+        "directory": 0.026,
+        "impresa_locale": 0.289,
+        "cliente": 0,
+        "altro": 0.289
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.5,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.5,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.526,
+      "difficolta": {
+        "bassa": 2,
+        "media": 1,
+        "alta": 1
+      }
+    },
+    "medio · elettricista · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.256,
+        "directory": 0.231,
+        "impresa_locale": 0.436,
+        "cliente": 0,
+        "altro": 0.077
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.41,
+      "difficolta": {
+        "bassa": 0,
+        "media": 1,
+        "alta": 3
+      }
+    },
+    "medio · elettricista · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.405,
+        "directory": 0.081,
+        "impresa_locale": 0.405,
+        "cliente": 0,
+        "altro": 0.108
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.25,
+        "schedeMedie": 3
+      },
+      "aiOverview": 0.75,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.405,
+      "difficolta": {
+        "bassa": 0,
+        "media": 3,
+        "alta": 1
+      }
+    },
+    "medio · elettricista · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.389,
+        "directory": 0.167,
+        "impresa_locale": 0.417,
+        "cliente": 0,
+        "altro": 0.028
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0,
+        "schedeMedie": 0
+      },
+      "aiOverview": 1,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.417,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "medio · elettricista · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.368,
+        "directory": 0.263,
+        "impresa_locale": 0.263,
+        "cliente": 0,
+        "altro": 0.105
+      },
+      "senzaImpreseLocali": 0.25,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 4,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.289,
+      "difficolta": {
+        "bassa": 1,
+        "media": 0,
+        "alta": 3
+      }
+    },
+    "medio · idraulico · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.216,
+        "directory": 0.243,
+        "impresa_locale": 0.514,
+        "cliente": 0,
+        "altro": 0.027
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.459,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "medio · idraulico · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.375,
+        "directory": 0.125,
+        "impresa_locale": 0.35,
+        "cliente": 0,
+        "altro": 0.15
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.35,
+      "difficolta": {
+        "bassa": 0,
+        "media": 2,
+        "alta": 2
+      }
+    },
+    "medio · idraulico · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.282,
+        "directory": 0.231,
+        "impresa_locale": 0.41,
+        "cliente": 0,
+        "altro": 0.077
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.75,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.25,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.436,
+      "difficolta": {
+        "bassa": 0,
+        "media": 1,
+        "alta": 3
+      }
+    },
+    "medio · idraulico · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.375,
+        "directory": 0.275,
+        "impresa_locale": 0.325,
+        "cliente": 0,
+        "altro": 0.025
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1.5,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.25,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "medio · imbianchino · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.308,
+        "directory": 0.205,
+        "impresa_locale": 0.462,
+        "cliente": 0,
+        "altro": 0.026
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.385,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "medio · imbianchino · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.615,
+        "directory": 0.051,
+        "impresa_locale": 0.205,
+        "cliente": 0,
+        "altro": 0.128
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.75,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.25,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.308,
+      "difficolta": {
+        "bassa": 0,
+        "media": 2,
+        "alta": 2
+      }
+    },
+    "medio · imbianchino · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.385,
+        "directory": 0.128,
+        "impresa_locale": 0.462,
+        "cliente": 0,
+        "altro": 0.026
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.75,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.25,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.41,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "medio · imbianchino · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.325,
+        "directory": 0.2,
+        "impresa_locale": 0.4,
+        "cliente": 0,
+        "altro": 0.075
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6.25
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1.75,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.325,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "medio · impresa edile · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.2,
+        "directory": 0.2,
+        "impresa_locale": 0.55,
+        "cliente": 0,
+        "altro": 0.05
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.55,
+      "difficolta": {
+        "bassa": 0,
+        "media": 1,
+        "alta": 3
+      }
+    },
+    "medio · impresa edile · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.378,
+        "directory": 0.054,
+        "impresa_locale": 0.514,
+        "cliente": 0,
+        "altro": 0.054
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.25,
+        "schedeMedie": 3
+      },
+      "aiOverview": 0.75,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.514,
+      "difficolta": {
+        "bassa": 1,
+        "media": 1,
+        "alta": 2
+      }
+    },
+    "medio · impresa edile · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.417,
+        "directory": 0.167,
+        "impresa_locale": 0.333,
+        "cliente": 0,
+        "altro": 0.083
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0,
+        "schedeMedie": 0
+      },
+      "aiOverview": 1,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.361,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "medio · impresa edile · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.472,
+        "directory": 0.333,
+        "impresa_locale": 0.167,
+        "cliente": 0,
+        "altro": 0.028
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.167,
+      "difficolta": {
+        "bassa": 0,
+        "media": 2,
+        "alta": 2
+      }
+    },
+    "medio · posa pavimenti · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.275,
+        "directory": 0.1,
+        "impresa_locale": 0.525,
+        "cliente": 0,
+        "altro": 0.1
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.575,
+      "difficolta": {
+        "bassa": 0,
+        "media": 2,
+        "alta": 2
+      }
+    },
+    "medio · posa pavimenti · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.541,
+        "directory": 0.027,
+        "impresa_locale": 0.081,
+        "cliente": 0,
+        "altro": 0.351
+      },
+      "senzaImpreseLocali": 0.5,
+      "localPack": {
+        "presenza": 0.25,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.75,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.432,
+      "difficolta": {
+        "bassa": 4,
+        "media": 0,
+        "alta": 0
+      }
+    },
+    "medio · posa pavimenti · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.475,
+        "directory": 0.1,
+        "impresa_locale": 0.375,
+        "cliente": 0,
+        "altro": 0.05
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.25
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.425,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "medio · posa pavimenti · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.359,
+        "directory": 0.128,
+        "impresa_locale": 0.41,
+        "cliente": 0,
+        "altro": 0.103
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0.75,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.41,
+      "difficolta": {
+        "bassa": 0,
+        "media": 1,
+        "alta": 3
+      }
+    },
+    "medio · ristrutturazione bagno · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.263,
+        "directory": 0.053,
+        "impresa_locale": 0.579,
+        "cliente": 0,
+        "altro": 0.105
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.25
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.5,
+      "difficolta": {
+        "bassa": 1,
+        "media": 0,
+        "alta": 3
+      }
+    },
+    "medio · ristrutturazione bagno · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.325,
+        "directory": 0,
+        "impresa_locale": 0.375,
+        "cliente": 0,
+        "altro": 0.3
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.55,
+      "difficolta": {
+        "bassa": 0,
+        "media": 3,
+        "alta": 1
+      }
+    },
+    "medio · ristrutturazione bagno · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.25,
+        "directory": 0.05,
+        "impresa_locale": 0.65,
+        "cliente": 0,
+        "altro": 0.05
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.575,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "medio · ristrutturazione bagno · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.375,
+        "directory": 0.1,
+        "impresa_locale": 0.425,
+        "cliente": 0,
+        "altro": 0.1
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.375,
+      "difficolta": {
+        "bassa": 0,
+        "media": 2,
+        "alta": 2
+      }
+    },
+    "medio · serramenti · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.108,
+        "directory": 0.135,
+        "impresa_locale": 0.649,
+        "cliente": 0,
+        "altro": 0.108
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0.5,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.459,
+      "difficolta": {
+        "bassa": 0,
+        "media": 2,
+        "alta": 2
+      }
+    },
+    "medio · serramenti · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.125,
+        "directory": 0.05,
+        "impresa_locale": 0.625,
+        "cliente": 0,
+        "altro": 0.2
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.65,
+      "difficolta": {
+        "bassa": 1,
+        "media": 2,
+        "alta": 1
+      }
+    },
+    "medio · serramenti · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.125,
+        "directory": 0.1,
+        "impresa_locale": 0.7,
+        "cliente": 0,
+        "altro": 0.075
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.525,
+      "difficolta": {
+        "bassa": 1,
+        "media": 2,
+        "alta": 1
+      }
+    },
+    "medio · serramenti · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.25,
+        "directory": 0.225,
+        "impresa_locale": 0.475,
+        "cliente": 0,
+        "altro": 0.05
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6.25
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.375,
+      "difficolta": {
+        "bassa": 0,
+        "media": 0,
+        "alta": 4
+      }
+    },
+    "piccolo · cappotto termico · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.378,
+        "directory": 0.162,
+        "impresa_locale": 0.351,
+        "cliente": 0,
+        "altro": 0.108
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.5,
+        "schedeMedie": 4.5
+      },
+      "aiOverview": 0.25,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.324,
+      "difficolta": {
+        "bassa": 3,
+        "media": 1,
+        "alta": 0
+      }
+    },
+    "piccolo · cappotto termico · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.229,
+        "directory": 0,
+        "impresa_locale": 0.171,
+        "cliente": 0,
+        "altro": 0.6
+      },
+      "senzaImpreseLocali": 0.25,
+      "localPack": {
+        "presenza": 0,
+        "schedeMedie": 0
+      },
+      "aiOverview": 1,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.686,
+      "difficolta": {
+        "bassa": 4,
+        "media": 0,
+        "alta": 0
+      }
+    },
+    "piccolo · cappotto termico · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.389,
+        "directory": 0.083,
+        "impresa_locale": 0.333,
+        "cliente": 0,
+        "altro": 0.194
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0,
+        "schedeMedie": 0
+      },
+      "aiOverview": 1,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.5,
+      "difficolta": {
+        "bassa": 3,
+        "media": 1,
+        "alta": 0
+      }
+    },
+    "piccolo · cappotto termico · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.385,
+        "directory": 0.103,
+        "impresa_locale": 0.333,
+        "cliente": 0,
+        "altro": 0.179
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.75,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.25,
+      "annunciMedi": 0.75,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.41,
+      "difficolta": {
+        "bassa": 4,
+        "media": 0,
+        "alta": 0
+      }
+    },
+    "piccolo · elettricista · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.25,
+        "directory": 0.3,
+        "impresa_locale": 0.35,
+        "cliente": 0,
+        "altro": 0.1
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.175,
+      "difficolta": {
+        "bassa": 3,
+        "media": 1,
+        "alta": 0
+      }
+    },
+    "piccolo · elettricista · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.421,
+        "directory": 0.158,
+        "impresa_locale": 0.316,
+        "cliente": 0,
+        "altro": 0.105
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.5,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.5,
+      "annunciMedi": 0.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.316,
+      "difficolta": {
+        "bassa": 1,
+        "media": 3,
+        "alta": 0
+      }
+    },
+    "piccolo · elettricista · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.368,
+        "directory": 0.263,
+        "impresa_locale": 0.316,
+        "cliente": 0,
+        "altro": 0.053
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.5,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.5,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.289,
+      "difficolta": {
+        "bassa": 2,
+        "media": 2,
+        "alta": 0
+      }
+    },
+    "piccolo · elettricista · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.421,
+        "directory": 0.316,
+        "impresa_locale": 0.158,
+        "cliente": 0,
+        "altro": 0.105
+      },
+      "senzaImpreseLocali": 0.25,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.211,
+      "difficolta": {
+        "bassa": 2,
+        "media": 2,
+        "alta": 0
+      }
+    },
+    "piccolo · idraulico · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.211,
+        "directory": 0.289,
+        "impresa_locale": 0.342,
+        "cliente": 0,
+        "altro": 0.158
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.289,
+      "difficolta": {
+        "bassa": 1,
+        "media": 3,
+        "alta": 0
+      }
+    },
+    "piccolo · idraulico · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.3,
+        "directory": 0.125,
+        "impresa_locale": 0.425,
+        "cliente": 0,
+        "altro": 0.15
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0.75,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.55,
+      "difficolta": {
+        "bassa": 1,
+        "media": 3,
+        "alta": 0
+      }
+    },
+    "piccolo · idraulico · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.179,
+        "directory": 0.282,
+        "impresa_locale": 0.462,
+        "cliente": 0,
+        "altro": 0.077
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.75,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.25,
+      "annunciMedi": 0.75,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.462,
+      "difficolta": {
+        "bassa": 0,
+        "media": 4,
+        "alta": 0
+      }
+    },
+    "piccolo · idraulico · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.325,
+        "directory": 0.3,
+        "impresa_locale": 0.175,
+        "cliente": 0,
+        "altro": 0.2
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.3,
+      "difficolta": {
+        "bassa": 2,
+        "media": 2,
+        "alta": 0
+      }
+    },
+    "piccolo · imbianchino · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.333,
+        "directory": 0.256,
+        "impresa_locale": 0.359,
+        "cliente": 0,
+        "altro": 0.051
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.75,
+        "schedeMedie": 3.667
+      },
+      "aiOverview": 0.25,
+      "annunciMedi": 0.5,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.333,
+      "difficolta": {
+        "bassa": 0,
+        "media": 4,
+        "alta": 0
+      }
+    },
+    "piccolo · imbianchino · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.432,
+        "directory": 0.189,
+        "impresa_locale": 0.216,
+        "cliente": 0,
+        "altro": 0.162
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.25,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.75,
+      "annunciMedi": 0.5,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.378,
+      "difficolta": {
+        "bassa": 2,
+        "media": 2,
+        "alta": 0
+      }
+    },
+    "piccolo · imbianchino · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.395,
+        "directory": 0.316,
+        "impresa_locale": 0.289,
+        "cliente": 0,
+        "altro": 0
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.5,
+        "schedeMedie": 5
+      },
+      "aiOverview": 0.5,
+      "annunciMedi": 2.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.263,
+      "difficolta": {
+        "bassa": 0,
+        "media": 4,
+        "alta": 0
+      }
+    },
+    "piccolo · imbianchino · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.5,
+        "directory": 0.2,
+        "impresa_locale": 0.2,
+        "cliente": 0,
+        "altro": 0.1
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.2,
+      "difficolta": {
+        "bassa": 2,
+        "media": 1,
+        "alta": 1
+      }
+    },
+    "piccolo · impresa edile · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.308,
+        "directory": 0.359,
+        "impresa_locale": 0.205,
+        "cliente": 0,
+        "altro": 0.128
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.75
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.205,
+      "difficolta": {
+        "bassa": 1,
+        "media": 3,
+        "alta": 0
+      }
+    },
+    "piccolo · impresa edile · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.368,
+        "directory": 0.237,
+        "impresa_locale": 0.289,
+        "cliente": 0,
+        "altro": 0.105
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.5,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.5,
+      "annunciMedi": 0.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.342,
+      "difficolta": {
+        "bassa": 3,
+        "media": 1,
+        "alta": 0
+      }
+    },
+    "piccolo · impresa edile · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.333,
+        "directory": 0.333,
+        "impresa_locale": 0.282,
+        "cliente": 0,
+        "altro": 0.051
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.75,
+        "schedeMedie": 5
+      },
+      "aiOverview": 0.25,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.308,
+      "difficolta": {
+        "bassa": 1,
+        "media": 3,
+        "alta": 0
+      }
+    },
+    "piccolo · impresa edile · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.41,
+        "directory": 0.333,
+        "impresa_locale": 0.128,
+        "cliente": 0,
+        "altro": 0.128
+      },
+      "senzaImpreseLocali": 0.25,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.5
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.205,
+      "difficolta": {
+        "bassa": 2,
+        "media": 2,
+        "alta": 0
+      }
+    },
+    "piccolo · posa pavimenti · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.3,
+        "directory": 0.225,
+        "impresa_locale": 0.375,
+        "cliente": 0,
+        "altro": 0.1
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 5.75
+      },
+      "aiOverview": 0,
+      "annunciMedi": 2.5,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.3,
+      "difficolta": {
+        "bassa": 1,
+        "media": 3,
+        "alta": 0
+      }
+    },
+    "piccolo · posa pavimenti · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.417,
+        "directory": 0.111,
+        "impresa_locale": 0.25,
+        "cliente": 0,
+        "altro": 0.222
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0,
+        "schedeMedie": 0
+      },
+      "aiOverview": 1,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.444,
+      "difficolta": {
+        "bassa": 3,
+        "media": 1,
+        "alta": 0
+      }
+    },
+    "piccolo · posa pavimenti · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.35,
+        "directory": 0.175,
+        "impresa_locale": 0.4,
+        "cliente": 0,
+        "altro": 0.075
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 4.25
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.325,
+      "difficolta": {
+        "bassa": 0,
+        "media": 4,
+        "alta": 0
+      }
+    },
+    "piccolo · posa pavimenti · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.3,
+        "directory": 0.15,
+        "impresa_locale": 0.275,
+        "cliente": 0,
+        "altro": 0.275
+      },
+      "senzaImpreseLocali": 0.25,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.5,
+      "difficolta": {
+        "bassa": 4,
+        "media": 0,
+        "alta": 0
+      }
+    },
+    "piccolo · ristrutturazione bagno · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.359,
+        "directory": 0.128,
+        "impresa_locale": 0.359,
+        "cliente": 0,
+        "altro": 0.154
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.75,
+        "schedeMedie": 6.333
+      },
+      "aiOverview": 0.25,
+      "annunciMedi": 1.5,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.359,
+      "difficolta": {
+        "bassa": 3,
+        "media": 1,
+        "alta": 0
+      }
+    },
+    "piccolo · ristrutturazione bagno · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.306,
+        "directory": 0.028,
+        "impresa_locale": 0.306,
+        "cliente": 0,
+        "altro": 0.361
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0,
+        "schedeMedie": 0
+      },
+      "aiOverview": 1,
+      "annunciMedi": 1,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.611,
+      "difficolta": {
+        "bassa": 3,
+        "media": 0,
+        "alta": 1
+      }
+    },
+    "piccolo · ristrutturazione bagno · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.359,
+        "directory": 0.154,
+        "impresa_locale": 0.359,
+        "cliente": 0,
+        "altro": 0.128
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.75,
+        "schedeMedie": 6.667
+      },
+      "aiOverview": 0.25,
+      "annunciMedi": 1.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.385,
+      "difficolta": {
+        "bassa": 2,
+        "media": 1,
+        "alta": 1
+      }
+    },
+    "piccolo · ristrutturazione bagno · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.5,
+        "directory": 0.05,
+        "impresa_locale": 0.35,
+        "cliente": 0,
+        "altro": 0.1
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1.75,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.375,
+      "difficolta": {
+        "bassa": 3,
+        "media": 1,
+        "alta": 0
+      }
+    },
+    "piccolo · serramenti · base": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.075,
+        "directory": 0.3,
+        "impresa_locale": 0.425,
+        "cliente": 0,
+        "altro": 0.2
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6.25
+      },
+      "aiOverview": 0,
+      "annunciMedi": 1.25,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.175,
+      "difficolta": {
+        "bassa": 4,
+        "media": 0,
+        "alta": 0
+      }
+    },
+    "piccolo · serramenti · costo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.125,
+        "directory": 0.175,
+        "impresa_locale": 0.525,
+        "cliente": 0,
+        "altro": 0.175
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 4.25
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.4,
+      "difficolta": {
+        "bassa": 2,
+        "media": 2,
+        "alta": 0
+      }
+    },
+    "piccolo · serramenti · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.231,
+        "directory": 0.179,
+        "impresa_locale": 0.462,
+        "cliente": 0,
+        "altro": 0.128
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.75,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.25,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.333,
+      "difficolta": {
+        "bassa": 2,
+        "media": 2,
+        "alta": 0
+      }
+    },
+    "piccolo · serramenti · vicino_a_me": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.154,
+        "directory": 0.231,
+        "impresa_locale": 0.385,
+        "cliente": 0,
+        "altro": 0.231
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 0.75,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0.25,
+      "annunciMedi": 0.5,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.436,
+      "difficolta": {
+        "bassa": 3,
+        "media": 1,
+        "alta": 0
+      }
+    }
+  }
+}
