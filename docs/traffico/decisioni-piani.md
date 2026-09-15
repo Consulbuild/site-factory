@@ -291,6 +291,23 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
 9. **Spesa API dello sviluppo**: senza chiavi DataForSEO la calibrazione a pagamento resta «in attesa» e si fa dopo,
    come test mirato. Con le chiavi presenti: solo il campione e una mappa di Cavaliere, **tetto 3 $ in tutto**, costo
    registrato; nessuna chiamata ripetuta (cache).
+10. **Dati reali del campione (15/09, 384 pagine di Google mobile, 8 mestieri × 12 comuni × 4 modificatori, 0,97 $;
+    `calibrazione-T4/composizione-2026-09-15.json`)** e cosa cambiano:
+    - **Pacchetto locale delle mappe nel 75 % delle ricerche** (91 % «mestiere + comune», 96 % «vicino a me», 54 % «costo»):
+      per il traffico locale la scheda Google conta quanto il sito → **G1 subito dopo le pagine**, e ai clienti va proposta.
+    - **Riassunto AI di Google nel 23 %**, ma nel 45 % delle ricerche «costo» e nel 40 % di «preventivo» (5 % di quelle base):
+      le ricerche di prezzo si rispondono in pagina e danno pochi clic → nella mappa pesano meno; le pagine rispondono
+      subito alla domanda (answer-first, T5b) per essere la fonte del riassunto.
+    - **Comuni piccoli: portali e directory il 53 % dei risultati organici, difficoltà bassa in 67 casi su 128**; città grandi
+      alta in 114 su 128 → per una piccola impresa si punta ai comuni piccoli e medi vicini alla sede, e la presenza su
+      PagineGialle/PagineBianche (che compaiono nei risultati) entra nel kit presenza di G2.
+    - **Classificazione dei siti**: 705 domini non in elenco (46 % dei risultati, soprattutto imprese locali indovinate col
+      segnale locale); fra i più frequenti ci sono attori nazionali presi per imprese locali (leroymerlin, preventivofacile,
+      houzz, taskrabbit, cercoproitalia, edilizia acrobatica, homedeal…). Regola da calibrare, generale e non a mano: un
+      dominio che compare in comuni di **più province** del campione non è un'impresa locale. Il criterio C1 «ignoto ≤ 15 %»
+      non è realistico per i risultati locali (la coda lunga sono proprio le imprese): si misura invece l'errore sui domini
+      frequenti.
+    - 13 risposte 40101 (Google non ha risposto) su 397 chiamate: ritentate dopo la correzione di `lib/dataforseo.ts`.
 
 ## K1 — Chiavi per gruppi (piano pronto, sviluppo dopo T3; valgono sopra T2a, T2b, T4, G1)
 
