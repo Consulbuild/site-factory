@@ -181,3 +181,88 @@ Con le chiavi vere (Mattia): «Configurata · …» per ognuna; nessun'altra chi
    in alternativa Mattia aggiunge i 5 path al perimetro attuale.
 5. **CrUX non provata**: la prova della `GOOGLE_API_KEY` usa solo PageSpeed. Proposta: accettare; T2b traduce
    `API_KEY_SERVICE_BLOCKED`/`SERVICE_DISABLED` alla prima lettura CrUX.
+
+## Sviluppo (fase 2, 2026-09-15)
+
+Decisioni «K1» di `decisioni-piani.md` (punti 1-6) applicate sopra il testo. Commit `7fc53e6` (M1), `db279df` (M2).
+
+**Costruito.**
+- `lib/secrets.ts`: `CHIAVI_TRAFFICO` + tipo `ChiaveTraffico` (le 6 chiavi, in coda a `KNOWN_KEYS`, che le include con lo
+  spread); etichette del §2; `KEY_GROUPS` (tre gruppi, frasi del §3); `KEY_INFO: Record<ChiaveTraffico, { dove, segnaposto,
+  aiuto? }>`; `MAX_VALORE_SEGRETO = 4000` e `motivoValoreNonSalvabile(valore)` (funzione pura, conta la lunghezza **dopo**
+  l'escape di `\` e `"` perché è quella che entra nel buffer), chiamata da `setSecret` prima dello spawn.
+- `lib/chiavi-traffico.ts`: `normalizzaServiceAccount` (JSON incollato, base64 o valore già normalizzato → base64url del JSON
+  compatto; idempotente), `firmaJwt`, `SCOPE_GOOGLE`, `TOKEN_URL`, `redigi(testo, ...segreti)` (anche la forma URL-encoded),
+  `provaChiaveTraffico(name, valore, { fetch, getSecret, adesso? })` che non lancia mai. Traduzioni e chiamate sono interne
+  (`erroreComune`, `ragioniGoogle`, `chiama` con `AbortSignal.timeout`).
+- Route: GET `{ gruppi: [...] }` con `dove/segnaposto/aiuto` solo per le chiavi del Traffico; POST per le 6 chiavi:
+  normalizzazione del service account → `motivoValoreNonSalvabile` → prova → `setSecret`; per tutte le 15 chiavi rilettura
+  `getSecret(name) === valore` (500 «salvataggio nel portachiavi incompleto: riprova»).
+- `components/home.tsx`: `ApiKeysPanel` per gruppi come da shape; `KeySetup` con la sola prop nuova `aiuto` e, **solo in
+  modalità `compact`** (usata unicamente dal pannello), form `flex-wrap`, input `min-w-0 grow sm:max-w-sm` e `autoFocus`.
+- `scripts/test-chiavi.ts`: 98 casi senza rete né Keychain.
+
+**Scostamenti dal testo del piano (e perché).**
+1. Tagli del controllore: niente link né testo Bitwarden per le 9 chiavi esistenti (quindi `dove` è una stringa, non
+   `{href?, testo}`); nessuna `ENDPOINT_GRATUITI` nel modulo (lista chiusa e massimo di chiamate solo nel banco, con
+   un'asserzione che il modulo non esporti liste di endpoint); il banco non verifica la firma JWT con la chiave pubblica
+   (controlla header, claim e che il token venga chiesto con l'asserzione); `traduciErrore` non esportato.
+2. Messaggi: le 9 chiavi esistenti tengono il prefisso «key non valida: …» della route; le 6 nuove rispondono col solo
+   messaggio tradotto (un timeout o un guasto del servizio non è una chiave non valida).
+3. Il controllo di formato e lunghezza prima della rete vale solo per le 6 nuove: per le esistenti l'ordine resta quello di
+   prima (prova, poi `setSecret`). Nessun timeout aggiunto alle loro prove (decisione K1.5).
+4. Input compatto `grow` e non `flex-1`: con `flex-basis: 0` il campo non va mai a capo e a 400 px si riduce a ~110 px;
+   con `grow` (base = `width: 100%` globale) a 400 px il bottone scende sotto, da `sm` sta accanto a un campo di 24rem.
+5. Aggiunte minime alla riga aperta: il bottone diventa «Annulla» (ghost, `aria-expanded`) per richiudere senza aprire
+   un'altra chiave; `aria-describedby` sull'aiuto.
+6. Casi in più tradotti (nessuna chiamata in più): 429 comune a tutti («troppe richieste»; per PageSpeed resta «chiave
+   valida»), `API_KEY_*_BLOCKED` di Google («restrizioni per sito, IP o app»), `accessNotConfigured` come
+   `SERVICE_DISABLED` (formato vecchio), `type` assente accettato (serve all'idempotenza sul valore salvato), e-mail
+   `…developer.gserviceaccount.com` rifiutata (service account predefinito, non quello creato per Site-factory).
+7. E2E: il log del dev server su :3311 (di un'altra sessione) esce su una pipe non leggibile e un secondo server farebbe
+   girare un secondo sweep delle demo (`instrumentation.ts`); il grep del log è sostituito da: nessun `console.*` nei tre
+   file toccati e controllo che ogni risposta non contenga il valore.
+
+## Calibrazione (fase 3, 2026-09-15)
+
+Tutte le chiamate dal vivo sono state fatte con credenziali **finte** (gratuite, rifiutate); Keychain controllato con
+un'impronta (presenza per chiave + sha256 combinato dei valori, mai stampati): `ba0d34da04596464` prima e dopo, 9 chiavi
+esistenti presenti, 6 nuove assenti.
+
+1. **Tetto del Keychain (soglia 4000).** Misurato sulla chiave col nome più lungo (`CLOUDFLARE_DNS_API_TOKEN`, comando
+   di 74 byte attorno al valore), con valori di sole «a» poi rimossi: valore integro fino a un comando di **4096 byte**
+   (valore 4022), a 4104 byte `security -i` esce con codice 1. La soglia 4000 lascia 22 byte di margine sul caso peggiore:
+   **resta 4000**. Service account reale (RSA 2048, come le chiavi JSON create da Google Cloud): valore normalizzato di
+   **2527 caratteri**; una chiave RSA 4096 caricata a mano arriverebbe a 4650 e viene rifiutata col messaggio del tetto
+   prima della rete.
+2. **Risposte reali a credenziali finte** (tutte coerenti col banco, tempi della route):
+   - PageSpeed: 400, `details[].reason = API_KEY_INVALID` (`status INVALID_ARGUMENT`), 226 ms → «Google non riconosce la
+     API key…».
+   - Bing: 400 `{"ErrorCode":3,"Message":"ERROR!!! InvalidApiKey"}`, 458 ms → «Bing non riconosce la API key…».
+   - DataForSEO `user_data`: 401, `status_code 40100`, 155 ms → «DataForSEO ha rifiutato login o password…».
+   - Token Google con service account inesistente e chiave generata: `invalid_grant`, 122 ms → «Google ha rifiutato la
+     chiave del service account…».
+   - **Cloudflare, corretto**: un token ben formato ma inesistente risponde **403** con `errors[].code 9109`,
+     `message «Invalid access token»` (non 401); il piano lo avrebbe tradotto «il token non vede consulbuild.com».
+     Ora `message` «Invalid access/api token» → «Cloudflare non riconosce il token…»; gli altri 403 e la lista vuota
+     restano «non vede la zona». Un token di formato non valido risponde 400 (6003/6111). Casi aggiunti al banco.
+3. **Timeout.** Rifiuti reali tra 120 e 460 ms: 10 s per chiamata lasciano margine anche su rete lenta; PageSpeed resta a
+   60 s (una misura vera di google.com non si è potuta cronometrare senza chiave: da ricontrollare col primo salvataggio di
+   Mattia, la riga d'aiuto lo avvisa).
+4. **Testi.** Frasi dei gruppi e aiuti del §3 invariati; conteggio al singolare («1 di 4 configurata»). Messaggi con il
+   percorso nella console del servizio (es. «Google Cloud → API e servizi → Libreria»), mai URL completi (regola del §2).
+5. **UI nel browser** (:3311, 1280 e 400 px, chiaro e scuro): tre gruppi 4/5/6 con conteggio, badge «Configurata»/«Mancante»,
+   «Dove si prende» solo sul Traffico; flusso Aggiungi → chiave Bing finta → «Salva e verifica» → messaggio in `text-err`
+   sotto il campo, leggibile in entrambi i temi; a 400 px campo a tutta riga, bottone sotto, nessuno scroll orizzontale.
+   `impeccable detect components/home.tsx` pulito. Il tasto Invio del pannello Browser non arriva alla pagina (evento
+   senza `key`): verificato con un listener, non è un difetto del form (invariato). Schede Immagini e Pubblicazione:
+   `KeySetup` non compatto identico nel DOM; oggi non visibili perché BFL e Cloudflare sono configurate.
+
+**Punti aperti per Mattia / fasi 4-5.**
+- DataForSEO: una metà salvata da sola non si prova (come da piano); la frase del brief «ogni chiave nuova rifiutata»
+  vale solo con l'altra metà presente. Nell'E2E la password finta è stata salvata (200, riletta), il login finto rifiutato
+  con 401 tradotto, poi la password di prova rimossa.
+- Con le chiavi vere: controllare il tempo della prova PageSpeed e la risposta di Cloudflare a un token valido **senza**
+  Zone: Read (403 o lista vuota: entrambi portano a «non vede la zona»).
+- Chiusura (M3 residuo): README §7 (riga K1), `docs/handoff-fase-c.md`, `scope.json` da svuotare. `docs/DEBUG.md` ha già la
+  riga «chiave rifiutata in Impostazioni».
