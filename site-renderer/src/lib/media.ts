@@ -12,7 +12,10 @@ export type Candidato = [url: string, larghezza: number];
 /**
  * Voce di un'immagine di /media/<slug>/: `w`/`h` della sorgente (già raddrizzata). Le foto
  * hanno `avif` + `jpeg` (o `png` se la sorgente ha trasparenza); logo e marchio solo `png`
- * in una sola misura; SVG e GIF solo `w`/`h`.
+ * (alto 120 px per il telefono e alto fino a 288 px); SVG e GIF solo `w`/`h`.
+ * Piano T1c: `telefono` = serie AVIF da telefono delle foto usate fuori dalla hero a tutta
+ * pagina; `ritaglio` = fascia centrale della foto della hero a tutta pagina (A, C, D) per i
+ * telefoni fino a 430 px, con le sue dimensioni.
  */
 export type VociImmagine = {
   w: number;
@@ -20,6 +23,8 @@ export type VociImmagine = {
   avif?: Candidato[];
   jpeg?: Candidato[];
   png?: Candidato[];
+  telefono?: Candidato[];
+  ritaglio?: { w: number; h: number; avif: Candidato[] };
 };
 
 export type ManifestVarianti = {
@@ -41,7 +46,7 @@ export const manifest: ManifestVarianti | null = process.env.MEDIA_VARIANTI_JSON
 // `sizes` per uso: larghezza RESA dell'immagine a ogni viewport, dai box misurati sulle
 // sezioni (contenitore con 1.5rem di margine sotto 768 px e 2rem sopra, max 80rem). Mai sotto la
 // larghezza vera, o il browser sceglie una variante troppo piccola e la foto si ammorbidisce.
-// Foto.astro la moltiplica per ZOOM prima di scriverla nell'HTML (sizesPerZoom).
+// Foto.astro la moltiplica per ZOOM da 768 px in su prima di scriverla nell'HTML (sizesPerZoom).
 // Grammatica chiusa, letta da scripts/budget-pagine.ts: voci «(max-width: Npx) LUNGHEZZA»
 // separate da virgola e una LUNGHEZZA finale, con LUNGHEZZA = Npx | Nvw | calc(Nvw - Nrem).
 export const SIZES = {
@@ -81,27 +86,64 @@ export function sizesGalleria(rigaIntera: boolean, fotoInRiga: number): string {
   return `(max-width: 1023px) ${sotto}, (max-width: 1279px) ${lg[0]}, ${lg[1]}`;
 }
 
-/** `sizes` di logo e marchio: la larghezza a `altezza` px (la misura massima nell'intestazione). */
+/**
+ * Telefoni (decisione di Mattia, decisioni-piani.md T1b punto 9): fino a questa larghezza di
+ * viewport niente margine per lo zoom, il candidato copre la larghezza resa × DPR.
+ */
+export const TELEFONO_MAX = 767;
+
+/**
+ * Ritaglio da telefono della foto della hero a tutta pagina (piano T1c §2.3): lo sceglie il
+ * browser fino a 430 px di viewport; `sizes` = larghezza coperta massima misurata nei 7 preset
+ * (altezza del riquadro × 430/544, calibrazione C3).
+ */
+export const RITAGLIO = { media: "(max-width: 430px)", sizes: "600px" } as const;
+
+/** Altezza di logo e marchio sul telefono (h-10 = 40 px, la più alta sotto md). */
+export const LOGO_ALTEZZA_TELEFONO = 40;
+
+/**
+ * `sizes` di logo e marchio: la larghezza a `altezza` px (la misura massima nell'intestazione)
+ * e, sotto 768 px, a quella del telefono (decisioni-piani.md T1c punto 2: un telefono DPR 3
+ * sceglie la variante alta 120 px invece di quella da 288).
+ */
 export function sizesLogo(src: string, altezza: number): string {
   const v = manifest?.immagini[src];
-  return v ? `${Math.round((v.w * altezza) / v.h)}px` : "";
+  if (!v) return "";
+  const larghezza = (h: number) => `${Math.round((v.w * h) / v.h)}px`;
+  const telefono = larghezza(Math.min(altezza, LOGO_ALTEZZA_TELEFONO));
+  const computer = larghezza(altezza);
+  return telefono === computer ? computer : `(max-width: ${TELEFONO_MAX}px) ${telefono}, ${computer}`;
 }
 
 /**
- * Regola dello zoom (decisione di Mattia, docs/traffico/decisioni-piani.md T1b punto 8): il
- * candidato scelto ha almeno ZOOM volte i pixel resi, così lo zoom con le dita (che non fa
- * cambiare candidato al browser) resta nitido come con gli originali; oltre, l'originale.
+ * Regola dello zoom (decisione di Mattia, docs/traffico/decisioni-piani.md T1b punto 8): da 768 px
+ * in su il candidato scelto ha almeno ZOOM volte i pixel resi, così lo zoom con le dita (che non
+ * fa cambiare candidato al browser) resta nitido come con gli originali; oltre, l'originale.
  */
 export const ZOOM = 2;
 
-/** `sizes` con ogni lunghezza moltiplicata per ZOOM (le condizioni restano), nella stessa grammatica. */
+/**
+ * `sizes` per l'HTML, nella stessa grammatica: le voci fino a TELEFONO_MAX restano la larghezza
+ * resa (punto 9); se nessuna arriva esattamente a TELEFONO_MAX se ne inserisce una con la
+ * lunghezza della voce successiva non raddoppiata; le voci oltre e la finale × ZOOM (punto 8).
+ * Da 768 px in su il browser sceglie quindi gli stessi candidati della regola dello zoom.
+ */
 export function sizesPerZoom(sizes: string): string {
   const doppia = (lunghezza: string) => lunghezza.replace(/\d+(?:\.\d+)?/g, (n) => String(Math.round(Number(n) * ZOOM * 1000) / 1000));
-  return sizes
-    .split(/,(?![^(]*\))/)
-    .map((voce) => {
-      const m = /^\s*(\(max-width: \d+px\) )?(.*?)\s*$/.exec(voce)!;
-      return `${m[1] ?? ""}${doppia(m[2])}`;
-    })
-    .join(", ");
+  const voci: string[] = [];
+  let telefonoCoperto = false;
+  for (const voce of sizes.split(/,(?![^(]*\))/)) {
+    const m = /^\s*(?:\(max-width: (\d+)px\) )?(.*?)\s*$/.exec(voce)!;
+    const max = m[1] === undefined ? null : Number(m[1]);
+    if (max !== null && max <= TELEFONO_MAX) {
+      voci.push(`(max-width: ${max}px) ${m[2]}`);
+      telefonoCoperto ||= max === TELEFONO_MAX;
+      continue;
+    }
+    if (!telefonoCoperto) voci.push(`(max-width: ${TELEFONO_MAX}px) ${m[2]}`);
+    telefonoCoperto = true;
+    voci.push(`${max === null ? "" : `(max-width: ${max}px) `}${doppia(m[2])}`);
+  }
+  return voci.join(", ");
 }

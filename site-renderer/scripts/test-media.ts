@@ -11,7 +11,7 @@ import { pathToFileURL } from "node:url";
 import sharp from "sharp";
 import { generaVarianti, hashRicetta, raccogliRiferimenti, RICETTA, scala, urlVariante } from "./media-varianti.ts";
 import { budgetDist, famigliePreset, fontLatini, leggiSrcset, scegliCandidato, valutaSizes } from "./budget-pagine.ts";
-import { SIZES, sizesGalleria, sizesPerZoom } from "../src/lib/media.ts";
+import { RITAGLIO, SIZES, sizesGalleria, sizesPerZoom } from "../src/lib/media.ts";
 
 let passati = 0;
 let falliti = 0;
@@ -208,17 +208,54 @@ const lancia = (fn: () => unknown): string | null => {
   const a1280 = Object.fromEntries(Object.entries(SIZES).map(([k, v]) => [k, Math.round(valutaSizes(v, 1280))]));
   caso("SIZES a 1280 px: hero 1470, split 600, card 400, riga 490, evidenza 720, processo 448", uguali(a1280, { hero: 1470, heroSplit: 600, card: 400, cardRiga: 490, evidenza: 720, processo: 448 }), a1280);
   caso("SIZES hero a 1920 px: la viewport", valutaSizes(SIZES.hero, 1920) === 1920);
-  const zoom = [sizesPerZoom(SIZES.card), sizesPerZoom(SIZES.hero), sizesPerZoom(sizesGalleria(false, 3)), sizesPerZoom("48px")];
+  const zoom = [sizesPerZoom(SIZES.card), sizesPerZoom(SIZES.hero), sizesPerZoom(sizesGalleria(false, 3)), sizesPerZoom("48px"), sizesPerZoom(SIZES.processo)];
   caso(
-    "regola dello zoom: lunghezze × 2, condizioni intatte, stessa grammatica",
+    "sizes per l'HTML: resa onesta fino a 767 px (voce inserita se manca), × 2 oltre, stessa grammatica",
     uguali(zoom, [
-      "(max-width: 639px) calc(200vw - 6rem), (max-width: 1023px) calc(100vw - 4.5rem), 800px",
-      "(max-width: 767px) 2340px, (max-width: 1469px) 2940px, 200vw",
-      "(max-width: 1023px) calc(100vw - 3.75rem), (max-width: 1279px) calc(66.8vw - 4rem), 800px",
-      "96px",
-    ]) && zoom.every((z) => !lancia(() => valutaSizes(z, 412))) && Math.round(valutaSizes(zoom[0], 412)) === 728,
+      "(max-width: 639px) calc(100vw - 3rem), (max-width: 767px) calc(50vw - 2.25rem), (max-width: 1023px) calc(100vw - 4.5rem), 800px",
+      "(max-width: 767px) 1170px, (max-width: 1469px) 2940px, 200vw",
+      "(max-width: 767px) calc(50vw - 1.875rem), (max-width: 1023px) calc(100vw - 3.75rem), (max-width: 1279px) calc(66.8vw - 4rem), 800px",
+      "(max-width: 767px) 48px, 96px",
+      "(max-width: 639px) calc(100vw - 8rem), (max-width: 767px) 448px, 896px",
+    ]) && zoom.every((z) => !lancia(() => valutaSizes(z, 412))) && Math.round(valutaSizes(zoom[0], 412)) === 364,
     zoom,
   );
+  // Proprietà su tutti gli usi: sotto 768 px la resa di sempre, da 768 px esattamente la regola dello zoom di T1b.
+  const usi = [...Object.values(SIZES), ...[1, 2, 3, 4].flatMap((n) => [sizesGalleria(true, n), sizesGalleria(false, n)]), "57px", "(max-width: 767px) 48px, 57px"];
+  const scarti: string[] = [];
+  for (const s of usi) {
+    const h = sizesPerZoom(s);
+    for (let vw = 320; vw <= 2000; vw++) {
+      const atteso = valutaSizes(s, vw) * (vw <= 767 ? 1 : 2);
+      if (Math.abs(valutaSizes(h, vw) - atteso) > 1e-6) scarti.push(`${s} a ${vw}: ${valutaSizes(h, vw)} invece di ${atteso}`);
+    }
+  }
+  caso(`sizes per l'HTML su ${usi.length} usi da 320 a 2000 px: resa × 1 fino a 767, × 2 da 768 (767 e 768 esatti compresi)`, scarti.length === 0, scarti.slice(0, 5));
+  caso("sizes per l'HTML: voce a 767 esatti non duplicata", sizesPerZoom("(max-width: 767px) 1170px, 100vw") === "(max-width: 767px) 1170px, 200vw", sizesPerZoom("(max-width: 767px) 1170px, 100vw"));
+  caso("ritaglio da telefono: media e sizes nella grammatica del budget", /^\(max-width: \d+px\)$/.test(RITAGLIO.media) && !lancia(() => valutaSizes(RITAGLIO.sizes, 412)));
+}
+{
+  // sizesLogo legge il manifest all'import: istanza a parte del modulo con un manifest sintetico.
+  const dirLogo = mkdtempSync(join(tmpdir(), "test-media-logo-"));
+  try {
+    const P2 = "/media/zz/";
+    writeFileSync(join(dirLogo, "m.json"), JSON.stringify({ versione: 1, ricetta: "x", immagini: { [`${P2}mark.png`]: { w: 285, h: 240 }, [`${P2}lockup.png`]: { w: 1309, h: 293 } } }));
+    process.env.MEDIA_VARIANTI_JSON = join(dirLogo, "m.json");
+    const { sizesLogo } = (await import(`${pathToFileURL(join(import.meta.dirname, "..", "src", "lib", "media.ts")).href}?logo`)) as typeof import("../src/lib/media.ts");
+    delete process.env.MEDIA_VARIANTI_JSON;
+    const s = [sizesLogo(`${P2}mark.png`, 48), sizesLogo(`${P2}mark.png`, 40), sizesLogo(`${P2}mark.png`, 32), sizesLogo(`${P2}lockup.png`, 40), sizesLogo(`${P2}assente.png`, 48)];
+    caso(
+      "sizesLogo: sotto 768 px l'altezza del telefono (40 px) se quella del computer è più alta; senza voce stringa vuota",
+      uguali(s, ["(max-width: 767px) 48px, 57px", "48px", "38px", "179px", ""]) && uguali(s.slice(0, 4).map((x) => sizesPerZoom(x)), ["(max-width: 767px) 48px, 114px", "(max-width: 767px) 48px, 96px", "(max-width: 767px) 38px, 76px", "(max-width: 767px) 179px, 358px"]),
+      s,
+    );
+    // Telefoni di riferimento: marchio 285×240 con le varianti alte 120 (143 px) e 240 (285 px); a 40 px d'altezza
+    // il DPR 3 chiede 144 px e la regola di Chromium (media geometrica delle densità) sceglie 143, il DPR 1,75 chiede 84.
+    const candidati = [{ url: "143", w: 143 }, { url: "285", w: 285 }];
+    caso("marchio a 412@1,75: variante alta 120 px", scegliCandidato(candidati, valutaSizes(sizesPerZoom(s[0]), 412) * 1.75).w === 143);
+  } finally {
+    rmSync(dirLogo, { recursive: true, force: true });
+  }
   caso("SIZES a 700 px: card calc(50vw - 2.25rem) = 314, riga calc(40vw - 1.2rem) = 261", Math.round(valutaSizes(SIZES.card, 700)) === 314 && Math.round(valutaSizes(SIZES.cardRiga, 700)) === 261);
   const gal = [valutaSizes(sizesGalleria(true, 3), 412), valutaSizes(sizesGalleria(false, 3), 412), valutaSizes(sizesGalleria(false, 2), 1100), valutaSizes(sizesGalleria(false, 4), 1300), valutaSizes(sizesGalleria(false, 1), 1300)].map(Math.round);
   caso("galleria: riga intera 364 e mezza 176 a 412; 2 per riga 510 a 1100; 4 per riga 300 e 1 per riga 1216 a 1300", uguali(gal, [364, 176, 510, 300, 1216]), gal);
