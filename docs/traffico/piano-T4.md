@@ -2,7 +2,8 @@
 
 Riallineato il 15/09 alle decisioni T3 12-14 e K1.
 
-Stato: **fase 1 (piano) — pronto per lo sviluppo**, scritto il 2026-09-14, riallineato il 2026-09-15 («Priorità assoluta», T3
+Stato: **fasi 2-3 fatte il 2026-09-15** (sviluppo M1-M5 e calibrazione senza chiavi: § Calibrazione e § Verifica;
+calibrazione a pagamento in attesa delle chiavi DataForSEO; restano le fasi 4-5 e M6). Piano scritto il 2026-09-14, riallineato il 2026-09-15 («Priorità assoluta», T3
 punti 12-14, T4 punti 1-7, K1 di `decisioni-piani.md`). Contratti reali letti nel codice il 15/09: `lib/zone-servite.ts` (T3,
 chiuso), `lib/secrets.ts` e `lib/chiavi-traffico.ts` (K1, chiuso). Fonti: `docs/traffico/README.md` (§1-§5), `brief-T4.md`,
 `piano-T0.md` (§3-§4), `piano-T3.md` (§3 contratto delle zone), `piano-K1.md` (§8), `piano-T6a.md` (§3-§4 dataset),
@@ -813,15 +814,127 @@ Dubbi aperti (proposta tra parentesi):
 
 ## Calibrazione
 
-*(fase 3 — con chiave e ok alla spesa: C1 copertura dell'elenco domini; C2 soglie di taglia dal campione; C3 accordo difficoltà ≥ 80 %
-su 20 righe cieche; C4 City contro Municipality sui volumi della sede, 10 comuni, 2 task; C5 coordinate contro `location_code` sulla
-SERP, 10 query, Jaccard dei domini ≥ 0,8; C6 revisione di Mattia dei target di `zz-test-t4`; C7 costo reale per mappa da
-`costi.ndjson`. Senza chiave: C8 i 40 comuni usati di `zz-test-t4` e di una sede con area regionale guardati da Mattia (gratis);
-script e protocollo pronti, stato «da calibrare con chiave» nel README §7.)*
+Fase 3 del 2026-09-15. **Chiavi DataForSEO assenti** (Keychain, `security find-generic-password -s site-factory -a
+DATAFORSEO_LOGIN` → assente): nessuna chiamata a pagamento, saldo non letto, calibrazione a pagamento **in attesa** (decisione T4
+punto 9). Sviluppo e prove su risposte registrate sintetiche (`scripts/fixtures/mappa-query/risposte/`, forma documentata,
+domini finti `.example`).
+
+### Fatta senza chiavi (gratis)
+
+**Lessico** (curatela, `lib/mappa-lessico.json` 2026-09-b, commit `d14714e`). Letti in sola lettura i `contesto.json` dei 3
+clienti e i lavori proposti dal form per i 7 mestieri (`site-intake/src/data/tassonomia.ts`).
+
+| Contesto | Teste | Servizi senza ricerche dopo la calibrazione |
+|---|---|---|
+| Cavaliere (24 servizi) | 32 (28 + 4 di mestiere), invariato | Assistenza tecnica in cantiere · Coordinamento delle lavorazioni · Finiture interne ed esterne · Ripristini e manutenzioni esterne |
+| La Cecilia (8) | 13 | Scelta dei materiali (prima anche «Ristrutturazione case», «Trasformazione vasca in doccia») |
+| Saggin (11) | 16 | Pittura artistica (prima anche «Pavimenti», «Rivestimenti») |
+| Lavori del form: impresa edile, ristrutturazioni | 24 e 24 | nessuno |
+| idraulico · elettricista · cartongesso · serramenti · imbianchino | 12 · 9 · 9 · 8 · 9 | Pronto intervento · LED, pronto intervento, rifacimento impianti, riparazioni · cabine armadio, contropareti, librerie, velette · riparazioni e sostituzioni · decorazioni, pitture speciali, resine |
+
+Restano scoperti di proposito i servizi ambigui tra mestieri (una testa del lessico è fissa: «Pronto intervento» o «Rifacimento
+impianti» valgono per l'idraulico e per l'elettricista) e quelli senza una ricerca tipica verificabile. Aggiunto il campo
+facoltativo `nessuna` alle voci: «Verniciatura ringhiere e infissi» di un imbianchino generava «sostituzione infissi» e
+«serramentista» (banco caso 8). Da decidere con Mattia: la voce generica «Impermeabilizzazioni» oggi dà «impermeabilizzazione
+terrazzo» (non «tetto»).
+
+**C8 — comuni usati** (da guardare con Mattia, nessuna modifica alle regole):
+- `zz-test-t4`, «Cologno Monzese e dintorni»: 40 su 132, da Milano (1°) ad Agrate Brianza (40°), come il §2.3; fuori Meda,
+  Arcore, Mariano Comense, Melzo, Cesano Boscone…
+- Saggin, «Tutta la regione Veneto», sede Sandrigo (sola lettura): 40 su 560. Il peso porta dentro i capoluoghi lontani (Padova
+  35 km, Verona 53, Venezia 61, Rovigo 67, Chioggia 70, San Donà di Piave 77) e lascia fuori comuni piccoli a 5-10 km dalla sede
+  (San Martino di Lupari, Rubano… nell'avviso). La rilevanza scende già a 0,6 oltre 25 km. **Domanda per Mattia**: per le aree
+  regionali la vicinanza deve pesare di più (per esempio `popolazione / (1 + km/5)`)? Proposta: decidere dopo C6 sulla mappa vera.
+
+**Testi** (frasi del perché e UI, rivisti sui 19 target della fixture a 1280 e 400 px): «fino ad agosto» (d eufonica); niente
+«nell'area «Cologno Monzese (MI)»» ripetuto per il comune della sede; «Ricalcolo non disponibile. {motivo}.» invece di due
+coppie di due punti; in attesa delle zone, senza chiavi e in pausa la frase di stato è il motivo (niente doppioni); uno stop dalla status bar non
+mostra «non riuscito»; nel banner d'errore «Resta la mappa del calcolo precedente.»; «Lavori senza ricerche» e «Siti da
+classificare» nei dettagli (niente «SERP» o «keyword»).
+
+**Soglie e pesi**: invariati (valori iniziali del piano, decisione T4 punto 7). Osservazione dal campione sulle risposte registrate
+(non è un dato reale, solo il comportamento delle regole): una città oltre 250.000 abitanti con 3 risultati deboli scende a
+«bassa» (F1 +5, F5 −3 → 2 punti), contro il «capoluogo fuori portata» della ricerca §3. Se C2 e C3 lo confermano su pagine vere,
+prima correzione proposta: F5 al massimo −1 quando F1 vale +5 (oppure «alta» fissa sopra 250.000).
+
+**Revisione /impeccable del blocco**: `impeccable detect --json` su `components/traffico-mappa.tsx` e `page.tsx` → `[]`.
+Critique in un solo contesto (questo agente non ha sub-agenti; nessuno snapshot scritto in `.impeccable/`, fuori perimetro): corretti
+lo scorrimento orizzontale a 400 px (volume e badge non andavano a capo), «Escludi…» spostato sulla riga della ricerca così il
+«Perché» aperto usa tutta la larghezza, focus restituito al bottone quando un dialog si annulla.
+
+### In attesa delle chiavi: protocollo del test mirato (tetto 3 $ in tutto, decisione T4 punto 9)
+
+Tutto passa dalla cache (`~/.cache/site-factory/dataforseo/`): un passo rilanciato entro i TTL non si ripaga. Ogni costo è il campo
+`cost` delle risposte, in `docs/traffico/calibrazione-T4/costi.ndjson` (campione) e `out/<slug>/traffico/costi.ndjson` (mappa).
+
+1. Mattia inserisce login e password in Impostazioni → Chiavi API (prova gratuita `user_data`).
+2. **Campione (≈ 1,54 $)**: `cd site-factory-editor && node --experimental-strip-types scripts/campione-serp.ts esegui` (solo stima),
+   poi con l'ok di Mattia `… esegui --conferma-spesa` (legge il saldo e si ferma se è sotto 3,08 $). Grezzi in
+   `~/.cache/site-factory/calibrazione-T4/campione-<data>.ndjson`, in git `composizione-<data>.json`.
+   - **C1**: `totale.quotaIgnoto` ≤ 15 %; altrimenti i domini più frequenti fra le regole `ignoto*` entrano in `lib/mappa-domini.json`.
+   - **C2**: `perTaglia` (quote di imprese locali, portali e directory; livelli b/m/a) contro le fasce 50.000/250.000 di F1.
+3. **C3 (≈ 30 minuti di Mattia)**: `… giudizio ~/.cache/site-factory/calibrazione-T4/campione-<data>.ndjson` → Mattia compila la colonna
+   `giudizio` di `docs/traffico/calibrazione-T4/giudizio-<data>.csv` con la domanda del §9 → `… accordo <csv>`. Atteso accordo esatto
+   ≥ 80 %; sotto si ritoccano le soglie 2/3 e 5/6, poi i punti dei fattori, e si conferma su 20 righe nuove (`--seme` diverso).
+4. **Mappa di Cavaliere (≈ 0,66 $ al massimo)**: le sue zone sono «Da impostare» (brief Tally): Mattia le imposta nella card, poi
+   «Calcola la mappa». **C6** revisione dei target con Mattia; **C7** costo reale da `out/cavaliere-build-srls/traffico/costi.ndjson`.
+5. **C4 e C5 (≈ 0,26 $)**, dalla stessa cache: volumi di 10 ricerche senza comune della sede su City e su Municipality (2 task,
+   `creaClientDfs().volumi(keywords, 1008436)` e `(keywords, 9201369)`); 10 ricerche con comune lette con `location_coordinate` e con
+   `location_code` del comune (Jaccard dei domini ≥ 0,8, altrimenti si passa al `location_code`).
+6. Tre risposte reali (un lotto di volumi e due pagine di Google) prese dalla cache sostituiscono le omologhe registrate in
+   `scripts/fixtures/mappa-query/risposte/` (decisione T4 punto 8); il banco resta verde.
+
+Somma prevista 2,46 $ (campione 1,54 + mappa 0,66 + C4-C5 0,26), sotto il tetto di 3 $.
+
+### Scostamenti dal testo del piano (motivati)
+
+- **Schema**: `comune` nullable solo per le ricerche senza comune quando la sede non è riconosciuta (§2.3 le vuole «non richiesto»,
+  lo schema del §6.1 non le poteva rappresentare); `volume.fonte` presente anche per `non_disponibile` (anche il «null» di Google ha
+  una provenienza: il vincolo è `stato ≠ non_richiesto ⇔ fonte ≠ null`); campi `escluse` (per validare «target non escluso» e
+  accorgersi di un file delle esclusioni diverso), `serpNonLette` (lo stato «parziale» sopravvive a una riselezione) e `motivi`
+  (le frasi di «Poche ricerche»); `testo` fino a 200 caratteri perché le righe oltre 80 restano nell'universo non ammesse (§3.3).
+- **Impronta del contesto** sui soli campi usati (settore, servizi, macro), non sui byte del file: una data o un tono cambiati non
+  chiedono un ricalcolo (banco caso 26).
+- **Mappa scritta compatta**: indentata pesava 3,5 MB con 2.656 righe.
+- **Tentativi**: 3 in tutto con attese di 5 e 15 s (il banco 12 vuole «50000 ×3 → servizio»); i 45 s del §7 non servono.
+- **Risposte registrate**: un file per località (`volumi-<location_code>.json`, le keyword assenti tornano con volume nullo), pagine
+  di Google scelte per sha della keyword (`serp-milano.json` per Milano), `forza-errore.json` per le prove d'errore e
+  `SF_DATAFORSEO_LATENZA_MS` per vedere nell'E2E la fase live, lo stop e il rifiuto del secondo calcolo.
+- **Campione**: grezzi nella cache locale (decisione T4 punto 8, sopra il §9); `accordo` accetta il percorso del campione come
+  secondo argomento.
+- `datiVista` (letture per la pagina) sta in `lib/mappa-lavoro.ts`; la route di escludi e riammetti risponde solo `{ ok, stato,
+  target }` (la mappa intera pesa megabyte e la pagina la rilegge).
 
 ## Verifica
 
-*(fase 4: output del banco, `npx tsc --noEmit`, `npm run build`, banchi esistenti, E2E M3 e M4, sha dei `client.json`, costi reali.)*
+### Sviluppo (fasi 2-3, 2026-09-15)
+
+- **Banco** `node --experimental-strip-types scripts/test-mappa-query.ts`: **151 passati, 0 falliti** (casi 1-33 del §13 più vista,
+  impronta del contesto e `nessuna`), 2 s, senza rete.
+- `npx tsc --noEmit` pulito; `npm run build` verde (route `/api/clients/[slug]/traffico/mappa`).
+- Banchi esistenti: `test-zone-servite` 110/0, `test-chiavi` 121/0, `test-traffico-stato` 58/0, `test-portafoglio` 43/0.
+- **E2E M3** su `zz-test-t4` (`next start -p 3312` con `SF_DATAFORSEO_REGISTRATE`, cache nello scratchpad): (1) `calcola` → 202, 6 fasi,
+  mappa valida, 19 target, 40 comuni, 64 righe di costo (4 volumi + 60 pagine); (2) secondo calcolo → stessi target e universo, costo
+  0, 64 dalla cache, nessuna riga nuova; (3) `escludi` → 200, rimpiazzata, universo invariato; (4) `riammetti` → target di prima;
+  422 su testo assente, non escluso, motivo corto; 400/403/415/404; (5) 40210 → «Credito DataForSEO esaurito (40210)…», mappa
+  identica (sha); (6) senza chiavi né variabile → 409 «DataForSEO non configurata…»; (7) lead Tally → 409 «Zone servite da
+  impostare…», Sito sospeso → 409, client.json fuori schema → 409; (8) seconda mappa in parallelo → 409 «si calcola una mappa alla
+  volta»; (9) stop dalla status bar → «interrotto», mappa identica. sha256 di `client.json` identico prima e dopo; nessun
+  `traffico/zone-servite.json` creato.
+- **M4 browser** (`/traffico/zz-test-t4` e `zz-test-t4b` su :3311 e :3312): 1280 e 400 px, chiaro e scuro, nessuno scroll orizzontale;
+  Escludi con tastiera (focus nel campo, conferma disabilitata sotto 3 caratteri, `Esc` e focus restituito), Riammetti, Ricalcola
+  col dialog, fase live con tempo e status bar («1 agente al lavoro», chip «Traffico · mappa»), rilettura automatica a fine calcolo;
+  stati Pronta, In attesa delle zone (unica primaria «Imposta le zone» della card zone), Non configurata, In pausa, Bloccata, Da
+  ricalcolare (primaria Ricalcola…), Non riuscita (primaria Riprova) e ultimo ricalcolo fallito.
+- **Campione** su risposte registrate: `esegui` senza opzioni stampa la stima 1,54 $ senza chiamate; `esegui --registrate` → 384
+  pagine, composizione e tabella; `giudizio` → CSV cieco di 20 righe; `accordo` su un giudizio finto → matrice e disaccordi.
+- Fixture `site-renderer/out/zz-test-t4/` e la variante `zz-test-t4b/` nel Cestino a fine prove (`ls site-renderer/out/` = i 3
+  clienti). Per rifarle: `contesto.json` e `raw-submission.json` da `scripts/fixtures/mappa-query/`, `brief.json` e `intake.json` con
+  `azienda`, `client.json` minimo con `traffico.sito.stato: "attivo"` e `steps.build.deploy.dominio` finto; l'editor di prova con
+  `SF_DATAFORSEO_REGISTRATE=scripts/fixtures/mappa-query/risposte SF_DATAFORSEO_CACHE=<cartella temporanea>` (più
+  `SF_DATAFORSEO_LATENZA_MS=700` per vedere la fase live). Nessuna scrittura nelle cartelle dei clienti reali; cache vera
+  `~/.cache/site-factory/dataforseo/` mai creata.
+- Commit: `ddcede0` (M1+M2), `16c0984` (M3), `532f5ed` (M4), `66e6482` (M5), `d14714e` (lessico) + documenti.
 
 ## Fonti verificate il 2026-09-14
 

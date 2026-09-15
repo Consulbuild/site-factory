@@ -181,6 +181,21 @@ prossime schede.
   (`salvaSegreti`), tetto 4000 caratteri, coppia DataForSEO provata insieme, route solo da localhost. Banco
   `scripts/test-chiavi.ts` 121/0; collaudo con credenziali finte, Keychain invariato. Aperti per Mattia: inserire le
   chiavi vere e guardare tempo della prova PageSpeed e risposta Cloudflare a un token senza Zone: Read.
+- **Traffico T4 — mappa query → pagine** (2026-09-15, fasi 2-3 in `docs/traffico/piano-T4.md`, **da calibrare con
+  chiave**): per un cliente col Sito attivo, 8-20 ricerche reali nei comuni delle zone servite e la pagina che risponde
+  a ciascuna. `site-factory-editor/lib/mappa-query.ts` (lessico `lib/mappa-lessico.json` × 40 comuni pesati per
+  popolazione e distanza, «Tutta Italia» = provincia della sede, modificatori base/vicino a me/preventivo, punteggio
+  45/35/20, selezione con copertura delle macro, pagine home/servizio/zone, frasi del perché, staleness per sha),
+  `lib/serp-classifica.ts` (classi da `lib/mappa-domini.json`, difficoltà F1-F6), `lib/dataforseo.ts` (solo Live e
+  mobile, chiavi da `getSecret`, cache `~/.cache/site-factory/dataforseo/`, costo reale in `traffico/costi.ndjson`,
+  risposte registrate con `SF_DATAFORSEO_REGISTRATE`), `lib/mappa-lavoro.ts` (lavoro `traffico:<slug>:mappa` sul
+  run-bus, nuovo `kind: "traffico"`, una mappa alla volta). UI «Ricerche su cui puntare» nella card Sito di
+  `/traffico/[slug]` con Escludi (col motivo) e Riammetti senza chiamate; `POST /api/clients/[slug]/traffico/mappa`.
+  `scripts/campione-serp.ts` (384 pagine, giudizio cieco, accordo). Banco `scripts/test-mappa-query.ts` 151/0, E2E e
+  browser su risposte registrate. Chiavi DataForSEO assenti: nessuna spesa. Aperti per Mattia: inserire le chiavi e
+  seguire il protocollo del piano (≈ 2,46 $: campione, giudizio di 20 righe, mappa di Cavaliere), impostare prima le
+  zone di Cavaliere, decidere il peso della distanza per le aree regionali (Saggin: Rovigo e Chioggia dentro, comuni a
+  5 km fuori).
 
 ## Clienti in `site-renderer/out/` (fuori git)
 
