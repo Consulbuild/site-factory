@@ -249,6 +249,11 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
    personali; le pagine uscite dall'indice si vedono nel pannello e nel report.
 7. Ispezione: pagine non indicizzate o cambiate ogni giorno, stabili ogni settimana, massimo 200 al giorno.
 8. Lettore con scope readonly; scope pieno solo come ripiego documentato.
+9. **Dato reale della fotografia di partenza (15/09, Umami di Cavaliere dal 1/09)**: 35 visitatori, di cui ~30 da città
+   di data center statunitensi (Ashburn, Council Bluffs, Boardman, Colorado Springs: robot che eseguono JavaScript) e 4
+   dall'Italia (2 da Sandrigo, verosimilmente test interni); referrer solo bing.com (5). Quindi: la quota «dalle zone
+   servite» (T2b, T8) conta **solo visite italiane**, esclude le città dei data center e non si presenta come
+   risultato senza i clic di Search Console filtrati sull'Italia, che restano la metrica principale.
 
 ## T4 — Mappa query (piano pronto)
 

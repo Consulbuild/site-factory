@@ -64,6 +64,14 @@ Rivisto il 2026-09-15 sulla priorità di Mattia (traffico dall'Italia e dalle zo
 
 ## Punti aperti da ricordare
 
+- **Chiavi reali inserite da Mattia (15/09)** e funzionanti. Fotografia di partenza gratuita di Cavaliere in
+  `out/cavaliere-build-srls/traffico/baseline-2026-09.json` (script `scratchpad/baseline-cavaliere.ts` e
+  `baseline-umami.ts`): PageSpeed mobile 74 (LCP 7,4 s, 3,4 MB), desktop 97; CrUX 404 (poche visite); Bing: sito
+  verificato, 0 impressioni; Umami: quasi solo robot da data center USA (decisione T2b 9). **Search Console non
+  letta**: il service account `sf-scrittura@site-factory-traffico.iam.gserviceaccount.com` non ha accesso e la verifica
+  via TXT sul DNS del cliente è stata bloccata dai permessi di Claude Code → Mattia lo aggiunge come utente «Completa»
+  in Search Console, poi si rilancia lo script senza `--verifica`.
+
 - **Misura di riferimento per T1b** (14/09 sera, cavalierebuild.it dal vivo, telefono 390 px DPR 3, cache
   vuota, mediana di 3; script `scratchpad/misura-lcp.mjs`): LCP = foto hero; rete del Mac 0,2 s · mobile
   buona 20 Mbps/50 ms CPU ×4 **1,1 s** · mobile debole 5 Mbps/100 ms **3,8 s** · profilo del test mobile di
