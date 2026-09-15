@@ -73,9 +73,14 @@ Rivisto il 2026-09-15 sulla priorità di Mattia (traffico dall'Italia e dalle zo
   `robots.txt` senza riga Sitemap, niente noindex; `www.cavalierebuild.it` non risolve. Causa prima dello zero traffico:
   **il sito non è indicizzato**. Fatto: home inviata a Bing con `SubmitUrlbatch` (200, quota 100/giorno). La verifica via
   TXT sul DNS del cliente è bloccata dai permessi di Claude Code (decide Mattia).
-- **Priorità per Cavaliere prima di T4/G1**: (1) Mattia «Richiedi indicizzazione» della home in Search Console; (2) con
-  l'ok di Mattia, ripubblicare Cavaliere col servizio Sito (sitemap, robots, dati strutturati, pagine leggere) e inviare
-  la sitemap a Google e Bing via API; (3) record `www` mancante.
+- **Cavaliere ripubblicato col servizio Sito (15/09, ok di Mattia)**: Mattia ha chiesto l'indicizzazione della home; build
+  controllata (robots con Sitemap, sitemap, JSON-LD `GeneralContractor`, IndexNow, noindex solo su workers.dev, nessuna
+  immagine rotta a 390 e 1280) → conferma → deploy. Inviati: sitemap a Google (204, in attesa) e a Bing (`SubmitFeed`
+  200), IndexNow (202). PageSpeed dal vivo prima → dopo: mobile 74 → 77, LCP 7,4 → 5,9 s, 3,45 → 2,29 MB; desktop 97 →
+  98; SEO 100, accessibilità 98, best practice 100. Zone servite impostate dal testo del cliente («Lavoriamo in
+  Lombardia…»): «Cologno Monzese e dintorni» + «Tutta la regione Lombardia» (le trasferte in Italia non tradotte).
+  Da fare: ricontrollo dell'indicizzazione (URL Inspection) tra 3-7 giorni; record `www` mancante (DNS: Mattia);
+  proposta a Mattia sulla foto hero da mobile (LCP 5,9 s per la regola dello zoom 2×).
 
 - **Misura di riferimento per T1b** (14/09 sera, cavalierebuild.it dal vivo, telefono 390 px DPR 3, cache
   vuota, mediana di 3; script `scratchpad/misura-lcp.mjs`): LCP = foto hero; rete del Mac 0,2 s · mobile
