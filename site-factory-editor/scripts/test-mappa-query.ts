@@ -286,6 +286,12 @@ try {
     const riga = { ...base.universo.find((r) => r.testo === "cappotto termico cologno monzese")!, testa: { ...base.universo[0]!.testa, ...cappotto } };
     const p = mq.paginaDi(riga, "015081", mq.pagineDelContesto(senzaMacro));
     caso("8. servizio in nessuna macro → pagina home", cappotto.macro === null && p?.pagina.chiave === "home" && p.regola === "A3-senza-macro");
+    const pittore = mq.testeDelContesto({ settore_normalizzato: "Imbianchino", servizi_atomizzati: [{ servizio: "Verniciatura ringhiere e infissi" }, { servizio: "Tinteggiature interne" }], macro_categorie: [] }, lessico);
+    caso(
+      "8. «nessuna» esclude la voce: verniciatura degli infissi non è sostituzione; il mestiere del cliente non è altrui",
+      pittore.teste.some((t) => t.testo === "verniciatura infissi") && !pittore.teste.some((t) => t.testo === "sostituzione infissi" || t.testo === "serramentista") && pittore.teste.find((t) => t.testo === "imbianchino")?.origine === "mestiere",
+      pittore.teste.map((t) => t.testo),
+    );
     const vuoto = mq.testeDelContesto({ ...contesto, servizi_atomizzati: [] }, lessico);
     caso("8. contesto senza servizi → nessuna testa di servizio (il blocco lo dice il lavoro)", vuoto.teste.every((t) => t.origine === "mestiere"));
   }

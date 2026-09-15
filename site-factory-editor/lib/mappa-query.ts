@@ -262,7 +262,8 @@ export const LessicoSchema = z
     versione: z.string().min(1),
     fonti: z.array(z.string()),
     mestieri: z.array(z.strictObject({ id: z.string().regex(/^[a-z-]+$/), settori: z.array(z.string().min(3)).min(1), teste: z.array(VoceTestaSchema).min(1) })),
-    servizi: z.array(z.strictObject({ tutte: z.array(z.string().min(3)).min(1), teste: z.array(VoceTestaSchema).min(1) })),
+    // nessuna: prefissi che escludono la voce («Verniciatura infissi» non è «sostituzione infissi»).
+    servizi: z.array(z.strictObject({ tutte: z.array(z.string().min(3)).min(1), nessuna: z.array(z.string().min(3)).optional(), teste: z.array(VoceTestaSchema).min(1) })),
     vietati: z.array(z.string().min(2)),
   })
   .superRefine((l, ctx) => {
@@ -368,7 +369,7 @@ export function testeDelContesto(c: ContestoMappa, l: Lessico): { teste: Testa[]
     const parole = normalizzaNome(servizio).split(" ");
     let trovata = false;
     l.servizi.forEach((v, i) => {
-      if (!inizia(parole, v.tutte)) return;
+      if (!inizia(parole, v.tutte) || (v.nessuna ?? []).some((p) => parole.some((w) => w.startsWith(p)))) return;
       trovata = true;
       perVoce.set(i, [...(perVoce.get(i) ?? []), servizio]);
     });

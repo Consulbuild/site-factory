@@ -1,5 +1,5 @@
 {
-  "versione": "2026-09-a",
+  "versione": "2026-09-b",
   "fonti": [
     "~/knowledge/seo/ricerche-2026-09-14/p4-serp-italia.md §1: «servizio + comune» senza preposizione; modificatori «vicino a me» e «preventivo»; ditta, impresa e azienda intercambiabili",
     "docs/ricerca-traffico-2026-09.md §6.2",
@@ -27,7 +27,14 @@
         { "testo": "pittore edile", "gruppo": "tinteggiatura" }
       ]
     },
-    { "id": "cartongessista", "settori": ["cartongess"], "teste": [{ "testo": "cartongessista", "gruppo": "cartongesso" }] },
+    {
+      "id": "cartongessista",
+      "settori": ["cartongess"],
+      "teste": [
+        { "testo": "cartongesso", "gruppo": "cartongesso" },
+        { "testo": "cartongessista", "gruppo": "cartongesso" }
+      ]
+    },
     { "id": "serramentista", "settori": ["serrament", "infiss"], "teste": [{ "testo": "serramentista", "gruppo": "serramenti" }] }
   ],
   "servizi": [
@@ -50,6 +57,14 @@
         { "testo": "ristrutturazione casa", "gruppo": "appartamento" }
       ]
     },
+    {
+      "tutte": ["ristruttur", "cas"],
+      "teste": [
+        { "testo": "ristrutturazione casa", "gruppo": "appartamento" },
+        { "testo": "ristrutturazione appartamento", "gruppo": "appartamento" }
+      ]
+    },
+    { "tutte": ["vasc", "docc"], "teste": [{ "testo": "trasformazione vasca in doccia", "gruppo": "vasca-doccia" }] },
     {
       "tutte": ["bagn"],
       "teste": [
@@ -82,7 +97,21 @@
         { "testo": "posa piastrelle", "gruppo": "pavimenti" }
       ]
     },
+    {
+      "tutte": ["pavimenti"],
+      "teste": [
+        { "testo": "posa pavimenti", "gruppo": "pavimenti" },
+        { "testo": "posa piastrelle", "gruppo": "pavimenti" }
+      ]
+    },
+    { "tutte": ["rivestiment"], "teste": [{ "testo": "posa piastrelle", "gruppo": "pavimenti" }] },
     { "tutte": ["intonac"], "teste": [{ "testo": "intonaci", "gruppo": "intonaci" }] },
+    { "tutte": ["isolament", "termic"], "teste": [{ "testo": "isolamento termico", "gruppo": "isolamento-termico" }] },
+    { "tutte": ["isolament", "acustic"], "teste": [{ "testo": "isolamento acustico", "gruppo": "isolamento-acustico" }] },
+    { "tutte": ["carta", "parat"], "teste": [{ "testo": "posa carta da parati", "gruppo": "carta-parati" }] },
+    { "tutte": ["muff"], "teste": [{ "testo": "trattamento muffa", "gruppo": "muffa" }] },
+    { "tutte": ["vernic", "ringhier"], "teste": [{ "testo": "verniciatura ringhiere", "gruppo": "verniciatura-ringhiere" }] },
+    { "tutte": ["vernic", "infiss"], "teste": [{ "testo": "verniciatura infissi", "gruppo": "verniciatura-infissi" }] },
     { "tutte": ["rasatur"], "teste": [{ "testo": "rasatura pareti", "gruppo": "rasatura" }] },
     {
       "tutte": ["tinteggiatur"],
@@ -101,6 +130,9 @@
     { "tutte": ["pomp", "calor"], "teste": [{ "testo": "pompa di calore", "gruppo": "pompa-calore" }] },
     { "tutte": ["pannell", "solar"], "teste": [{ "testo": "pannelli solari", "gruppo": "solare" }] },
     { "tutte": ["perdit"], "teste": [{ "testo": "riparazione perdite acqua", "gruppo": "perdite" }] },
+    { "tutte": ["sanitar"], "teste": [{ "testo": "sostituzione sanitari", "gruppo": "sanitari" }] },
+    { "tutte": ["quadr", "elettric"], "teste": [{ "testo": "quadro elettrico", "gruppo": "quadro-elettrico" }] },
+    { "tutte": ["citofon"], "teste": [{ "testo": "installazione videocitofono", "gruppo": "citofono" }] },
     { "tutte": ["impiant", "gas"], "teste": [{ "testo": "impianto gas", "gruppo": "gas" }] },
     { "tutte": ["fotovoltaic"], "teste": [{ "testo": "impianto fotovoltaico", "gruppo": "fotovoltaico" }] },
     { "tutte": ["domotic"], "teste": [{ "testo": "domotica", "gruppo": "domotica" }] },
@@ -116,6 +148,7 @@
     { "tutte": ["tett"], "teste": [{ "testo": "rifacimento tetto", "gruppo": "tetto" }] },
     {
       "tutte": ["finestr"],
+      "nessuna": ["vernic"],
       "teste": [
         { "testo": "sostituzione finestre", "gruppo": "finestre" },
         { "testo": "serramentista", "gruppo": "serramenti", "mestiere": "serramentista" }
@@ -123,6 +156,7 @@
     },
     {
       "tutte": ["infiss"],
+      "nessuna": ["vernic"],
       "teste": [
         { "testo": "sostituzione infissi", "gruppo": "finestre" },
         { "testo": "serramentista", "gruppo": "serramenti", "mestiere": "serramentista" }
@@ -130,6 +164,7 @@
     },
     { "tutte": ["port", "intern"], "teste": [{ "testo": "porte interne", "gruppo": "porte-interne" }] },
     { "tutte": ["blindat"], "teste": [{ "testo": "porte blindate", "gruppo": "porte-blindate" }] },
+    { "tutte": ["porton", "garag"], "teste": [{ "testo": "portone garage", "gruppo": "portone-garage" }] },
     { "tutte": ["tapparell"], "teste": [{ "testo": "sostituzione tapparelle", "gruppo": "tapparelle" }] },
     { "tutte": ["zanzarier"], "teste": [{ "testo": "zanzariere", "gruppo": "zanzariere" }] },
     { "tutte": ["verand"], "teste": [{ "testo": "verande", "gruppo": "verande" }] }
