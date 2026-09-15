@@ -326,6 +326,24 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
     - **Siti nazionali**: regola del punto 10 (dominio presente in più province del campione = non impresa locale).
     - Si ricalcola la mappa dopo le correzioni: le pagine di Google già lette restano in cache (14 giorni), si pagano solo i
       comuni nuovi entro 25 km (tetto 0,50 $, spesa totale del test finora 1,44 $).
+12. **Mappa calibrata e test sui concorrenti (15/09, spesa totale del test 2,06 $ su tetto 3 $)**:
+    - Mappa di Cavaliere dopo la calibrazione (0,35 $ + ricalcolo gratuito dalla cache): 16 target tutti entro 20 km, circa
+      600 ricerche al mese in tutto: impresa edile (+ cologno monzese, seregno, giussano, vimercate), ristrutturazione bagno
+      lissone/cologno/brugherio, demolizioni monza/cinisello, cappotto termico, impermeabilizzazione balcone/terrazzo,
+      controsoffitti, ristrutturazione chiavi in mano, preventivo costruzione casa.
+    - Concorrenti locali più presenti nei risultati di quelle ricerche: casaaeb.it, edilcostruzionivitale.it, abcinterni.it,
+      ristrutturazioneinternimilano.it (dati grezzi in `~/.cache/site-factory/calibrazione-T4/concorrenti-cavaliere-*` e
+      `fonti-link-concorrenti-*`).
+    - **Link**: 41-91 domini di provenienza, ma quasi tutti directory automatiche e siti spam con rank 0; nessun link di
+      valore. Cavaliere ne ha 0. → Per le ricerche locali **i link non sono l'ostacolo**: niente acquisto né campagne di
+      link; contano pagine pertinenti, scheda Google e vicinanza. Poche citazioni vere (PagineGialle, elenchi di aziende
+      italiane) entrano nel kit presenza di G2.
+    - **Come si posizionano i concorrenti**: casaaeb.it ha **pagine per servizio e comune** (`/ristrutturazioni-brugherio/`,
+      `/ristrutturazione-appartamento-milano/`) → conferma T5a/T5b; edilcostruzionivitale.it prende visibilità nazionale con
+      **guide ai costi** («quanto costa rifare un bagno», posizioni 4-16 su ricerche da 1.000 a 12.100 al mese) → idea
+      per T7a con fonti pubbliche citate e senza prezzi inventati; ma il 45 % di queste ricerche ha il riassunto AI
+      (punto 10): traffico nazionale, poco locale, da valutare dopo le pagine.
+    - C4-C5 (localizzazione dei volumi e delle pagine di Google, ≈ 0,26 $) rinviati al prossimo giro di calibrazione.
 
 ## K1 — Chiavi per gruppi (piano pronto, sviluppo dopo T3; valgono sopra T2a, T2b, T4, G1)
 
