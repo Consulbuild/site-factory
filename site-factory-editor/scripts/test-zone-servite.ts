@@ -209,7 +209,15 @@ try {
       { avvisi: sporche.avvisi, riga: rigaLunga?.nota },
     );
     const trecento = proposta(leggiZoneServite(cliente(leadForm(Array.from({ length: 300 }, (_, i) => `Zona ${i}`)))));
-    caso("E 300 voci → considerate le prime 60, avviso", trecento.zone.lead.etichette.length === MAX_ETICHETTE && trecento.zone.etichette.length === MAX_ETICHETTE + 1 && trecento.avvisi.some((a) => a.includes("300 zone")), trecento.avvisi);
+    caso("E 300 voci → sede + prime 59 zone = 60 righe (il massimo del file), avviso", trecento.zone.lead.etichette.length === MAX_ETICHETTE && trecento.zone.etichette.length === MAX_ETICHETTE && trecento.avvisi.some((a) => a.includes("300 zone") && a.includes("prime 59")), trecento.avvisi);
+    {
+      // Una proposta con più zone del massimo resta salvabile così com'è («Conferma le zone» senza togliere nulla).
+      const settanta = [...d.province.values()].slice(0, 70).map((p) => `Provincia di ${p.nome}`);
+      const dir70 = cliente(leadForm(settanta));
+      const l70 = proposta(leggiZoneServite(dir70));
+      const s70 = salvaZoneServite(dir70, l70.zone.etichette.map((e) => e.testo), l70.zone.lead.impronta, "2026-09-15T10:00:00.000Z");
+      caso("E 70 zone valide + sede → 60 righe, «Conferma le zone» salva (niente 400/422 sul massimo)", settanta.length === 70 && l70.zone.etichette.length === MAX_ETICHETTE && s70.ok, { righe: l70.zone.etichette.length, avvisi: l70.avvisi, s70: s70.ok || s70.errore });
+    }
     const senzaSigla = proposta(leggiZoneServite(cliente(leadForm(["Sandrigo e dintorni"], { comune: "Sandrigo", provincia: "", regione: "", cap: "", via: "x", daVerificare: true }))));
     const sede = senzaSigla.zone.etichette[0];
     caso("E sede senza sigla → comune unico con nota, dintorni riconosciuti, da controllare", sede?.testo === "Sandrigo" && sede.esito === "tradotta" && !!sede.nota?.includes("senza provincia") && senzaSigla.esito === "da_controllare" && isDeepStrictEqual(codici(senzaSigla.zone.etichette[1]!.aree), ["dintorni:024091"]), senzaSigla.zone.etichette);
@@ -240,9 +248,14 @@ try {
     ];
     for (const [nome, p] of casi) {
       const l = leggiZoneServite(dirOk, p);
-      const s = salvaZoneServite(dirOk, ["Tutta la regione Veneto"], "x", "2026-09-15T10:00:00.000Z", p);
+      const s = salvaZoneServite(dirOk, ["Tutta la regione Veneto"], "x", "2026-09-15T10:00:00.000Z", false, p);
       const a = anteprimaEtichetta(dirOk, "Tutta Italia", p);
       caso(`E ${nome} → errore_dati, salva e anteprima 503, vista errore_dati`, l.stato === "errore_dati" && !zoneUsabili(l).ok && !s.ok && s.codice === 503 && !a.ok && vistaZone(l, p).stato === "errore_dati", { l, s });
+    }
+    {
+      // province.json è generato e fuori da git: su un checkout pulito manca, il messaggio dice come rigenerarlo.
+      const l = leggiZoneServite(dirOk, { ...PERCORSI_DATI, province: path.join(tmp, "manca.json") });
+      caso("E province.json assente → il motivo dice «npm run comuni» in site-intake", l.stato === "errore_dati" && l.motivo.includes("ENOENT") && l.motivo.includes("«npm run comuni» in site-intake"), l);
     }
     const provinceSenzaVI = path.join(tmp, "province-senza-vi.json");
     fs.writeFileSync(provinceSenzaVI, JSON.stringify(JSON.parse(fs.readFileSync(PERCORSI_DATI.province, "utf8")).filter((p: { sigla: string }) => p.sigla !== "VI")));
@@ -351,7 +364,8 @@ try {
     caso("G vista lead_cambiato: righe salvate + righe del nuovo lead + impronta nuova", v2.stato === "lead_cambiato" && v2.righe.length === 3 && v2.righeNuovoLead.map((r) => r.testo).join("|") === "Sandrigo (VI)|Vicenza e provincia" && v2.impronta !== imp && isDeepStrictEqual(v2.etichetteLead, ["Vicenza e provincia"]), v2);
     const vecchia = salvaZoneServite(dir, ["Tutta Italia"], imp, T0);
     caso("G salva con l'impronta vecchia → 409", !vecchia.ok && vecchia.codice === 409, vecchia);
-    const bene = salvaZoneServite(dir, v2.righe.map((r) => r.testo), v2.impronta, "2026-09-16T10:00:00.000Z");
+    caso("G vista lead_cambiato con un nuovo lead tradotto senza note → esitoNuovoLead riconosciute", v2.esitoNuovoLead === "riconosciute" && vistaZone(l1).esitoNuovoLead === null, v2.esitoNuovoLead);
+    const bene = salvaZoneServite(dir, v2.righe.map((r) => r.testo), v2.impronta, "2026-09-16T10:00:00.000Z", true);
     const l3 = leggiZoneServite(dir);
     caso("G «Va bene così» = risalva le zone con l'impronta nuova → confermate, provenienza ricalcolata", bene.ok && l3.stato === "confermate" && !l3.leadCambiato && l3.zone.etichette[1]!.provenienza === "operatore" && l3.zone.etichette[0]!.provenienza === "lead", l3);
 
@@ -359,6 +373,75 @@ try {
     const dirR = cliente(leadForm(["Tutta la regione Veneto"]));
     const r1 = vistaZone(leggiZoneServite(dirR));
     caso("G vista riconosciute: sede + regione, totale 560 comuni, nessun file scritto in lettura", r1.stato === "riconosciute" && r1.righe.length === 2 && r1.totale?.startsWith("560 comuni") === true && !fs.existsSync(path.join(dirR, "traffico")), r1);
+
+    const T1 = "2026-09-16T10:00:00.000Z";
+    const rilead = (dirC: string, raw: unknown) => fs.writeFileSync(path.join(dirC, "raw-submission.json"), JSON.stringify(raw));
+    const salvaProposta = (dirC: string) => {
+      const p = proposta(leggiZoneServite(dirC));
+      return salvaZoneServite(dirC, p.zone.etichette.map((e) => e.testo), p.zone.lead.impronta, T0);
+    };
+    const areeDi = (l: LetturaZone, testo: string) => (l.stato === "confermate" ? codici(l.zone.etichette.find((e) => e.testo === testo)?.aree ?? []) : []);
+
+    // Lead cambiato con zone da controllare: nessun salvataggio a un clic di traduzioni mai mostrate (la card apre la modifica).
+    const dirV = cliente(leadForm(["Tutta la regione Veneto"]));
+    const sV = salvaProposta(dirV);
+    rilead(dirV, leadForm(["Bergamo", "Molise"]));
+    const vV = vistaZone(leggiZoneServite(dirV));
+    caso(
+      "G lead cambiato in «Bergamo», «Molise» (omonimi con nota) → esitoNuovoLead da_controllare, righe del nuovo lead con le note",
+      sV.ok && vV.stato === "lead_cambiato" && vV.esitoNuovoLead === "da_controllare" && vV.righeNuovoLead.filter((r) => r.esito === "da_controllare" && r.nota).length === 2,
+      vV,
+    );
+
+    // «Va bene così» con la sede cambiata: le zone salvate tengono le aree (niente 422 con l'omonimo), la sede nuova la dice il banner.
+    const CASTRO_LE = { comune: "Castro", provincia: "LE", provinciaNome: "Lecce", regione: "Puglia" };
+    const dirC = cliente(leadForm(["Castro e dintorni"], CASTRO_LE));
+    const sC = salvaProposta(dirC);
+    rilead(dirC, leadForm(["Lecce e dintorni"], { comune: "Lecce", provincia: "LE", provinciaNome: "Lecce", regione: "Puglia" }));
+    const vC = vistaZone(leggiZoneServite(dirC));
+    const senzaTieni = salvaZoneServite(dirC, vC.righe.map((r) => r.testo), vC.impronta, T1);
+    const tieni = salvaZoneServite(dirC, vC.righe.map((r) => r.testo), vC.impronta, T1, true);
+    const lC = leggiZoneServite(dirC);
+    caso(
+      "G «Va bene così» dopo il cambio di sede Castro (LE) → Lecce: 200, «Castro e dintorni» resta dintorni 075096 (ritradotta sarebbe 422)",
+      sC.ok && vC.stato === "lead_cambiato" && !senzaTieni.ok && senzaTieni.codice === 422 && tieni.ok && lC.stato === "confermate" && !lC.leadCambiato && isDeepStrictEqual(areeDi(lC, "Castro e dintorni"), ["dintorni:075096"]),
+      { vC: vC.stato, senzaTieni, tieni },
+    );
+    caso(
+      "G lead cambiato con un'altra sede → avviso nel banner, e il file prende la sede del lead attuale",
+      vC.avvisi[0] === "la sede ora è Lecce (LE), non più Castro (LE)" && lC.stato === "confermate" && lC.zone.sede?.nome === "Lecce" && lC.zone.etichette[0]?.origine === "zona",
+      { avvisi: vC.avvisi, sede: lC.stato === "confermate" && lC.zone.sede },
+    );
+
+    // «Usa le zone del nuovo lead» con lo stesso testo: si ritraduce col lead nuovo, come l'ha mostrato la card.
+    const dirB = cliente(leadForm(["Castro e dintorni"], CASTRO_LE));
+    const sB = salvaProposta(dirB);
+    rilead(dirB, leadForm(["Castro e dintorni"], { comune: "Castro", provincia: "BG", provinciaNome: "Bergamo", regione: "Lombardia" }));
+    const vB = vistaZone(leggiZoneServite(dirB));
+    const usa = salvaZoneServite(dirB, vB.righeNuovoLead.map((r) => r.testo), vB.impronta, T1);
+    const lB = leggiZoneServite(dirB);
+    caso(
+      "G «Usa le zone del nuovo lead» con sede Castro (BG) → «Castro e dintorni» dintorni 016065 come nella card, non l'area salvata",
+      sB.ok && vB.esitoNuovoLead === "riconosciute" && vB.righeNuovoLead[1]?.traduzione === "comuni entro 20 km da Castro (BG)" && usa.ok && isDeepStrictEqual(areeDi(lB, "Castro e dintorni"), ["dintorni:016065"]),
+      { righe: vB.righeNuovoLead, usa },
+    );
+
+    // Un'area confermata tiene il suo raggioKm: una Modifica (o l'anteprima) non la ritraduce con la costante di oggi.
+    const dirK = cliente(leadForm(["Sandrigo e dintorni"]));
+    const sK = salvaProposta(dirK);
+    const fileK = path.join(dirK, FILE_ZONE);
+    const salvatoK = JSON.parse(fs.readFileSync(fileK, "utf8"));
+    salvatoK.etichette[1].aree[0].raggioKm = 15; // confermata quando la costante era 15
+    fs.writeFileSync(fileK, JSON.stringify(salvatoK));
+    const aK = anteprimaEtichetta(dirK, "sandrigo e dintorni");
+    const sK2 = salvaZoneServite(dirK, ["Sandrigo (VI)", "Sandrigo e dintorni", "Provincia di Padova"], salvatoK.lead.impronta, T1);
+    const lK = leggiZoneServite(dirK);
+    const dintK = lK.stato === "confermate" ? lK.zone.etichette[1]?.aree[0] : undefined;
+    caso(
+      "G Modifica che aggiunge «Provincia di Padova» → i dintorni confermati restano a 15 km (costante 20), anteprima uguale",
+      (RAGGIO_DINTORNI_KM as number) !== 15 && sK.ok && sK2.ok && dintK?.tipo === "dintorni" && dintK.raggioKm === 15 && aK.ok && aK.riga.traduzione === "comuni entro 15 km da Sandrigo (VI)",
+      { dintK, anteprima: aK.ok && aK.riga.traduzione },
+    );
   }
 } catch (e) {
   falliti += 1;

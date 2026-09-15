@@ -39,6 +39,8 @@ function badge(v: VistaZone): { tone: Tono; label: string } {
 const corrette = (righe: RigaZona[]) => righe.some((r) => r.provenienza === "operatore");
 const nonRiconosciute = (righe: RigaZona[]) => righe.filter((r) => r.esito === "non_riconosciuta");
 const elenco = (xs: string[]) => xs.map((x) => `«${x}»`).join(", ");
+/** Stessa chiave del server (normalizza in lib/zone-servite.ts): maiuscole, accenti e apostrofi non contano. */
+const chiave = (s: string) => s.normalize("NFKD").replace(/\p{M}/gu, "").toUpperCase().replace(/[’'`´\-.]/g, " ").replace(/\s+/g, " ").trim();
 
 /** Frase di stato (role=status): cosa è successo e, se serve, cosa aspetta l'operatore. Mai promesse di risultati. */
 function frase(v: VistaZone): string | null {
@@ -95,10 +97,13 @@ export function ZoneServite({ slug, vista: v }: { slug: string; vista: VistaZone
   const router = useRouter();
   const titolo = useRef<HTMLHeadingElement>(null);
   const campo = useRef<HTMLInputElement>(null);
-  const [modifica, setModifica] = useState<{ righe: RigaZona[]; iniziali: string } | null>(null);
+  const lista = useRef<HTMLUListElement>(null);
+  // salvate: chiavi delle righe già confermate da cui parte la modifica (restano senza badge di esito).
+  const [modifica, setModifica] = useState<{ righe: RigaZona[]; iniziali: string; salvate: Set<string> } | null>(null);
   const [testo, setTesto] = useState("");
   const [erroreCampo, setErroreCampo] = useState<string | null>(null);
   const [aggiungo, setAggiungo] = useState(false);
+  const [annuncio, setAnnuncio] = useState("");
   const [inviando, setInviando] = useState(false);
   // Dopo il salvataggio la modifica si chiude insieme alla pagina riletta (transizione):
   // mai un attimo con le zone vecchie.
@@ -115,7 +120,8 @@ export function ZoneServite({ slug, vista: v }: { slug: string; vista: VistaZone
     setErrore(null);
     setErroreCampo(null);
     setTesto("");
-    setModifica({ righe, iniziali: firma(righe) });
+    setAnnuncio("");
+    setModifica({ righe, iniziali: firma(righe), salvate: new Set(v.stato === "confermate" ? righe.map((r) => chiave(r.testo)) : []) });
     requestAnimationFrame(() => campo.current?.focus());
   };
 
@@ -126,14 +132,15 @@ export function ZoneServite({ slug, vista: v }: { slug: string; vista: VistaZone
   };
 
   const salva = useCallback(
-    async (etichette: string[]) => {
+    // tieni: «Va bene così», le zone salvate tengono le aree confermate (il server non le ritraduce).
+    async (etichette: string[], tieni = false) => {
       setInviando(true);
       setErrore(null);
       try {
         const res = await fetch(`/api/clients/${slug}/traffico/zone`, {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ azione: "salva", etichette, impronta: v.impronta }),
+          body: JSON.stringify({ azione: "salva", etichette, impronta: v.impronta, ...(tieni ? { tieni } : {}) }),
         });
         const data: { error?: unknown } = await res.json().catch(() => ({}));
         if (!res.ok) {
@@ -155,11 +162,17 @@ export function ZoneServite({ slug, vista: v }: { slug: string; vista: VistaZone
     [slug, v.impronta, router],
   );
 
-  async function aggiungi(e: React.FormEvent) {
+  async function aggiungi(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!modifica || aggiungo) return;
     const t = testo.replace(/\s+/g, " ").trim();
     if (!t) return;
+    // Doppione controllato prima dell'anteprima: mentre è in corso l'elenco può solo accorciarsi (Togli) o chiudersi (Annulla).
+    if (modifica.righe.some((r) => chiave(r.testo) === chiave(t))) {
+      setErroreCampo(`«${t}» è già nell'elenco.`);
+      return;
+    }
+    const form = e.currentTarget;
     setErroreCampo(null);
     setAggiungo(true);
     try {
@@ -178,18 +191,28 @@ export function ZoneServite({ slug, vista: v }: { slug: string; vista: VistaZone
         setErroreCampo(`«${riga.testo}» non riconosciuta: ${riga.nota ?? "riscrivila"}.`);
         return;
       }
-      const chiave = (s: string) => s.normalize("NFKD").replace(/\p{M}/gu, "").toUpperCase().replace(/[’'`´\-.]/g, " ").replace(/\s+/g, " ").trim();
-      if (modifica.righe.some((r) => chiave(r.testo) === chiave(riga.testo))) {
-        setErroreCampo(`«${riga.testo}» è già nell'elenco.`);
-        return;
-      }
-      setModifica({ ...modifica, righe: [...modifica.righe, riga] });
+      // Sull'elenco di adesso, non su quello di prima dell'anteprima: un Annulla o un Togli nel frattempo restano.
+      setModifica((m) => m && { ...m, righe: [...m.righe, riga] });
       setTesto("");
+      const controllo = riga.esito === "da_controllare" || riga.nota ? ", da controllare" : "";
+      setAnnuncio(`Aggiunta «${riga.testo}»${riga.ampiezza ? `, ${riga.ampiezza}` : ""}${controllo}.`);
     } catch (err) {
       setErroreCampo(`Richiesta non riuscita: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setAggiungo(false);
+      // Si continua dal campo (dopo un errore lo descrive aria-describedby): mai il focus perso sul body.
+      // Non se nel frattempo l'operatore è andato altrove (Annulla, Togli).
+      const qui = document.activeElement;
+      if (!qui || qui === document.body || form.contains(qui)) campo.current?.focus();
     }
+  }
+
+  function togli(i: number) {
+    const tolta = modifica?.righe[i];
+    setModifica((m) => m && { ...m, righe: m.righe.filter((_, j) => j !== i) });
+    if (tolta) setAnnuncio(`Tolta «${tolta.testo}».`);
+    // Focus sul «Togli» della riga che prende il posto di quella tolta, altrimenti sul campo.
+    requestAnimationFrame(() => (lista.current?.querySelectorAll("button")[i] ?? campo.current)?.focus());
   }
 
   const ignote = modifica ? nonRiconosciute(modifica.righe) : [];
@@ -211,7 +234,8 @@ export function ZoneServite({ slug, vista: v }: { slug: string; vista: VistaZone
 
   const b = badge(v);
   const f = frase(v);
-  const nuovoLeadPulito = v.righeNuovoLead.length > 0 && nonRiconosciute(v.righeNuovoLead).length === 0 && v.righeNuovoLead.some((r) => r.ampiezza);
+  // Un clic salva e conferma senza mostrare le righe del nuovo lead: solo se non c'è niente da controllare.
+  const nuovoLeadPulito = v.esitoNuovoLead === "riconosciute";
   const primaria = !modifica && (v.stato === "da_controllare" || v.stato === "da_impostare" || v.stato === "senza_lead");
   const puoConfermare = v.stato === "da_controllare" && nonRiconosciute(v.righe).length === 0;
 
@@ -292,7 +316,7 @@ export function ZoneServite({ slug, vista: v }: { slug: string; vista: VistaZone
                 >
                   {nuovoLeadPulito ? "Usa le zone del nuovo lead" : "Rivedi le zone del nuovo lead"}
                 </button>
-                <button type="button" className={btnGhost} disabled={salvo} onClick={() => void salva(v.righe.map((r) => r.testo))}>
+                <button type="button" className={btnGhost} disabled={salvo} onClick={() => void salva(v.righe.map((r) => r.testo), true)}>
                   Va bene così
                 </button>
               </>
@@ -336,9 +360,9 @@ export function ZoneServite({ slug, vista: v }: { slug: string; vista: VistaZone
       {modifica && (
         <div className="mt-4 border-t border-line pt-4">
           {modifica.righe.length > 0 ? (
-            <ul className="divide-y divide-line">
+            <ul ref={lista} className="divide-y divide-line">
               {modifica.righe.map((r, i) => (
-                <Riga key={`${i}-${r.testo}`} r={r} onTogli={() => setModifica({ ...modifica, righe: modifica.righe.filter((_, j) => j !== i) })} />
+                <Riga key={`${i}-${r.testo}`} r={r} salvata={modifica.salvate.has(chiave(r.testo))} onTogli={() => togli(i)} />
               ))}
             </ul>
           ) : (
@@ -364,10 +388,14 @@ export function ZoneServite({ slug, vista: v }: { slug: string; vista: VistaZone
                   setErroreCampo(null);
                 }}
               />
-              <button type="submit" className={btnSecondary} disabled={aggiungo || !testo.trim()}>
+              {/* Mai disabilitato durante l'anteprima (il focus finirebbe sul body): la doppia richiesta la ferma aggiungi(). */}
+              <button type="submit" className={btnSecondary} disabled={!testo.trim()}>
                 {aggiungo ? "Controllo…" : "Aggiungi"}
               </button>
             </div>
+            <p role="status" className="sr-only">
+              {annuncio}
+            </p>
             {erroreCampo && (
               <p id="zona-errore" role="alert" className="mt-1.5 text-sm text-err">
                 {erroreCampo}

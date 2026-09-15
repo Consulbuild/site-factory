@@ -167,19 +167,22 @@ export interface Dati {
   sigleDiRegione: Map<string, string[]>;
 }
 
-function leggiJson(file: string, cosa: string): unknown {
+function leggiJson(file: string, cosa: string, rimedio = ""): unknown {
   let testo: string;
   try {
     testo = fs.readFileSync(file, "utf8");
   } catch (e) {
-    throw new ErroreDati(`${cosa} non leggibile (${(e as NodeJS.ErrnoException).code ?? String(e)}): ${file}`);
+    throw new ErroreDati(`${cosa} non leggibile (${(e as NodeJS.ErrnoException).code ?? String(e)}): ${file}${rimedio}`);
   }
   try {
     return JSON.parse(testo);
   } catch {
-    throw new ErroreDati(`${cosa} non è JSON valido: ${file}`);
+    throw new ErroreDati(`${cosa} non è JSON valido: ${file}${rimedio}`);
   }
 }
+
+/** province.json è generato e fuori da git (site-intake/.gitignore): manca su un checkout pulito finché site-intake non parte. */
+const RIGENERA_PROVINCE = " — si rigenera con «npm run comuni» in site-intake";
 
 const problemi = (e: z.ZodError): string =>
   e.issues
@@ -252,7 +255,7 @@ export function caricaDati(p: PercorsiDati = PERCORSI_DATI): Dati {
   };
   const chiave = `${p.dataset}|${stat(p.dataset)}|${p.province}|${stat(p.province)}`;
   if (memo?.chiave === chiave) return memo.dati;
-  const dati = costruisci(leggiJson(p.dataset, "dataset dei comuni"), leggiJson(p.province, "elenco delle province"), p);
+  const dati = costruisci(leggiJson(p.dataset, "dataset dei comuni"), leggiJson(p.province, "elenco delle province", RIGENERA_PROVINCE), p);
   memo = { chiave, dati };
   return dati;
 }
@@ -571,10 +574,12 @@ function calcolaProposta(lead: Lead, d: Dati): Proposta {
     } else {
       const testi = lead.zone.filter((z): z is string => typeof z === "string");
       if (testi.length < lead.zone.length) avvisi.push(`${lead.zone.length - testi.length} zone del form lead non sono testo: ignorate`);
-      if (testi.length > MAX_ETICHETTE) avvisi.push(`il form lead ha ${testi.length} zone: considerate le prime ${MAX_ETICHETTE}`);
-      const vuote = testi.slice(0, MAX_ETICHETTE).filter((z) => !pulisci(z)).length;
+      // La riga della sede conta nel massimo del file: la proposta resta salvabile così com'è.
+      const posti = MAX_ETICHETTE - etichette.length;
+      if (testi.length > posti) avvisi.push(`il form lead ha ${testi.length} zone: considerate le prime ${posti}${posti < MAX_ETICHETTE ? ` (con la sede, il massimo è ${MAX_ETICHETTE})` : ""}`);
+      const vuote = testi.slice(0, posti).filter((z) => !pulisci(z)).length;
       if (vuote) avvisi.push(`${vuote} zone vuote nel form lead: ignorate`);
-      for (const grezza of testi.slice(0, MAX_ETICHETTE)) {
+      for (const grezza of testi.slice(0, posti)) {
         const testo = pulisci(grezza);
         const chiave = normalizza(testo);
         if (!testo || viste.has(chiave)) continue;
@@ -673,9 +678,14 @@ function scriviJson(file: string, data: unknown): void {
   fs.renameSync(file + ".tmp", file);
 }
 
-/** Traduce sul server l'elenco dell'operatore e lo salva; provenienza e origine le decide il server, mai il client. */
-function traduciElenco(etichette: readonly string[], p: Proposta, d: Dati): Etichetta[] {
+/**
+ * Traduce sul server l'elenco dell'operatore; provenienza e origine le decide il server (rispetto al lead
+ * attuale), mai il client. Un testo già tra le `confermate` tiene le sue aree, esito e nota invece di
+ * essere ritradotto: raggioKm di allora, «X e dintorni» tradotta con la sede di allora.
+ */
+function traduciElenco(etichette: readonly string[], p: Proposta, d: Dati, confermate: readonly Etichetta[] = []): Etichetta[] {
   const dalLead = new Set(p.zone.etichette.map((e) => normalizza(e.testo)));
+  const giaConfermate = new Map(confermate.map((e) => [normalizza(e.testo), e]));
   const righe: Etichetta[] = [];
   const viste = new Set<string>();
   for (const grezza of etichette) {
@@ -684,19 +694,28 @@ function traduciElenco(etichette: readonly string[], p: Proposta, d: Dati): Etic
     if (testo && viste.has(chiave)) continue;
     viste.add(chiave);
     const eSede = !!p.sede && chiave === p.sede.chiave;
-    const t = eSede ? p.sede!.traduzione : traduciEtichetta(testo, p.ctx, d);
+    const c = giaConfermate.get(chiave);
+    const t = c ? traduzione(c.esito, c.aree, c.nota) : eSede ? p.sede!.traduzione : traduciEtichetta(testo, p.ctx, d);
     righe.push({ testo: troncato(testo) || "(vuota)", origine: eSede ? "sede" : "zona", provenienza: dalLead.has(chiave) ? "lead" : "operatore", ...t });
   }
   return righe;
 }
 
 /**
+ * Etichette del file da non ritradurre: col lead del file (Modifica, anteprima) o quando l'operatore tiene le zone
+ * salvate dopo un cambio del lead («Va bene così»). Le zone del nuovo lead si ritraducono: la card le ha mostrate così.
+ */
+const daRiusare = (file: ReturnType<typeof leggiFile>, lead: Lead, tieni: boolean): Etichetta[] =>
+  file.stato === "ok" && (tieni || file.zone.lead.impronta === lead.impronta) ? file.zone.etichette : [];
+
+/**
  * «Salva e conferma» e «Conferma le zone» (= salva le etichette della proposta). 409 se il lead è
  * cambiato dall'apertura (impronta) o se il file esistente è fuori schema (mai sovrascritto); 422 con
  * l'elenco se resta una etichetta non riconosciuta o nessuna area; 503 se i dati non si leggono.
- * Un errore di disco si propaga (la route risponde 500).
+ * Un errore di disco si propaga (la route risponde 500). `tieni`: «Va bene così» col lead cambiato
+ * (le etichette sono quelle salvate e ne tengono le aree).
  */
-export function salvaZoneServite(dir: string, etichette: readonly string[], impronta: string, adesso: string, percorsi: PercorsiDati = PERCORSI_DATI): EsitoSalvataggio {
+export function salvaZoneServite(dir: string, etichette: readonly string[], impronta: string, adesso: string, tieni = false, percorsi: PercorsiDati = PERCORSI_DATI): EsitoSalvataggio {
   let d: Dati;
   try {
     d = caricaDati(percorsi);
@@ -716,7 +735,7 @@ export function salvaZoneServite(dir: string, etichette: readonly string[], impr
   if (etichette.length > MAX_ETICHETTE) return { ok: false, codice: 422, errore: `Troppe zone (${etichette.length}, massimo ${MAX_ETICHETTE})` };
 
   const proposta = calcolaProposta(lead, d);
-  const righe = traduciElenco(etichette, proposta, d);
+  const righe = traduciElenco(etichette, proposta, d, daRiusare(prima, lead, tieni));
   const nonRiconosciute = righe.filter((e) => e.esito === "non_riconosciuta").map((e) => ({ testo: e.testo, nota: e.nota ?? "non riconosciuta" }));
   if (nonRiconosciute.length) {
     return { ok: false, codice: 422, errore: `Zone non riconosciute: ${nonRiconosciute.map((e) => `«${e.testo}»`).join(", ")}. Toglile o riscrivile.`, nonRiconosciute };
@@ -851,6 +870,8 @@ export interface VistaZone {
   righe: RigaZona[];
   /** Solo con il lead cambiato: le etichette tradotte dal lead nuovo. */
   righeNuovoLead: RigaZona[];
+  /** Solo con il lead cambiato: esito della proposta del lead nuovo (usabile con un clic solo se «riconosciute»). */
+  esitoNuovoLead: EsitoProposta | null;
   avvisi: string[];
   /** «560 comuni · 4.851.851 residenti». */
   totale: string | null;
@@ -903,7 +924,7 @@ function totale(zone: Zone, d: Dati): string | null {
 
 /** Dalla lettura alla vista della card (nessuna scrittura). */
 export function vistaZone(l: LetturaZone, percorsi: PercorsiDati = PERCORSI_DATI): VistaZone {
-  const vuota = { fonte: null, impronta: "", etichetteLead: [], righe: [], righeNuovoLead: [], avvisi: [], totale: null, confermateAt: null };
+  const vuota = { fonte: null, impronta: "", etichetteLead: [], righe: [], righeNuovoLead: [], esitoNuovoLead: null, avvisi: [], totale: null, confermateAt: null };
   if (l.stato === "errore_dati") return { ...vuota, stato: "errore_dati", motivo: l.motivo, file: null };
   if (l.stato === "non_leggibile") return { ...vuota, stato: "non_leggibile", motivo: l.motivo, file: l.file };
   const d = caricaDati(percorsi);
@@ -916,6 +937,7 @@ export function vistaZone(l: LetturaZone, percorsi: PercorsiDati = PERCORSI_DATI
       etichetteLead: l.zone.lead.etichette,
       righe: l.zone.etichette.map((e) => riga(e, d)),
       righeNuovoLead: [],
+      esitoNuovoLead: null,
       avvisi: l.avvisi,
       totale: totale(l.zone, d),
       confermateAt: null,
@@ -924,6 +946,12 @@ export function vistaZone(l: LetturaZone, percorsi: PercorsiDati = PERCORSI_DATI
     };
   }
   const nuovo = l.proposta.zone;
+  // Ogni salvataggio prende la sede del lead attuale (anche «Va bene così»): il banner lo dice.
+  const prima = l.zone.sede;
+  const sedeCambiata =
+    l.leadCambiato && nuovo.sede && nuovo.sede.codice !== prima?.codice
+      ? [`la sede ora è ${conSigla(nuovo.sede.nome, nuovo.sede.sigla)}${prima ? `, non più ${conSigla(prima.nome, prima.sigla)}` : ""}`]
+      : [];
   return {
     stato: l.leadCambiato ? "lead_cambiato" : "confermate",
     fonte: nuovo.lead.fonte,
@@ -931,7 +959,8 @@ export function vistaZone(l: LetturaZone, percorsi: PercorsiDati = PERCORSI_DATI
     etichetteLead: nuovo.lead.etichette,
     righe: l.zone.etichette.map((e) => riga(e, d)),
     righeNuovoLead: l.leadCambiato ? nuovo.etichette.map((e) => riga(e, d)) : [],
-    avvisi: l.leadCambiato ? l.proposta.avvisi : [],
+    esitoNuovoLead: l.leadCambiato ? l.proposta.esito : null,
+    avvisi: l.leadCambiato ? [...sedeCambiata, ...l.proposta.avvisi] : [],
     totale: totale(l.zone, d),
     confermateAt: l.zone.confermateAt,
     motivo: null,
@@ -948,6 +977,8 @@ export function anteprimaEtichetta(dir: string, testo: string, percorsi: Percors
     if (e instanceof ErroreDati) return { ok: false, codice: 503, errore: `Dati dei comuni non leggibili: ${e.message}` };
     throw e;
   }
-  const [e] = traduciElenco([testo], calcolaProposta(leggiLead(dir), d), d);
+  // Stessa traduzione del salvataggio: una zona confermata tolta e riscritta torna com'era.
+  const lead = leggiLead(dir);
+  const [e] = traduciElenco([testo], calcolaProposta(lead, d), d, daRiusare(leggiFile(path.join(dir, FILE_ZONE)), lead, false));
   return { ok: true, riga: riga(e!, d) };
 }

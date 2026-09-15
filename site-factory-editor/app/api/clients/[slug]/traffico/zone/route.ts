@@ -10,7 +10,8 @@ export const dynamic = "force-dynamic";
 // Traduzione, provenienza e scrittura stanno in lib/zone-servite.ts; qui solo input, codici
 // HTTP e messaggi. Nessun GET: la pagina legge il filesystem.
 //   anteprima { etichetta }           → 200 { riga }, nessuna scrittura
-//   salva     { etichette, impronta } → 200 { zone } | 409 lead cambiato o file fuori schema | 422 non riconosciute
+//   salva     { etichette, impronta, tieni? } → 200 { zone } | 409 lead cambiato o file fuori schema | 422 non riconosciute
+//             (tieni: «Va bene così» col lead cambiato, le zone salvate tengono le loro aree)
 
 const Body = z.discriminatedUnion("azione", [
   z.strictObject({ azione: z.literal("anteprima"), etichetta: z.string().max(MAX_CARATTERI) }),
@@ -18,9 +19,10 @@ const Body = z.discriminatedUnion("azione", [
     azione: z.literal("salva"),
     etichette: z.array(z.string().max(MAX_CARATTERI)).min(1).max(MAX_ETICHETTE),
     impronta: z.string().regex(/^[0-9a-f]{64}$/),
+    tieni: z.boolean().optional(),
   }),
 ]);
-const ATTESO = `atteso { azione: "anteprima", etichetta } oppure { azione: "salva", etichette: 1-${MAX_ETICHETTE} testi, impronta }, testi di al massimo ${MAX_CARATTERI} caratteri`;
+const ATTESO = `atteso { azione: "anteprima", etichetta } oppure { azione: "salva", etichette: 1-${MAX_ETICHETTE} testi, impronta, tieni? }, testi di al massimo ${MAX_CARATTERI} caratteri`;
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
   // CSRF come la route traffico: Sec-Fetch-Site ferma i browser moderni, il JSON obbligatorio
@@ -59,7 +61,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
       const esito = anteprimaEtichetta(dir, body.data.etichetta);
       return esito.ok ? NextResponse.json({ riga: esito.riga }) : NextResponse.json({ error: esito.errore }, { status: esito.codice });
     }
-    const esito = salvaZoneServite(dir, body.data.etichette, body.data.impronta, new Date().toISOString());
+    const esito = salvaZoneServite(dir, body.data.etichette, body.data.impronta, new Date().toISOString(), body.data.tieni === true);
     if (!esito.ok) return NextResponse.json({ error: esito.errore, nonRiconosciute: esito.nonRiconosciute }, { status: esito.codice });
     return NextResponse.json({ zone: esito.zone });
   } catch (e) {
