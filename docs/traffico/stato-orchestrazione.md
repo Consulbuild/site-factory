@@ -46,7 +46,8 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
 Rivisto il 2026-09-15 sulla priorità di Mattia (traffico dall'Italia e dalle zone servite prima di tutto;
 `decisioni-piani.md`, sezione «Priorità assoluta»):
 
-3. **T3** mini-form (solo dati mancanti, stesso design del form lead; zone servite verificate; codici ISTAT 2026)
+3. **T3** mini-form (solo dati mancanti, stesso design del form lead; le zone NON si richiedono: tradotte da
+   quelle del form lead, T3 punto 12; codici ISTAT 2026)
 4. **T4** mappa query (solo DataForSEO, solo zone servite; esclusione reversibile «Riammetti»)
 5. **G1** scheda Google consigliata (area servita dalle zone di T3)
 6. **T5a** multipagina renderer (criterio di sicurezza: HTML uguale a meno degli hash, CSS solo

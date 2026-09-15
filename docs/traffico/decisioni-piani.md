@@ -12,7 +12,8 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
    T4 (ricerche per zona) → G1 (scheda Google con area servita: la leva più forte nelle mappe della zona) →
    T5a → T5b (pagine per servizio e zone) → T2a (motori avvisati prima che le pagine vadano online) → T5c
    (pagine online sul pilota) → T6b → T2b (misura) → T7a → T7b → T8 → G2 → G3.
-2. **Geografia in ogni piano**: zone servite = comuni verificati nel mini-form (T3), mai dedotti da prosa.
+2. **Geografia in ogni piano**: zone servite = **le zone che il cliente ha già scelto nel form lead**
+   (vedi T3 punto 12), tradotte in comuni, province e regioni col dataset T6a; il mini-form non le richiede.
    Ricerche e SERP solo in italiano, con località nei comuni o nelle province servite (T4, G1); nessuna
    pagina, query o area servita fuori zona. I comuni senza cantiere verificato si coprono con la pagina
    «Zone servite», l'`areaServed` dei dati strutturati e l'area servita della scheda Google, non con
@@ -87,6 +88,25 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
 11. Il link del mini-form si genera per un cliente con **almeno uno** dei due servizi attivo (Sito
     o Scheda Google): gli stessi dati servono a entrambi (decisione G1 punto 3). Le domande su
     foto dei cantieri e prezzi restano utili anche col solo servizio Scheda.
+12. **Decisione di Mattia (2026-09-15): le zone di lavoro NON si chiedono di nuovo.** Il cliente le ha già
+    date nel passo «In quali zone lavori?» del form lead (sito.consulbuild.com). La domanda #3 `comuni` del
+    piano (§R.3 riga 3 e tabella delle domande) **esce dal mini-form**. Al suo posto una traduzione
+    deterministica in `lib/precompila-dati.ts`, sul dataset T6a (comuni con provincia, regione, coordinate):
+    - «Nome (SIGLA)» e la sede → quel comune;
+    - «X e dintorni» → X più i comuni entro un raggio in linea d'aria (valore iniziale del piano, 20 km, da
+      calibrare), dichiarato come «dintorni»;
+    - «X e provincia», «Provincia di X» → la provincia (tutti i suoi comuni);
+    - «Tutta la regione X» → la regione; «X e regioni vicine» → la regione più le confinanti di `CONFINI` in `site-intake/src/data/regioni.ts` (stessa tabella del form);
+    - «Tutta Italia» → Italia (le ricerche locali partono comunque dalla provincia della sede);
+    - brief Tally in prosa (Cavaliere, La Cecilia) → riconoscimento dei soli nomi esatti di regioni, province
+      e comuni del dataset; se non ne riconosce nessuno, l'editor mostra «Zone da impostare» all'operatore.
+      Mai una domanda al cliente, mai un'estrazione AI non verificata.
+    `dati-traffico.json` conserva sia le etichette originali sia le aree tradotte (con `provenienza: lead`).
+    Chi le usa: T4 (universo query nei comuni dell'area, pesati per popolazione e distanza dalla sede), G1
+    (area servita: province e regioni intere dove l'etichetta è larga, comuni dove è precisa, massimo 20),
+    T5a (pagina «Zone servite» e `areaServed`), T2b/T8 (quota di visite dalle zone). Il passo foto #7
+    propone come chip i comuni dell'area (sede e comuni precisi prima) più la ricerca. L'operatore può
+    correggere le aree nell'editor (modifica per sezione già prevista dal piano).
 
 ## T5a — Contratto multipagina e renderer (piano pronto)
 
