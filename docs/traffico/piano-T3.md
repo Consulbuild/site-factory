@@ -1,9 +1,9 @@
 # Piano T3 — Zone servite dal form lead
 
 Versione precedente (mini-form, **superata** dalle decisioni T3 punti 12-13): `git show 550126f:docs/traffico/piano-T3.md`.
-Stato: **fase 1, 2026-09-15**, da rivedere dall'orchestratore; sopra questo testo valgono `decisioni-piani.md` («Priorità
-assoluta», T3 punti 12-13). Fonti: `README.md` §3-§5, `stato-orchestrazione.md`, `brief-T3.md`. Sezioni «Calibrazione» e
-«Verifica» si aggiungono in fase 3 e 4.
+Stato: **fasi 2 e 3 fatte, 2026-09-15** (sezioni «Sviluppo» e «Calibrazione» in fondo); restano test, debug finale e
+chiusura documenti. Sopra questo testo valgono `decisioni-piani.md` («Priorità assoluta», T3 punti 12-14). Fonti: `README.md`
+§3-§5, `stato-orchestrazione.md`, `brief-T3.md`. La sezione «Verifica» si aggiunge in fase 4.
 
 ## 1. Contesto
 
@@ -261,3 +261,108 @@ Commit + push a ogni milestone verde, path espliciti.
 5. Card visibile anche con servizi spenti e in demo → **sì**, sola lettura più conferma.
 6. Piani T4 e G1 che citano run-bus, `lib/dataforseo.ts`, `dati.json`/`foto.json` di T3 → T3 non li crea (`kind: "traffico"`
    e `lib/dataforseo.ts` nascono in T4, come da punto 13); l'orchestratore li riallinea al contratto del §3.
+
+## Sviluppo (fase 2, 2026-09-15)
+
+Applicate sopra il piano le decisioni T3 punto 14: nessuna conferma obbligatoria, niente prosa Tally (righe 9-10 del §2),
+niente `ricalcola`, niente `improntaZone`. M0: `git log`/`status` controllati, `scope.json` libero → scritto col perimetro
+del §6 più `docs/traffico/**` e le due fixture; sha256 dei 300 file dei 3 clienti reali salvati fuori dal repo.
+
+| M | Commit | Esito |
+|---|---|---|
+| M1 | `f8d84e6` | `lib/zone-servite.ts` (regole, tabelle, artifact, contratto, vista) + banco 96/0 |
+| M2 | `c636daf` | route `anteprima`/`salva`; E2E su `zz-test-t3`: 403, 415, 400 (slug, corpo, non JSON), 404, anteprima, 422, 200, 409 dopo il cambio del lead |
+| M3 | `4050039` | card, pagina, DESIGN-BRIEF; 7 stati nel browser su `zz-test-t3*`, chiaro e scuro, 1280 e 400 px |
+
+Scelte e scostamenti dal testo del piano (tutti dentro il perimetro):
+
+- **Contratto** come §3, con tipi più stretti: `leggiZoneServite` restituisce un'unione discriminata (`proposta` con
+  `esito` e `avvisi`, `confermate` con `leadCambiato` e la proposta del lead attuale, `non_leggibile`, `errore_dati`);
+  `zoneUsabili` restituisce anche `zone` quando è ok. In più `areeServite` (aree uniche, `comuniServiti[].aree` sono indici
+  lì dentro), `vistaZone` e `anteprimaEtichetta` per la card. Motivi del blocco esportati (`MOTIVO_DA_CONTROLLARE`,
+  `MOTIVO_DA_IMPOSTARE`, `MOTIVO_LEAD_CAMBIATO`).
+- **Codice della provincia** = prefisso a 3 cifre dei codici dei comuni (`COD_PROV` Istat: Milano `015`), non il codice UTS
+  (che per le città metropolitane è `215`, `312`…): è quello che serve per filtrare i comuni; esempi del §7 invariati.
+- **Province sarde 2026**: le 4 nuove (CI, VS, OG, OT) si aggiungono all'elenco del form; «Sud Sardegna» è riconosciuta come
+  soppressa perché non ha comuni nel dataset, e la nota elenca le province che l'hanno sostituita. Hanno confini cambiati
+  anche NU, OR e CA, non solo SS: nota «confini cambiati» su tutte e 4.
+- **Testo libero** diviso su «,» e «;»: una parte non riconosciuta rende non riconosciuta l'etichetta intera (nessuna area
+  persa in silenzio). Accettata anche «Tutta l'Italia». «X (SIGLA) e dintorni» riconosciuta: serve a sciogliere gli omonimi.
+  Suggerimenti «forse …» solo per province e regioni (prefisso della prima parola), non per gli 8.000 comuni.
+- **Lead**: impronta = sha256 di `zone` + comune e sigla della sede (un campo nuovo come gli orari non la cambia; banco G).
+  Tally = `responses` senza `risposte` → `da_impostare`; lead illeggibile → fonte `assente`, card «Senza form lead».
+  `brief.json` non si legge più (serviva solo alla prosa). Problemi del lead che non stanno in una etichetta (zone non in
+  elenco, voci non testuali o vuote, oltre 60 voci, sede assente) diventano `avvisi` e rendono la proposta da controllare.
+- **Sede** = etichetta con `origine: "sede"` («Sandrigo (VI)», o solo il comune se scritto a mano, con nota); si può togliere,
+  il campo `sede` del file resta per `kmDallaSede`.
+- **UI**: «Conferma le zone» salva senza dialog (non perde nulla); il dialog c'è solo su «Usa le zone del nuovo lead» quando
+  le zone salvate hanno correzioni a mano, e le nomina. Con il lead nuovo non pulito il bottone diventa «Rivedi le zone del
+  nuovo lead» e apre la modifica. Righe salvate senza badge di esito (restano le note).
+
+## Calibrazione (fase 3, 2026-09-15)
+
+### 1. Raggio «dintorni»
+
+Linea d'aria tra i centri, km interi (`comuniEntroKm`), residenti Istat del dataset T6a. Le 5 sedi del §9 più 2 di prova in
+aggiunta (Monza, Napoli), solo come osservazione.
+
+| Sede | ruolo | 10 km | 15 km | **20 km** | 30 km |
+|---|---|---|---|---|---|
+| Sandrigo (VI) | reale, form v4 | 22 · 156.656 | 41 · 452.802 | **65 · 636.657** | 129 · 1.139.528 |
+| Cologno Monzese (MI) | reale, Tally | 29 · 857.443 | 68 · 2.767.186 | **132 · 3.610.685** | 330 · 4.949.343 |
+| San Severo (FG) | reale, Tally | 1 · 49.136 | 4 · 79.721 | **8 · 130.485** | 18 · 333.346 |
+| Milano (MI) | prova, città densa | 20 · 1.868.713 | 51 · 2.680.029 | **111 · 3.410.714** | 277 · 4.867.333 |
+| Vicenza (VI) | prova, capoluogo | 15 · 227.109 | 35 · 350.207 | **64 · 567.798** | 141 · 1.411.193 |
+| Monza (MB) | osservazione | 39 · 961.558 | 88 · 2.939.182 | 156 · 3.592.952 | 357 · 5.138.280 |
+| Napoli (NA) | osservazione | 19 · 1.496.131 | 43 · 2.233.274 | 63 · 2.641.039 | 128 · 3.604.471 |
+
+(comuni · residenti). I 10 comuni più popolosi a 20 km: Sandrigo → Vicenza 13, Bassano del Grappa 15, Thiene 10, Cittadella
+13, Cassola 17, Malo 14, Rosà 13, Romano d'Ezzelino 19, Marostica 12, Dueville 5; Cologno Monzese → Milano 11, Monza 6, Sesto
+San Giovanni 3, Cinisello Balsamo 6, Rho 18, Paderno Dugnano 10, Lissone 10, Seregno 14, Desio 11; San Severo → Lucera 19,
+Torremaggiore 15, Apricena 14, San Marco in Lamis 20, San Paolo di Civitate 18, Poggio Imperiale 20, Rignano Garganico 13;
+Vicenza → Arzignano 17, Thiene 17, Montecchio Maggiore 12, Malo 16, Dueville 9, Mestrino 18, Torri di Quartesolo 6.
+
+**Esito: `RAGGIO_DINTORNI_KM = 20` resta.** Regola della decisione 14 (20 km, 15 se una sede di calibrazione supera 150
+comuni): il massimo delle 5 sedi è 132 (Cologno Monzese). A 20 km i dintorni prendono i capoluoghi vicini dove una piccola
+impresa va davvero (Vicenza e Bassano per Sandrigo, Milano e Monza per Cologno, Lucera per San Severo); a 15 km San Severo
+resterebbe a 4 comuni, a 30 km Cologno salirebbe a 330. **Dubbio per Mattia**: Monza, fuori dalle sedi della regola, supera
+150 (156 comuni) — in Brianza «dintorni» a 20 km arriva a Milano e Rho; se la regola deve contare anche le sedi più dense,
+il valore diventa 15 (una costante, nessun raggio per densità). Un'area salvata porta il suo `raggioKm`: cambiare la
+costante non tocca le zone già confermate.
+
+### 2. Prosa Tally
+
+Tagliata (decisione 14). Verifica in sola lettura sui 2 clienti Tally reali (dettaglio aperto, nessun salvataggio): stato
+«Da impostare», nessuna etichetta, nessuna area, frase «Il cliente è arrivato dal vecchio modulo Tally…», primaria «Imposta le
+zone». Zero falsi positivi per costruzione. Saggin (form v4): «Dal form lead», Sandrigo (VI) + Tutta la regione Veneto, 560
+comuni · 4.853.472 residenti, nessuna primaria, `zoneUsabili` ok senza conferma.
+
+### 3. Testi della card
+
+La prova di comprensione con Mattia non si fa da un agente: testi scelti sui 7 stati, da confermare con lui.
+
+| Stato | Badge | Frase |
+|---|---|---|
+| riconosciute | ok «Dal form lead» | «Tradotte dal form lead e già in uso. Correggile solo se il cliente lavora altrove.» |
+| da controllare | warn «Da controllare» | «Alcune zone del form lead vanno controllate: confermale o correggile. Finché non lo fai, ricerche e scheda Google aspettano.» (con una non riconosciuta: «… non sono riconosciute: correggile con «Modifica»…») |
+| da impostare | warn «Da impostare» | Tally: «Il cliente è arrivato dal vecchio modulo Tally, che non aveva zone da tradurre: impostale tu, una volta.»; form: «Nessuna zona del form lead è stata riconosciuta: impostale tu…» |
+| senza lead | idle «Senza form lead» | «Questo cliente non ha un form lead leggibile: imposta tu le zone.» |
+| confermate | ok «Confermate il gg/mm» | «Confermate il gg/mm/aaaa[, con correzioni a mano].» o «Impostate a mano il gg/mm/aaaa.» |
+| lead cambiato | warn «Da rivedere» | banner «Il form lead è cambiato dopo il salvataggio del …» + «Ora dice: «…». Qui sotto restano le zone salvate: finché non scegli, ricerche e scheda Google aspettano.» |
+| non leggibile | err «Non leggibile» | banner col percorso `mono` e il dettaglio dello schema |
+
+Descrizione fissa: «Dove il cliente accetta lavori: le usano ricerche, scheda Google e pagine.» Tolte in calibrazione le
+ripetizioni (frase e titolo del banner uguali, grammatica ripetuta nella nota e nell'aiuto sotto il campo).
+
+### 4. Critique /impeccable (single-context)
+
+⚠️ DEGRADED: single-context (agente del workflow senza strumento di sub-agent). Detector `impeccable detect` su
+`components/zone-servite.tsx` e `app/traffico/[slug]/page.tsx`: 0 risultati. Revisione nel browser: una sola primaria per
+stato, dubbio visibile inline (badge + nota sulla riga), provenienza sempre scritta, nessuna mappa né modal di modifica,
+righe a blocco a 400 px, token e componenti del design system in entrambi i temi. Corretti: badge «Da controllare» mancante
+sulle traduzioni con nota, lampo delle zone vecchie dopo il salvataggio (`useTransition`), frase «con correzioni a mano» per
+zone tutte impostate a mano, descrizione falsa per i clienti Tally. Questions skipped: nessun utente raggiungibile
+dall'agente; restano per Mattia i testi del punto 3 e il dubbio del punto 1.
+
+Da segnalare a Mattia per la chat del form (decisione 14): `site-intake/public/data/province.json` è precedente al riordino
+sardo e offre ancora «Sud Sardegna e provincia», che T3 non può tradurre.
