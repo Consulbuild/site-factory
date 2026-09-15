@@ -1,9 +1,9 @@
 # Piano T1c — Telefono veloce
 
 Brief: `docs/traffico/brief-T1c.md`. Decisione di riferimento: `decisioni-piani.md` T1b punto 9 (sopra il punto 8
-per i telefoni). Stato: **sviluppo e calibrazione fatti** (15/09/2026: M1 `5daed74`, M2 `18f7fbd`, M3 `1eb6fe7`,
-documenti a seguire); **pubblicazione di Cavaliere e PageSpeed dal vivo in attesa della conferma di Mattia** («Verifica»,
-«Dubbi aperti»). Stime nello scratchpad: `t1c/stima.mjs` (foto di Cavaliere, sola lettura).
+per i telefoni). Stato: **sviluppato, calibrato, collaudato e chiuso** (15/09/2026: M1 `5daed74`, M2 `18f7fbd`, M3
+`1eb6fe7`, documenti `fbe05ea`, revisione `6071cc1`, collaudo finale in «Verifica»); **pubblicazione di Cavaliere e
+PageSpeed dal vivo in attesa della conferma di Mattia** («Verifica», «Dubbi aperti»). Stime nello scratchpad: `t1c/stima.mjs` (foto di Cavaliere, sola lettura).
 
 ## 1. Contesto e numeri
 
@@ -351,6 +351,41 @@ minima del gate (q62/q55).
   7/7; fixture meridian con manifest byte-identica alla build di M3 (marchio 285×240, larghezze esatte), Lighthouse ×5
   **95** (LCP 3,00 s), /privacy/ 100; editor `tsc` ok, `test-fondamenta` 114/0, `test-traffico-stato` 58/0.
   `media-varianti.ts` non toccato: ricetta e cache delle varianti di Cavaliere invariate, build già pronta valida.
+
+### Collaudo finale (fasi 4-5, 15/09/2026, codice a `6071cc1`)
+
+Script nello scratchpad (`t1c/`: `id/identita.sh`, `collaudo.sh`, `verifica-t1c.mjs`, `hash-pagine.ts`, `lh.mjs`,
+`fixture-e1.mjs`); nessun file del repo modificato per le prove, nessun difetto trovato, nessuna correzione.
+
+- **Suite renderer**: `test-media.ts` **85/0**; `npm run build` ok (18 pagine); `npm run check` 68 file, 1 errore = quello
+  noto di `registry.ts`; validatore ok su blueprint e 3 clienti; `test:visual` **28/28** senza aggiornare, `git status`
+  delle baseline vuoto; `test:a11y` **14/14**; `gate:tokens` pulito; `gate:overflow` 7/7 (390 ≤ 390).
+- **Suite editor**: `npx tsc --noEmit` exit 0; `test-fondamenta` **114/0**; `test-traffico-stato` **58/0**.
+- **Identità a servizio spento** contro `a5e5b25` (ricetta T1b, prima di T1c): golden + 3 clienti × env (a)(b)(c) **12/12**,
+  46 file, 0 errori, 0 dichiarazioni CSS aggiunte; il comparatore segnala le differenze vere (env a contro b).
+- **Servizio acceso sulla fixture a HEAD** (copia nello scratchpad, niente in `out/`): manifest **identico** a quello di M3;
+  7 preset × 9 viewport **0 errori** (box, sizes onesti fino a 767 px, da 768 px stessi file di T1b, `-t143` ai telefoni,
+  axe 0 violazioni come senza varianti); zona visibile della hero a q62 scarto medio 0,84-1,89 come in C2;
+  `hashPagina`/`controllaPagina` invariati su **28 pagine**; budget: dist T1b → 2 avvisi (foto LCP 707 KB, totale
+  5.175 KB), dist T1c di Cavaliere → home 1.098 KB / 1.034 KB / 24 richieste, nessun avviso.
+- **Lighthouse locale** 13.4.1, profilo mobile, mediana di 5: copia della `dist` pronta di Cavaliere **94** (LCP 3,08 s,
+  482 KB), /privacy/ 100; fixture meridian **95** (3,00 s), canon **88** (3,75 s, FCP 1,80 s: i font, come in
+  «Calibrazione»), /privacy/ 100 e 99. HTML della `dist` pronta di Cavaliere **uguale** a quello che produce `6071cc1`
+  con le stesse env e lo stesso manifest (4 pagine, a meno del nome del CSS): la build «da verificare» è valida.
+- **E2E dall'editor** (route della scheda Build, :3311): **E1 spento** sulla fixture `zz-test-t1c` **senza dominio** (con
+  il dominio la build crea un sito Umami sul VPS): fasi media → assemble → validate → astro build, nessun `traffico/`,
+  nessuna `v/`, 0 `<picture>`, HTML e CSS uguali alla build della stessa fixture a `a5e5b25`; **E7** `DELETE` con nome
+  sbagliato → 422, col nome esatto → ok, `out/` = 3 clienti, i 3 `client.json` byte-identici a prima. E2/E3 restano quelli
+  sulla build reale di Cavaliere (sopra); E6 (sospeso) non rifatto: vuole il dominio e quindi Umami, e T1c non tocca le
+  condizioni del servizio in `lib/build.ts`. Ripristino: la fase media dell'E1 aveva sostituito `public/media/` (cartella
+  di lavoro, fuori da git) con la fixture; rimessa la copia di Cavaliere dalla sua `dist`.
+- **Criteri del brief**: 1 fatto (serie `-t`, ritaglio `-r860`, marchio `-t143`, `sizes` senza raddoppio fino a 767 px);
+  2 fatto (soglie 1.500/1.250/30, avviso foto LCP 250 KB); 3 fatto (identità 12/12, box/zona/axe/`hashPagina`); 4 **in
+  parte**: Lighthouse locale ≥ 90 sulla copia di Cavaliere sì (94), PSI mobile e desktop dal vivo **non registrati**
+  (aspettano l'ok di Mattia alla pubblicazione); 5 fatto (questo collaudo).
+- **File dei commit del piano** (`5daed74`, `18f7fbd`, `1eb6fe7`, `fbe05ea`, `6071cc1`) contro il §4: tutti nell'elenco,
+  nessuno fuori perimetro; nessuna modifica del piano non committata (le modifiche aperte nell'albero durante il collaudo
+  erano di T4, poi committate da quella sessione in `69b620a` senza file del renderer, e `factory/assignments.json`).
 
 **File toccati rispetto al §4**: `scripts/media-varianti.ts`, `src/lib/media.ts`, `src/components/Foto.astro`,
 `src/sections/Hero.astro` (una prop), `scripts/budget-pagine.ts`, `scripts/test-media.ts`, `docs/traffico/piano-T1c.md`,

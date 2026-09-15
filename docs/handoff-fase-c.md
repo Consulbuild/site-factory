@@ -171,6 +171,11 @@ prossime schede.
   `lastmod` identici; 0 immagini rotte): **resta «da verificare», sito online ancora T1b** finché Mattia non dà l'ok
   diretto a conferma, deploy e PageSpeed dal vivo (comandi in «Verifica» del piano). Schermate da rivedere in
   `~/.cache/site-factory/revisione-T1c/`. La prima build di ogni cliente col servizio ricodifica tutto (~85 s su Cavaliere).
+  Revisione `6071cc1` (larghezza del marchio per difetto al millesimo) e collaudo finale del 15/09: suite verdi (banco
+  85/0), identità a servizio spento 12/12 contro T1b, fixture 7 preset × 9 viewport 0 errori, Lighthouse riconfermato
+  (Cavaliere 94, canon 88), E1 (spento, senza dominio) ed E7 dall'editor sulla fixture poi cancellata; la `dist` pronta
+  di Cavaliere è uguale a quella del codice attuale. Nessun difetto. Attenzione: la fase media di ogni build sostituisce
+  `site-renderer/public/media/` col solo cliente buildato (dopo una prova su fixture rimetterci quella dell'ultimo cliente).
 - **Traffico T3 — zone servite dal form lead** (2026-09-15, piano chiuso in `docs/traffico/piano-T3.md`): nessun
   mini-form. `site-factory-editor/lib/zone-servite.ts` traduce in modo deterministico le zone di
   `raw-submission.json` (sede + «X e dintorni» a 20 km, «Provincia di X», «Tutta la regione X», «X e regioni vicine»,
