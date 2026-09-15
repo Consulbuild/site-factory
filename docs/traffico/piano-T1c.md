@@ -222,9 +222,11 @@ Emersi dal banco del browser o dalle correzioni del controllore; nessun file fuo
    767px)">`; l'`<img>` resta con il solo PNG di T1b.
 2. **Larghezza esatta per il marchio.** Con `sizes` arrotondato al pixel (47,5 → 48 px) un DPR 3 chiedeva 144 px e
    Chromium (primo candidato con densità ≥ DPR, nessuna media geometrica) prendeva il PNG da 285: `sizesLogo` scrive la
-   larghezza esatta arrotondata in su al millesimo (47.5px) e la variante da telefono è larga `ceil(w × 120 / h)` (143 px,
-   alta 120). Il riquadro del marchio sul telefono cambia di 0,14 px (42,89 contro 42,75 a 36 px d'altezza: il PNG
-   intero non ha il rapporto esatto 285/240); da 768 px nessuna differenza.
+   larghezza esatta arrotondata per difetto al millesimo (47.5px) e la variante da telefono è larga `ceil(w × 120 / h)`
+   (143 px, alta 120). Per eccesso (prima versione) sbagliava quando `120 × w / h` è intero non multiplo di 3: marchio
+   500×300, `66.667px`, un DPR 3 chiedeva 200,001 px e Safari/Firefox (densità ≥ DPR) prendevano il PNG da 480; il banco
+   ora prova il 500×300 codificato e 7.604 rapporti. Il riquadro del marchio sul telefono cambia di 0,14 px (42,89 contro
+   42,75 a 36 px d'altezza: il PNG intero non ha il rapporto esatto 285/240); da 768 px nessuna differenza.
 3. **Serie da telefono e ritaglio come voci di cache a parte** (tipi `telefono-generata`, `telefono-reale`, `ritaglio`):
    con la correzione del controllore la foto usata solo come hero a tutta pagina non riceve la serie da telefono, quindi
    la serie non può stare nella voce della foto.
@@ -341,6 +343,14 @@ minima del gate (q62/q55).
   `https://cavalierebuild.it/` con `GOOGLE_API_KEY` da `lib/secrets.ts`, JSON in
   `~/.cache/site-factory/psi-{mobile,desktop}-cavaliere-2026-09-15-t1c.json` (quello del mattino resta come «prima»);
   attesi mobile ≥ 90 (prima 79, LCP 5,7 s) e desktop ≥ 98.
+- **Correzioni dei revisori** (`sizesLogo` per difetto al millesimo, scostamento 2; riga di `docs/DEBUG.md` su hero B e
+  SVG/GIF): `test-media.ts` **85/0** (nuovi: marchio 500×300 codificato → `-t200` a 390@3, 412@1,75 e 430@3; 7.604
+  rapporti × 48/40/32 px, 2.308 fallivano per eccesso); WebKit e Chromium veri a 390@3 con `-t200`/480: `66.667px` →
+  480, `66.666px` → 200. Identità a servizio spento contro `25e391a` 12/12; `npm run build`, `npm run check` (solo
+  `registry.ts`), validatore, `test:visual` 28/28 senza aggiornare, `test:a11y` 14/14, `gate:tokens`, `gate:overflow`
+  7/7; fixture meridian con manifest byte-identica alla build di M3 (marchio 285×240, larghezze esatte), Lighthouse ×5
+  **95** (LCP 3,00 s), /privacy/ 100; editor `tsc` ok, `test-fondamenta` 114/0, `test-traffico-stato` 58/0.
+  `media-varianti.ts` non toccato: ricetta e cache delle varianti di Cavaliere invariate, build già pronta valida.
 
 **File toccati rispetto al §4**: `scripts/media-varianti.ts`, `src/lib/media.ts`, `src/components/Foto.astro`,
 `src/sections/Hero.astro` (una prop), `scripts/budget-pagine.ts`, `scripts/test-media.ts`, `docs/traffico/piano-T1c.md`,

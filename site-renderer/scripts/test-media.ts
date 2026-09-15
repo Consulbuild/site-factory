@@ -327,20 +327,53 @@ const lancia = (fn: () => unknown): string | null => {
   const dirLogo = mkdtempSync(join(tmpdir(), "test-media-logo-"));
   try {
     const P2 = "/media/zz/";
-    writeFileSync(join(dirLogo, "m.json"), JSON.stringify({ versione: 1, ricetta: "x", immagini: { [`${P2}mark.png`]: { w: 285, h: 240 }, [`${P2}lockup.png`]: { w: 1309, h: 293 } } }));
+    // Marchio 500×300 codificato davvero: 120 × 500/300 = 200 intero, 40 × 500/300 = 66,666… periodico.
+    const mediaLogo = join(dirLogo, "zz");
+    mkdirSync(mediaLogo);
+    await sharp({ create: { width: 500, height: 300, channels: 4, background: { r: 30, g: 20, b: 10, alpha: 1 } } }).png().toFile(join(mediaLogo, "mark-500.png"));
+    const siteLogo = { brand: { preset: "meridian", logo: null, mark: { src: `${P2}mark-500.png`, alt: "" }, favicon: null }, sections: [] };
+    const { manifest: mLogo } = await generaVarianti({ site: siteLogo, mediaDir: mediaLogo, cacheDir: join(dirLogo, "cache") });
+    // Rapporti in serie: w da 100 a 2000 × h 150/240/300/333 (decine con 120 × w/h intero non multiplo di 3).
+    const serie: [src: string, w: number, h: number][] = [];
+    for (const h of [150, 240, 300, 333]) for (let w = 100; w <= 2000; w++) serie.push([`${P2}serie-${w}x${h}.png`, w, h]);
+    const immaginiLogo = { ...mLogo.immagini, [`${P2}mark.png`]: { w: 285, h: 240 }, [`${P2}lockup.png`]: { w: 1309, h: 293 }, ...Object.fromEntries(serie.map(([src, w, h]) => [src, { w, h }])) };
+    writeFileSync(join(dirLogo, "m.json"), JSON.stringify({ versione: 1, ricetta: "x", immagini: immaginiLogo }));
     process.env.MEDIA_VARIANTI_JSON = join(dirLogo, "m.json");
     const { sizesLogo } = (await import(`${pathToFileURL(join(import.meta.dirname, "..", "src", "lib", "media.ts")).href}?logo`)) as typeof import("../src/lib/media.ts");
     delete process.env.MEDIA_VARIANTI_JSON;
     const s = [sizesLogo(`${P2}mark.png`, 48), sizesLogo(`${P2}mark.png`, 40), sizesLogo(`${P2}mark.png`, 32), sizesLogo(`${P2}lockup.png`, 40), sizesLogo(`${P2}assente.png`, 48)];
     caso(
-      "sizesLogo: sotto 768 px l'altezza del telefono (40 px) se quella del computer è più alta, larghezza esatta arrotondata in su al millesimo; senza voce stringa vuota",
-      uguali(s, ["(max-width: 767px) 47.5px, 57px", "47.5px", "38px", "178.704px", ""]) && uguali(s.slice(0, 4).map((x) => sizesPerZoom(x)), ["(max-width: 767px) 47.5px, 114px", "(max-width: 767px) 47.5px, 95px", "(max-width: 767px) 38px, 76px", "(max-width: 767px) 178.704px, 357.408px"]),
+      "sizesLogo: sotto 768 px l'altezza del telefono (40 px) se quella del computer è più alta, larghezza esatta arrotondata per difetto al millesimo; senza voce stringa vuota",
+      uguali(s, ["(max-width: 767px) 47.5px, 57px", "47.5px", "38px", "178.703px", ""]) && uguali(s.slice(0, 4).map((x) => sizesPerZoom(x)), ["(max-width: 767px) 47.5px, 114px", "(max-width: 767px) 47.5px, 95px", "(max-width: 767px) 38px, 76px", "(max-width: 767px) 178.703px, 357.406px"]),
       s,
     );
     // Telefoni di riferimento: marchio 285×240 con -t143 e 285; Chromium prende il primo candidato con densità ≥ DPR
     // (come scegliCandidato): a 40 px d'altezza il DPR 3 chiede 142,5 px, il DPR 1,75 ne chiede 83.
     const candidati = [{ url: "143", w: 143 }, { url: "285", w: 285 }];
     caso("marchio da telefono a 390@3, 412@1,75 e 430@3: variante -t143", [3, 1.75, 3].every((dpr, i) => scegliCandidato(candidati, valutaSizes(sizesPerZoom(s[0]), [390, 412, 430][i]) * dpr).w === 143));
+    // Stessa scelta di Safari e Firefox (densità ≥ DPR, confronto semplice): a 66,667 px un DPR 3 chiederebbe 200,001 px.
+    const t500 = mLogo.immagini[`${P2}mark-500.png`]?.telefono ?? [];
+    const scelte500 = [48, 40].flatMap((a) =>
+      [[390, 3], [412, 1.75], [430, 3]].map(([vw, dpr]) => scegliCandidato(t500.map(([url, w]) => ({ url, w })), valutaSizes(sizesPerZoom(sizesLogo(`${P2}mark-500.png`, a)), vw) * dpr).url.split("-").pop()),
+    );
+    caso(
+      "marchio 500×300 codificato (-t200 e 480): a 48 e 40 px d'altezza 390@3, 412@1,75 e 430@3 scelgono -t200",
+      uguali(t500.map(([, w]) => w), [200, 480]) && scelte500.every((f) => f === "t200.png"),
+      { t500, scelte500, sizes: sizesLogo(`${P2}mark-500.png`, 48) },
+    );
+    // Variante da telefono larga ceil(w × 120 / h) come in media-varianti.ts (verificata sopra sul 500×300 codificato).
+    const scarti: string[] = [];
+    for (const [src, w, h] of serie) {
+      const tw = Math.ceil((w * RICETTA.logoAltezzaTelefono) / h);
+      const lw = Math.round((w * Math.min(h, RICETTA.logoAltezzaMax)) / h);
+      for (const a of [48, 40, 32]) {
+        const html = sizesPerZoom(sizesLogo(src, a));
+        const telefono = valutaSizes(html, 390);
+        const scelta = scegliCandidato([{ url: "t", w: tw }, { url: "g", w: lw }], telefono * 3).url;
+        if (scelta !== "t" || (w * Math.min(a, 40)) / h - telefono > 0.001) scarti.push(`${w}×${h} a ${a} px: ${html} (-t${tw})`);
+      }
+    }
+    caso(`sizesLogo su ${serie.length} rapporti × 48/40/32 px: a 390@3 la variante da telefono, mai più di 0,001 px sotto la resa`, scarti.length === 0, { casi: scarti.length, primi: scarti.slice(0, 5) });
   } finally {
     rmSync(dirLogo, { recursive: true, force: true });
   }
