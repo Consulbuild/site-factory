@@ -18,8 +18,9 @@ import { makeSink, rollClientRecords } from "./run-record";
 // Lo stash su globalThis sopravvive all'HMR di next dev.
 
 export type BusRunInfo = {
-  id: string; // "cliente:<slug>:<step>" | "fabbrica:<runId>"
-  kind: "cliente" | "fabbrica";
+  id: string; // "cliente:<slug>:<step>" | "fabbrica:<runId>" | "traffico:<slug>:<lavoro>"
+  /** traffico: lavori deterministici dei servizi Traffico (T4 mappa, G1 scheda), non StepKey (docs/traffico/README.md §2). */
+  kind: "cliente" | "fabbrica" | "traffico";
   slug?: string;
   step?: string;
   runId?: string;
@@ -59,6 +60,7 @@ const TTL_FINITI_MS = 15 * 60 * 1000;
 
 export const busIdCliente = (slug: string, step: string) => `cliente:${slug}:${step}`;
 export const busIdFabbrica = (runId: string) => `fabbrica:${runId}`;
+export const busIdTraffico = (slug: string, lavoro: string) => `traffico:${slug}:${lavoro}`;
 
 function emit(run: BusRun, ev: RunEvent) {
   const conT = { ...ev, t: Date.now() };
@@ -167,6 +169,29 @@ export function startFactoryRun(runId: string): { id: string } | { error: string
   return { id };
 }
 
+/**
+ * Avvia (in background) un lavoro Traffico. Nessuno stato «in corso» su disco (niente zombie): gli eventi vanno in
+ * out/<slug>/traffico/logs/run-<lavoro>.ndjson. Errore se lo stesso lavoro è vivo; per «mappa» anche se una mappa
+ * di un altro cliente è in corso (un solo account DataForSEO: 12 richieste al minuto su Google Ads Live).
+ */
+export function startTrafficoRun(
+  slug: string,
+  lavoro: string,
+  label: string,
+  esegui: (signal: AbortSignal) => AsyncGenerator<RunEvent>,
+): { id: string } | { error: string } {
+  const id = busIdTraffico(slug, lavoro);
+  const esistente = BUS.runs.get(id);
+  if (esistente && !esistente.done) return { error: "calcolo già in corso per questo cliente" };
+  if (lavoro === "mappa") {
+    const altra = [...BUS.runs.values()].find((r) => r.kind === "traffico" && r.step === "mappa" && !r.done);
+    if (altra) return { error: `è in corso la mappa di ${altra.label}: si calcola una mappa alla volta (limite di DataForSEO)` };
+  }
+  const run = nuovoRun({ id, kind: "traffico", slug, step: lavoro, label }, path.join(clientDir(slug), "traffico", "logs", `run-${lavoro}.ndjson`));
+  avvia(run, esegui(run.ac.signal));
+  return { id };
+}
+
 /** Stop di un run vivo (SIGTERM ai child); su un run finito = dismiss. */
 export function stopRun(id: string): boolean {
   const run = BUS.runs.get(id);
@@ -211,6 +236,11 @@ function fileEventiPerId(id: string): string | null {
       return path.join(clientDir(resto.join(":")), "logs", `run-${step}.ndjson`);
     }
     if (kind === "fabbrica") return path.join(runDir(resto.join(":")), "run.ndjson");
+    if (kind === "traffico") {
+      const lavoro = resto.pop()!;
+      if (!/^[a-z]+$/.test(lavoro)) return null;
+      return path.join(clientDir(resto.join(":")), "traffico", "logs", `run-${lavoro}.ndjson`);
+    }
   } catch {
     /* slug/runId non valido */
   }

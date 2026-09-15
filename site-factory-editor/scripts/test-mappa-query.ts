@@ -11,7 +11,9 @@ import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import * as mq from "../lib/mappa-query.ts";
 import { difficolta, livelloDaPunti, normalizzaDominio, riduciSerp, spazioOrganico, type Domini, type LuogoQuery, type SerpGrezza } from "../lib/serp-classifica.ts";
-import { ATTESE_MS, BASE_URL, ErroreDfs, creaClientDfs, corpoVolumi, trovaLocalita, type Localita } from "../lib/dataforseo.ts";
+import { ATTESE_MS, BASE_URL, ErroreDfs, creaClientDfs, corpoVolumi, fetchRegistrato, trovaLocalita, type Localita } from "../lib/dataforseo.ts";
+import { FASI, escludiRicerca, eseguiMappa, leggiEsclusioni, leggiIngressi, leggiMappa, leggiRegole, riammettiRicerca } from "../lib/mappa-lavoro.ts";
+import { agenteDaFase, nomeStep, percorsoRun } from "../lib/agenti.ts";
 import {
   MOTIVO_DA_CONTROLLARE,
   MOTIVO_DA_IMPOSTARE,
@@ -592,6 +594,109 @@ try {
     caso("27. con SF_DATAFORSEO_REGISTRATE → configurata senza chiavi", registrate.configurata() && registrate.registrate);
     const sorgente = fs.readFileSync(path.join(QUI, "..", "lib", "dataforseo.ts"), "utf8");
     caso("27. dataforseo.ts non importa setSecret né salvaSegreti", !/setSecret|salvaSegreti|deleteSecret/.test(sorgente));
+  }
+
+  /* ---------- 28-30 lavoro ---------- */
+  {
+    const regole = leggiRegole();
+    const nuovoCliente = (nome: string) => {
+      const dir = path.join(tmp, nome);
+      fs.mkdirSync(dir);
+      for (const f of ["contesto.json", "raw-submission.json"]) fs.copyFileSync(path.join(FIXTURE, f), path.join(dir, f));
+      return dir;
+    };
+    const stato = { sito: "attivo" as const, dominio: "cliente-prova.it", configurata: true };
+    const esegui = async (dir: string, client: ReturnType<typeof creaClientDfs>, adesso = ADESSO) => {
+      const letti = leggiIngressi(dir, stato, regole);
+      if (!letti.ok) throw new Error(letti.blocco.motivo);
+      const eventi: { type: string; label?: string; artifact?: string; message?: string; text?: string }[] = [];
+      for await (const ev of eseguiMappa(letti.ingressi, client, { signal: new AbortController().signal, adesso: () => new Date(adesso) })) eventi.push(ev);
+      return eventi;
+    };
+    const nessunaChiave = { fetch: async () => json({}), getSecret: () => null };
+
+    const dirJob = nuovoCliente("job");
+    const cache = cacheDir();
+    const costi = path.join(dirJob, mq.FILE_COSTI);
+    const eventi = await esegui(dirJob, creaClientDfs({ trasporto: nessunaChiave, registrate: RISPOSTE, cacheDir: cache, costi: { file: costi, lavoro: "mappa" } }));
+    const fasi = eventi.filter((e) => e.type === "phase").map((e) => e.label);
+    const ultimo = eventi[eventi.length - 1]!;
+    caso("28. sei fasi nell'ordine e done con l'artifact", isDeepStrictEqual(fasi, [...FASI]) && ultimo.type === "done" && ultimo.artifact === mq.FILE_MAPPA, eventi.filter((e) => e.type !== "text"));
+    const letta = leggiMappa(dirJob);
+    const m1 = letta.stato === "ok" ? letta.mappa : null;
+    caso("28. mappa valida con 8-20 target, 40 comuni usati, risposte registrate dichiarate", !!m1 && m1.target.length >= 8 && m1.target.length <= 20 && m1.ingressi.comuniUsati === 40 && m1.ingressi.registrate, letta.stato === "ok" ? [letta.mappa.stato, letta.mappa.target.length, letta.mappa.motivi] : letta);
+    const righeCosti = fs.readFileSync(costi, "utf8").trim().split("\n").map((l) => JSON.parse(l) as mq.RigaCosto);
+    const serpPagate = righeCosti.filter((r) => r.endpoint === "serp/google/organic/live/advanced").length;
+    caso("28. costi.ndjson: 4 righe di volumi e una per ogni pagina di Google", righeCosti.filter((r) => r.endpoint === "keywords_data/google_ads/search_volume/live").length === 4 && serpPagate >= 60 && serpPagate <= 100 && m1?.costo.chiamatePagate === righeCosti.length, [righeCosti.length, serpPagate]);
+    caso("28. storico: una riga per mappa scritta", fs.readFileSync(path.join(dirJob, mq.FILE_STORICO), "utf8").trim().split("\n").length === 1);
+    await esegui(dirJob, creaClientDfs({ trasporto: nessunaChiave, registrate: RISPOSTE, cacheDir: cache, costi: { file: costi, lavoro: "mappa" } }), "2026-09-16T10:00:00.000Z");
+    const l2 = leggiMappa(dirJob);
+    const m2 = l2.stato === "ok" ? l2.mappa : null;
+    caso("28. secondo calcolo → stessa mappa salvo generataAt e costo, nessuna riga di costo nuova", !!m1 && !!m2 && isDeepStrictEqual({ ...m2, generataAt: "", costo: null }, { ...m1, generataAt: "", costo: null }) && m2.costo.chiamatePagate === 0 && m2.costo.dallaCache === righeCosti.length && fs.readFileSync(costi, "utf8").trim().split("\n").length === righeCosti.length);
+
+    const errori = fs.mkdtempSync(path.join(tmp, "registrate-40210-"));
+    for (const f of ["user-data.json", "localita-it.json"]) fs.copyFileSync(path.join(RISPOSTE, f), path.join(errori, f));
+    fs.copyFileSync(path.join(RISPOSTE, "errori", "errore-40210.json"), path.join(errori, "forza-errore.json"));
+    const shaPrima = mq.sha256(fs.readFileSync(path.join(dirJob, mq.FILE_MAPPA), "utf8"));
+    const ev40210 = await esegui(dirJob, creaClientDfs({ trasporto: nessunaChiave, registrate: errori, cacheDir: cacheDir() }));
+    const errs = ev40210.filter((e) => e.type === "error");
+    caso("28. 40210 → un solo error «Credito…» e nessuna scrittura (mappa precedente intatta)", errs.length === 1 && errs[0]!.message!.startsWith("Credito DataForSEO esaurito") && !ev40210.some((e) => e.type === "done") && mq.sha256(fs.readFileSync(path.join(dirJob, mq.FILE_MAPPA), "utf8")) === shaPrima, ev40210.filter((e) => e.type !== "text"));
+    const dirNuovo = nuovoCliente("job-40210");
+    await esegui(dirNuovo, creaClientDfs({ trasporto: nessunaChiave, registrate: errori, cacheDir: cacheDir() }));
+    caso("28. 40210 senza mappa precedente → nessun file della mappa", !fs.existsSync(path.join(dirNuovo, mq.FILE_MAPPA)));
+
+    // 29. una SERP in errore permanente
+    const registrato = fetchRegistrato(RISPOSTE);
+    const guasta = "impresa edile cologno monzese";
+    const dirParziale = nuovoCliente("job-parziale");
+    const ev29 = await esegui(
+      dirParziale,
+      creaClientDfs({
+        trasporto: {
+          getSecret: (k: KeyName) => (k === "DATAFORSEO_LOGIN" ? "login-prova" : "password-segreta-123"),
+          fetch: async (url, init) => (url.endsWith("organic/live/advanced") && String(init.body).includes(`"keyword":"${guasta}"`) ? errore("errore-50000.json") : registrato(url, init)),
+        },
+        registrate: null,
+        cacheDir: cacheDir(),
+        attendi,
+      }),
+    );
+    const l29 = leggiMappa(dirParziale);
+    caso(
+      "29. una pagina di Google in errore permanente → mappa «parziale» con avviso",
+      l29.stato === "ok" && l29.mappa.stato === "parziale" && isDeepStrictEqual(l29.mappa.serpNonLette, [guasta]) && l29.mappa.avvisi.some((a) => a.includes(`«${guasta}»`)) && l29.mappa.universo.find((r) => r.testo === guasta)!.serp === null,
+      l29.stato === "ok" ? [l29.mappa.stato, l29.mappa.serpNonLette] : [l29, ev29.filter((e) => e.type === "error")],
+    );
+
+    // Esclusione e riammissione sul disco: nessuna chiamata, file delle esclusioni scritto.
+    const t = m2!.target[0]!.testo;
+    const ex = escludiRicerca(dirJob, t, "troppo lontano per i cantieri", "2026-09-16T11:00:00.000Z");
+    const esclusioniFile = leggiEsclusioni(dirJob);
+    caso("23. escludi sul disco → esclusioni salvate, target rimpiazzato", ex.ok && !ex.mappa.target.some((x) => x.testo === t) && esclusioniFile.ok && esclusioniFile.esclusioni.voci[0]?.testo === t);
+    const ri = riammettiRicerca(dirJob, t, "2026-09-16T12:00:00.000Z");
+    caso("23. riammetti sul disco → target di prima", ri.ok && isDeepStrictEqual(ri.mappa.target, m2!.target));
+    const rotte = path.join(dirJob, mq.FILE_ESCLUSIONI);
+    fs.writeFileSync(rotte, "{");
+    const bloccata = leggiIngressi(dirJob, stato, regole);
+    const exRotta = escludiRicerca(dirJob, t, "motivo valido", ADESSO);
+    caso("7. esclusioni illeggibili → blocco e 409, file non sovrascritto", !bloccata.ok && bloccata.blocco.codice === "esclusioni" && !exRotta.ok && exRotta.codice === 409 && fs.readFileSync(rotte, "utf8") === "{");
+    fs.rmSync(rotte);
+
+    const senzaServizi = nuovoCliente("senza-servizi");
+    fs.writeFileSync(path.join(senzaServizi, "contesto.json"), JSON.stringify({ ...leggi(path.join(FIXTURE, "contesto.json")), servizi_atomizzati: [] }));
+    const bs = leggiIngressi(senzaServizi, stato, regole);
+    caso("8. contesto senza servizi → blocco col motivo", !bs.ok && bs.blocco.codice === "contesto" && bs.blocco.motivo.includes("senza servizi"));
+    const senzaContesto = nuovoCliente("senza-contesto");
+    fs.rmSync(path.join(senzaContesto, "contesto.json"));
+    const bc = leggiIngressi(senzaContesto, stato, regole);
+    caso("7. contesto assente → blocco col motivo", !bc.ok && bc.blocco.motivo.startsWith("contesto.json assente"));
+    const bk = leggiIngressi(nuovoCliente("senza-chiavi"), { ...stato, configurata: false }, regole);
+    caso("27. chiavi assenti → blocco «non configurata» dagli ingressi", !bk.ok && bk.blocco.codice === "chiavi");
+  }
+  {
+    const tutte = FASI.map((f) => agenteDaFase(f, "mappa", "traffico"));
+    caso("30. le sei fasi hanno il chip «script», mai la sfera", tutte.every((a) => a.sfera === false && a.key === "script"));
+    caso("30. percorso e nome del lavoro", percorsoRun({ kind: "traffico", slug: "zz-test-t4", step: "mappa" }) === "/traffico/zz-test-t4" && nomeStep({ kind: "traffico", step: "mappa" }) === "Traffico · mappa");
   }
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });

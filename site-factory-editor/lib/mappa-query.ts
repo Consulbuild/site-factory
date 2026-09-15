@@ -735,7 +735,7 @@ export function fraseVolume(r: Riga): string {
 export function fraseComune(r: Riga, sede: string | null): string {
   const c = r.comune;
   if (!c) return "Ricerca senza comune e senza sede riconosciuta.";
-  const area = c.area ? `, nell'area «${c.area}»` : "";
+  const area = c.area && c.area !== conSigla(c) ? `, nell'area «${c.area}»` : "";
   if (r.tipo === "senza_comune") return `Ricerca senza comune: Google mostra i risultati vicini a chi cerca; misurata a ${conSigla(c)}, sede del cliente.`;
   if (c.istat === sede) return `Comune della sede: ${conSigla(c)}${area}.`;
   return `Comune servito: ${conSigla(c)}, ${c.km === null ? "distanza dalla sede non nota" : `${formatoIntero(c.km)} km dalla sede`}${area}.`;

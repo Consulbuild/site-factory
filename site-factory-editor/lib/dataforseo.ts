@@ -209,7 +209,8 @@ function scriviAtomico(file: string, testo: string): void {
 
 /* ---------- risposte registrate ---------- */
 
-function fetchRegistrato(dir: string): Trasporto["fetch"] {
+/** fetch sulle risposte registrate di `dir` (esportato per il banco, che lo compone con errori mirati). */
+export function fetchRegistrato(dir: string): Trasporto["fetch"] {
   const leggi = (nome: string): unknown => {
     const file = path.join(dir, nome);
     try {
@@ -219,7 +220,10 @@ function fetchRegistrato(dir: string): Trasporto["fetch"] {
     }
   };
   const risposta = (corpo: unknown) => new Response(JSON.stringify(corpo), { status: 200, headers: { "content-type": "application/json" } });
+  // Latenza finta (SF_DATAFORSEO_LATENZA_MS) per vedere nell'E2E la fase live, lo stop e il calcolo in parallelo rifiutato.
+  const latenza = Math.max(0, Number(process.env.SF_DATAFORSEO_LATENZA_MS) || 0);
   return async (url, init) => {
+    if (latenza) await attesaReale(latenza, init.signal ?? undefined);
     const endpoint = url.startsWith(BASE_URL) ? url.slice(BASE_URL.length) : url;
     if (endpoint === EP_SALDO) return risposta(leggi("user-data.json"));
     if (endpoint === EP_LOCALITA) return risposta(leggi("localita-it.json"));

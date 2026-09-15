@@ -51,7 +51,9 @@ const PER_STEP: Record<string, AgenteKey> = {
   build: "script",
 };
 
-export function agenteDaFase(fase: string | null, step?: string, kind?: "cliente" | "fabbrica"): AgenteInfo {
+export function agenteDaFase(fase: string | null, step?: string, kind?: "cliente" | "fabbrica" | "traffico"): AgenteInfo {
+  // I lavori Traffico sono calcoli deterministici (nessun claude -p): sempre il chip, mai una regola AI per caso.
+  if (kind === "traffico") return { key: "script", nome: fase ?? "calcolo", sfera: false };
   if (fase) {
     for (const [re, key, nome] of REGOLE) {
       if (re.test(fase)) return { key, nome: nome ?? fase, sfera: true };
@@ -65,6 +67,7 @@ export function agenteDaFase(fase: string | null, step?: string, kind?: "cliente
 /** Rotta della scheda che ospita il run. */
 export function percorsoRun(r: { kind: string; slug?: string; step?: string; runId?: string }): string {
   if (r.kind === "fabbrica") return `/fabbrica/run/${r.runId}`;
+  if (r.kind === "traffico") return `/traffico/${r.slug}`;
   // Il logo non ha una scheda: vive nella riga dell'hub (varianti e scelta).
   if (r.step === "logo") return `/clienti/${r.slug}`;
   const scheda = r.step === "images" ? "immagini" : r.step;
@@ -74,6 +77,7 @@ export function percorsoRun(r: { kind: string; slug?: string; step?: string; run
 /** Etichetta italiana dello step per la UI. */
 export function nomeStep(r: { kind: string; step?: string }): string {
   if (r.kind === "fabbrica") return "Fabbrica";
+  if (r.kind === "traffico") return `Traffico · ${r.step ?? "lavoro"}`;
   const nomi: Record<string, string> = {
     contesto: "Contesto",
     palette: "Palette",
