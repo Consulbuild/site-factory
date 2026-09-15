@@ -783,21 +783,8 @@
 .orari__copia {
   margin-top: var(--s-2);
 }
-@media (min-width: 640px) {
-  .orari__riga {
-    grid-template-columns: 6.5rem 1fr auto;
-  }
-  .orari__riga .orari__fascia {
-    grid-column: 2;
-  }
-  .orari__riga .orari__azioni {
-    grid-column: 3;
-    grid-row: 1;
-  }
-  .orari__riga .orari__fascia--2 {
-    grid-row: 2;
-  }
-}
+/* Stessa disposizione a tutte le larghezze (giorno + azioni, poi le fasce sotto): su una
+   riga sola giorno, due fasce e le due azioni non stanno nei 528 px della card desktop. */
 
 /* ---------- Suggerimenti sotto un campo (comuni, zone) ---------- */
 .campo__cornice {
