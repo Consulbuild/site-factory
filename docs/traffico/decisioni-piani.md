@@ -253,3 +253,28 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
    di un file.
 6. Servizi abbinati per nome normalizzato.
 7. Soglie e pesi iniziali del piano, da calibrare con chiave (accordo ≥ 80 % su 20 righe cieche).
+
+## K1 — Chiavi per gruppi (piano pronto, sviluppo dopo T3; valgono sopra T2a, T2b, T4, G1)
+
+1. Richiesta di Mattia (15/09): tre gruppi in Impostazioni («Produzione e sviluppo siti», «VPS e dashboard clienti»,
+   «Ottimizzazione del traffico») e subito i campi delle chiavi del traffico, per partire coi test su dati reali.
+2. Chiavi nuove: `GOOGLE_SERVICE_ACCOUNT`, `GOOGLE_API_KEY`, `BING_WEBMASTER_API_KEY`, `DATAFORSEO_LOGIN`,
+   `DATAFORSEO_PASSWORD`, `CLOUDFLARE_DNS_API_TOKEN`. Le 9 esistenti non cambiano nome né prova.
+3. Prove solo gratuite: service account con 3 letture (token, Search Console, Site Verification) per dire quale API
+   manca; `GOOGLE_API_KEY` solo con PageSpeed (CrUX la traduce T2b alla prima lettura); DataForSEO solo con i dati
+   utente gratuiti.
+4. **Tagli del controllore**: link «dove si prende» e aiuto **solo per le 6 chiavi nuove** (le 9 esistenti restano come
+   sono); nessuna lista `ENDPOINT_GRATUITI` esportata (basta un'asserzione nel banco); il banco non verifica la firma JWT con
+   la chiave pubblica (lavoro di T2a): basta che il token venga chiesto e l'errore tradotto; nessun refactor di `KeySetup`
+   usato da altre schede.
+5. Timeout mancanti nelle prove esistenti (OpenAI, Cloudflare, BFL): **fuori da K1** (codice funzionante non richiesto).
+6. Allineamento dei piani (nota §8 di `piano-K1.md`, vale sopra i loro testi):
+   - **T2a**: toglie dal perimetro `secrets.ts` e le prove; importa normalizzazione del service account, firma JWT e scope
+     da `lib/chiavi-traffico.ts` (li crea K1); `lib/motori.ts` resta da creare in T2a con token in memoria e motori. La
+     verifica DNS usa `CLOUDFLARE_DNS_API_TOKEN`; il token del deploy **non** si allarga (il testo di `piano-T2a.md` r. 273
+     e 369-375 che lo allarga è superato, come già diceva T2a punto 3). Dopo il salvataggio di una sua chiave aggiunge solo
+     la ripresa dei motori.
+   - **T2b**: legge `GOOGLE_SERVICE_ACCOUNT` e `GOOGLE_API_KEY` con `getSecret`, nessuna prova sua.
+   - **T4**: niente modifiche a `secrets.ts` né alla route delle chiavi; `lib/dataforseo.ts` (da creare in T4) legge le due
+     chiavi con `getSecret`.
+   - **G1**: nessuna chiave nuova.

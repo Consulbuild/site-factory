@@ -38,6 +38,7 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
 | T3 | piano riscritto «Zone servite dal form lead» (`aaa89d1`, decisioni T3 punto 14); **in sviluppo** (run `wf_33cd84c6-4a8`, task `wtx5pmhnk`) |
 | T4, T5a, T2a, T2b, G1 | piano scritto e decisioni registrate (con gli effetti di T3 punto 13), da sviluppare |
 | T6b | sospeso: nessuna fonte verificata del luogo dei lavori |
+| K1 | chiavi per gruppi in Impostazioni: piano pronto (`3282bae`, decisioni K1), **si sviluppa subito dopo T3** |
 | T5b, T5c, T6b, T7a, T7b, T8, G2, G3 | da pianificare (fase 1) |
 | S0 | lavoro manuale di Mattia (README §8) |
 
