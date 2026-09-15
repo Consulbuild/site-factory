@@ -192,8 +192,9 @@ prossime schede.
   run-bus, nuovo `kind: "traffico"`, una mappa alla volta). UI «Ricerche su cui puntare» nella card Sito di
   `/traffico/[slug]` con Escludi (col motivo) e Riammetti senza chiamate; `POST /api/clients/[slug]/traffico/mappa`.
   `scripts/campione-serp.ts` (384 pagine, giudizio cieco, accordo). Banco `scripts/test-mappa-query.ts` 151/0, E2E e
-  browser su risposte registrate. Chiavi DataForSEO assenti: nessuna spesa. Aperti per Mattia: inserire le chiavi e
-  seguire il protocollo del piano (≈ 2,46 $: campione, giudizio di 20 righe, mappa di Cavaliere), impostare prima le
+  browser su risposte registrate. Nessuna spesa: chiavi DataForSEO inserite a fine giornata ma saldo 1,00 $. Aperti per
+  Mattia: ricaricare DataForSEO e seguire il protocollo del piano (≈ 2,46 $: campione, giudizio di 20 righe, mappa di
+  Cavaliere), impostare prima le
   zone di Cavaliere, decidere il peso della distanza per le aree regionali (Saggin: Rovigo e Chioggia dentro, comuni a
   5 km fuori).
 

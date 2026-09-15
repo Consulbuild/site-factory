@@ -814,10 +814,12 @@ Dubbi aperti (proposta tra parentesi):
 
 ## Calibrazione
 
-Fase 3 del 2026-09-15. **Chiavi DataForSEO assenti** (Keychain, `security find-generic-password -s site-factory -a
-DATAFORSEO_LOGIN` → assente): nessuna chiamata a pagamento, saldo non letto, calibrazione a pagamento **in attesa** (decisione T4
-punto 9). Sviluppo e prove su risposte registrate sintetiche (`scripts/fixtures/mappa-query/risposte/`, forma documentata,
-domini finti `.example`).
+Fase 3 del 2026-09-15. **Chiavi DataForSEO assenti all'avvio dello sviluppo** (Keychain): sviluppo e prove su risposte
+registrate sintetiche (`scripts/fixtures/mappa-query/risposte/`, forma documentata, domini finti `.example`). Mattia le ha
+inserite durante la giornata: a fine fase 3 `configurata() = true` e **saldo 1,00 $** letto con `user_data` (gratuito, unica
+chiamata fatta con le chiavi vere). Il saldo è sotto il doppio della stima di ogni passo a pagamento (campione 3,08 $ richiesti,
+mappa 1,32 $): il client si fermerebbe con «Credito DataForSEO insufficiente» prima di spendere, quindi la calibrazione a
+pagamento resta **in attesa della ricarica** (README §8: 50 $) e dell'ok di Mattia al protocollo qui sotto.
 
 ### Fatta senza chiavi (gratis)
 
