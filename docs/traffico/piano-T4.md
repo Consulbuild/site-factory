@@ -933,6 +933,27 @@ Somma prevista 2,46 $ (campione 1,54 + mappa 0,66 + C4-C5 0,26), sotto il tetto 
 
     35 dei 49 domini erano imprese locali in almeno una pagina (preventivofacile 29 risultati, leroymerlin 24, houzz 18,
     taskrabbit 18…). Le pagine «alta» passano da 197 a 188 (meno imprese «ottimizzate» contate in F2); soglie e punti invariati.
+- **Ricalcolo della mappa di Cavaliere** (15/09 dall'editor, regole `2026-09-c`): stima prima di spendere 0,42 $ al massimo
+  (3 lotti di volumi nuovi, quello della sede in cache, ≤ 75 pagine di Google a 0,002 $ reali; la stima interna a 0,004 $ diceva
+  0,57); **spesa reale 0,35 $** (3 lotti 0,27 + 37 pagine 0,076; 26 dalla cache), saldo 49,53 → 49,19 $. Spesa totale dei test T4
+  1,79 $. 40 comuni tutti entro 25 km (Milano 11 km … Treviglio 24, Cantù 25), 62 pagine lette, 41 risultati «nazionali».
+  Target **13 → 16**, stato «completa»:
+
+  | Pagina | Prima (regole `2026-09-b`) | Dopo |
+  |---|---|---|
+  | Home | — (nessuno) | impresa edile (senza comune, 30) · impresa edile cologno monzese (30) |
+  | Costruzioni | preventivo costruzione casa | = |
+  | Ristrutturazioni | ristrutturazione bagno varese (49 km) | ristrutturazione bagno lissone (10 km) · … cologno monzese · … brugherio |
+  | Opere e finiture | demolizioni monza · cinisello balsamo · desio | demolizioni monza · cinisello balsamo · controsoffitti |
+  | Impianti e servizi tecnici | elettricista bergamo (35 km) · brescia (74) · varese (49) | ristrutturazione chiavi in mano |
+  | Esterni | cappotto termico · impermeabilizzazione balcone | + impermeabilizzazione terrazzo |
+  | Zone servite | impresa edile saronno (22 km) · bergamo (35) · paderno dugnano (10) | impresa edile seregno (14) · giussano (19) · vimercate (11) |
+
+  Nessun target oltre 25 km né di mestiere altrui (restano misurati: idraulico milano 27.100, elettricista milano 14.800).
+  Escono per il tetto di 3 per pagina, a punteggio invariato: «demolizioni desio» (69,4, superata da «controsoffitti» 70,6),
+  «impresa edile saronno» (65,2) e «paderno dugnano» (52,4, superate da Seregno 67,9, Giussano e Vimercate 66,4; Giussano è
+  un comune nuovo tra i 40). La pagina Impianti ospita solo «ristrutturazione
+  chiavi in mano» (servizio della sua macro): «Impianti idraulici» ed «elettrici» non hanno forme di servizio nel lessico.
 
 ### Scostamenti dal testo del piano (motivati)
 
