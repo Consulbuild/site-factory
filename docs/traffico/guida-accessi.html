@@ -90,12 +90,12 @@
     <p class="intro">Senza Search Console non sappiamo per quali ricerche Cavaliere compare, da dove arrivano i clic e se le modifiche funzionano. È il primo passo perché tutto il resto si misura contro questa base.</p>
     <ol class="steps">
       <li><input type="checkbox" id="s-consenso" aria-labelledby="t-consenso"><div>
-        <h3 id="t-consenso">Consenso scritto di Cavaliere Build</h3>
-        <p class="how">Un messaggio o una mail in cui accetta che il sito cavalierebuild.it venga modificato per portare più contatti e che leggiamo i suoi dati di Search Console.</p>
-        <p class="gives"><b>Sblocca:</b> le modifiche al sito online del pilota (nessuna modifica senza consenso).</p>
+        <h3 id="t-consenso">Consenso di Cavaliere Build</h3>
+        <p class="how"><b>Fatto il 15/09/2026.</b> Cavaliere accetta che il sito cavalierebuild.it venga modificato per portare più contatti. Ogni pubblicazione resta comunque approvata da te.</p>
       </div></li>
       <li><input type="checkbox" id="s-gsc" aria-labelledby="t-gsc"><div>
-        <h3 id="t-gsc">Search Console: verifica cavalierebuild.it</h3>
+        <h3 id="t-gsc">Search Console: verifica cavalierebuild.it (facoltativo, per avere i dati subito)</h3>
+        <p class="how">La verifica si può automatizzare e il software la farà da solo per ogni cliente (piano T2a): con le chiavi di Google Cloud e il token Cloudflare solo DNS scrive il record TXT, verifica il dominio, invia la sitemap e aggiunge <code>info@consulbuild.com</code> come proprietario. Farla a mano una volta per Cavaliere costa 5 minuti e ci dà i dati prima che T2a sia pronto.</p>
         <div class="how">Con <code>info@consulbuild.com</code> su <a href="https://search.google.com/search-console" rel="noopener">search.google.com/search-console</a>:
           <ul>
             <li>«Aggiungi proprietà» → tipo <b>Dominio</b> → <code>cavalierebuild.it</code>.</li>
@@ -135,8 +135,8 @@
         <h3 id="t-sa-scrittura">Service account di scrittura (per il Mac)</h3>
         <div class="how">«IAM e amministrazione → Account di servizio → Crea» (es. <code>sf-scrittura</code>), poi «Chiavi → Aggiungi chiave → JSON»: si scarica un file.
           <ul>
-            <li>In Search Console di cavalierebuild.it: «Impostazioni → Utenti e autorizzazioni → Aggiungi utente» con l'email del service account, autorizzazione <b>Completa</b>. I domini dei clienti nuovi li verifica poi il software da solo.</li>
             <li>Incolla il contenuto del file JSON nel campo dell'editor, poi cancella il file scaricato.</li>
+            <li>Non serve aggiungerlo a mano in Search Console: diventa proprietario da solo verificando il dominio col suo record TXT.</li>
           </ul></div>
         <p class="gives"><b>Chiave:</b> Google Cloud (service account di scrittura) · <b>Sblocca:</b> verifica dei domini nuovi e invio della sitemap a ogni pubblicazione.</p>
       </div></li>
@@ -144,7 +144,7 @@
         <h3 id="t-sa-lettura">Service account di lettura (per il VPS)</h3>
         <div class="how">Stesso procedimento (es. <code>sf-lettura</code>), chiave JSON.
           <ul>
-            <li>In Search Console: aggiungilo con autorizzazione <b>Limitata</b> (solo lettura).</li>
+            <li>In Search Console lo aggiunge il software insieme a te durante la verifica (piano T2a).</li>
             <li>Il JSON va nelle credenziali di n8n sul VPS, non nell'editor: te lo chiedo quando parte la raccolta notturna (piano T2b).</li>
           </ul></div>
         <p class="gives"><b>Sblocca:</b> la raccolta dei dati anche col Mac spento.</p>
