@@ -522,7 +522,20 @@ function leggiLead(dir: string): Lead {
     return { fonte: "form", impronta: sha256({ fonte: "form", zone: zone ?? null, sede: sedeImpronta }), etichette, zone, sede };
   }
   const fonte: FonteLead = eOggetto(raw) && Array.isArray(raw.responses) ? "tally" : "assente";
+  // Tally (dismesso): la sede è il comune di brief.json `citta` («Comune» o «Comune, Provincia»), cercato per nome
+  // esatto e sempre da controllare. La prosa resta non letta (decisione T3 14); senza sede la mappa T4 non sa cosa è vicino.
+  const citta = fonte === "tally" ? cittaBrief(dir) : "";
+  if (citta) return { fonte, impronta: sha256({ fonte, sede: citta }), etichette: [], zone: undefined, sede: { comune: citta } };
   return { fonte, impronta: sha256({ fonte }), etichette: [], zone: undefined, sede: undefined };
+}
+
+function cittaBrief(dir: string): string {
+  try {
+    const brief: unknown = JSON.parse(fs.readFileSync(path.join(dir, "brief.json"), "utf8"));
+    return eOggetto(brief) && typeof brief.citta === "string" ? pulisci(brief.citta.split(",")[0] ?? "") : "";
+  } catch {
+    return "";
+  }
 }
 
 interface Proposta {
@@ -543,7 +556,7 @@ function calcolaProposta(lead: Lead, d: Dati): Proposta {
   let ctx: ContestoSede | null = null;
   let sede: Proposta["sede"] = null;
 
-  if (lead.fonte === "form") {
+  if (lead.fonte === "form" || (lead.fonte === "tally" && lead.sede !== undefined)) {
     const s = lead.sede;
     const comune = eOggetto(s) && typeof s.comune === "string" ? pulisci(s.comune) : "";
     if (!comune) {
@@ -557,7 +570,11 @@ function calcolaProposta(lead: Lead, d: Dati): Proposta {
       if (cand.length === 1) {
         const area = areaComune(d, cand[0]!);
         ctx = { chiavi: new Set([chiave, normalizza(area.nome)]), area };
-        const note = [notaNomeCambiato(d, cand[0]!, chiave), sigla ? undefined : `comune della sede scritto a mano nel form, senza provincia: controlla che sia ${conSigla(area.nome, area.sigla)}`].filter(Boolean);
+        const senzaSigla =
+          lead.fonte === "tally"
+            ? `sede letta dalla città del vecchio modulo Tally: controlla che sia ${conSigla(area.nome, area.sigla)}`
+            : `comune della sede scritto a mano nel form, senza provincia: controlla che sia ${conSigla(area.nome, area.sigla)}`;
+        const note = [notaNomeCambiato(d, cand[0]!, chiave), sigla ? undefined : senzaSigla].filter(Boolean);
         t = traduzione("tradotta", [area], note.join("; ") || undefined);
       } else if (cand.length === 0) {
         t = nonRiconosciuta("sede non trovata nell'elenco dei comuni 2026");
@@ -568,7 +585,9 @@ function calcolaProposta(lead: Lead, d: Dati): Proposta {
       viste.add(sede.chiave);
       etichette.push({ testo, origine: "sede", provenienza: "lead", ...t });
     }
+  }
 
+  if (lead.fonte === "form") {
     if (!Array.isArray(lead.zone)) {
       avvisi.push(lead.zone === undefined ? "il form lead non ha zone" : "le zone del form lead non sono un elenco: ignorate");
     } else {

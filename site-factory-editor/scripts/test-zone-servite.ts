@@ -183,13 +183,40 @@ try {
     fs.writeFileSync(path.join(dir, "brief.json"), JSON.stringify({ citta: "Cologno Monzese", descrizione: "Lavoriamo in Lombardia e ci spostiamo in tutta Italia", area_geografica: "Regionale" }));
     const l = proposta(leggiZoneServite(dir));
     const u = zoneUsabili(l);
-    caso("D Tally → da impostare, nessuna etichetta, nessuna area dalla prosa", l.esito === "da_impostare" && l.zone.lead.fonte === "tally" && l.zone.etichette.length === 0 && l.zone.sede === null, l);
-    caso("D Tally → non usabile col motivo «da impostare»", !u.ok && u.motivo === MOTIVO_DA_IMPOSTARE, u);
+    const cologno = cercaComune("Cologno Monzese", "MI", d)[0]!.codice;
+    caso(
+      "D Tally → sede dalla città del brief, da controllare, nessuna area dalla prosa",
+      l.esito === "da_controllare" && l.zone.lead.fonte === "tally" && l.zone.sede?.codice === cologno && l.zone.etichette.length === 1 && l.zone.etichette[0]!.origine === "sede" && !!l.zone.etichette[0]!.nota?.includes("vecchio modulo Tally"),
+      l,
+    );
+    caso("D Tally → non usabile finché l'operatore non controlla", !u.ok && u.motivo === MOTIVO_DA_CONTROLLARE, u);
     const v = vistaZone(l);
-    caso("D vista Tally: stato da_impostare, fonte tally", v.stato === "da_impostare" && v.fonte === "tally" && v.righe.length === 0 && v.totale === null, v);
-    const s = salvaZoneServite(dir, ["Cologno Monzese (MI)", "Tutta la regione Lombardia"], v.impronta, "2026-09-15T10:00:00.000Z");
+    caso("D vista Tally: stato da_controllare, fonte tally, la sola riga della sede", v.stato === "da_controllare" && v.fonte === "tally" && v.righe.length === 1, v);
+    const s = salvaZoneServite(dir, ["Cologno Monzese e dintorni", "Tutta la regione Lombardia"], v.impronta, "2026-09-15T10:00:00.000Z");
     const letta = leggiZoneServite(dir);
-    caso("D Tally: l'operatore imposta le zone una volta → confermate, provenienza operatore", s.ok && letta.stato === "confermate" && !letta.leadCambiato && letta.zone.etichette.every((e) => e.provenienza === "operatore") && zoneUsabili(letta).ok, s);
+    caso(
+      "D Tally: l'operatore imposta le zone una volta → confermate con la sede, dintorni centrati sulla sede",
+      s.ok && letta.stato === "confermate" && !letta.leadCambiato && letta.zone.sede?.codice === cologno && zoneUsabili(letta).ok && letta.zone.etichette[0]!.aree[0]?.tipo === "dintorni" && letta.zone.etichette[0]!.aree[0]?.codice === cologno,
+      s,
+    );
+    const km = letta.stato === "confermate" ? comuniServiti(letta.zone, d) : [];
+    caso("D Tally con sede: i comuni serviti hanno la distanza dalla sede", km.length > 0 && km.every((c) => c.kmDallaSede !== null) && km[0]!.codice === cologno, km.slice(0, 2));
+
+    const conProvincia = cliente({ id: "tally-2", formId: "x", responses: [] });
+    fs.writeFileSync(path.join(conProvincia, "brief.json"), JSON.stringify({ citta: "San Severo, Foggia " }));
+    const sev = proposta(leggiZoneServite(conProvincia));
+    caso("D Tally «Comune, Provincia» → sede dal primo pezzo", sev.zone.sede?.nome === "San Severo" && sev.esito === "da_controllare", sev.zone.sede);
+
+    const senzaCitta = cliente({ id: "tally-3", formId: "x", responses: [] });
+    fs.writeFileSync(path.join(senzaCitta, "brief.json"), JSON.stringify({ citta: "città da confermare" }));
+    const nessuna = proposta(leggiZoneServite(senzaCitta));
+    caso("D Tally con città non riconosciuta → sede nulla, riga non riconosciuta da togliere", nessuna.zone.sede === null && nessuna.esito === "da_impostare" && nessuna.zone.etichette[0]?.esito === "non_riconosciuta", nessuna);
+
+    const senzaBrief = cliente({ id: "tally-4", formId: "x", responses: [] });
+    const vuota = proposta(leggiZoneServite(senzaBrief));
+    caso("D Tally senza brief → da impostare come prima", vuota.esito === "da_impostare" && vuota.zone.sede === null && vuota.zone.etichette.length === 0, vuota);
+    const uv = zoneUsabili(vuota);
+    caso("D Tally: MOTIVO_DA_IMPOSTARE invariato", !uv.ok && uv.motivo === MOTIVO_DA_IMPOSTARE, uv);
   }
 
   /* ---------- E. input corrotti ---------- */
