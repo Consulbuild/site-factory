@@ -77,8 +77,16 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
       } catch {
         /* brief assente: resta lo slug */
       }
+      // Rilettura di client.json prima di ogni chiamata pagata: Sito sospeso o spento (o cliente eliminato) → il lavoro si ferma.
+      const sitoAttivo = () => {
+        try {
+          return leggiTraffico(readClientState(slug)).sito.stato === "attivo";
+        } catch {
+          return false;
+        }
+      };
       const avvio = startTrafficoRun(slug, "mappa", azienda, (signal) =>
-        eseguiMappa(letti.ingressi, creaClientDfs({ costi: { file: path.join(dir, FILE_COSTI), lavoro: "mappa" }, signal }), { signal }),
+        eseguiMappa(letti.ingressi, creaClientDfs({ costi: { file: path.join(dir, FILE_COSTI), lavoro: "mappa" }, signal }), { signal, sitoAttivo }),
       );
       if ("error" in avvio) return NextResponse.json({ error: `Calcolo non avviato: ${avvio.error}` }, { status: 409 });
       return NextResponse.json({ id: avvio.id }, { status: 202 });

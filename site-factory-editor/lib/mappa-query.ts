@@ -162,7 +162,10 @@ export type Target = z.infer<typeof TargetSchema>;
 export const MappaQuerySchema = z
   .strictObject({
     versione: z.literal(1),
+    /** Data del calcolo (volumi e pagine di Google): Escludi e Riammetti non la toccano. */
     generataAt: z.iso.datetime(),
+    /** Ultima riselezione senza chiamate (Escludi o Riammetti); assente se la mappa non è stata toccata dopo il calcolo. */
+    selezionataAt: z.iso.datetime().optional(),
     stato: z.enum(["completa", "parziale", "insufficiente"]),
     regole: z.strictObject({ versione: z.string(), lessicoSha: Sha, dominiSha: Sha }),
     ingressi: z.strictObject({
@@ -184,6 +187,8 @@ export const MappaQuerySchema = z
     serpNonLette: z.array(z.string()),
     /** Testi esclusi dall'operatore al momento della selezione (copia di mappa-esclusioni.json). */
     escluse: z.array(z.string()).max(500),
+    /** Testi esclusi al momento del calcolo: le loro pagine di Google non sono state lette (una riammissione chiede un ricalcolo). */
+    escluseAlCalcolo: z.array(z.string()).max(500).optional(),
     universo: z.array(RigaSchema).max(5500),
     pagine: z.array(PaginaSchema).min(1),
     target: z.array(TargetSchema).max(MAX_TARGET),
@@ -823,6 +828,9 @@ export function seleziona(universo: readonly Riga[], escluse: ReadonlySet<string
     const vincente = perGruppo.get(k) ?? uniche.find((u) => u.p.pagina.chiave === c.p.pagina.chiave && jaccard(u.urls, c.urls) >= JACCARD_VARIANTE);
     if (vincente) {
       vincente.copre.push(c.r.testo);
+      // Anche una variante coperta per risultati di Google porta il suo gruppo alla vincente: i fratelli dello stesso
+      // gruppo e comune (es. «preventivo …») vanno alla stessa vincente, non diventano ricerche separate.
+      perGruppo.set(k, vincente);
       continue;
     }
     perGruppo.set(k, c);
@@ -897,10 +905,10 @@ export function componiMappa(d: DatiMappa): MappaQuery {
   return MappaQuerySchema.parse({ versione: 1, ...d, stato: s.stato, motivi: s.motivi, target: s.target } satisfies MappaQuery);
 }
 
-/** Esclusione o riammissione: stessa mappa, nuova selezione, nessuna chiamata. */
-export function riseleziona(m: MappaQuery, escluse: readonly string[], generataAt: string): MappaQuery {
+/** Esclusione o riammissione: stessa mappa (e stessa data del calcolo), nuova selezione, nessuna chiamata. */
+export function riseleziona(m: MappaQuery, escluse: readonly string[], selezionataAt: string): MappaQuery {
   const { versione: _v, stato: _s, motivi: _m, target: _t, ...dati } = m;
-  return componiMappa({ ...dati, escluse: [...escluse], generataAt });
+  return componiMappa({ ...dati, escluse: [...escluse], selezionataAt });
 }
 
 /** Stima del costo di una mappa (UI e controllo del saldo): lotti di volumi e pagine di Google, al massimo. */
@@ -1015,6 +1023,8 @@ export interface GruppoVista {
 export interface VistaMappa {
   stato: StatoVista;
   badge: { tone: TonoVista; label: string };
+  /** Una mappa leggibile c'è, anche con 0 ricerche scelte: decide «Ricalcola…» (con dialog) al posto di «Calcola la mappa». */
+  haMappa: boolean;
   /** Frase di stato (role=status): cosa succede o cosa manca. */
   frase: string | null;
   /** Il calcolo non si può avviare: il perché, scritto accanto al bottone disabilitato. */
@@ -1065,6 +1075,7 @@ export function vistaMappa(i: IngressiVista): VistaMappa {
   const vuota: VistaMappa = {
     stato: "da_calcolare",
     badge: { tone: "brand", label: "Da calcolare" },
+    haMappa: false,
     frase: null,
     motivoBlocco: i.blocco?.motivo ?? null,
     meta: null,
@@ -1109,7 +1120,16 @@ export function vistaMappa(i: IngressiVista): VistaMappa {
   // Mappa presente.
   const escluseFile = new Set((i.esclusioni?.voci ?? []).map((v) => v.testo));
   const diverse = i.esclusioni !== null && (escluseFile.size !== m.escluse.length || m.escluse.some((t) => !escluseFile.has(t)));
-  const cambiato = [...(i.impronte ? cambiati(m, i.impronte) : []), ...(diverse ? [FILE_ESCLUSIONI] : [])];
+  // Riammesse dopo un calcolo che le aveva escluse: senza pagina di Google non possono tornare tra le scelte finché non si
+  // ricalcola. Contano solo quelle che il calcolo leggerebbe (candidate): le altre non cambierebbero nulla.
+  const alCalcolo = new Set(m.escluseAlCalcolo ?? []);
+  const macroOrdine = m.pagine.filter((p) => p.tipo === "servizio").map((p) => p.etichetta);
+  const riammesse = alCalcolo.size ? candidatiSerp(m.universo, new Set(m.escluse), macroOrdine).filter((r) => !r.serp && alCalcolo.has(r.testo)).length : 0;
+  const cambiato = [
+    ...(i.impronte ? cambiati(m, i.impronte) : []),
+    ...(diverse ? [FILE_ESCLUSIONI] : []),
+    ...(riammesse ? [`${riammesse === 1 ? "1 ricerca riammessa" : `${formatoIntero(riammesse)} ricerche riammesse`} senza pagina di Google`] : []),
+  ];
   const perTesto = new Map(m.universo.map((r) => [r.testo, r]));
   const gruppi: GruppoVista[] = m.pagine
     .map((p) => ({
@@ -1172,6 +1192,7 @@ export function vistaMappa(i: IngressiVista): VistaMappa {
     ...vuota,
     stato,
     badge: badge[stato],
+    haMappa: true,
     frase,
     meta,
     gruppi,

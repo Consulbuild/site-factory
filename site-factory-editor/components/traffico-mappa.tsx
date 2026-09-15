@@ -66,10 +66,13 @@ export function TrafficoMappa({ slug, vista: v }: { slug: string; vista: VistaMa
     origine.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     fn();
   };
-  const annulla = (fn: () => void) => {
+  const annulla = useCallback((fn: () => void) => {
     fn();
     requestAnimationFrame(() => (origine.current ?? titolo.current)?.focus());
-  };
+  }, []);
+  // onCancel stabile: il poller di useRuns ridisegna ogni 2,5 s e ConfirmDialog, a ogni onCancel nuovo, rimette il focus
+  // sulla conferma (chi è su «Annulla» finirebbe su «Ricalcola», a pagamento).
+  const annullaRicalcola = useCallback(() => annulla(() => setRicalcola(false)), [annulla]);
 
   // Fine del calcolo (il run sparisce dai vivi): la pagina rilegge la mappa dal disco.
   const eraVivo = useRef(!!run);
@@ -128,7 +131,7 @@ export function TrafficoMappa({ slug, vista: v }: { slug: string; vista: VistaMa
 
   const inCalcolo = !!run || v.stato === "in_calcolo";
   const badge = inCalcolo ? { tone: "brand" as const, label: "In calcolo" } : v.badge;
-  const haMappa = v.gruppi.length > 0 || v.stato === "poche";
+  const haMappa = v.haMappa;
   const bloccato = !!v.motivoBlocco;
   const modificabile = v.modificabile && !inCalcolo && !inviando;
   const motivoValido = motivo.trim().length >= 3 && motivo.trim().length <= 200;
@@ -338,7 +341,7 @@ export function TrafficoMappa({ slug, vista: v }: { slug: string; vista: VistaMa
         message={`Volumi dell'ultimo mese e pagine di Google degli ultimi 14 giorni vengono dalla cache; il resto si paga a DataForSEO, al massimo circa ${v.stimaUsd === null ? "—" : usd(v.stimaUsd)} $. Le esclusioni restano.`}
         confirmLabel="Ricalcola"
         onConfirm={() => void calcola()}
-        onCancel={() => annulla(() => setRicalcola(false))}
+        onCancel={annullaRicalcola}
       />
     </section>
   );

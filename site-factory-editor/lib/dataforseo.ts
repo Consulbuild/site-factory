@@ -5,8 +5,8 @@
 // - Chiavi DATAFORSEO_LOGIN/PASSWORD dal Keychain con getSecret (K1): la Basic auth si costruisce in memoria, ogni
 //   messaggio passa da redigi() e nessuna riga di costo contiene header o credenziali. Questo modulo legge soltanto.
 // - Cache su disco ~/.cache/site-factory/dataforseo/<endpoint>/<sha256>.json (SF_DATAFORSEO_CACHE): una risposta
-//   pagata non si ripaga entro il TTL (volumi 30 giorni, SERP 14, località 30); un errore non va mai in cache.
-// - Ogni chiamata pagata partita (anche fallita) = una riga in costi.ndjson col campo `cost` della risposta.
+//   pagata non si ripaga entro il TTL (volumi 30 giorni, SERP 14, località 30); un errore, anche di forma, non va mai in cache.
+// - Ogni chiamata pagata partita (anche fallita o interrotta dallo stop) = una riga in costi.ndjson col campo `cost` della risposta.
 // - SF_DATAFORSEO_REGISTRATE=<cartella>: risposte registrate per banchi ed E2E senza chiavi (cache separata in
 //   <cache>/registrate, mai mescolata ai dati veri). Regole di lettura: user-data.json, localita-it.json,
 //   volumi-<location_code>.json (le keyword chieste e assenti dalla registrazione tornano con search_volume null,
@@ -96,6 +96,7 @@ const BustaSchema = z.object({
     .optional(),
 });
 type Busta = z.infer<typeof BustaSchema>;
+type Task = NonNullable<Busta["tasks"]>[number];
 
 const VoceVolumeSchema = z.object({
   keyword: z.string(),
@@ -375,13 +376,22 @@ export function creaClientDfs(o: OpzioniDfs = {}) {
     return { busta: busta.data, http: r.status };
   }
 
-  /** Chiamata pagata con tentativi, spaziatura Google Ads, riga di costo per ogni tentativo partito e cache. */
-  async function pagata(endpoint: EndpointPagato, corpo: unknown[], voci: number, taskOk: (codice: number) => boolean): Promise<{ task: NonNullable<Busta["tasks"]>[number]; fonte: Fonte; dallaCache: boolean }> {
+  /**
+   * Chiamata pagata con tentativi, spaziatura Google Ads, riga di costo per ogni tentativo partito e cache. `leggi` valida
+   * il task e ne estrae i dati (ErroreDfs «forma» se fuori forma): in cache va solo un task letto, e una voce di cache che
+   * non si legge vale come assente.
+   */
+  async function pagata<T>(endpoint: EndpointPagato, corpo: unknown[], voci: number, taskOk: (codice: number) => boolean, leggi: (task: Task) => T): Promise<{ dati: T; fonte: Fonte; dallaCache: boolean }> {
     const sha = chiaveRichiesta(endpoint, corpo);
     const inCache = leggiCache(endpoint, sha);
     if (inCache) {
-      stat.dallaCache += 1;
-      return { task: inCache.risposta as NonNullable<Busta["tasks"]>[number], fonte: { endpoint, richiestaSha: sha, lettoAt: inCache.lettoAt, costoUsd: inCache.costoUsd }, dallaCache: true };
+      try {
+        const dati = leggi(inCache.risposta as Task);
+        stat.dallaCache += 1;
+        return { dati, fonte: { endpoint, richiestaSha: sha, lettoAt: inCache.lettoAt, costoUsd: inCache.costoUsd }, dallaCache: true };
+      } catch {
+        /* voce fuori forma: si richiede e si riscrive */
+      }
     }
     for (let tentativo = 1; ; tentativo++) {
       // Spaziatura solo al primo tentativo: le attese dei tentativi (≥ 5 s) la coprono già.
@@ -390,6 +400,8 @@ export function creaClientDfs(o: OpzioniDfs = {}) {
         if (ultimaAds && attesa > 0) await attendi(attesa, o.signal);
         ultimaAds = Date.now();
       }
+      // Già fermato: il tentativo non parte (e non lascia una riga di costo).
+      o.signal?.throwIfAborted();
       const inizio = Date.now();
       const at = adesso().toISOString();
       let costo = 0;
@@ -404,18 +416,21 @@ export function creaClientDfs(o: OpzioniDfs = {}) {
           const err = erroreDaCodice(200, task.status_code, task.status_message)!;
           throw err;
         }
+        const dati = leggi(task);
         registraCosto({ at, lavoro: o.costi?.lavoro ?? "mappa", endpoint, task: 1, voci, costoUsd: costo, statusCode: codice, esito: "ok", durataMs: Date.now() - inizio });
         stat.costoUsd += costo;
         stat.chiamatePagate += 1;
         const lettoAt = adesso().toISOString();
         scriviAtomico(fileCache(endpoint, sha), JSON.stringify({ richiesta: { endpoint, corpo }, lettoAt, costoUsd: costo, risposta: task } satisfies VoceCache));
-        return { task, fonte: { endpoint, richiestaSha: sha, lettoAt, costoUsd: costo }, dallaCache: false };
+        return { dati, fonte: { endpoint, richiestaSha: sha, lettoAt, costoUsd: costo }, dallaCache: false };
       } catch (e) {
-        if (o.signal?.aborted) throw o.signal.reason ?? e;
         if (e instanceof ErroreDfs) codice = e.codice ?? codice;
+        // Anche un tentativo interrotto dallo stop lascia la sua riga: DataForSEO addebita comunque un task partito
+        // (costo e codice non noti: 0), così il registro resta confrontabile col saldo.
         registraCosto({ at, lavoro: o.costi?.lavoro ?? "mappa", endpoint, task: 1, voci, costoUsd: costo, statusCode: codice, esito: "errore", durataMs: Date.now() - inizio });
         stat.costoUsd += costo;
         stat.chiamatePagate += 1;
+        if (o.signal?.aborted) throw o.signal.reason ?? e;
         if (e instanceof ErroreDfs && (e.tipo === "limite" || e.tipo === "servizio") && tentativo < TENTATIVI) {
           await attendi(ATTESE_MS[tentativo - 1] ?? ATTESE_MS[ATTESE_MS.length - 1], o.signal);
           continue;
@@ -473,45 +488,45 @@ export function creaClientDfs(o: OpzioniDfs = {}) {
     /** Volumi Google Ads di ≤ 1.000 keyword in una località (un task Live). */
     async volumi(keywords: readonly string[], locationCode: number): Promise<EsitoVolumi> {
       const corpo = corpoVolumi(keywords, locationCode);
-      const { task, fonte, dallaCache } = await pagata(EP_VOLUMI, corpo, keywords.length, (c) => c === 20000);
-      const voci = z.array(VoceVolumeSchema).safeParse(task.result ?? []);
-      if (!voci.success) throw new ErroreDfs("forma", percorsoZod("tasks[0].result", voci.error));
-      const risultati = new Map<string, VolumeLetto>();
-      for (const v of voci.data) {
-        const mesi = (v.monthly_searches ?? []).map((m) => m.year * 12 + (m.month - 1));
-        const ultimo = mesi.length ? Math.max(...mesi) : null;
-        const datiAl = ultimo === null ? null : `${Math.floor(ultimo / 12)}-${String((ultimo % 12) + 1).padStart(2, "0")}`;
-        risultati.set(v.keyword.normalize("NFC").toLowerCase(), { valore: v.search_volume, datiAl, spell: v.spell ?? null });
-      }
+      const { dati: risultati, fonte, dallaCache } = await pagata(EP_VOLUMI, corpo, keywords.length, (c) => c === 20000, (task) => {
+        const voci = z.array(VoceVolumeSchema).safeParse(task.result ?? []);
+        if (!voci.success) throw new ErroreDfs("forma", percorsoZod("tasks[0].result", voci.error));
+        const letti = new Map<string, VolumeLetto>();
+        for (const v of voci.data) {
+          const mesi = (v.monthly_searches ?? []).map((m) => m.year * 12 + (m.month - 1));
+          const ultimo = mesi.length ? Math.max(...mesi) : null;
+          const datiAl = ultimo === null ? null : `${Math.floor(ultimo / 12)}-${String((ultimo % 12) + 1).padStart(2, "0")}`;
+          letti.set(v.keyword.normalize("NFC").toLowerCase(), { valore: v.search_volume, datiAl, spell: v.spell ?? null });
+        }
+        return letti;
+      });
       return { risultati, fonte, dallaCache };
     },
 
     /** Pagina di Google da mobile per una ricerca e un punto (un task Live, primi 10 risultati, AI Overview). */
     async serp(keyword: string, coordinate: string): Promise<EsitoSerp> {
       const corpo = corpoSerp(keyword, coordinate);
-      const { task, fonte, dallaCache } = await pagata(EP_SERP, corpo, 1, (c) => c === 20000 || c === 40102);
-      const checkVuota = `https://www.google.it/search?q=${encodeURIComponent(keyword)}&hl=it&gl=it`;
-      if (task.status_code === 40102 || !task.result?.length) {
-        return { grezza: { checkUrl: checkVuota, vuota: true, organici: [], localPack: [], aiOverview: false, annunci: 0, localServices: false }, fonte, dallaCache };
-      }
-      const r = RisultatoSerpSchema.safeParse(task.result[0]);
-      if (!r.success) throw new ErroreDfs("forma", percorsoZod("tasks[0].result[0]", r.error));
-      const items = r.data.items ?? [];
-      const organici: SerpGrezza["organici"] = [];
-      const localPack: SerpGrezza["localPack"] = [];
-      for (const [i, item] of items.entries()) {
-        if (item.type === "organic") {
-          const x = OrganicoSchema.safeParse(item);
-          if (!x.success) throw new ErroreDfs("forma", percorsoZod(`tasks[0].result[0].items[${i}]`, x.error));
-          organici.push({ rankAbsolute: x.data.rank_absolute, dominio: x.data.domain, url: x.data.url, titolo: x.data.title ?? "" });
-        } else if (item.type === "local_pack") {
-          const x = LocalPackSchema.safeParse(item);
-          if (!x.success) throw new ErroreDfs("forma", percorsoZod(`tasks[0].result[0].items[${i}]`, x.error));
-          localPack.push({ dominio: x.data.domain ?? null, pagata: x.data.is_paid === true });
+      const { dati: grezza, fonte, dallaCache } = await pagata(EP_SERP, corpo, 1, (c) => c === 20000 || c === 40102, (task): SerpGrezza => {
+        if (task.status_code === 40102 || !task.result?.length) {
+          return { checkUrl: `https://www.google.it/search?q=${encodeURIComponent(keyword)}&hl=it&gl=it`, vuota: true, organici: [], localPack: [], aiOverview: false, annunci: 0, localServices: false };
         }
-      }
-      return {
-        grezza: {
+        const r = RisultatoSerpSchema.safeParse(task.result[0]);
+        if (!r.success) throw new ErroreDfs("forma", percorsoZod("tasks[0].result[0]", r.error));
+        const items = r.data.items ?? [];
+        const organici: SerpGrezza["organici"] = [];
+        const localPack: SerpGrezza["localPack"] = [];
+        for (const [i, item] of items.entries()) {
+          if (item.type === "organic") {
+            const x = OrganicoSchema.safeParse(item);
+            if (!x.success) throw new ErroreDfs("forma", percorsoZod(`tasks[0].result[0].items[${i}]`, x.error));
+            organici.push({ rankAbsolute: x.data.rank_absolute, dominio: x.data.domain, url: x.data.url, titolo: x.data.title ?? "" });
+          } else if (item.type === "local_pack") {
+            const x = LocalPackSchema.safeParse(item);
+            if (!x.success) throw new ErroreDfs("forma", percorsoZod(`tasks[0].result[0].items[${i}]`, x.error));
+            localPack.push({ dominio: x.data.domain ?? null, pagata: x.data.is_paid === true });
+          }
+        }
+        return {
           checkUrl: r.data.check_url,
           vuota: organici.length === 0,
           organici,
@@ -519,10 +534,9 @@ export function creaClientDfs(o: OpzioniDfs = {}) {
           aiOverview: items.some((x) => x.type === "ai_overview"),
           annunci: items.filter((x) => x.type === "paid").length,
           localServices: items.some((x) => x.type === "local_services"),
-        },
-        fonte,
-        dallaCache,
-      };
+        };
+      });
+      return { grezza, fonte, dallaCache };
     },
   };
 }

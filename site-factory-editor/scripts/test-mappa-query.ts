@@ -10,8 +10,8 @@ import os from "node:os";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import * as mq from "../lib/mappa-query.ts";
-import { difficolta, livelloDaPunti, normalizzaDominio, riduciSerp, spazioOrganico, type Domini, type LuogoQuery, type SerpGrezza } from "../lib/serp-classifica.ts";
-import { ATTESE_MS, BASE_URL, ErroreDfs, creaClientDfs, corpoVolumi, fetchRegistrato, trovaLocalita, type Localita } from "../lib/dataforseo.ts";
+import { difficolta, fraseFeature, livelloDaPunti, normalizzaDominio, riduciSerp, spazioOrganico, type Domini, type LuogoQuery, type SerpGrezza } from "../lib/serp-classifica.ts";
+import { ATTESE_MS, BASE_URL, ErroreDfs, creaClientDfs, corpoSerp, corpoVolumi, fetchRegistrato, trovaLocalita, type Localita } from "../lib/dataforseo.ts";
 import { FASI, escludiRicerca, eseguiMappa, leggiContesto, leggiEsclusioni, leggiIngressi, leggiMappa, leggiRegole, riammettiRicerca } from "../lib/mappa-lavoro.ts";
 import { agenteDaFase, nomeStep, percorsoRun } from "../lib/agenti.ts";
 import { accordo, csvGiudizio, eseguiCampione, leggiCsv, matrice, selezionaGiudizio } from "./campione-serp.ts";
@@ -141,6 +141,7 @@ function mappaDi(u: mq.Riga[], com: Extract<mq.EsitoComuni, { ok: true }>, esclu
     dominiNonInElenco: [],
     serpNonLette: [],
     escluse,
+    escluseAlCalcolo: escluse,
     universo: u,
     pagine: mq.pagineDelContesto(c),
   });
@@ -292,6 +293,15 @@ try {
       pittore.teste.some((t) => t.testo === "verniciatura infissi") && !pittore.teste.some((t) => t.testo === "sostituzione infissi" || t.testo === "serramentista") && pittore.teste.find((t) => t.testo === "imbianchino")?.origine === "mestiere",
       pittore.teste.map((t) => t.testo),
     );
+    const testeDi = (settore: string, servizio: string) => mq.testeDelContesto({ settore_normalizzato: settore, servizi_atomizzati: [{ servizio }], macro_categorie: [] }, lessico).teste.filter((t) => t.origine === "servizio").map((t) => t.testo);
+    const cappotti = testeDi("Edilizia", "Rivestimenti a cappotto");
+    const facciate = testeDi("Edilizia", "Rivestimento facciate in pietra");
+    const idrico = testeDi("Idraulico", "Impianti idrico-sanitari");
+    caso(
+      "8. «rivestiment» e «sanitar» solo per il servizio reale: cappotti, facciate e impianti idrico-sanitari senza posa piastrelle né sostituzione sanitari",
+      isDeepStrictEqual(cappotti, ["cappotto termico"]) && isDeepStrictEqual(facciate, ["rifacimento facciata"]) && isDeepStrictEqual(idrico, []) && testeDi("Edilizia", "Rivestimenti").includes("posa piastrelle") && testeDi("Idraulico", "Sanitari e rubinetteria").includes("sostituzione sanitari"),
+      { cappotti, facciate, idrico },
+    );
     const vuoto = mq.testeDelContesto({ ...contesto, servizi_atomizzati: [] }, lessico);
     caso("8. contesto senza servizi → nessuna testa di servizio (il blocco lo dice il lavoro)", vuoto.teste.every((t) => t.origine === "mestiere"));
   }
@@ -417,6 +427,52 @@ try {
     caso("14. una riga per chiamata pagata partita, anche fallita, col costo della risposta", righe14.length === 3 && righe14.every((r) => mq.RigaCostoSchema.safeParse(r).success) && righe14[1].costoUsd === 0.09 && righe14[1].esito === "ok" && righe14[0].esito === "errore" && righe14[2].statusCode === 40100, righe14);
     caso("14. nessuna credenziale nelle righe né nei messaggi", ![testo14, e14 instanceof Error ? e14.message : ""].some((t) => t.includes("login-prova") || t.includes("password-segreta-123") || t.includes(basic)));
     caso("14. la Basic auth parte solo nell'header", f14.chiamate.every((c) => (c.init.headers as Record<string, string>).Authorization === `Basic ${basic}` && !c.url.includes("password")));
+
+    // 11. una risposta pagata fuori forma non va in cache; una voce di cache fuori forma vale come assente
+    const serpRelativa = { status_code: 20000, cost: 0.004, tasks: [{ status_code: 20000, cost: 0.004, result: [{ check_url: "https://www.google.it/search?q=z", items: [{ type: "organic", rank_absolute: 1, domain: "x.it", url: "/relativo" }] }] }] };
+    const serpBuona = { status_code: 20000, cost: 0.004, tasks: [{ status_code: 20000, cost: 0.004, result: [{ check_url: "https://www.google.it/search?q=z", items: [{ type: "organic", rank_absolute: 1, domain: "x.it", url: "https://x.it/" }] }] }] };
+    const fForma = finto({ [EP_S]: [json(serpRelativa), json(serpBuona)] });
+    const dirForma = cacheDir();
+    const costiForma = path.join(tmp, "costi-forma.ndjson");
+    const cForma = () => creaClientDfs({ trasporto: fForma.trasporto, registrate: null, cacheDir: dirForma, costi: { file: costiForma, lavoro: "mappa" }, attendi });
+    const eForma = await lancia(() => cForma().serp("z", "45.0000,9.0000,100000"));
+    const dopoForma = await cForma().serp("z", "45.0000,9.0000,100000");
+    const righeForma = fs.readFileSync(costiForma, "utf8").trim().split("\n").map((l) => JSON.parse(l) as mq.RigaCosto);
+    caso(
+      "11. SERP pagata fuori forma → «forma», riga «errore» col costo, niente cache: il giro dopo la richiede",
+      eForma instanceof ErroreDfs && eForma.tipo === "forma" && fForma.chiamate.length === 2 && !dopoForma.dallaCache && righeForma.length === 2 && righeForma[0]!.esito === "errore" && righeForma[0]!.costoUsd === 0.004 && righeForma[1]!.esito === "ok",
+      { e: eForma instanceof Error ? eForma.message : eForma, chiamate: fForma.chiamate.length, righeForma },
+    );
+    const corpoZ = corpoSerp("z", "45.0000,9.0000,100000");
+    const shaZ = crypto.createHash("sha256").update(`${EP_S}\n${JSON.stringify(corpoZ)}`).digest("hex");
+    const dirRotta = cacheDir();
+    fs.mkdirSync(path.join(dirRotta, EP_S.replace(/\//g, "_")), { recursive: true });
+    fs.writeFileSync(path.join(dirRotta, EP_S.replace(/\//g, "_"), `${shaZ}.json`), JSON.stringify({ richiesta: { endpoint: EP_S, corpo: corpoZ }, lettoAt: ADESSO, costoUsd: 0.004, risposta: serpRelativa.tasks[0] }));
+    const fRotta = finto({ [EP_S]: [json(serpBuona)] });
+    const daRotta = await creaClientDfs({ trasporto: fRotta.trasporto, registrate: null, cacheDir: dirRotta, attendi, adesso: () => new Date(ADESSO) }).serp("z", "45.0000,9.0000,100000");
+    const riletta = await creaClientDfs({ trasporto: fRotta.trasporto, registrate: null, cacheDir: dirRotta, attendi, adesso: () => new Date(ADESSO) }).serp("z", "45.0000,9.0000,100000");
+    caso("11. voce di cache fuori forma → come assente: nuova chiamata e cache riscritta", fRotta.chiamate.length === 1 && !daRotta.dallaCache && riletta.dallaCache, fRotta.chiamate.length);
+
+    // 14. stop dalla status bar durante una chiamata pagata: la riga del tentativo partito resta
+    const costiStop = path.join(tmp, "costi-stop.ndjson");
+    const ac = new AbortController();
+    const inVolo = {
+      getSecret: (k: KeyName) => (k === "DATAFORSEO_LOGIN" ? "login-prova" : "password-segreta-123"),
+      fetch: (_url: string, init: RequestInit) => new Promise<Response>((_, reject) => init.signal!.addEventListener("abort", () => reject(init.signal!.reason), { once: true })),
+    };
+    const cStop = creaClientDfs({ trasporto: inVolo, registrate: null, cacheDir: cacheDir(), costi: { file: costiStop, lavoro: "mappa" }, attendi, signal: ac.signal });
+    const pStop = lancia(() => cStop.serp("k", "45.0000,9.0000,100000"));
+    setTimeout(() => ac.abort(), 5);
+    const eStop = await pStop;
+    const righeDi = (f: string) => (fs.existsSync(f) ? fs.readFileSync(f, "utf8").trim().split("\n").map((l) => JSON.parse(l) as mq.RigaCosto) : []);
+    const righeStop = righeDi(costiStop);
+    await lancia(() => cStop.serp("k2", "45.0000,9.0000,100000"));
+    const righeDopo = righeDi(costiStop).length;
+    caso(
+      "14. stop durante una chiamata pagata → riga «errore» (costo e codice 0), poi l'interruzione; a stop già dato nessuna riga",
+      !(eStop instanceof ErroreDfs) && ac.signal.aborted && righeStop.length === 1 && righeStop[0]!.esito === "errore" && righeStop[0]!.statusCode === 0 && righeStop[0]!.costoUsd === 0 && righeDopo === 1,
+      { e: String(eStop), righeStop, righeDopo },
+    );
   }
 
   /* ---------- 15 località ---------- */
@@ -474,6 +530,13 @@ try {
     caso("16. segnale locale anche nell'URL o con la sigla tra parentesi", url.organici.every((o) => o.regola === "ignoto+segnale-locale"));
     const f = riduciSerp(g([["a.example", "x"]], { localPack: [{ dominio: "a.example", pagata: false }, { dominio: null, pagata: false }, { dominio: "b.example", pagata: true }], aiOverview: true, annunci: 3, localServices: true }), { domini, dominioCliente: null, luogo: brugherio });
     caso("17. feature: schede non pagate del local pack, AI Overview, annunci, Local Services", isDeepStrictEqual(f.feature, { localPack: 2, aiOverview: true, annunci: 3, localServices: true }) && isDeepStrictEqual(f.localPackDomini, ["a.example"]));
+    const soloLs = fraseFeature({ localPack: 2, aiOverview: false, annunci: 0, localServices: true });
+    const conLs = fraseFeature({ localPack: 0, aiOverview: true, annunci: 2, localServices: true });
+    caso(
+      "17. frase delle feature: con Local Services mai «nessun annuncio»",
+      soloLs === "Nella pagina di Google: mappa con 2 schede, nessuna panoramica AI, solo annunci Local Services." && conLs === "Nella pagina di Google: nessuna mappa, panoramica AI, 2 annunci e annunci Local Services." && fraseFeature({ localPack: 0, aiOverview: false, annunci: 0, localServices: false }).endsWith("nessun annuncio."),
+      [soloLs, conLs],
+    );
     const vuota = riduciSerp(g([], { vuota: true }), { domini, dominioCliente: null, luogo: brugherio });
     const dv = difficolta(vuota, "ristrutturazione bagno", brugherio);
     caso("18. SERP vuota → bassa col fattore dedicato", vuota.vuota && dv.livello === "bassa" && dv.fattori.length === 1 && dv.fattori[0]!.codice === "vuota");
@@ -529,6 +592,27 @@ try {
     caso("21. al massimo metà dei target senza volume", righe.filter((r) => !r.volume.valore).length * 2 <= righe.length);
     caso("21. pagine solo home, servizio:*, zone", mappa.target.every((t) => /^(home|zone|servizio:[a-z0-9-]+)$/.test(t.pagina)));
     caso("21. ogni target ha il suo perché con volume, comune, difficoltà, pagina e punteggio", mappa.target.every((t) => t.perche.length >= 5 && t.perche.some((f) => f.startsWith("Pagina:")) && t.perche.some((f) => f.startsWith("Punteggio"))));
+
+    // Doppioni d'intento: W copre V per risultati di Google (Jaccard 0,67); V2, stesso gruppo e comune di V ma Jaccard 0,25
+    // con W, va alla stessa vincente invece di diventare una ricerca separata.
+    const modello = misurato.find((r) => r.serp && r.punteggio && r.difficolta?.livello !== "alta" && r.testa.origine === "servizio" && r.tipo === "con_comune" && mq.paginaDi(r, "015081", mappa.pagine) !== null)!;
+    const variante = (testo: string, gruppo: string, totale: number, host: string[]): mq.Riga => ({
+      ...modello,
+      testo,
+      testa: { ...modello.testa, gruppo },
+      volume: { ...modello.volume, valore: 100, stato: "misurato" },
+      serp: { ...modello.serp!, organici: host.map((h, i) => ({ ...modello.serp!.organici[0]!, pos: i + 1, url: `https://${h}.example/` })) },
+      punteggio: { ...modello.punteggio!, totale },
+    });
+    const W = variante("ristrutturazione appartamento prova", "appartamento", 90, ["a", "b", "c", "d", "e"]);
+    const V = variante("rifacimento bagno prova", "bagno", 80, ["a", "b", "c", "d", "f"]);
+    const V2 = variante("preventivo rifacimento bagno prova", "bagno", 70, ["a", "b", "g", "h", "i"]);
+    const sel = mq.seleziona([V2, V, W], new Set(), mappa.pagine, "015081", 0);
+    caso(
+      "21. variante coperta per risultati di Google: il fratello dello stesso gruppo e comune va alla stessa vincente",
+      isDeepStrictEqual(sel.target.map((t) => t.testo), [W.testo]) && sel.target[0]!.perche.at(-1) === `Copre anche «${V.testo}», «${V2.testo}»: stessa intenzione o quasi gli stessi risultati di Google.`,
+      sel.target.map((t) => [t.testo, t.perche.at(-1)]),
+    );
   }
   {
     const tutteAlte = misuraSerp(misuraVolumi(base.universo), new Set(), (r) => serpFinta(r, hash(r.testo) % 40 === 0 ? "bassa" : "alta"));
@@ -549,7 +633,10 @@ try {
     const e2 = mq.togliEsclusione(e1.esclusioni, t0.testo);
     if (!e2.ok) throw new Error(e2.errore);
     const riammessa = mq.riseleziona(esclusa, e2.esclusioni.voci.map((v) => v.testo), "2026-09-17T10:00:00.000Z");
-    caso("23. riammissione → mappa uguale a prima salvo generataAt", isDeepStrictEqual({ ...riammessa, generataAt: "" }, { ...mappa, generataAt: "" }));
+    caso(
+      "23. riammissione → mappa uguale a prima salvo selezionataAt; la data del calcolo non cambia",
+      isDeepStrictEqual({ ...riammessa, selezionataAt: "" }, { ...mappa, selezionataAt: "" }) && riammessa.generataAt === mappa.generataAt && riammessa.selezionataAt === "2026-09-17T10:00:00.000Z" && esclusa.generataAt === mappa.generataAt,
+    );
     const assente = mq.aggiungiEsclusione(mappa, e0, "ricerca inesistente", "motivo valido", ADESSO);
     const nonEsclusa = mq.togliEsclusione(e0, t0.testo);
     const corto = mq.aggiungiEsclusione(mappa, e0, t0.testo, "no", ADESSO);
@@ -617,6 +704,29 @@ try {
     const poche = mappaDi(misuraSerp(misuraVolumi(base.universo), new Set(), (r) => serpFinta(r, hash(r.testo) % 40 === 0 ? "bassa" : "alta")), com);
     const vp = vista({ lettura: { stato: "ok", mappa: poche } });
     caso("vista: poche ricerche → «Poche ricerche» coi motivi", vp.stato === "poche" && vp.motiviPoche.length > 0 && vp.frase!.startsWith("Solo "));
+    const zero = mappaDi(misuraSerp(misuraVolumi(base.universo), new Set(), (r) => serpFinta(r, "alta")), com);
+    const vz = vista({ lettura: { stato: "ok", mappa: zero }, impronte: { ...imp, contestoSha: "f".repeat(64) } });
+    caso("vista: mappa con 0 ricerche scelte e ingressi cambiati → c'è una mappa (Ricalcola… col dialog), «Da ricalcolare»", zero.target.length === 0 && vz.haMappa && vz.gruppi.length === 0 && vz.stato === "da_ricalcolare" && !senza({}).haMappa, [zero.target.length, vz.stato, vz.haMappa]);
+
+    // Escludi e Riammetti non spostano la data del calcolo: meta e banner dell'ultimo errore restano veri.
+    const riselezionata = mq.riseleziona(mappa, [], new Date(ora + 60_000).toISOString());
+    const vr = vista({ lettura: { stato: "ok", mappa: riselezionata }, ultimo: { esito: "errore", messaggio: "Credito DataForSEO esaurito (40210): …", at: ora } });
+    caso("vista: esclusione dopo un ricalcolo fallito → il banner d'errore resta, «Calcolata il» è la data del calcolo", vr.erroreUltimo?.startsWith("Credito") === true && vr.meta === pronta.meta, [vr.erroreUltimo, vr.meta]);
+
+    // Riammessa dopo un ricalcolo che l'aveva esclusa: senza pagina di Google non torna tra le scelte, la vista chiede il ricalcolo.
+    const tEx = mappa.target[0]!.testo;
+    const conEsclusa = mappaDi(misuraSerp(misuraVolumi(base.universo), new Set([tEx])), com, [tEx]);
+    const riammessaSenzaSerp = mq.riseleziona(conEsclusa, [], new Date(ora).toISOString());
+    const vRi = vista({ lettura: { stato: "ok", mappa: riammessaSenzaSerp } });
+    caso(
+      "1. riammessa dopo un ricalcolo → non tra le scelte, «Da ricalcolare» con «1 ricerca riammessa senza pagina di Google»",
+      conEsclusa.universo.find((r) => r.testo === tEx)!.serp === null && !riammessaSenzaSerp.target.some((t) => t.testo === tEx) && vRi.stato === "da_ricalcolare" && isDeepStrictEqual(vRi.cambiati, ["1 ricerca riammessa senza pagina di Google"]),
+      [vRi.stato, vRi.cambiati],
+    );
+    const esclusaDopo = mq.riseleziona(mappa, [tEx], new Date(ora).toISOString());
+    const vEx = vista({ lettura: { stato: "ok", mappa: esclusaDopo }, esclusioni: { versione: 1, voci: [{ testo: tEx, motivo: "prova", at: ADESSO }] } });
+    const promosse = mq.candidatiSerp(esclusaDopo.universo, new Set([tEx]), contesto.macro_categorie.map((m) => m.nome)).filter((r) => !r.serp).length;
+    caso("1. esclusione dopo il calcolo (il posto va a una ricerca mai letta) → nessun ricalcolo chiesto", promosse > 0 && vEx.stato === "pronta" && vEx.cambiati.length === 0, [promosse, vEx.stato, vEx.cambiati]);
   }
 
   /* ---------- 27 chiavi ---------- */
@@ -679,6 +789,22 @@ try {
     const dirNuovo = nuovoCliente("job-40210");
     await esegui(dirNuovo, creaClientDfs({ trasporto: nessunaChiave, registrate: errori, cacheDir: cacheDir() }));
     caso("28. 40210 senza mappa precedente → nessun file della mappa", !fs.existsSync(path.join(dirNuovo, mq.FILE_MAPPA)));
+
+    // Sito sospeso a metà calcolo (dopo i volumi e 10 pagine di Google): stop come uno stop, niente scrittura, spesa fermata.
+    const lettiSosp = leggiIngressi(dirJob, stato, regole);
+    if (!lettiSosp.ok) throw new Error(lettiSosp.blocco.motivo);
+    const costiSosp = path.join(tmp, "costi-sospeso.ndjson");
+    let controlli = 0;
+    const evSosp: { type: string; message?: string }[] = [];
+    const clientSosp = creaClientDfs({ trasporto: nessunaChiave, registrate: RISPOSTE, cacheDir: cacheDir(), costi: { file: costiSosp, lavoro: "mappa" } });
+    for await (const ev of eseguiMappa(lettiSosp.ingressi, clientSosp, { signal: new AbortController().signal, adesso: () => new Date(ADESSO), sitoAttivo: () => ++controlli <= 4 + 10 })) evSosp.push(ev);
+    const righeSosp = fs.readFileSync(costiSosp, "utf8").trim().split("\n").length;
+    const errSosp = evSosp.filter((e) => e.type === "error");
+    caso(
+      "7. Sito sospeso durante il calcolo → «run interrotto», nessun done, mappa precedente intatta, nessuna chiamata dopo il controllo",
+      errSosp.length === 1 && errSosp[0]!.message!.startsWith(mq.MESSAGGIO_INTERROTTO) && !evSosp.some((e) => e.type === "done") && mq.sha256(fs.readFileSync(path.join(dirJob, mq.FILE_MAPPA), "utf8")) === shaPrima && righeSosp === 4 + 10,
+      [errSosp, righeSosp],
+    );
 
     // 29. una SERP in errore permanente
     const registrato = fetchRegistrato(RISPOSTE);

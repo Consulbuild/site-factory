@@ -236,7 +236,8 @@ function scriviAtomico(file: string, testo: string): void {
 function scriviMappa(dir: string, m: mq.MappaQuery): void {
   // Compatto: con 2.656 righe il file indentato passa i 3 MB (si legge con jq, vedi docs/DEBUG.md).
   scriviAtomico(path.join(dir, mq.FILE_MAPPA), JSON.stringify(m) + "\n");
-  fs.appendFileSync(path.join(dir, mq.FILE_STORICO), JSON.stringify({ at: m.generataAt, versioneRegole: m.regole.versione, stato: m.stato, target: m.target.map((t) => ({ testo: t.testo, pagina: t.pagina })) }) + "\n");
+  // `at` = da quando valgono questi target (T7): la riselezione se c'è, altrimenti il calcolo.
+  fs.appendFileSync(path.join(dir, mq.FILE_STORICO), JSON.stringify({ at: m.selezionataAt ?? m.generataAt, versioneRegole: m.regole.versione, stato: m.stato, target: m.target.map((t) => ({ testo: t.testo, pagina: t.pagina })) }) + "\n");
 }
 
 /* ---------- il lavoro (§7) ---------- */
@@ -245,13 +246,21 @@ export const FASI = ["Controllo dei dati", "Ricerche possibili", "Volumi di rice
 const PARALLELE_SERP = 5;
 const dollari = (n: number) => n.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+/** Il Sito non è più attivo (sospeso, spento, cliente eliminato): il lavoro si ferma come uno stop, senza scrivere. */
+class SitoNonAttivo extends Error {}
+
 /**
  * Sei fasi, eventi per il bus. Un errore DataForSEO (credenziali, credito, limiti dopo i tentativi, forma) ferma il
  * lavoro con un solo `error` e nessuna scrittura; una pagina di Google non letta dopo i tentativi rende la mappa «parziale».
+ * `sitoAttivo` (la route rilegge client.json) si controlla prima di ogni chiamata pagata e prima di scrivere: con il Sito
+ * sospeso o spento durante il calcolo la mappa resta com'è (piano §8).
  */
-export async function* eseguiMappa(ing: IngressiMappa, client: ClientDfs, opz: { signal: AbortSignal; adesso?: () => Date }): AsyncGenerator<RunEvent> {
+export async function* eseguiMappa(ing: IngressiMappa, client: ClientDfs, opz: { signal: AbortSignal; adesso?: () => Date; sitoAttivo?: () => boolean }): AsyncGenerator<RunEvent> {
   const adesso = opz.adesso ?? (() => new Date());
   const avvisi = [...ing.comuni.avvisi];
+  const sitoAncoraAttivo = () => {
+    if (opz.sitoAttivo && !opz.sitoAttivo()) throw new SitoNonAttivo();
+  };
   try {
     yield { type: "phase", label: FASI[0] };
     const sede = ing.comuni.sede;
@@ -283,6 +292,7 @@ export async function* eseguiMappa(ing: IngressiMappa, client: ClientDfs, opz: {
     yield { type: "phase", label: FASI[2] };
     const esiti: mq.EsitoLotto[] = [];
     for (const [i, lotto] of lotti.entries()) {
+      sitoAncoraAttivo();
       const v = await client.volumi(lotto.keywords, lotto.locationCode);
       esiti.push({ lotto, risultati: v.risultati, fonte: v.fonte });
       yield { type: "text", text: `Lotto ${i + 1}/${lotti.length}: ${formatoIntero(lotto.keywords.length)} ricerche (${lotto.nome})${v.dallaCache ? " · dalla cache" : ""}` };
@@ -303,6 +313,7 @@ export async function* eseguiMappa(ing: IngressiMappa, client: ClientDfs, opz: {
     const operaio = async () => {
       for (let r = coda.shift(); r && !fatale; r = coda.shift()) {
         try {
+          sitoAncoraAttivo();
           const coord = coordinate(r);
           const { grezza, fonte } = await client.serp(r.testo, coord);
           const luogo = mq.luogoDi(r, ing.dati)!;
@@ -355,6 +366,7 @@ export async function* eseguiMappa(ing: IngressiMappa, client: ClientDfs, opz: {
       dominiNonInElenco: [...new Set(universo.flatMap((r) => (r.serp ? dominiIgnoti(r.serp) : [])))].sort(),
       serpNonLette: serpNonLette.sort(),
       escluse: [...escluse].sort(),
+      escluseAlCalcolo: [...escluse].sort(),
       universo,
       pagine: ing.pagine,
     });
@@ -363,11 +375,13 @@ export async function* eseguiMappa(ing: IngressiMappa, client: ClientDfs, opz: {
 
     yield { type: "phase", label: FASI[5] };
     if (opz.signal.aborted) throw opz.signal.reason;
+    sitoAncoraAttivo();
     scriviMappa(ing.dir, mappa);
     yield { type: "text", text: `Costo ${dollari(mappa.costo.usd)} $ · ${formatoIntero(mappa.costo.chiamatePagate)} chiamate pagate · ${formatoIntero(mappa.costo.dallaCache)} dalla cache` };
     yield { type: "done", artifact: mq.FILE_MAPPA };
   } catch (e) {
     if (opz.signal.aborted) yield { type: "error", message: `${mq.MESSAGGIO_INTERROTTO}: la mappa precedente resta com'era` };
+    else if (e instanceof SitoNonAttivo) yield { type: "error", message: `${mq.MESSAGGIO_INTERROTTO}: il servizio Sito non è più attivo, la mappa precedente resta com'era` };
     else if (e instanceof ErroreDfs) yield { type: "error", message: e.message };
     else yield { type: "error", message: `Calcolo della mappa non riuscito: ${e instanceof Error ? e.message : String(e)}` };
   }

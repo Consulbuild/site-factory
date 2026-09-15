@@ -241,11 +241,8 @@ export function fraseDifficolta(d: Difficolta): string {
 
 /** Frase delle feature (§5.5): «mappa con 3 schede, nessuna panoramica AI, nessun annuncio». */
 export function fraseFeature(f: Serp["feature"]): string {
-  const parti = [
-    f.localPack > 0 ? `mappa con ${plurale(f.localPack, "scheda", "schede")}` : "nessuna mappa",
-    f.aiOverview ? "panoramica AI" : "nessuna panoramica AI",
-    f.annunci > 0 ? plurale(f.annunci, "annuncio", "annunci") : "nessun annuncio",
-  ];
-  if (f.localServices) parti.push("annunci Local Services");
+  // Gli annunci Local Services sono annunci: mai «nessun annuncio» nella stessa frase.
+  const annunci = f.annunci > 0 ? `${plurale(f.annunci, "annuncio", "annunci")}${f.localServices ? " e annunci Local Services" : ""}` : f.localServices ? "solo annunci Local Services" : "nessun annuncio";
+  const parti = [f.localPack > 0 ? `mappa con ${plurale(f.localPack, "scheda", "schede")}` : "nessuna mappa", f.aiOverview ? "panoramica AI" : "nessuna panoramica AI", annunci];
   return `Nella pagina di Google: ${parti.join(", ")}.`;
 }

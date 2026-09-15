@@ -104,7 +104,7 @@
         { "testo": "posa piastrelle", "gruppo": "pavimenti" }
       ]
     },
-    { "tutte": ["rivestiment"], "teste": [{ "testo": "posa piastrelle", "gruppo": "pavimenti" }] },
+    { "tutte": ["rivestiment"], "nessuna": ["cappott", "facciat", "pietr", "legn", "estern"], "teste": [{ "testo": "posa piastrelle", "gruppo": "pavimenti" }] },
     { "tutte": ["intonac"], "teste": [{ "testo": "intonaci", "gruppo": "intonaci" }] },
     { "tutte": ["isolament", "termic"], "teste": [{ "testo": "isolamento termico", "gruppo": "isolamento-termico" }] },
     { "tutte": ["isolament", "acustic"], "teste": [{ "testo": "isolamento acustico", "gruppo": "isolamento-acustico" }] },
@@ -130,7 +130,7 @@
     { "tutte": ["pomp", "calor"], "teste": [{ "testo": "pompa di calore", "gruppo": "pompa-calore" }] },
     { "tutte": ["pannell", "solar"], "teste": [{ "testo": "pannelli solari", "gruppo": "solare" }] },
     { "tutte": ["perdit"], "teste": [{ "testo": "riparazione perdite acqua", "gruppo": "perdite" }] },
-    { "tutte": ["sanitar"], "teste": [{ "testo": "sostituzione sanitari", "gruppo": "sanitari" }] },
+    { "tutte": ["sanitar"], "nessuna": ["idric", "impiant"], "teste": [{ "testo": "sostituzione sanitari", "gruppo": "sanitari" }] },
     { "tutte": ["quadr", "elettric"], "teste": [{ "testo": "quadro elettrico", "gruppo": "quadro-elettrico" }] },
     { "tutte": ["citofon"], "teste": [{ "testo": "installazione videocitofono", "gruppo": "citofono" }] },
     { "tutte": ["impiant", "gas"], "teste": [{ "testo": "impianto gas", "gruppo": "gas" }] },

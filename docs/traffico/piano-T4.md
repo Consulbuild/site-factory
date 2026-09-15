@@ -895,6 +895,10 @@ Somma prevista 2,46 $ (campione 1,54 + mappa 0,66 + C4-C5 0,26), sotto il tetto 
   una provenienza: il vincolo è `stato ≠ non_richiesto ⇔ fonte ≠ null`); campi `escluse` (per validare «target non escluso» e
   accorgersi di un file delle esclusioni diverso), `serpNonLette` (lo stato «parziale» sopravvive a una riselezione) e `motivi`
   (le frasi di «Poche ricerche»); `testo` fino a 200 caratteri perché le righe oltre 80 restano nell'universo non ammesse (§3.3).
+  Dopo la revisione indipendente: `selezionataAt` facoltativo (Escludi e Riammetti non spostano più `generataAt`, che resta la data
+  del calcolo per la meta e per il banner dell'ultimo errore; lo storico usa `selezionataAt ?? generataAt`) e `escluseAlCalcolo`
+  facoltativo (una ricerca esclusa al calcolo e poi riammessa non ha pagina di Google: la vista la segnala «Da ricalcolare» se il
+  calcolo la leggerebbe).
 - **Impronta del contesto** sui soli campi usati (settore, servizi, macro), non sui byte del file: una data o un tono cambiati non
   chiedono un ricalcolo (banco caso 26).
 - **Mappa scritta compatta**: indentata pesava 3,5 MB con 2.656 righe.
@@ -937,6 +941,28 @@ Somma prevista 2,46 $ (campione 1,54 + mappa 0,66 + C4-C5 0,26), sotto il tetto 
   `SF_DATAFORSEO_LATENZA_MS=700` per vedere la fase live). Nessuna scrittura nelle cartelle dei clienti reali; cache vera
   `~/.cache/site-factory/dataforseo/` mai creata.
 - Commit: `ddcede0` (M1+M2), `16c0984` (M3), `532f5ed` (M4), `66e6482` (M5), `d14714e` (lessico) + documenti.
+
+### Correzioni dopo la revisione indipendente (2026-09-15)
+
+- Corretti: riammessa dopo un ricalcolo senza pagina di Google → «Da ricalcolare» («1 ricerca riammessa senza pagina di Google»,
+  un'esclusione dopo il calcolo invece non chiede nulla); lessico «rivestiment» con `nessuna` cappotto/facciata/pietra/legno/esterni e
+  «sanitar» con `nessuna` idrico/impianti; `generataAt` intatto a Escludi e Riammetti (`selezionataAt`); variante coperta per
+  risultati di Google che porta il suo gruppo alla vincente; `haMappa` esplicito nella vista (mappa con 0 ricerche → «Ricalcola…» col
+  dialog); Sito sospeso o spento durante il calcolo → stop prima della chiamata pagata successiva e nessuna scrittura; focus del
+  dialog «Ricalcolare la mappa?» stabile (onCancel stabile); «solo annunci Local Services» invece di «nessun annuncio, annunci Local
+  Services»; risposta pagata fuori forma mai in cache e voce di cache fuori forma = assente; riga di costo anche per un tentativo
+  interrotto dallo stop.
+- Banco `test-mappa-query.ts` **162 passati, 0 falliti** (11 casi nuovi, tutti falliti sul codice prima delle correzioni);
+  `tsc --noEmit` pulito, `npm run build` verde; `test-zone-servite` 110/0, `test-chiavi` 121/0, `test-traffico-stato` 58/0,
+  `test-portafoglio` 43/0.
+- Browser (`next start -p 3312`, risposte registrate, fixture `zz-test-t4` e `zz-test-t4b` rifatte e poi nel Cestino): focus su
+  «Annulla» dopo 6 s di poller a 1280 e 400 px, chiaro e scuro; Escludi → Ricalcola → Riammetti → «Da ricalcolare» col banner e primaria
+  Ricalcola…, poi ricalcolo con la ricerca di nuovo tra le scelte (0 chiamate pagate); «solo annunci Local Services» nel Perché; mappa con
+  0 ricerche e contesto cambiato → primaria «Ricalcola…» che apre il dialog; Sospendi subito dopo Calcola → «run interrotto: il servizio
+  Sito non è più attivo…», mappa identica (sha), nessuna riga di costo.
+- Fuori perimetro, da decidere: DELETE del cliente senza controllo del lavoro `traffico:<slug>:mappa`
+  (`app/api/clients/[slug]/route.ts`), guard 409 sulla transizione del Sito con la mappa in calcolo
+  (`app/api/clients/[slug]/traffico/route.ts`), effetto del focus in `components/confirm-dialog.tsx` per gli altri dialog.
 
 ## Fonti verificate il 2026-09-14
 
