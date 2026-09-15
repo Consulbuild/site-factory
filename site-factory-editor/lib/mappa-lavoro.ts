@@ -67,7 +67,8 @@ export function leggiContesto(dir: string): LetturaContesto {
   const r = mq.ContestoMappaSchema.safeParse(raw);
   if (!r.success) return { ok: false, motivo: `contesto.json non valido per la mappa (${problemi(r.error.issues)}): correggilo o rigeneralo` };
   if (r.data.servizi_atomizzati.length === 0) return { ok: false, motivo: "contesto.json senza servizi: la mappa nasce dai servizi del cliente" };
-  return { ok: true, contesto: r.data, sha: mq.sha256(testo) };
+  // Impronta dei soli campi usati (settore, servizi, macro): toni, promesse o date del contesto non rendono vecchia la mappa.
+  return { ok: true, contesto: r.data, sha: mq.sha256(JSON.stringify(r.data)) };
 }
 
 export type LetturaEsclusioni = { ok: true; esclusioni: mq.Esclusioni } | { ok: false; motivo: string };
@@ -196,6 +197,32 @@ export function leggiIngressi(dir: string, stato: StatoCliente, regole: Regole =
       zoneSha: mq.zoneSha(comuni.sede?.istat ?? null, comuni.usati),
     },
   };
+}
+
+/** Tutto ciò che la pagina legge dal disco per la vista (senza il calcolo in corso, che sa solo il run-bus). */
+export function datiVista(dir: string, stato: StatoCliente): Omit<mq.IngressiVista, "inCalcolo"> {
+  const esclusioni = leggiEsclusioni(dir);
+  const base = { sito: stato.sito, lettura: leggiMappa(dir), esclusioni: esclusioni.ok ? esclusioni.esclusioni : null, ultimo: ultimoEsito(dir) };
+  let regole: Regole;
+  try {
+    regole = leggiRegole();
+  } catch (e) {
+    return { ...base, blocco: { codice: "contesto", motivo: `Regole della mappa non leggibili: ${e instanceof Error ? e.message : String(e)}` }, impronte: null, stimaUsd: null, comuniUsati: null };
+  }
+  // Le impronte servono anche senza chiavi: si leggono gli ingressi come se fossero configurate.
+  const letti = leggiIngressi(dir, { ...stato, configurata: true }, regole);
+  const contesto = leggiContesto(dir);
+  const blocco = !letti.ok ? letti.blocco : stato.configurata ? null : { codice: "chiavi" as const, motivo: mq.MOTIVO_NON_CONFIGURATA };
+  const impronte: mq.ImpronteAttuali = {
+    contestoSha: contesto.ok ? contesto.sha : null,
+    zoneSha: letti.ok ? letti.ingressi.zoneSha : null,
+    lessicoSha: regole.lessicoSha,
+    dominiSha: regole.dominiSha,
+  };
+  if (!letti.ok) return { ...base, blocco, impronte, stimaUsd: null, comuniUsati: null };
+  const { universo, comuni, contesto: c } = letti.ingressi;
+  const lotti = mq.lottiVolumi(universo, comuni.sede ? { locationCode: 1, nome: comuni.sede.nome } : null).length;
+  return { ...base, blocco, impronte, stimaUsd: mq.stimaCostoUsd(lotti, mq.serpMassime(universo, c.macro_categorie.length)), comuniUsati: comuni.usati.length };
 }
 
 /* ---------- scritture ---------- */
@@ -340,7 +367,7 @@ export async function* eseguiMappa(ing: IngressiMappa, client: ClientDfs, opz: {
     yield { type: "text", text: `Costo ${dollari(mappa.costo.usd)} $ · ${formatoIntero(mappa.costo.chiamatePagate)} chiamate pagate · ${formatoIntero(mappa.costo.dallaCache)} dalla cache` };
     yield { type: "done", artifact: mq.FILE_MAPPA };
   } catch (e) {
-    if (opz.signal.aborted) yield { type: "error", message: "run interrotto: la mappa precedente resta com'era" };
+    if (opz.signal.aborted) yield { type: "error", message: `${mq.MESSAGGIO_INTERROTTO}: la mappa precedente resta com'era` };
     else if (e instanceof ErroreDfs) yield { type: "error", message: e.message };
     else yield { type: "error", message: `Calcolo della mappa non riuscito: ${e instanceof Error ? e.message : String(e)}` };
   }

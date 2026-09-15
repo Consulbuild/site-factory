@@ -933,7 +933,9 @@ export function togliEsclusione(e: Esclusioni, testo: string): EsitoEsclusione {
 
 /* ---------- blocchi e staleness (§8) ---------- */
 
-export const MOTIVO_NON_CONFIGURATA = "DataForSEO non configurata: per calcolare la mappa servono login e password in Impostazioni → Chiavi API";
+/** Errore scritto dal lavoro quando l'operatore lo ferma dalla status bar (la vista non lo tratta come un fallimento). */
+export const MESSAGGIO_INTERROTTO = "run interrotto";
+export const MOTIVO_NON_CONFIGURATA ="DataForSEO non configurata: per calcolare la mappa servono login e password in Impostazioni → Chiavi API";
 export type CodiceBlocco = "sito" | "contesto" | "zone" | "zone_bloccate" | "chiavi" | "esclusioni";
 
 export interface IngressiBlocco {
@@ -977,4 +979,212 @@ export function cambiati(m: Pick<MappaQuery, "ingressi" | "regole">, a: Impronte
   if (a.dominiSha !== m.regole.dominiSha) out.push("lib/mappa-domini.json");
   if (m.regole.versione !== VERSIONE_REGOLE) out.push("regole del punteggio");
   return out;
+}
+
+/* ---------- vista per la UI (§8, dati serializzabili) ---------- */
+
+export type StatoVista =
+  | "non_configurata"
+  | "attesa_zone"
+  | "bloccata"
+  | "da_calcolare"
+  | "in_calcolo"
+  | "non_riuscita"
+  | "non_leggibile"
+  | "pronta"
+  | "parziale"
+  | "poche"
+  | "da_ricalcolare"
+  | "in_pausa";
+export type TonoVista = "ok" | "warn" | "err" | "brand" | "idle";
+
+export interface RigaVista {
+  testo: string;
+  /** «70 al mese», «90 al mese a Cologno Monzese», «volume non misurato». */
+  volume: string;
+  difficolta: "bassa" | "media" | null;
+  perche: string[];
+  checkUrl: string | null;
+}
+export interface GruppoVista {
+  chiave: string;
+  titolo: string;
+  righe: RigaVista[];
+}
+export interface VistaMappa {
+  stato: StatoVista;
+  badge: { tone: TonoVista; label: string };
+  /** Frase di stato (role=status): cosa succede o cosa manca. */
+  frase: string | null;
+  /** Il calcolo non si può avviare: il perché, scritto accanto al bottone disabilitato. */
+  motivoBlocco: string | null;
+  meta: string | null;
+  gruppi: GruppoVista[];
+  dettagli: { riepilogo: string; serviziSenzaQuery: string[]; dominiNonInElenco: string[]; avvisi: string[] } | null;
+  escluse: { testo: string; motivo: string; at: string }[];
+  cambiati: string[];
+  /** Ultimo calcolo fallito dopo la mappa mostrata (o senza mappa). */
+  erroreUltimo: string | null;
+  motiviPoche: string[];
+  registrate: boolean;
+  /** Stima massima del costo del prossimo calcolo, per i dialog (null: ingressi non leggibili). */
+  stimaUsd: number | null;
+  comuniUsati: number | null;
+  /** Escludi e Riammetti disponibili (Sito attivo, mappa leggibile, nessun calcolo in corso). */
+  modificabile: boolean;
+}
+
+export interface IngressiVista {
+  sito: IngressiBlocco["sito"];
+  lettura: { stato: "assente" } | { stato: "non_leggibile"; motivo: string } | { stato: "ok"; mappa: MappaQuery };
+  esclusioni: Esclusioni | null;
+  blocco: { codice: CodiceBlocco; motivo: string } | null;
+  impronte: ImpronteAttuali | null;
+  inCalcolo: boolean;
+  ultimo: { esito: "ok" | "errore"; messaggio: string | null; at: number | null } | null;
+  stimaUsd: number | null;
+  comuniUsati: number | null;
+}
+
+const MESI_LUNGHI = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"];
+const dataIt = (iso: string) => new Date(iso).toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Rome" });
+const ggmm = (iso: string) => new Date(iso).toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit", timeZone: "Europe/Rome" });
+const usd = (n: number) => n.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function volumeBreve(r: Riga): string {
+  if (r.volume.stato === "non_richiesto") return "volume non richiesto";
+  if (r.volume.valore === null) return "volume non misurato";
+  const n = `${formatoIntero(r.volume.valore)} al mese`;
+  return r.tipo === "senza_comune" && r.comune ? `${n} a ${r.comune.nome}` : n;
+}
+
+/** Dalla mappa e dallo stato del cliente alla vista della sotto-sezione «Ricerche su cui puntare» (nessuna scrittura). */
+export function vistaMappa(i: IngressiVista): VistaMappa {
+  const m = i.lettura.stato === "ok" ? i.lettura.mappa : null;
+  const vuota: VistaMappa = {
+    stato: "da_calcolare",
+    badge: { tone: "brand", label: "Da calcolare" },
+    frase: null,
+    motivoBlocco: i.blocco?.motivo ?? null,
+    meta: null,
+    gruppi: [],
+    dettagli: null,
+    escluse: i.esclusioni?.voci ?? [],
+    cambiati: [],
+    erroreUltimo: null,
+    motiviPoche: [],
+    registrate: false,
+    stimaUsd: i.stimaUsd,
+    comuniUsati: i.comuniUsati,
+    modificabile: false,
+  };
+  // Uno stop dell'operatore non è un fallimento: la mappa (o la sua assenza) resta com'era, nessun banner.
+  const interrotto = i.ultimo?.messaggio?.startsWith(MESSAGGIO_INTERROTTO) ?? false;
+  const erroreUltimo = i.ultimo?.esito === "errore" && !interrotto && (!m || (i.ultimo.at ?? 0) > Date.parse(m.generataAt)) ? (i.ultimo.messaggio ?? "errore senza messaggio") : null;
+
+  if (i.lettura.stato === "non_leggibile") {
+    return { ...vuota, stato: i.inCalcolo ? "in_calcolo" : "non_leggibile", badge: i.inCalcolo ? { tone: "brand", label: "In calcolo" } : { tone: "err", label: "Non leggibile" }, frase: `${FILE_MAPPA} non leggibile (${i.lettura.motivo}): ricalcolala per riscriverla.`, erroreUltimo };
+  }
+  if (!m) {
+    if (i.inCalcolo) return { ...vuota, stato: "in_calcolo", badge: { tone: "brand", label: "In calcolo" } };
+    if (i.sito === "sospeso") return { ...vuota, stato: "in_pausa", badge: { tone: "idle", label: "In pausa" }, frase: "Servizio sospeso: la mappa non si calcola finché il Sito resta sospeso." };
+    switch (i.blocco?.codice) {
+      case "zone":
+        return { ...vuota, stato: "attesa_zone", badge: { tone: "idle", label: "In attesa delle zone" }, frase: `${i.blocco.motivo}.` };
+      case "chiavi":
+        return { ...vuota, stato: "non_configurata", badge: { tone: "idle", label: "Non configurata" }, frase: "Per calcolare la mappa servono login e password di DataForSEO in Impostazioni → Chiavi API." };
+      case "contesto":
+      case "zone_bloccate":
+      case "esclusioni":
+      case "sito":
+        return { ...vuota, stato: "bloccata", badge: { tone: "err", label: "Bloccata" }, frase: null };
+    }
+    if (erroreUltimo) return { ...vuota, stato: "non_riuscita", badge: { tone: "err", label: "Non riuscita" }, erroreUltimo };
+    const n = i.comuniUsati ?? 0;
+    const stima = i.stimaUsd === null ? "" : ` Costo stimato circa ${usd(i.stimaUsd)} $.`;
+    return { ...vuota, frase: `Sceglie da ${MIN_TARGET} a ${MAX_TARGET} ricerche reali per i lavori del cliente nei ${formatoIntero(n)} comuni più popolosi e vicini delle zone servite.${stima}` };
+  }
+
+  // Mappa presente.
+  const escluseFile = new Set((i.esclusioni?.voci ?? []).map((v) => v.testo));
+  const diverse = i.esclusioni !== null && (escluseFile.size !== m.escluse.length || m.escluse.some((t) => !escluseFile.has(t)));
+  const cambiato = [...(i.impronte ? cambiati(m, i.impronte) : []), ...(diverse ? [FILE_ESCLUSIONI] : [])];
+  const perTesto = new Map(m.universo.map((r) => [r.testo, r]));
+  const gruppi: GruppoVista[] = m.pagine
+    .map((p) => ({
+      chiave: p.chiave,
+      titolo: p.tipo === "servizio" ? `Servizio · ${p.etichetta}` : p.etichetta,
+      righe: m.target
+        .filter((t) => t.pagina === p.chiave)
+        .map((t) => {
+          const r = perTesto.get(t.testo)!;
+          return { testo: t.testo, volume: volumeBreve(r), difficolta: r.difficolta?.livello === "alta" ? null : (r.difficolta?.livello ?? null), perche: t.perche, checkUrl: r.serp?.checkUrl ?? null };
+        }),
+    }))
+    .filter((g) => g.righe.length > 0);
+
+  const mesi = m.universo.map((r) => r.volume.datiAl).filter((x): x is string => !!x).sort();
+  const serpLette = m.universo.filter((r) => r.serp);
+  const letteAt = serpLette.map((r) => r.serp!.fonte.lettoAt).sort();
+  const fonti = new Map<string, number>();
+  for (const r of m.universo) {
+    if (r.volume.fonte) fonti.set(r.volume.fonte.richiestaSha, r.volume.fonte.costoUsd);
+    if (r.serp) fonti.set(r.serp.fonte.richiestaSha, r.serp.fonte.costoUsd);
+  }
+  const costoDati = [...fonti.values()].reduce((s, x) => s + x, 0);
+  const ultimoMese = mesi.at(-1);
+  const meta = [
+    `Calcolata il ${dataIt(m.generataAt)}`,
+    `${formatoIntero(m.ingressi.comuniUsati)} comuni delle zone servite`,
+    ...(ultimoMese ? [`volumi Google Ads fino ${/^[aeiou]/.test(MESI_LUNGHI[Number(ultimoMese.slice(5)) - 1]!) ? "ad" : "a"} ${MESI_LUNGHI[Number(ultimoMese.slice(5)) - 1]} ${ultimoMese.slice(0, 4)}`] : []),
+    ...(letteAt.length ? [`pagine di Google lette il ${ggmm(letteAt.at(-1)!)}`] : []),
+    `costo dei dati ${usd(costoDati)} $${m.costo.chiamatePagate === 0 && m.costo.dallaCache > 0 ? " (dalla cache)" : ""}`,
+  ].join(" · ");
+
+  let stato: StatoVista = m.stato === "completa" ? "pronta" : m.stato === "parziale" ? "parziale" : "poche";
+  if (cambiato.length) stato = "da_ricalcolare";
+  if (i.sito === "sospeso") stato = "in_pausa";
+  if (i.inCalcolo) stato = "in_calcolo";
+  const badge: Record<StatoVista, VistaMappa["badge"]> = {
+    pronta: { tone: "ok", label: "Pronta" },
+    parziale: { tone: "warn", label: "Parziale" },
+    poche: { tone: "warn", label: "Poche ricerche" },
+    da_ricalcolare: { tone: "warn", label: "Da ricalcolare" },
+    in_pausa: { tone: "idle", label: "In pausa" },
+    in_calcolo: { tone: "brand", label: "In calcolo" },
+    non_configurata: { tone: "idle", label: "Non configurata" },
+    attesa_zone: { tone: "idle", label: "In attesa delle zone" },
+    bloccata: { tone: "err", label: "Bloccata" },
+    da_calcolare: { tone: "brand", label: "Da calcolare" },
+    non_riuscita: { tone: "err", label: "Non riuscita" },
+    non_leggibile: { tone: "err", label: "Non leggibile" },
+  };
+  const frase =
+    stato === "in_pausa"
+      ? "Servizio sospeso: la mappa resta com'è."
+      : stato === "parziale"
+        ? `${formatoIntero(m.serpNonLette.length)} ${m.serpNonLette.length === 1 ? "ricerca" : "ricerche"} senza pagina di Google letta: ricalcola per completarle.`
+        : stato === "poche"
+          ? `Solo ${formatoIntero(m.target.length)} ${m.target.length === 1 ? "ricerca utilizzabile" : "ricerche utilizzabili"} (ne servono almeno ${MIN_TARGET}):`
+          : null;
+  return {
+    ...vuota,
+    stato,
+    badge: badge[stato],
+    frase,
+    meta,
+    gruppi,
+    dettagli: {
+      riepilogo: `${formatoIntero(m.universo.length)} ricerche · ${formatoIntero(m.ingressi.comuniUsati)} comuni su ${formatoIntero(m.ingressi.comuniArea)} · ${formatoIntero(serpLette.length)} pagine di Google`,
+      serviziSenzaQuery: m.serviziSenzaQuery,
+      dominiNonInElenco: m.dominiNonInElenco,
+      avvisi: m.avvisi,
+    },
+    cambiati: cambiato,
+    erroreUltimo,
+    motiviPoche: m.stato === "insufficiente" ? m.motivi : [],
+    registrate: m.ingressi.registrate,
+    comuniUsati: i.comuniUsati ?? m.ingressi.comuniUsati,
+    modificabile: i.sito === "attivo" && !i.inCalcolo && i.esclusioni !== null,
+  };
 }

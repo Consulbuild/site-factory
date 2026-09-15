@@ -19,6 +19,11 @@ import { Banner, Breadcrumb, btnSecondary, formatDate } from "@/components/ui";
 import { ServizioBadge } from "@/components/traffico-ui";
 import { TrafficoAzione } from "@/components/traffico-azione";
 import { ZoneServite } from "@/components/zone-servite";
+import { TrafficoMappa } from "@/components/traffico-mappa";
+import { vistaMappa } from "@/lib/mappa-query";
+import { datiVista } from "@/lib/mappa-lavoro";
+import { creaClientDfs } from "@/lib/dataforseo";
+import { busIdTraffico, getRun } from "@/lib/run-bus";
 
 export const dynamic = "force-dynamic";
 
@@ -36,8 +41,11 @@ const MOTIVO_ID = "traffico-motivo-blocco";
 const CONTENUTI: Record<ServizioKey, { descrizione: string; disponibile: string[]; arrivera: string[]; servira: string[] }> = {
   sito: {
     descrizione: "Ottimizzazione del sito per le ricerche locali.",
-    // Piano T1a: le cuoce la build col dominio quando il servizio è attivo o sospeso.
-    disponibile: ["le fondamenta tecniche (sitemap, robots, dati strutturati), aggiunte dalla build col dominio"],
+    // Piano T1a: le cuoce la build col dominio quando il servizio è attivo o sospeso. Piano T4: la mappa qui sotto.
+    disponibile: [
+      "le fondamenta tecniche (sitemap, robots, dati strutturati), aggiunte dalla build col dominio",
+      "le ricerche su cui puntare, con la pagina del sito che risponde a ciascuna",
+    ],
     arrivera: [
       "le pagine per servizio e per zona, da approvare una per una",
       "lo stato dell'indicizzazione su Google e Bing",
@@ -72,6 +80,7 @@ function SezioneServizio({
   percorso,
   corrotto,
   senzaDominio,
+  children,
 }: {
   slug: string;
   azienda: string;
@@ -80,6 +89,8 @@ function SezioneServizio({
   percorso: Percorso;
   corrotto: boolean;
   senzaDominio: boolean;
+  /** Pannelli del servizio (Sito: «Ricerche su cui puntare», piano T4). */
+  children?: React.ReactNode;
 }) {
   const azione = azioneServizio(s, percorso);
   const bloccato = corrotto || !!azione.motivoBlocco;
@@ -149,6 +160,7 @@ function SezioneServizio({
           </ul>
         </div>
       </div>
+      {children}
     </section>
   );
 }
@@ -170,6 +182,16 @@ export default async function TrafficoClientePage({ params }: { params: Promise<
   const bloccoDemo = !corrotto && SERVIZI.some((k) => azioneServizio(traffico[k], client.percorso).motivoBlocco);
   // Indipendente da client.json: le zone vivono in traffico/zone-servite.json o nel lead.
   const zone = vistaZone(leggiZoneServite(clientDir(slug)));
+  // Piano T4: la mappa si vede col Sito attivo o sospeso (mai con client.json illeggibile: lo stato non si conosce).
+  const statoSito = traffico.sito.stato;
+  const runMappa = getRun(busIdTraffico(slug, "mappa"));
+  const mappa =
+    !corrotto && statoSito !== "spento"
+      ? vistaMappa({
+          ...datiVista(clientDir(slug), { sito: statoSito, dominio, configurata: creaClientDfs({ costi: null }).configurata() }),
+          inCalcolo: !!runMappa && !runMappa.done,
+        })
+      : null;
 
   return (
     <div>
@@ -227,7 +249,9 @@ export default async function TrafficoClientePage({ params }: { params: Promise<
             percorso={client.percorso}
             corrotto={!!corrotto}
             senzaDominio={!dominio}
-          />
+          >
+            {k === "sito" && mappa && <TrafficoMappa slug={slug} vista={mappa} />}
+          </SezioneServizio>
         ))}
       </div>
     </div>

@@ -12,7 +12,7 @@ import { isDeepStrictEqual } from "node:util";
 import * as mq from "../lib/mappa-query.ts";
 import { difficolta, livelloDaPunti, normalizzaDominio, riduciSerp, spazioOrganico, type Domini, type LuogoQuery, type SerpGrezza } from "../lib/serp-classifica.ts";
 import { ATTESE_MS, BASE_URL, ErroreDfs, creaClientDfs, corpoVolumi, fetchRegistrato, trovaLocalita, type Localita } from "../lib/dataforseo.ts";
-import { FASI, escludiRicerca, eseguiMappa, leggiEsclusioni, leggiIngressi, leggiMappa, leggiRegole, riammettiRicerca } from "../lib/mappa-lavoro.ts";
+import { FASI, escludiRicerca, eseguiMappa, leggiContesto, leggiEsclusioni, leggiIngressi, leggiMappa, leggiRegole, riammettiRicerca } from "../lib/mappa-lavoro.ts";
 import { agenteDaFase, nomeStep, percorsoRun } from "../lib/agenti.ts";
 import {
   MOTIVO_DA_CONTROLLARE,
@@ -584,6 +584,34 @@ try {
     caso("26. un comune oltre il tetto dei 40 → nessuna staleness", cPiu.ok && mq.zoneSha("015081", cPiu.usati) === mappa.ingressi.zoneSha);
   }
 
+  /* ---------- vista (§8) ---------- */
+  {
+    const imp: mq.ImpronteAttuali = { contestoSha: mappa.ingressi.contestoSha, zoneSha: mappa.ingressi.zoneSha, lessicoSha: mappa.regole.lessicoSha, dominiSha: mappa.regole.dominiSha };
+    const baseVista: mq.IngressiVista = { sito: "attivo", lettura: { stato: "ok", mappa }, esclusioni: { versione: 1, voci: [] }, blocco: null, impronte: imp, inCalcolo: false, ultimo: null, stimaUsd: 0.66, comuniUsati: 40 };
+    const vista = (x: Partial<mq.IngressiVista>) => mq.vistaMappa({ ...baseVista, ...x });
+    const pronta = vista({});
+    caso("vista: mappa completa → «Pronta», gruppi in ordine di pagina, Escludi disponibile", pronta.stato === "pronta" && pronta.gruppi[0]!.chiave === "home" && pronta.gruppi.at(-1)!.chiave === "zone" && pronta.modificabile && pronta.gruppi.flatMap((g) => g.righe).length === mappa.target.length);
+    caso("vista: meta con data, comuni, mese dei volumi e costo dei dati", /^Calcolata il \d{2}\/\d{2}\/2026 · 40 comuni delle zone servite · volumi Google Ads fino ad agosto 2026 · pagine di Google lette il 15\/09 · costo dei dati /.test(pronta.meta ?? ""), pronta.meta);
+    const stale = vista({ impronte: { ...imp, contestoSha: "f".repeat(64) } });
+    caso("vista: contesto cambiato → «Da ricalcolare» con l'elenco", stale.stato === "da_ricalcolare" && isDeepStrictEqual(stale.cambiati, ["contesto.json"]));
+    caso("vista: Sito sospeso → «In pausa» in sola lettura", vista({ sito: "sospeso" }).stato === "in_pausa" && !vista({ sito: "sospeso" }).modificabile);
+    caso("vista: calcolo in corso → «In calcolo» senza Escludi", vista({ inCalcolo: true }).stato === "in_calcolo" && !vista({ inCalcolo: true }).modificabile);
+    const ora = Date.parse(mappa.generataAt) + 60_000;
+    caso("vista: ultimo ricalcolo fallito → banner, resta la mappa", vista({ ultimo: { esito: "errore", messaggio: "Credito DataForSEO esaurito (40210): …", at: ora } }).erroreUltimo?.startsWith("Credito") === true);
+    caso("vista: stop dell'operatore → nessun banner d'errore", vista({ ultimo: { esito: "errore", messaggio: `${mq.MESSAGGIO_INTERROTTO}: la mappa precedente resta com'era`, at: ora } }).erroreUltimo === null);
+    caso("vista: esclusioni del file diverse dalla mappa → da ricalcolare", vista({ esclusioni: { versione: 1, voci: [{ testo: "impresa edile", motivo: "prova", at: ADESSO }] } }).cambiati.includes(mq.FILE_ESCLUSIONI));
+    const senza = (x: Partial<mq.IngressiVista>) => vista({ lettura: { stato: "assente" }, ...x });
+    caso("vista: senza mappa e senza blocchi → «Da calcolare» con la stima", senza({}).stato === "da_calcolare" && senza({}).frase!.includes("40 comuni") && senza({}).frase!.includes("0,66 $"));
+    caso("vista: zone da impostare → «In attesa delle zone»", senza({ blocco: { codice: "zone", motivo: MOTIVO_DA_IMPOSTARE } }).stato === "attesa_zone");
+    caso("vista: chiavi assenti → «Non configurata»", senza({ blocco: { codice: "chiavi", motivo: mq.MOTIVO_NON_CONFIGURATA } }).stato === "non_configurata");
+    caso("vista: contesto invalido → «Bloccata» col motivo", senza({ blocco: { codice: "contesto", motivo: "contesto.json non valido" } }).stato === "bloccata" && senza({ blocco: { codice: "contesto", motivo: "x" } }).motivoBlocco === "x");
+    caso("vista: calcolo fallito senza mappa → «Non riuscita»", senza({ ultimo: { esito: "errore", messaggio: "DataForSEO non risponde (50401): riprova più tardi.", at: ora } }).stato === "non_riuscita");
+    caso("vista: mappa illeggibile → «Non leggibile»", vista({ lettura: { stato: "non_leggibile", motivo: "JSON non valido" } }).stato === "non_leggibile");
+    const poche = mappaDi(misuraSerp(misuraVolumi(base.universo), new Set(), (r) => serpFinta(r, hash(r.testo) % 40 === 0 ? "bassa" : "alta")), com);
+    const vp = vista({ lettura: { stato: "ok", mappa: poche } });
+    caso("vista: poche ricerche → «Poche ricerche» coi motivi", vp.stato === "poche" && vp.motiviPoche.length > 0 && vp.frase!.startsWith("Solo "));
+  }
+
   /* ---------- 27 chiavi ---------- */
   {
     const vuoto = creaClientDfs({ trasporto: { fetch: async () => json({}), getSecret: () => null }, registrate: null, cacheDir: cacheDir() });
@@ -690,6 +718,18 @@ try {
     fs.rmSync(path.join(senzaContesto, "contesto.json"));
     const bc = leggiIngressi(senzaContesto, stato, regole);
     caso("7. contesto assente → blocco col motivo", !bc.ok && bc.blocco.motivo.startsWith("contesto.json assente"));
+    const shaDi = (dir: string) => {
+      const c = leggiContesto(dir);
+      return c.ok ? c.sha : null;
+    };
+    const dirSha = nuovoCliente("sha-contesto");
+    const sha0 = shaDi(dirSha);
+    const originale = leggi(path.join(FIXTURE, "contesto.json"));
+    fs.writeFileSync(path.join(dirSha, "contesto.json"), JSON.stringify({ ...originale, sottosettore: "Altro", tono: { registro: "diverso", da_evitare: "" }, generatedAt: "2027-01-01T00:00:00.000Z" }, null, 4));
+    const sha1 = shaDi(dirSha);
+    fs.writeFileSync(path.join(dirSha, "contesto.json"), JSON.stringify({ ...originale, servizi_atomizzati: [...originale.servizi_atomizzati, { servizio: "Rifacimento tetti", fonte: "x" }] }));
+    const sha2 = shaDi(dirSha);
+    caso("26. impronta del contesto: campi non usati non contano, un servizio nuovo sì", sha0 !== null && sha0 === sha1 && sha2 !== sha0);
     const bk = leggiIngressi(nuovoCliente("senza-chiavi"), { ...stato, configurata: false }, regole);
     caso("27. chiavi assenti → blocco «non configurata» dagli ingressi", !bk.ok && bk.blocco.codice === "chiavi");
   }

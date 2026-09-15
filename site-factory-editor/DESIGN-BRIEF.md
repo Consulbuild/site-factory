@@ -430,6 +430,54 @@ vista calcolata sul server da `lib/zone-servite.ts` (`vistaZone`).
     a mano (le nomina), «Rivedi…» apre la modifica quando il lead nuovo ha zone non
     riconosciute. Un 409 (lead cambiato mentre si lavorava) offre «Rileggi».
 
+### Ricerche su cui puntare (shape — data; piano T4, 2026-09-15)
+
+Piano `docs/traffico/piano-T4.md` §8. Componente `components/traffico-mappa.tsx`, vista
+calcolata sul server da `vistaMappa` (`lib/mappa-query.ts`) con i dati di `datiVista`
+(`lib/mappa-lavoro.ts`). Modo Operate: Mattia deve capire in pochi secondi su quali ricerche
+lavorare e perché, e togliere quelle che non hanno senso per il cliente.
+
+```
+┌ card Sito ─ … ─────────────────────────────────────────────────────────────┐
+│ Ricerche su cui puntare [Pronta]                              [Ricalcola…] │
+│ Calcolata il 16/09/2026 · 40 comuni … · costo dei dati 0,60 $   (mono)     │
+│ (banner: ultimo calcolo non riuscito · ingressi cambiati · risposte di prova)│
+│ Home                                                                        │
+│   impresa edile cologno monzese     70 al mese [Difficoltà bassa] Escludi…  │
+│   ▸ Perché                                                                  │
+│ Servizio · Ristrutturazioni e manutenzioni                                  │
+│   ristrutturazione bagno   90 al mese a Cologno Monzese [Difficoltà bassa] … │
+│ Zone servite                                                                │
+│ ▸ Dettagli del calcolo: 2.656 ricerche · 40 comuni su 132 · 60 pagine di Google│
+│ ▸ Escluse da te (2)   testo · «motivo» · data                     Riammetti │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+16. **Dentro la card Sito**, sotto-sezione `<section aria-labelledby>` con h3 e badge; visibile
+    col Sito attivo o sospeso, mai con client.json illeggibile. Dodici stati (tabella §8 del
+    piano), sempre con la parola nel badge.
+17. **Una riga a blocco per ricerca**, raggruppate per pagina (home → servizi nell'ordine delle
+    macro → zone): testo, volume in `mono` («al mese», «al mese a {sede}» per le ricerche senza
+    comune, «volume non misurato»), badge della difficoltà (bassa `ok`, media `warn`) ed
+    «Escludi…» `btnGhost` sulla stessa riga, che va a capo a 400 px; sotto, «Perché» `<details>`
+    a tutta larghezza con le frasi del §5.5 e «Apri la ricerca su Google ↗».
+18. **Una sola primaria**: «Calcola la mappa» o «Riprova» senza mappa, «Ricalcola…» solo con
+    ingressi cambiati; altrimenti secondaria. Con un blocco il bottone è disabilitato e il motivo
+    è scritto accanto (`aria-describedby`); in attesa delle zone o senza chiavi la frase di stato
+    è già il motivo. Quando la card delle zone ha la sua primaria, la mappa aspetta.
+19. **Escludi…** → `ConfirmDialog` brand con textarea obbligatoria (3-200 caratteri, focus nel
+    campo, `Esc` annulla e il focus torna al bottone); **Riammetti** diretto (reversibile e
+    gratuito) nell'elenco «Escluse da te». Dopo ogni azione `router.refresh()` e focus sull'h3.
+20. **In calcolo**: fase da `useRuns()` e tempo `mono aria-hidden`, «Puoi chiudere la pagina: il
+    calcolo continua.»; la mappa precedente resta visibile senza «Escludi…»; alla fine del run la
+    pagina si rilegge da sola. Stop solo dalla status bar (chip «script»): uno stop non mostra
+    banner d'errore.
+21. **Onestà dei numeri**: meta con data del calcolo, mese dei volumi, data delle pagine di
+    Google e costo dei dati («dalla cache» se il ricalcolo non ha pagato); `Banner warn` quando la
+    mappa viene da risposte registrate di prova.
+22. **Dettagli del calcolo** chiusi: lavori senza ricerche, siti da classificare (curatela di
+    `lib/mappa-domini.json`), avvisi (comuni oltre il tetto, sede fuori zona).
+
 ## Anti-obiettivi
 
 Niente KPI card o numeri-eroe (nessun dato da mostrare), niente switch, niente
@@ -437,4 +485,6 @@ tab, nessun bottone blu nel portafoglio, nell'hub o nei servizi del dettaglio (l
 è quello delle zone quando chiedono l'operatore), nessun motivo di blocco in un
 `title`, nessuna scrittura di `client.json` o delle zone alla sola apertura delle
 pagine. Zone: nessuna mappa, nessun select con 8.000 comuni, nessun modal per
-modificare, nessuna promessa di risultati.
+modificare, nessuna promessa di risultati. Ricerche: niente posizioni, clic o clienti
+stimati, niente percentuali né grafici, niente «keyword» o «SERP» nei testi, nessuna
+tabella larga.
