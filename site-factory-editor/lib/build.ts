@@ -229,7 +229,7 @@ async function* buildRunSerial(slug: string, ctx: RunCtx, io: StepIO): AsyncGene
         `out/${slug}/traffico/media-varianti.json`,
       ],
       cwd: SITE_RENDERER,
-      // a freddo ~30 s per le 18 foto di Cavaliere; a caldo tutto dalla cache
+      // a freddo ~50 s per le 18 foto di Cavaliere; a caldo tutto dalla cache
       timeoutMs: 300_000,
     });
     if (!mv.ok) return mv;

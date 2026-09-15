@@ -11,7 +11,7 @@ export type Candidato = [url: string, larghezza: number];
 
 /**
  * Voce di un'immagine di /media/<slug>/: `w`/`h` della sorgente (già raddrizzata). Le foto
- * hanno `avif` + `jpeg` (o `png` se la sorgente ha trasparenza); logo e marchio `avif` + `png`
+ * hanno `avif` + `jpeg` (o `png` se la sorgente ha trasparenza); logo e marchio solo `png`
  * in una sola misura; SVG e GIF solo `w`/`h`.
  */
 export type VociImmagine = {
@@ -38,16 +38,17 @@ export const manifest: ManifestVarianti | null = process.env.MEDIA_VARIANTI_JSON
   ? JSON.parse(readFileSync(process.env.MEDIA_VARIANTI_JSON, "utf8"))
   : null;
 
-// `sizes` per uso: larghezza resa dell'immagine a ogni viewport, dai box misurati sulle
+// `sizes` per uso: larghezza RESA dell'immagine a ogni viewport, dai box misurati sulle
 // sezioni (contenitore con 1.5rem di margine sotto 768 px e 2rem sopra, max 80rem). Mai sotto la
 // larghezza vera, o il browser sceglie una variante troppo piccola e la foto si ammorbidisce.
+// Foto.astro la moltiplica per ZOOM prima di scriverla nell'HTML (sizesPerZoom).
 // Grammatica chiusa, letta da scripts/budget-pagine.ts: voci «(max-width: Npx) LUNGHEZZA»
 // separate da virgola e una LUNGHEZZA finale, con LUNGHEZZA = Npx | Nvw | calc(Nvw - Nrem).
 export const SIZES = {
   // A, C, D: foto a tutta pagina ritagliata a riempire. Da mobile il riquadro è verticale e la
-  // foto larga copre ~1150 px (piano §2.4, calibrazione C3); da 768 px la sezione alta dei
-  // preset con titoli grandi la allarga oltre il viewport (1468 px a 1280 in canon): la più grande.
-  hero: "(max-width: 767px) 1170px, 1920px",
+  // foto larga copre ~1150 px; da 768 px la sezione alta dei preset con titoli grandi la allarga
+  // oltre il viewport fino a ~1470 px (1468 a 1280 in canon), poi è la viewport (calibrazione C3).
+  hero: "(max-width: 767px) 1170px, (max-width: 1469px) 1470px, 100vw",
   // B: colonna 6/12 accanto al testo.
   heroSplit: "(max-width: 1023px) calc(100vw - 3rem), 600px",
   // Griglia dei servizi: una colonna, due da 640 px, tre-cinque da 1024 px.
@@ -84,4 +85,23 @@ export function sizesGalleria(rigaIntera: boolean, fotoInRiga: number): string {
 export function sizesLogo(src: string, altezza: number): string {
   const v = manifest?.immagini[src];
   return v ? `${Math.round((v.w * altezza) / v.h)}px` : "";
+}
+
+/**
+ * Regola dello zoom (decisione di Mattia, docs/traffico/decisioni-piani.md T1b punto 8): il
+ * candidato scelto ha almeno ZOOM volte i pixel resi, così lo zoom con le dita (che non fa
+ * cambiare candidato al browser) resta nitido come con gli originali; oltre, l'originale.
+ */
+export const ZOOM = 2;
+
+/** `sizes` con ogni lunghezza moltiplicata per ZOOM (le condizioni restano), nella stessa grammatica. */
+export function sizesPerZoom(sizes: string): string {
+  const doppia = (lunghezza: string) => lunghezza.replace(/\d+(?:\.\d+)?/g, (n) => String(Math.round(Number(n) * ZOOM * 1000) / 1000));
+  return sizes
+    .split(/,(?![^(]*\))/)
+    .map((voce) => {
+      const m = /^\s*(\(max-width: \d+px\) )?(.*?)\s*$/.exec(voce)!;
+      return `${m[1] ?? ""}${doppia(m[2])}`;
+    })
+    .join(", ");
 }

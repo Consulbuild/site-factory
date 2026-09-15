@@ -6,8 +6,9 @@
 //     --media public/media/<slug> -o out/<slug>/traffico/media-varianti.json
 //
 // Per ogni `src` di site.json sotto /media/<slug>/: foto → larghezze della scala in AVIF +
-// JPEG mozjpeg (PNG se la sorgente ha trasparenza); logo e marchio → una misura alta 144 px
-// in AVIF + PNG; SVG e GIF → solo le dimensioni. In più una copia leggera della favicon e
+// JPEG mozjpeg (PNG se la sorgente ha trasparenza), con la larghezza dell'originale sempre come
+// gradino più grande; logo e marchio → PNG senza perdita alto fino a 288 px; SVG e GIF → solo
+// le dimensioni. In più una copia leggera della favicon e
 // l'anteprima og:image 1200×630 dalla foto della hero. Le varianti vanno in
 // public/media/<slug>/v/ (le copia Astro, le cancella la pulizia dei media della build
 // successiva) con il nome <nome>.<sha8>-<misura>.<formato>: una foto rigenerata con lo stesso
@@ -33,16 +34,25 @@ export const CACHE_PREDEFINITA = process.env.MEDIA_VARIANTI_CACHE || join(RADICE
 
 /** Ricetta delle varianti: ogni cambio (o una nuova versione di sharp/libvips) rigenera tutto. */
 export const RICETTA = {
-  /** Una sola scala per tutte le foto; il `sizes` per uso vive nei componenti. */
+  /** Una sola scala per tutte le foto (più l'originale in cima); il `sizes` per uso vive nei componenti. */
   larghezze: [400, 640, 960, 1280, 1920],
-  /** Qualità per origine della foto (calibrazione C1): le foto reali hanno texture fini. */
+  /**
+   * Qualità per origine (decisione di Mattia T1b punto 8 e calibrazione C1, piano T1b § Calibrazione):
+   * indistinguibile dagli originali anche con lo zoom. AVIF q90 = un gradino sopra la prima qualità
+   * che passa il gate (SSIM media ≥ 0,99, zone peggiori ≥ 0,95), «nel dubbio si sale». JPEG di
+   * ripiego q95; alla larghezza dell'originale il JPEG è il file originale stesso (vedi `codifica`).
+   */
   qualita: {
-    generata: { avif: 55, jpeg: 80 },
-    reale: { avif: 55, jpeg: 80 },
+    generata: { avif: 90, jpeg: 95 },
+    reale: { avif: 90, jpeg: 95 },
   },
+  /** Effort 2 è 3× più veloce ma perde SSIM a pari peso (C2): la codifica si fa una volta sola. */
   avifEffort: 4,
-  /** Logo e marchio: 3× i 48 px dell'intestazione. */
-  logoAltezza: 144,
+  /**
+   * Logo e marchio: PNG senza perdita (C4, «nel dubbio PNG lossless»), alto quanto l'originale fino
+   * a 288 px = 2 × 48 px dell'intestazione × DPR 3 (regola dello zoom).
+   */
+  logoAltezzaMax: 288,
   /** Favicon: lato del PNG e soglia sotto cui l'originale resta com'è. */
   faviconLato: 96,
   faviconMaxByte: 10 * 1024,
@@ -55,12 +65,13 @@ export type Tipo = "foto-generata" | "foto-reale" | "logo" | "favicon" | "og";
 export const hashRicetta = (ricetta: unknown = RICETTA): string =>
   createHash("sha256").update(JSON.stringify({ ricetta, versioni: sharp.versions })).digest("hex").slice(0, 12);
 
-/** Larghezze di una foto: la scala tagliata alla sorgente, più la sorgente se non è un gradino. Mai ingrandire. */
+/**
+ * Larghezze di una foto: i gradini più stretti della sorgente e, sempre come gradino più grande, la
+ * larghezza della sorgente (anche oltre l'ultimo gradino: con lo zoom nessuna foto perde definizione
+ * rispetto all'originale). Mai ingrandire.
+ */
 export function scala(larghezzaSorgente: number, gradini: readonly number[] = RICETTA.larghezze): number[] {
-  const max = gradini[gradini.length - 1];
-  const out = gradini.filter((w) => w <= larghezzaSorgente);
-  if (larghezzaSorgente < max && !out.includes(larghezzaSorgente)) out.push(larghezzaSorgente);
-  return out;
+  return [...gradini.filter((w) => w < larghezzaSorgente), larghezzaSorgente];
 }
 
 /** URL di una variante: /media/<slug>/v/<nome>.<sha8>-<suffisso>. */
@@ -170,21 +181,27 @@ async function codifica(buf: Buffer, tipo: Tipo, ricetta: typeof RICETTA, dir: s
     return voce;
   }
   if (tipo === "logo") {
-    const alt = Math.min(h, ricetta.logoAltezza);
+    const alt = Math.min(h, ricetta.logoAltezzaMax);
     const lw = Math.round((w * alt) / h);
-    const img = base.clone().resize({ height: alt });
-    voce.formati.avif = [[await scrivi(img.clone(), "avif", lw, ricetta.qualita.generata.avif), lw]];
-    voce.formati.png = [[await scrivi(img.clone(), "png", lw), lw]];
+    voce.formati.png = [[await scrivi(base.clone().resize({ height: alt }), "png", lw), lw]];
     return voce;
   }
   const q = ricetta.qualita[tipo === "foto-reale" ? "reale" : "generata"];
   const ripiego = meta.hasAlpha ? "png" : "jpeg";
+  // Alla larghezza dell'originale il JPEG di ripiego è il file com'è (la qualità servita oggi, senza
+  // una seconda compressione), se non porta metadati (EXIF/XMP/IPTC: posizione, apparecchio) né
+  // una rotazione da applicare; altrimenti si ricodifica.
+  const originaleRiusabile = meta.format === "jpeg" && !meta.exif && !meta.xmp && !meta.iptc && (meta.orientation ?? 1) === 1;
   voce.formati.avif = [];
   voce.formati[ripiego] = [];
   for (const lw of scala(w, ricetta.larghezze)) {
     const img = base.clone().resize({ width: lw });
     voce.formati.avif.push([await scrivi(img.clone(), "avif", lw, q.avif), lw]);
-    voce.formati[ripiego]!.push([await scrivi(img.clone(), ripiego, lw, q.jpeg), lw]);
+    if (ripiego === "jpeg" && lw === w && originaleRiusabile) {
+      writeFileSync(join(dir, `${lw}.jpg`), buf);
+      voce.file.push(`${lw}.jpg`);
+      voce.formati.jpeg!.push([`${lw}.jpg`, lw]);
+    } else voce.formati[ripiego]!.push([await scrivi(img.clone(), ripiego, lw, q.jpeg), lw]);
   }
   return voce;
 }
@@ -194,8 +211,12 @@ async function voceDaCache(buf: Buffer, sha: string, tipo: Tipo, ricetta: typeof
   const dir = join(cacheDir, `${sha}-${tipo}-${hashRicetta(ricetta)}`);
   const fileVoce = join(dir, "voce.json");
   if (existsSync(fileVoce)) {
-    const voce = JSON.parse(readFileSync(fileVoce, "utf8")) as VoceCache;
-    if (voce.file.every((f) => existsSync(join(dir, f)))) return { voce, dir, daCache: true };
+    try {
+      const voce = JSON.parse(readFileSync(fileVoce, "utf8")) as VoceCache;
+      if (voce.file.every((f) => existsSync(join(dir, f)))) return { voce, dir, daCache: true };
+    } catch {
+      /* voce illeggibile (disco, copia a metà): si ricodifica e si sostituisce */
+    }
   }
   const tmp = `${dir}.tmp-${process.pid}-${Math.random().toString(36).slice(2)}`;
   mkdirSync(tmp, { recursive: true });
@@ -280,7 +301,7 @@ export async function generaVarianti(opts: { site: unknown; mediaDir: string; ca
     const v: VociImmagine = { w: voce.w, h: voce.h };
     for (const k of ["avif", "jpeg", "png"] as const) if (voce.formati[k]) v[k] = aUrl(voce.formati[k]);
     manifest.immagini[src] = v;
-    const larghezze = (v.avif ?? []).map(([, w]) => w);
+    const larghezze = (v.avif ?? v.png ?? v.jpeg ?? []).map(([, w]) => w);
     righe.push(`${src}: ${larghezze.length ? `${tipo} ${larghezze.join("/")} px` : `${tipo}, solo dimensioni ${voce.w}×${voce.h}`} (${come})`);
   }
   righe.push(`${esiti.length} voci, ${daCache} dalla cache, ${esiti.length - daCache} codificate in ${((performance.now() - t0) / 1000).toFixed(1)} s · ricetta ${manifest.ricetta}`);

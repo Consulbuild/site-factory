@@ -494,4 +494,120 @@ build completa); il resto del piano è identico.
 
 ## Calibrazione
 
+Fase 3, 14-15/09/2026, sulle copie delle foto dei 3 clienti e sulla fixture `zz-test-t1b` (clone di Cavaliere),
+tutto nello scratchpad. Lighthouse **13.4.1** (pacchetto ufficiale, fissato) con il Chromium di Playwright, profilo
+mobile predefinito, 5 esecuzioni per caso, server statico che comprime il testo; Umami e n8n bloccati.
+
+**Due tornate.** La prima (sotto, «Tornata 1») applicava la regola dell'orchestratore T1b punto 7 con gate di
+prestazione (Lighthouse ≥ 90, LCP ≤ 2,5 s) e aveva scelto AVIF q62/q70 e la hero a `100vw` da mobile. Durante la fase
+è arrivata la **decisione di Mattia** (`decisioni-piani.md` T1b punto 8, commit `ef0f4c6`): qualità degli originali
+anche con lo zoom, candidato ≥ 2 × resa × DPR fino all'originale, la nitidezza vince su budget e Lighthouse. La
+**tornata 2** la applica e sostituisce le scelte della prima; la prima resta come misura del compromesso.
+
+### Tornata 2 (decisione di Mattia, ricetta in produzione)
+
+**Gate.** G1z «indistinguibile anche con lo zoom»: SSIM sulla luminanza (finestre 8×8 passo 4) della variante
+contro l'originale ridotto alla stessa larghezza, alle larghezze che il browser sceglie con la regola dello zoom
+(hero = originale; card e lavori 640, 960, originale), **media ≥ 0,99 sulla foto mediana e ≥ 0,98 sulla peggiore; le
+zone peggiori (2° percentile delle finestre, texture fini) ≥ 0,97 sulla mediana e ≥ 0,95 sulla peggiore**; poi
+ritagli al 200 % delle zone con più perdita. Zoom: su 390@3, 412@1,75, 768@2, 1280@1 e @2, 1920@1 e @2 il candidato
+scelto ≥ 2 × resa × DPR o l'originale, e non oltre il gradino successivo (controllo nel banco del browser).
+
+- **C1 qualità** (42 misure su foto generate, 48 su reali; KB medi · SSIM media mediana / peggiore · zone peggiori
+  mediana / peggiore):
+
+  | | AVIF q70 | q78 | q85 | **q90** | JPEG q85 | q90 | **q95** |
+  |---|---|---|---|---|---|---|---|
+  | generate | 86 · 0,979/0,955 · 0,933/0,896 | 108 · 0,985/0,969 · 0,956/0,924 | 147 · 0,991/0,981 · 0,973/0,957 | 191 · **0,994/0,986 · 0,982/0,972** | 105 · 0,972/0,950 · 0,878/0,757 | 136 · 0,979/0,962 · 0,912/0,807 | 201 · 0,990/0,981 · 0,961/0,928 |
+  | reali | 152 · 0,981/0,966 · 0,943/0,904 | 179 · 0,987/0,977 · 0,960/0,940 | 218 · 0,992/0,986 · 0,975/0,970 | 260 · **0,995/0,991 · 0,984/0,980** | 175 · 0,977/0,918 · 0,922/0,781 | 212 · 0,984/0,943 · 0,951/0,847 | 269 · 0,992/0,973 · 0,974/0,925 |
+
+  AVIF passa G1z da q85 in su, con margine sottile sulle generate (zone peggiori 0,957 su una card di Costruzioni
+  Generali a 960): «nel dubbio si sale» → **AVIF q90 per generate e reali**. Il JPEG non passa le zone peggiori
+  nemmeno a q95 (0,928 sulla hero di Cavaliere a 1920): **JPEG q95 sui gradini intermedi e, alla larghezza
+  dell'originale, il file originale stesso** (niente seconda compressione: è la qualità servita oggi; si ricodifica
+  solo se il file ha EXIF/XMP/IPTC o una rotazione). Il JPEG serve ai soli browser senza AVIF. Ritagli al 200 % delle
+  zone con più perdita (lavori 10, 11, 2, 7 di Cavaliere; 5 e 2 di Mattia Saggin; hero e card generate) a 640 px e
+  alla larghezza dell'originale: nessuna differenza visibile. Scarto pixel sulle sezioni della fixture (7 preset):
+  a 390@3× medio 0,38-0,40 e 0 % di pixel oltre 24; a 1280 hero 0,42-0,44, servizi ≤ 0,08 %, galleria 0,50-0,72 %
+  (medio ≤ 2,0: ricampionamento delle varianti 640/960 contro l'originale 1200 ridotto dal browser).
+- **Zoom e scala**: la larghezza dell'originale è sempre il gradino più grande (anche oltre 1920); `sizes` resta la
+  larghezza resa in `src/lib/media.ts` e `Foto.astro` la moltiplica per `ZOOM = 2` (`sizesPerZoom`). Banco del
+  browser su 7 preset × 7 viewport: **0 candidati sotto la regola, 0 oltre il gradino successivo**, box identici,
+  axe e `hashPagina` invariati. In pratica telefoni e tablet ricevono quasi sempre l'originale (card 1216, lavori
+  1200, hero 1920), il PC 1280@1 le varianti 640/960 della galleria.
+- **C2 tempi**: a pari qualità effort 2 codifica 3,4× più in fretta ma perde SSIM a pari peso (reali q62: 0,964
+  contro 0,970) → **effort 4**, la codifica si fa una volta per versione di foto. Con q90: Cavaliere 18 foto +
+  marchio + favicon + og **51 s a freddo, 0,1 s a caldo** (build intera 55 s / 3 s); Mattia Saggin 15 voci 15 s;
+  Costruzioni Generali 5 voci 6 s.
+- **C3 hero da mobile**: con la regola dello zoom qualunque `sizes` onesto (1170 px da mobile, 1470 fino a 1469 px
+  di viewport per le sezioni alte di canon, poi la viewport; × 2 nell'HTML) sceglie l'**originale** su tutti i
+  dispositivi di riferimento. `100vw` escluso dalla decisione (sceglieva 1280 a 390@3×).
+- **C4 logo**: **PNG senza perdita**, alto quanto l'originale fino a 288 px (2 × 48 × DPR 3): marchio di Cavaliere
+  285×240, lockup di Mattia Saggin 1.309×293 → 1.287×288; nessun AVIF («nel dubbio PNG lossless»). Favicon: PNG 96×96
+  a palette **6,2 KB** (da 148 KB; senza perdita sarebbe 17,2 KB, oltre l'obiettivo ≤ 10 KB della decisione 6);
+  og:image 1200×630 JPEG q95 dalla hero.
+- **C5 font**: invariato dalla tornata 1 (precaricamento solo sulle sottopagine, vedi sotto): con la ricetta 2 la
+  privacy della fixture fa 99, FCP 0,79 s, CLS 0.
+- **C6 soglie**: home a 412 px · DPR 1,75: Cavaliere **5.175 KB / 5.112 KB immagini / 24 richieste** (meridian; hero
+  1920 707 KB, lavoro-12 a 1280 599 KB), negli altri preset fino a 5.320 KB (canon) / 5.112 / 25; Mattia Saggin 2.699 /
+  2.638 / 17; Costruzioni Generali 817 / 763 / 7; sottopagine 47-312 KB. **Soglie: totale 6.400 KB, immagini
+  6.100 KB, richieste 30** (massimo + ~20 %): guardia contro le regressioni (una foto enorme, un `sizes` sbagliato),
+  non un obiettivo di velocità. `dist` di Cavaliere su disco 45,9 MB (originali + varianti), `sizeKb` invariato.
+
+**Risultato sulla fixture** (build dall'editor, Lighthouse ×5): home spento **75 / LCP 10,88 s / 3.550 KB** → acceso
+**75 / LCP 9,75 s / 2.288 KB** (FCP 1,39 → 1,05 s); privacy 90 / CLS 0,189 → **99 / CLS 0**. Con la qualità degli
+originali anche da zoom la hero da mobile resta a 1920 px (707 KB in AVIF q90 contro 1.005 KB del JPEG di oggi) e il
+LCP non scende sotto i 9 s: l'uscita del brief «PageSpeed mobile ≥ 90» non è raggiungibile con la decisione 8 (punto
+aperto per Mattia, con i numeri della tornata 1 come alternativa misurata).
+
+### Tornata 1 (superata dalla decisione di Mattia; misure del compromesso)
+
+Gate: G1 SSIM media per foto **mediana ≥ 0,97 e minima ≥ 0,94**; G2 Lighthouse mobile ≥ 90; G3 LCP ≤ 2,5 s;
+candidato ≥ resa × DPR.
+
+- **C1 qualità** (32 misure su foto generate, 48 su foto reali; KB medi · SSIM mediana · minima):
+
+  | | AVIF q50 | q55 | q62 | q70 | JPEG q75 | q80 | q85 | q90 |
+  |---|---|---|---|---|---|---|---|---|
+  | generate | 41 · 0,958 · 0,928 | 53 · 0,967 · 0,941 | 67 · **0,975 · 0,946** | 81 · 0,980 · 0,955 | 69 · 0,957 · 0,929 | 81 · 0,964 · 0,940 | 96 · **0,971 · 0,950** | 124 · 0,979 · 0,962 |
+  | reali | 49 · 0,945 · 0,886 | 62 · 0,960 · 0,918 | 78 · 0,970 · 0,943 | 93 · **0,977 · 0,959** | 71 · 0,950 · 0,876 | 84 · 0,959 · 0,896 | 99 · 0,967 · 0,916 | 127 · **0,977 · 0,940** |
+
+  Home della fixture (hero a 100vw, vedi C3), Lighthouse: q55 99 / LCP 2,10 s · q62 98 / 2,33 s · q70 97 / **2,55 s**
+  (fuori G3). La hero è l'unica foto che pesa sul LCP: le card e la galleria sono pigre e sotto la piega.
+  Scelta di allora: foto generate AVIF q62, foto reali AVIF q70 (le più nitide che passano G1-G3: q70 sulla hero sfora G3,
+  sulle foto reali non tocca il LCP); JPEG di ripiego q85 generate, q90 reali = la qualità minima che passa G1:
+  il ripiego serve solo ai browser senza AVIF e nessuna qualità che passa G1 sta nel budget per loro (home solo JPEG
+  1.248 KB con q85/q90, 1.348 con q90/q90), quindi i byte in più non comprano nitidezza visibile a nessuno.
+  Scarto pixel con la ricetta scelta, 7 preset × 390@3× e 1280: hero ≤ 1,43 % (medio ≤ 2,9), servizi ≤ 0,08 %,
+  galleria ≤ 2,96 % (medio ≤ 4,4). Nota di metodo: il 20-27 % di scarto sulla galleria visto in M2 era una corsa nel
+  banco (celle non ancora dipinte allo scatto), non compressione; con l'attesa del caricamento scende sotto l'1 % a 390@3×.
+- **C2 tempi**: effort 2 contro 4 a pari qualità: 205 contro 700 ms per variante, 2-3 % di peso in meno, SSIM più
+  bassa (reali q62: 0,964 contro 0,970). Con q62/q70 Cavaliere ~30 s a freddo.
+- **C3 hero da mobile**: sizes onesto (1920 a 390@3× e sul profilo di Lighthouse) contro `100vw` (1280 e 960).
+  Onesto: q55 94 / LCP 3,08 s · q62 90 / 3,60 s · q70 87 / 4,05 s; `100vw`: 99 / 2,10 · 98 / 2,33 · 97 / 2,55. Sotto il
+  velo scuro il ritaglio al 100 % a 390@3× era quasi indistinguibile; scelta di allora `100vw` da mobile, poi esclusa
+  dalla decisione 8.
+- **C4 logo** (144 px di altezza; KB · SSIM su fondo chiaro e scuro): marchio di Cavaliere PNG senza perdita 44,8 ·
+  palette 14,4 (0,9994) · AVIF q55 7,4 (0,9971) · q70 9,5 (0,9985) · q85 13,1 (0,9993) · q90 15,5 · senza perdita
+  43,3; lockup di Mattia Saggin PNG 57,0 · palette 29,1 · q55 15,3 (0,9978) · q70 18,2 · q85 24,0 (0,9986) · q90
+  29,0 · senza perdita 87,2. Scelta di allora AVIF q85 + PNG, poi PNG senza perdita per la decisione 8.
+- **C5 font (in produzione)**: precaricamento del file latin di titoli e testo, Lighthouse ×5. Ovunque (meridian): home FCP 1,05 →
+  0,75 s ma LCP 2,34 → 2,40 s (il font contende la banda alla foto della hero); privacy FCP 1,10 → 0,78 s, **CLS
+  0,189 → 0** (il cambio di font spostava il testo legale: difetto già presente nei siti online), punteggio 91 → 100.
+  Solo sottopagine, canon (due famiglie): privacy FCP 1,83 → 0,87 s, LCP 1,90 → 2,15 s (sempre «buono»), CLS 0,006 → 0,
+  98 → 99; home invariata byte per byte. **Adottato solo sulle sottopagine** (`SubPage.astro` → `precaricaFont` in
+  `Base.astro`): FCP migliore di ≥ 100 ms e nessun peggioramento della home (gate del piano); famiglie titoli e testo
+  del preset da `presets/presets.manifest.json`, file da `presets/fonts.gen.json`; mai senza manifest, mai per le
+  famiglie imposte dal cliente. `font-display: swap` resta.
+- **C6 soglie di allora**: home Cavaliere 960 KB / 897 KB immagini / 24 richieste (fino a 1.105 KB con canon);
+  soglie 1.300 / 1.100 / 30. **Risultato di allora**: home 98 / LCP 2,48 s / 344 KB; privacy 100 / CLS 0. Il LCP di
+  laboratorio oscillava di ~0,15 s tra una tornata e l'altra con la stessa home.
+
+**Schermate per la revisione di Mattia** (ricetta 2; fuori da git e da `out/`, in `~/.cache/site-factory/revisione-T1b/`):
+
+- `varianti-a-confronto/<preset>/<390|1280>-<hero|servizi|lavori>-<originale|varianti>.png`: le 3 sezioni con foto
+  della fixture, originali contro varianti, 7 preset, 390@3× e 1280; `pixel.json` con gli scarti.
+- `c1-zoom200/<cliente>-<foto>-<640px|larghezza originale>-originale_avif90_jpeg95.png`: la zona 150×150 con più
+  perdita ingrandita al 200 % (originale ridotto · AVIF q90 · JPEG di ripiego), 10 foto reali e generate.
+
 ## Verifica

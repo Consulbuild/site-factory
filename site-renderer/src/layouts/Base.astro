@@ -3,16 +3,19 @@ import "../styles/global.css";
 import type { SiteConfig } from "@/lib/schema";
 import { customFontsHref, type Preset } from "@/lib/presets";
 import { manifest } from "@/lib/media";
+import presetManifest from "../../presets/presets.manifest.json";
+import fontGen from "../../presets/fonts.gen.json";
 
 interface Props {
   site: SiteConfig;
   pageTitle?: string; // sottopagine (legali, grazie): "Titolo · NomeAzienda"
   noindex?: boolean; // sottopagine di servizio fuori dai motori
   jsonLd?: Record<string, unknown> | null; // dati strutturati (solo home, fondamenta SEO)
+  precaricaFont?: boolean; // sottopagine senza foto in apertura (pagine leggere, vedi sotto)
 }
 // NOINDEX=1 (env di build, come UMAMI_*): tutto il sito fuori dai motori — è la
 // build demo dell'editor (lib/build.ts), pubblicata su <nome>.demo.consulbuild.com.
-const { site, pageTitle, noindex = !!process.env.NOINDEX, jsonLd = null } = Astro.props;
+const { site, pageTitle, noindex = !!process.env.NOINDEX, jsonLd = null, precaricaFont = false } = Astro.props;
 const { brand, meta } = site;
 const preset = brand.preset as Preset;
 
@@ -36,6 +39,25 @@ const overrideFonts = [brand.fonts.heading, brand.fonts.body, brand.fonts.mono].
   (x): x is string => !!x,
 );
 const fontsHref = overrideFonts.length ? customFontsHref(overrideFonts) : null;
+
+// Pagine leggere (manifest delle varianti, calibrazione C5 del piano T1b): sulle sottopagine
+// si precaricano i file latin delle famiglie titoli e testo del preset. Il testo compare ~300 ms
+// prima e il cambio di font non sposta più il documento (CLS 0,19 → 0 sulla privacy). In home
+// no: il font contende la banda alla foto della hero e il LCP peggiora. Mai per le famiglie
+// imposte dal cliente (arrivano dal CDN).
+const famiglieDaPrecaricare = (() => {
+  if (!manifest || !precaricaFont) return [];
+  const p = presetManifest.presets.find((x) => x.id === preset);
+  return [!brand.fonts.heading && p?.fontHeadingFamily, !brand.fonts.body && p?.fontBodyFamily].filter((x): x is string => !!x);
+})();
+const fontPrecaricati = [
+  ...new Set(
+    fontGen.fontFaces
+      .filter((f) => famiglieDaPrecaricare.some((fam) => f.includes(`font-family: '${fam}';`)) && f.includes("font-style: normal;") && f.includes("U+0000-00FF"))
+      .map((f) => /url\(([^)]+)\)/.exec(f)?.[1])
+      .filter((x): x is string => !!x),
+  ),
+];
 
 // Kit di trattamenti (Asse 2): data-attr su <html>, accanto a data-preset, così
 // i selettori compat [data-preset][data-card] risolvono sullo stesso elemento.
@@ -90,6 +112,7 @@ const umamiDomains = Astro.site?.host;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {fontPrecaricati.map((href) => <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />)}
     <title>{title}</title>
     {noindex && <meta name="robots" content="noindex" />}
     {/* niente type: la favicon può essere PNG (simbolo dal logo GPT Image) o SVG storico */}

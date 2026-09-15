@@ -4,13 +4,13 @@
 //
 //   cd site-renderer && node --experimental-strip-types scripts/test-media.ts
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import sharp from "sharp";
 import { generaVarianti, hashRicetta, raccogliRiferimenti, RICETTA, scala, urlVariante } from "./media-varianti.ts";
 import { budgetDist, famigliePreset, fontLatini, leggiSrcset, scegliCandidato, valutaSizes } from "./budget-pagine.ts";
-import { SIZES, sizesGalleria } from "../src/lib/media.ts";
+import { SIZES, sizesGalleria, sizesPerZoom } from "../src/lib/media.ts";
 
 let passati = 0;
 let falliti = 0;
@@ -35,7 +35,7 @@ caso("scala: sorgente 1216 → 400/640/960/1216", uguali(scala(1216), [400, 640,
 caso("scala: sorgente 720 → 400/640/720", uguali(scala(720), [400, 640, 720]), scala(720));
 caso("scala: sorgente 300 → 300 (mai ingrandire)", uguali(scala(300), [300]), scala(300));
 caso("scala: sorgente 1920 → tutta la scala", uguali(scala(1920), [400, 640, 960, 1280, 1920]), scala(1920));
-caso("scala: sorgente 2400 → si ferma a 1920", uguali(scala(2400), [400, 640, 960, 1280, 1920]), scala(2400));
+caso("scala: sorgente 2400 → tutta la scala e l'originale in cima", uguali(scala(2400), [400, 640, 960, 1280, 1920, 2400]), scala(2400));
 caso("scala: sorgente 400 → 400", uguali(scala(400), [400]), scala(400));
 caso(
   "nome: /media/<slug>/v/<nome>.<sha8>-<misura>.<formato>",
@@ -112,9 +112,11 @@ try {
   const tr = m.immagini[`${P}trasparente.png`];
   caso("foto con trasparenza: ripiego PNG, niente JPEG", !!tr?.png?.length && !tr.jpeg && uguali(tr.avif?.map(([, w]) => w), [400, 500]), tr);
   const mark = m.immagini[`${P}mark.png`];
-  caso("marchio 285×240: una misura alta 144 px (171 di larghezza) in AVIF + PNG", mark?.w === 285 && mark.h === 240 && uguali(mark.avif?.map(([, w]) => w), [171]) && uguali(mark.png?.map(([, w]) => w), [171]), mark);
+  caso("marchio 285×240 (sotto i 288 px): solo PNG senza perdita alla misura dell'originale", mark?.w === 285 && mark.h === 240 && !mark.avif && uguali(mark.png?.map(([, w]) => w), [285]), mark);
   const markVero = await sharp(join(media, "v", mark!.png![0][0].split("/").pop()!)).metadata();
-  caso("il PNG del marchio è 171×144", markVero.width === 171 && markVero.height === 144, { w: markVero.width, h: markVero.height });
+  caso("il PNG del marchio è 285×240", markVero.width === 285 && markVero.height === 240 && markVero.format === "png", { w: markVero.width, h: markVero.height });
+  const heroJpegTop = readFileSync(join(media, "v", hero!.jpeg!.at(-1)![0].split("/").pop()!));
+  caso("gradino più grande del JPEG = il file originale (senza metadati), gli altri ricodificati", heroJpegTop.equals(readFileSync(join(media, "hero.jpg"))) && !readFileSync(join(media, "v", hero!.jpeg![0][0].split("/").pop()!)).equals(readFileSync(join(media, "hero.jpg"))));
   caso("SVG: solo dimensioni", uguali(m.immagini[`${P}disegno.svg`], { w: 64, h: 48 }), m.immagini[`${P}disegno.svg`]);
   caso("remota: nessuna voce", !Object.keys(m.immagini).some((k) => k.startsWith("https:")));
   const fav = m.favicon ? await sharp(join(media, "v", m.favicon.split("/").pop()!)).metadata() : null;
@@ -136,6 +138,10 @@ try {
   caso("foto sostituita: cambiano solo le sue varianti", uguali(cambiate, [`${P}card.jpg`]) && r3.manifest.og?.src === m.og?.src && r3.manifest.favicon === m.favicon, cambiate);
   caso("v/ ripulita a ogni esecuzione: nessuna variante della foto vecchia", !readdirSync(join(media, "v")).some((f) => f.startsWith("card.") && m.immagini[`${P}card.jpg`].avif!.some(([u]) => u.endsWith(f))));
   caso("ricetta diversa → nuova voce in cache (chiave con la ricetta)", readdirSync(cache).length > 0 && readdirSync(cache).every((d) => d.endsWith(hashRicetta())));
+  const voceHero = readdirSync(cache).find((d) => d.includes("-og-"))!;
+  writeFileSync(join(cache, voceHero, "voce.json"), "{ troncato");
+  const r4 = await generaVarianti({ site: siteBase, mediaDir: media, cacheDir: cache });
+  caso("voce di cache illeggibile → ricodificata, stesso risultato", r4.manifest.og?.src === r3.manifest.og?.src && uguali(r4.manifest.immagini, r3.manifest.immagini), r4.righe.at(-1));
 
   // Errori leggibili.
   const assente = await rifiuta(() => generaVarianti({ site: { ...siteBase, sections: [{ type: "Hero", props: { image: { src: `${P}manca.jpg`, alt: "m" } } }] }, mediaDir: media, cacheDir: cache }));
@@ -165,7 +171,19 @@ const lancia = (fn: () => unknown): string | null => {
   const a412 = Object.fromEntries(Object.entries(SIZES).map(([k, v]) => [k, Math.round(valutaSizes(v, 412))]));
   caso("SIZES a 412 px: hero 1170, split/card/riga/evidenza 364, processo 284", uguali(a412, { hero: 1170, heroSplit: 364, card: 364, cardRiga: 364, evidenza: 364, processo: 284 }), a412);
   const a1280 = Object.fromEntries(Object.entries(SIZES).map(([k, v]) => [k, Math.round(valutaSizes(v, 1280))]));
-  caso("SIZES a 1280 px: hero 1920, split 600, card 400, riga 490, evidenza 720, processo 448", uguali(a1280, { hero: 1920, heroSplit: 600, card: 400, cardRiga: 490, evidenza: 720, processo: 448 }), a1280);
+  caso("SIZES a 1280 px: hero 1470, split 600, card 400, riga 490, evidenza 720, processo 448", uguali(a1280, { hero: 1470, heroSplit: 600, card: 400, cardRiga: 490, evidenza: 720, processo: 448 }), a1280);
+  caso("SIZES hero a 1920 px: la viewport", valutaSizes(SIZES.hero, 1920) === 1920);
+  const zoom = [sizesPerZoom(SIZES.card), sizesPerZoom(SIZES.hero), sizesPerZoom(sizesGalleria(false, 3)), sizesPerZoom("48px")];
+  caso(
+    "regola dello zoom: lunghezze × 2, condizioni intatte, stessa grammatica",
+    uguali(zoom, [
+      "(max-width: 639px) calc(200vw - 6rem), (max-width: 1023px) calc(100vw - 4.5rem), 800px",
+      "(max-width: 767px) 2340px, (max-width: 1469px) 2940px, 200vw",
+      "(max-width: 1023px) calc(100vw - 3.75rem), (max-width: 1279px) calc(66.8vw - 4rem), 800px",
+      "96px",
+    ]) && zoom.every((z) => !lancia(() => valutaSizes(z, 412))) && Math.round(valutaSizes(zoom[0], 412)) === 728,
+    zoom,
+  );
   caso("SIZES a 700 px: card calc(50vw - 2.25rem) = 314, riga calc(40vw - 1.2rem) = 261", Math.round(valutaSizes(SIZES.card, 700)) === 314 && Math.round(valutaSizes(SIZES.cardRiga, 700)) === 261);
   const gal = [valutaSizes(sizesGalleria(true, 3), 412), valutaSizes(sizesGalleria(false, 3), 412), valutaSizes(sizesGalleria(false, 2), 1100), valutaSizes(sizesGalleria(false, 4), 1300), valutaSizes(sizesGalleria(false, 1), 1300)].map(Math.round);
   caso("galleria: riga intera 364 e mezza 176 a 412; 2 per riga 510 a 1100; 4 per riga 300 e 1 per riga 1216 a 1300", uguali(gal, [364, 176, 510, 300, 1216]), gal);
