@@ -240,7 +240,7 @@ export function ApiKeysPanel() {
                           </div>
                         </div>
                         <button
-                          className={aperta ? `${btnGhost} disabled:cursor-not-allowed disabled:opacity-40` : btnSecondary}
+                          className={aperta ? btnGhost : btnSecondary}
                           aria-expanded={aperta}
                           disabled={verifica}
                           onClick={() => setOpenKey(aperta ? null : k.name)}

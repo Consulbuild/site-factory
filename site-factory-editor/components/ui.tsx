@@ -86,7 +86,7 @@ export const btnPrimary =
 export const btnSecondary =
   "inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-1.5 text-sm font-medium text-ink transition-colors duration-150 hover:border-line2 hover:bg-raise disabled:cursor-not-allowed disabled:opacity-40";
 export const btnGhost =
-  "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-sm text-muted transition-colors duration-150 hover:bg-raise hover:text-ink";
+  "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-sm text-muted transition-colors duration-150 hover:bg-raise hover:text-ink disabled:cursor-not-allowed disabled:opacity-40";
 export const btnDanger =
   "inline-flex items-center gap-2 rounded-full border border-line px-4 py-1.5 text-sm font-medium text-err transition-colors duration-150 hover:border-err hover:bg-err-bg disabled:cursor-not-allowed disabled:opacity-40";
 
