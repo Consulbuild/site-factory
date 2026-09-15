@@ -311,3 +311,17 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
    - **T4**: niente modifiche a `secrets.ts` né alla route delle chiavi; `lib/dataforseo.ts` (da creare in T4) legge le due
      chiavi con `getSecret`.
    - **G1**: nessuna chiave nuova.
+
+## T1c — Telefono veloce (piano pronto `ed2ac36`; vale sopra il piano)
+
+1. Dubbi del piano: ritaglio hero 430/544 (stessa zona visibile) **sì**; niente serie JPEG da telefono **sì**; CSS inline
+   solo se la mediana di Lighthouse locale resta sotto 90, e allora si aggiunge `site-renderer/astro.config.mjs` al
+   perimetro **sì**; se la qualità più bassa che passa il controllo non arriva a 90, decide Mattia su schermate e numeri
+   **sì**; avviso «foto LCP da telefono» oltre 250 KB, soglie del budget ricalcolate (massimo + 20 %), Lighthouse locale
+   su meridian e canon **sì**.
+2. **Correzioni del controllore** (valgono sopra il piano):
+   - **Marchio da telefono**: il `sizes` del logo sotto 768 px usa l'altezza resa sul telefono (40 px), non i 48 px da md,
+     così un telefono DPR 3 sceglie la variante ≤ 3× (120 px) invece della 288; verificarlo a 390@3, 412@1,75 e 430@3.
+   - **Niente serie da telefono per la hero**: fino a 430 px vince il ritaglio, oltre resta la serie di oggi; le serie da
+     telefono servono solo alle altre foto. Il gradino da 400 px si tiene solo se un viewport di verifica lo sceglie.
+   - Hero.astro non ha `object-position`: il ritaglio è centrato come `object-cover` di default.
