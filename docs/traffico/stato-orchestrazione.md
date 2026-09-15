@@ -39,7 +39,10 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
 | T4, T5a, T2a, T2b, G1 | piano scritto e decisioni registrate (con gli effetti di T3 punto 13), da sviluppare |
 | T6b | sospeso: nessuna fonte verificata del luogo dei lavori |
 | K1 | chiuso e verificato dall'orchestratore (`7fc53e6`…`aa44ac7`; tsc, banco chiavi 121/0, 9 chiavi reali intatte, 6 campi nuovi pronti). Costo 24 agenti, 3,2 M token. Aperto per Mattia: dev server su tutte le interfacce (`next dev` senza `-H 127.0.0.1`), chip per `btnGhost` disabilitato |
-| T4, G1, T5a | piani riallineati al 15/09 e approvati dal controllore (`e73f98b`, `1d530aa`, `145cf2a`; decisioni T4 8-9, G1 11, T5a 8). **T4 in sviluppo** (run `wf_35a2f5e1-4d3`, task `w63yh5e2i`; tetto di spesa 3 $) |
+| T4 | chiuso e verificato dall'orchestratore (`ddcede0`…`b6c6ae5`; tsc, banco mappa 165/0). Costo 35 agenti, 5,5 M token, 3 h. **Calibrazione a pagamento in attesa**: saldo DataForSEO 1,00 $ (serve la ricarica di 50 $) e Cavaliere senza sede (brief Tally) |
+| T1c | telefono veloce: piano `ed2ac36` + decisioni T1c; **in sviluppo** (run `wf_d7db8f39-ac6`, task `w0nsxp9ir`), con ripubblicazione di Cavaliere e PSI dal vivo |
+| Coda «seguito T4» (dopo T1c, flusso leggero) | F1 sede dei brief Tally da `brief.citta` (nome esatto, esito da controllare) in `lib/zone-servite.ts` — serve alla mappa di Cavaliere; F2 409 su DELETE cliente e su sospensione del Sito col lavoro mappa vivo; F3 focus di `confirm-dialog.tsx` solo all'apertura; F4 chip della status bar a 400 px |
+| G1, T5a | piani riallineati (`1d530aa`, `145cf2a`), da sviluppare dopo il seguito T4 |
 | T5b, T5c, T6b, T7a, T7b, T8, G2, G3 | da pianificare (fase 1) |
 | S0 | lavoro manuale di Mattia (README §8) |
 
