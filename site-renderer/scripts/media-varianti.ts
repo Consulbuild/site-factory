@@ -32,7 +32,11 @@ const RADICE_RENDERER = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 /** Override con MEDIA_VARIANTI_CACHE (prove e calibrazioni in una cartella a parte). */
 export const CACHE_PREDEFINITA = process.env.MEDIA_VARIANTI_CACHE || join(RADICE_RENDERER, "node_modules", ".cache", "media-varianti");
 
-/** Ricetta delle varianti: ogni cambio (o una nuova versione di sharp/libvips) rigenera tutto. */
+/**
+ * Ricetta delle varianti: ogni cambio, una nuova versione di sharp/libvips o una modifica a questo
+ * script (la codifica decide parametri che qui non compaiono: density e palette della favicon,
+ * ritaglio della og, compressione PNG, riuso dell'originale) rigenera tutto.
+ */
 export const RICETTA = {
   /** Una sola scala per tutte le foto (più l'originale in cima); il `sizes` per uso vive nei componenti. */
   larghezze: [400, 640, 960, 1280, 1920],
@@ -62,8 +66,11 @@ export const RICETTA = {
 export type Origine = keyof typeof RICETTA.qualita;
 export type Tipo = "foto-generata" | "foto-reale" | "logo" | "favicon" | "og";
 
+/** sha256 del sorgente di questo script: ogni modifica alla logica di codifica cambia la chiave della cache. */
+const CODICE = createHash("sha256").update(readFileSync(fileURLToPath(import.meta.url))).digest("hex");
+
 export const hashRicetta = (ricetta: unknown = RICETTA): string =>
-  createHash("sha256").update(JSON.stringify({ ricetta, versioni: sharp.versions })).digest("hex").slice(0, 12);
+  createHash("sha256").update(JSON.stringify({ ricetta, versioni: sharp.versions, codice: CODICE })).digest("hex").slice(0, 12);
 
 /**
  * Larghezze di una foto: i gradini più stretti della sorgente e, sempre come gradino più grande, la
@@ -140,6 +147,15 @@ const RASTER = new Set(["jpeg", "png", "webp", "heif", "tiff"]);
 const SOLO_DIMENSIONI = new Set(["svg", "gif"]);
 
 async function codifica(buf: Buffer, tipo: Tipo, ricetta: typeof RICETTA, dir: string): Promise<VoceCache> {
+  // Il form accetta il logo anche in PDF (site-intake/src/components/logo.ts): né sharp né il browser
+  // lo mostrano come immagine, quindi si dice all'operatore cosa fare invece dell'errore di libvips.
+  if (buf.subarray(0, 5).toString("latin1") === "%PDF-") {
+    throw new Error(
+      tipo === "logo"
+        ? "il logo è un PDF, che il sito non può mostrare: carica il logo in PNG o SVG nella scheda Intake (Materiali → Logo) e rilancia la build"
+        : "è un PDF, che il sito non può mostrare: sostituiscilo con un JPEG, PNG o SVG e rilancia la build",
+    );
+  }
   const meta = await sharp(buf).metadata();
   const w = meta.autoOrient?.width ?? meta.width;
   const h = meta.autoOrient?.height ?? meta.height;
@@ -293,9 +309,12 @@ export async function generaVarianti(opts: { site: unknown; mediaDir: string; ca
       continue;
     }
     if (tipo === "og") {
-      const [f, w] = voce.formati.jpeg![0];
-      manifest.og = { src: url(f), w, h: voce.h };
-      righe.push(`${src}: og:image ${w}×${voce.h} (${come})`);
+      // Hero in SVG o GIF: la codifica dà solo le dimensioni, niente anteprima; Base.astro usa l'originale.
+      const og = voce.formati.jpeg?.[0];
+      if (og) {
+        manifest.og = { src: url(og[0]), w: og[1], h: voce.h };
+        righe.push(`${src}: og:image ${og[1]}×${voce.h} (${come})`);
+      } else righe.push(`${src}: og:image non generata (hero non raster), resta l'originale della hero`);
       continue;
     }
     const v: VociImmagine = { w: voce.w, h: voce.h };

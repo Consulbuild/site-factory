@@ -4,9 +4,10 @@
 //
 //   cd site-renderer && node --experimental-strip-types scripts/test-media.ts
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import sharp from "sharp";
 import { generaVarianti, hashRicetta, raccogliRiferimenti, RICETTA, scala, urlVariante } from "./media-varianti.ts";
 import { budgetDist, famigliePreset, fontLatini, leggiSrcset, scegliCandidato, valutaSizes } from "./budget-pagine.ts";
@@ -43,6 +44,31 @@ caso(
   urlVariante("/media/zz/hero.jpg", "1a2b3c4d5e6f", "640.avif"),
 );
 caso("ricetta: l'hash cambia con la ricetta", hashRicetta() !== hashRicetta({ ...RICETTA, avifEffort: 2 }) && hashRicetta() === hashRicetta(RICETTA));
+{
+  // La codifica decide parametri fuori da RICETTA (palette della favicon, ritaglio della og…): una
+  // copia dello script con la codifica cambiata deve dare un'altra chiave di cache.
+  const dirCodice = mkdtempSync(join(tmpdir(), "test-media-codice-"));
+  try {
+    symlinkSync(join(import.meta.dirname, "..", "node_modules"), join(dirCodice, "node_modules"));
+    const sorgente = readFileSync(join(import.meta.dirname, "media-varianti.ts"), "utf8");
+    const ricettaDi = (testo: string, nome: string) => {
+      writeFileSync(join(dirCodice, nome), testo);
+      const url = JSON.stringify(pathToFileURL(join(dirCodice, nome)).href);
+      const r = spawnSync(process.execPath, ["--experimental-strip-types", "--no-warnings", "--input-type=module", "-e", `console.log((await import(${url})).hashRicetta())`], { encoding: "utf8" });
+      return r.stdout.trim() || r.stderr.trim();
+    };
+    const modificato = sorgente.replace("palette: true", "palette: false");
+    const uguale = ricettaDi(sorgente, "uguale.ts");
+    const cambiato = ricettaDi(modificato, "cambiato.ts");
+    caso(
+      "chiave della cache: stesso codice → stessa ricetta; codifica cambiata (palette della favicon) → ricetta nuova",
+      modificato !== sorgente && uguale === hashRicetta() && /^[0-9a-f]{12}$/.test(cambiato) && cambiato !== uguale,
+      { uguale, cambiato, qui: hashRicetta() },
+    );
+  } finally {
+    rmSync(dirCodice, { recursive: true, force: true });
+  }
+}
 
 /* ---------- riferimenti in site.json ---------- */
 
@@ -151,6 +177,15 @@ try {
   writeFileSync(join(media, "rotta.jpg"), "non è un'immagine");
   const rotta = await rifiuta(() => generaVarianti({ site: { ...siteBase, sections: [{ type: "Hero", props: { image: { src: `${P}rotta.jpg`, alt: "m" } } }] }, mediaDir: media, cacheDir: cache }));
   caso("file illeggibile → errore che nomina il file", !!rotta?.startsWith(`${P}rotta.jpg:`), rotta);
+  writeFileSync(join(media, "logo.pdf"), "%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\n%%EOF\n");
+  const pdf = await rifiuta(() => generaVarianti({ site: { ...siteBase, brand: { ...siteBase.brand, logo: { src: `${P}logo.pdf`, alt: "l" } } }, mediaDir: media, cacheDir: cache }));
+  caso("logo in PDF (dal form) → errore che nomina il file e dice cosa fare", !!pdf?.startsWith(`${P}logo.pdf: il logo è un PDF`) && pdf.includes("PNG o SVG nella scheda Intake"), pdf);
+  const heroSvg = await generaVarianti({ site: { ...siteBase, sections: [{ type: "Hero", props: { image: { src: `${P}disegno.svg`, alt: "s" } } }] }, mediaDir: media, cacheDir: cache }).catch((e: unknown) => (e instanceof Error ? e.message : String(e)));
+  caso(
+    "hero in SVG: nessun errore, niente og:image nel manifest (Base.astro usa l'originale), riga nel log",
+    typeof heroSvg === "object" && !heroSvg.manifest.og && uguali(heroSvg.manifest.immagini[`${P}disegno.svg`], { w: 64, h: 48 }) && heroSvg.righe.some((r) => r === `${P}disegno.svg: og:image non generata (hero non raster), resta l'originale della hero`),
+    heroSvg,
+  );
   caso("nessuna cartella temporanea lasciata in cache", !readdirSync(cache).some((d) => d.includes(".tmp-")), readdirSync(cache));
   caso("cartella temporanea del banco esistente (sanità)", existsSync(media));
 } finally {
@@ -260,6 +295,16 @@ try {
   const r2 = cli(tmpDist);
   const esito = /^ESITO (\{.*\})$/m.exec(r2.stdout)?.[1];
   caso("CLI senza errori: exit 0, tabella e riga ESITO con gli avvisi", r2.status === 0 && r2.stdout.includes("OLTRE") === false && !!esito && uguali(JSON.parse(esito), { avvisi: [] }), { status: r2.status, stdout: r2.stdout, stderr: r2.stderr });
+  // Il log della scheda Build riduce gli spazi di fila: ogni numero porta la sua etichetta.
+  const righeTabella = r2.stdout.split("\n").filter((r) => !r.startsWith("ESITO"));
+  caso(
+    "CLI: tabella leggibile senza spazi di fila (soglie in una riga, poi una riga etichettata per pagina)",
+    righeTabella[0] === "soglie per pagina (412 px, DPR 1,75): totale 6400 KB · immagini 6100 KB · 30 richieste" &&
+      /^\/ · totale \d+ KB · immagini 168 KB · 7 richieste · ok$/.test(righeTabella[1]) &&
+      /^\/privacy\/ · totale \d+ KB · immagini 8 KB · \d+ richieste · ok$/.test(righeTabella[2]) &&
+      !r2.stdout.includes("  "),
+    righeTabella,
+  );
 } finally {
   rmSync(tmpDist, { recursive: true, force: true });
 }

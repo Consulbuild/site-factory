@@ -327,11 +327,12 @@ function main(): void {
     console.error(`budget-pagine: ${e instanceof Error ? e.message : String(e)}`);
     process.exit(1);
   }
-  const larga = Math.max(8, ...esito.pagine.map((p) => p.pagina.length));
-  console.log(`${"pagina".padEnd(larga)}  ${"totale".padStart(9)}  ${"immagini".padStart(9)}  richieste   (412 px, DPR 1,75; soglie ${kb(SOGLIE.totaleKb)} · ${kb(SOGLIE.immaginiKb)} · ${SOGLIE.richieste})`);
+  // Una riga per pagina con le etichette scritte: il log della scheda Build riduce gli spazi di fila
+  // a uno solo, quindi niente colonne allineate con gli spazi.
+  console.log(`soglie per pagina (412 px, DPR 1,75): totale ${kb(SOGLIE.totaleKb)} · immagini ${kb(SOGLIE.immaginiKb)} · ${SOGLIE.richieste} richieste`);
   for (const p of esito.pagine) {
     const oltre = avvisoBudget(p) !== null;
-    console.log(`${p.pagina.padEnd(larga)}  ${kb(p.totaleKb).padStart(9)}  ${kb(p.immaginiKb).padStart(9)}  ${String(p.richieste).padStart(9)}   ${oltre ? "OLTRE" : "ok"}`);
+    console.log(`${p.pagina} · totale ${kb(p.totaleKb)} · immagini ${kb(p.immaginiKb)} · ${p.richieste} richieste · ${oltre ? "OLTRE" : "ok"}`);
   }
   if (esito.errori.length) {
     const righe = esito.errori.slice(0, esito.errori.length > 3 ? 2 : 3);
