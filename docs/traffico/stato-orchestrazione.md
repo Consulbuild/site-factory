@@ -67,10 +67,15 @@ Rivisto il 2026-09-15 sulla priorità di Mattia (traffico dall'Italia e dalle zo
 - **Chiavi reali inserite da Mattia (15/09)** e funzionanti. Fotografia di partenza gratuita di Cavaliere in
   `out/cavaliere-build-srls/traffico/baseline-2026-09.json` (script `scratchpad/baseline-cavaliere.ts` e
   `baseline-umami.ts`): PageSpeed mobile 74 (LCP 7,4 s, 3,4 MB), desktop 97; CrUX 404 (poche visite); Bing: sito
-  verificato, 0 impressioni; Umami: quasi solo robot da data center USA (decisione T2b 9). **Search Console non
-  letta**: il service account `sf-scrittura@site-factory-traffico.iam.gserviceaccount.com` non ha accesso e la verifica
-  via TXT sul DNS del cliente è stata bloccata dai permessi di Claude Code → Mattia lo aggiunge come utente «Completa»
-  in Search Console, poi si rilancia lo script senza `--verifica`.
+  verificato, 0 impressioni; Umami: quasi solo robot da data center USA (decisione T2b 9). Search Console (service
+  account aggiunto da Mattia come utente «Completa», 15/09): **0 impressioni in 16 mesi, home «URL sconosciuto a
+  Google»**, nessuna sitemap inviata; il sito online non ha `sitemap.xml` (404, build del 6/09 senza fondamenta),
+  `robots.txt` senza riga Sitemap, niente noindex; `www.cavalierebuild.it` non risolve. Causa prima dello zero traffico:
+  **il sito non è indicizzato**. Fatto: home inviata a Bing con `SubmitUrlbatch` (200, quota 100/giorno). La verifica via
+  TXT sul DNS del cliente è bloccata dai permessi di Claude Code (decide Mattia).
+- **Priorità per Cavaliere prima di T4/G1**: (1) Mattia «Richiedi indicizzazione» della home in Search Console; (2) con
+  l'ok di Mattia, ripubblicare Cavaliere col servizio Sito (sitemap, robots, dati strutturati, pagine leggere) e inviare
+  la sitemap a Google e Bing via API; (3) record `www` mancante.
 
 - **Misura di riferimento per T1b** (14/09 sera, cavalierebuild.it dal vivo, telefono 390 px DPR 3, cache
   vuota, mediana di 3; script `scratchpad/misura-lcp.mjs`): LCP = foto hero; rete del Mac 0,2 s · mobile
