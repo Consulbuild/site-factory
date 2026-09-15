@@ -1,5 +1,8 @@
 # Piano K1 — Chiavi API per gruppi e chiavi del Traffico
 
+Stato: **chiuso, 2026-09-15** (sezioni «Sviluppo», «Calibrazione» e «Verifica» in fondo). Sopra questo testo valgono le
+decisioni «K1» di `decisioni-piani.md`.
+
 Brief: `docs/traffico/brief-K1.md`. Fase 1 (solo documenti), 15/09. Letti: codice citato sotto, `piano-T2a.md` §1, §5-§6,
 §8, §14; `piano-T2b.md` §1, §5; `piano-T4.md` §1-§2, §9-§10; `piano-G1.md` §2, §10; `decisioni-piani.md`; `DESIGN-SYSTEM.md`
 §5, §6, §10-§12; guida Next 16 `01-app/01-getting-started/15-route-handlers.md` (route handler non in cache; `dynamic` resta
@@ -280,5 +283,55 @@ esistenti presenti, 6 nuove assenti.
   con 401 tradotto, poi la password di prova rimossa.
 - Con le chiavi vere: controllare il tempo della prova PageSpeed e la risposta di Cloudflare a un token valido **senza**
   Zone: Read (403 o lista vuota: entrambi portano a «non vede la zona»).
-- Chiusura (M3 residuo): README §7 (riga K1), `docs/handoff-fase-c.md`, `scope.json` da svuotare. `docs/DEBUG.md` ha già la
-  riga «chiave rifiutata in Impostazioni».
+- Chiusura (M3): fatta nel collaudo finale (sotto).
+
+## Verifica (fasi 4-5, collaudo finale, 2026-09-15)
+
+Dopo 5 problemi corretti nei giri di revisione (`6fd91fe`, `4c8b10c`). Editor su :3311 (dev), esiti reali.
+
+| Comando (in `site-factory-editor/`) | Esito |
+|---|---|
+| `npx tsc --noEmit` | exit 0, nessun errore |
+| `npm run build` | exit 0, tutte le route compilate (`ƒ /impostazioni`, `ƒ /traffico/[slug]`, …) |
+| `node --experimental-strip-types scripts/test-chiavi.ts` | 121 passati, 0 falliti (ultimi: «DataForSEO: solo user_data», «nessuna prova supera il suo massimo di chiamate», «ogni chiave del Traffico è stata provata») |
+| `scripts/test-traffico-stato.ts` | 58 passati, 0 falliti |
+| `scripts/test-portafoglio.ts` | 43 passati, 0 falliti |
+| `scripts/test-zone-servite.ts` | 110 passati, 0 falliti |
+
+**E2E API** (script nello scratchpad, credenziali finte generate a ogni run, rifiutate dai servizi, nessuna spesa).
+Impronta del Keychain (presenza per chiave + sha256 dei valori, mai stampati) `71b2c5a8f0c54058` prima e dopo: 9 chiavi
+esistenti presenti, 6 nuove assenti (ricontrollate assenti anche dopo il giro nel browser).
+- GET: tre gruppi con 4, 5, 6 chiavi; chiavi «configurate» = voci presenti nel Keychain; nessun valore. Latenza ~0,5 s.
+- 403 con `Origin` di un altro sito e con `Host` della LAN forgiato su `localhost:3311`.
+- POST, tutte 400 con messaggio italiano, senza il valore (né intero, né URL-encoded, né gli ultimi 8 caratteri), senza
+  `apikey=`, `Authorization` o URL: `GOOGLE_API_KEY` «AIza»+35 → «Google non riconosce la API key…» (138 ms); Bing →
+  «Bing non riconosce la API key…» (436 ms); DataForSEO login+password e password+login → «DataForSEO ha rifiutato login o
+  password…» (142 e 53 ms); service account con chiave RSA 2048 generata, JSON incollato e suo base64 → «Google ha
+  rifiutato la chiave del service account…» (`invalid_grant`, 125 e 62 ms); testo qualsiasi → «Non è il JSON di un
+  service account…» (11 ms, nessuna rete); token Cloudflare DNS → «Cloudflare non riconosce il token…» (302 ms); valore di
+  4001 caratteri → «valore troppo lungo per il portachiavi (4001 caratteri, massimo 4000)» prima della rete.
+- Non ripetuto: salvataggio di una metà DataForSEO senza l'altra (salverebbe senza prova, come da piano): coperto dal banco
+  (caso 5) e dall'E2E della fase 3.
+
+**UI nel browser** (:3311, Impostazioni, 1280 e 400 px, chiaro e scuro; il tema scuro applicato solo sulla pagina via
+`data-theme`, senza toccare la preferenza salvata, poi riportato su chiaro): tre gruppi con titolo, conteggio
+(«4 di 4», «5 di 5», «0 di 6 configurate») e frase; badge «Configurata» + `…abcd` / «Mancante»; «Dove si prende» solo
+sul Traffico. Bing Aggiungi → chiave finta → «Salva e verifica» → errore tradotto in `text-err` sotto il campo;
+«Annulla» richiude. DataForSEO login: due campi (login, password), aiuto sotto, coppia finta → «DataForSEO ha rifiutato
+login o password…» leggibile nel tema scuro. A 400 px: campi a tutta riga uno sotto l'altro, bottone sotto, conteggio del
+gruppo sotto il titolo, `scrollWidth` 400 (nessuno scroll orizzontale). Schede Immagini e Pubblicazione: `KeySetup` non
+compatto non visibile (BFL e Cloudflare configurate); nel codice il ramo non compatto cambia solo il nome accessibile del
+campo (= titolo, correzione 3 della revisione), classi e layout invariati.
+
+**Revisione del diff (fase 5)**: nessun difetto nuovo. Nessun `console.*` nei file toccati; ogni messaggio della prova è
+composto nel modulo e passa da `redigi`; eccezioni impreviste riportate col solo nome. Limite noto (già documentato): un
+client della LAN che forgia `Host: localhost` passa il controllo della route finché il dev server non è legato a 127.0.0.1.
+
+**Perimetro**: i commit del piano (`7fc53e6`, `db279df`, `ecd1da3`, `6fd91fe`, `4c8b10c` e la chiusura) toccano solo
+`lib/secrets.ts`, `lib/chiavi-traffico.ts`, `app/api/setup/keys/route.ts`, `components/home.tsx`, `scripts/test-chiavi.ts`,
+`docs/DEBUG.md`, `docs/traffico/**` e `docs/handoff-fase-c.md` (tutti nel §4 o nel perimetro di `scope.json`); nessuna
+modifica del piano resta fuori dai commit (`factory/assignments.json` modificato nel working tree è di un'altra sessione).
+Stato di prova ripristinato: nessuna chiave scritta, nessuna fixture creata.
+
+**Aperti per Mattia** (con le chiavi vere): tempo della prova PageSpeed; risposta di Cloudflare a un token valido senza
+Zone: Read; primo salvataggio del service account (atteso ~2,5 KB normalizzato, riletto).

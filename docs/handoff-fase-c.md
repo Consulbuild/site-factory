@@ -172,6 +172,15 @@ prossime schede.
   (Veneto), Cavaliere e La Cecilia (Tally) da impostare a mano una volta. Collaudo finale: suite verde, E2E API e UI su
   fixture poi nel Cestino, file dei clienti reali identici. Aperti per Mattia: testi della card, raggio 15 km per sedi
   dense (Monza 156 comuni), `province.json` del form ancora con «Sud Sardegna».
+- **Traffico K1 — chiavi API per gruppi** (2026-09-15, piano chiuso in `docs/traffico/piano-K1.md`): Impostazioni →
+  Chiavi API in tre gruppi (Produzione e sviluppo siti, VPS e dashboard clienti, Ottimizzazione del traffico) con
+  conteggio, badge e «Dove si prende» per le 6 chiavi nuove (`GOOGLE_SERVICE_ACCOUNT`, `GOOGLE_API_KEY`,
+  `BING_WEBMASTER_API_KEY`, `DATAFORSEO_LOGIN`/`PASSWORD`, `CLOUDFLARE_DNS_API_TOKEN`). Prove solo gratuite con timeout in
+  `site-factory-editor/lib/chiavi-traffico.ts` (lo riusano T2a e T2b: normalizzazione compatta del service account,
+  `firmaJwt`, `SCOPE_GOOGLE`), messaggi italiani mai col valore; salvataggio con rilettura e ripristino
+  (`salvaSegreti`), tetto 4000 caratteri, coppia DataForSEO provata insieme, route solo da localhost. Banco
+  `scripts/test-chiavi.ts` 121/0; collaudo con credenziali finte, Keychain invariato. Aperti per Mattia: inserire le
+  chiavi vere e guardare tempo della prova PageSpeed e risposta Cloudflare a un token senza Zone: Read.
 
 ## Clienti in `site-renderer/out/` (fuori git)
 
