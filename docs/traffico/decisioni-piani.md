@@ -108,14 +108,16 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
     correggere le aree nell'editor (modifica per sezione già prevista dal piano).
 13. **Decisione di Mattia (2026-09-15): niente mini-form.** Piccole ditte, spesso appena aperte: domande che
     non sanno come compilare le mettono in crisi. Non si chiedono lavori prioritari, «prezzo da», luogo e anno
-    delle foto; gli attestati non contano. L'unico dato mancante utile, gli **orari**, lo chiede Mattia su
-    WhatsApp e lo inserisce nell'editor. **T3 si riscrive** come «Dati del cliente senza form»: zone servite
-    tradotte dal form lead (punto 12) con correzione dell'operatore nell'editor, orari inseriti dall'operatore
-    (facoltativi), nessun link, nessun workflow n8n, nessuna pagina su `site-intake/`. `piano-T3.md` attuale è
-    superato: si riscrive in fase 1. Effetti sugli altri piani (valgono sopra i loro testi):
+    delle foto; gli attestati non contano. L'unico dato mancante utile, gli **orari** (di lavoro e in cui
+    risponde al telefono), **entra nel form lead iniziale**: l'integrazione la fa Mattia in un'altra chat
+    (form, n8n, import). **T3 si riscrive** come «Zone servite dal form lead»: traduzione del punto 12 con
+    correzione dell'operatore nell'editor; nessun link, nessun workflow n8n, nessuna pagina su `site-intake/`,
+    nessun campo orari nell'editor. `piano-T3.md` attuale è superato: si riscrive in fase 1. Effetti sugli
+    altri piani (valgono sopra i loro testi):
     - **T4**: priorità = nessuna dichiarata (ordine dai volumi e dai servizi del contesto); comuni dalle zone
       tradotte; nessun `foto.json` → nessuna pagina-comune candidata da cantieri; `lib/dataforseo.ts` nasce in T4.
-    - **G1**: orari da quelli inseriti dall'operatore, altrimenti la voce resta «da completare»; area servita
+    - **G1**: orari dal lead importato quando il form li avrà (allineare il campo a quello scelto da Mattia
+      nell'altra chat al momento dello sviluppo), altrimenti la voce resta «da completare»; area servita
       dalle zone tradotte; attestati fuori.
     - **T5a**: niente prezzi né abilitazioni nel contratto; niente pagine «cantiere» (servono comune e anno delle
       foto); restano pagine servizio, «Zone servite» e, se ci sono foto reali, l'indice «Lavori» senza comune né

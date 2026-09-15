@@ -49,7 +49,8 @@ Rivisto il 2026-09-15 sulla priorità di Mattia (traffico dall'Italia e dalle zo
 `decisioni-piani.md`, sezione «Priorità assoluta»):
 
 3. **T3** «Dati del cliente senza form» (decisione di Mattia del 15/09, T3 punti 12-13): **niente mini-form**;
-   zone servite tradotte dal form lead, orari inseriti dall'operatore; piano da riscrivere (fase 1)
+   zone servite tradotte dal form lead; gli orari entrano nel form lead (integrazione di Mattia in un'altra
+   chat); piano da riscrivere (fase 1)
 4. **T4** mappa query (solo DataForSEO, solo zone servite; esclusione reversibile «Riammetti»)
 5. **G1** scheda Google consigliata (area servita dalle zone di T3)
 6. **T5a** multipagina renderer (criterio di sicurezza: HTML uguale a meno degli hash, CSS solo
