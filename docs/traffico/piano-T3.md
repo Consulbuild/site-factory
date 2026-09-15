@@ -94,7 +94,8 @@ ZoneServite = {
 ```
 
 Zod `strictObject` nel modulo; `provenienza` la calcola il server (etichetta presente fra quelle tradotte dal lead attuale →
-`lead`, altrimenti `operatore`), mai il client. Un file salvato non contiene etichette `non_riconosciuta` e ha almeno un'area.
+`lead`, altrimenti `operatore`; una zona già confermata tiene la sua, così la vecchia sede o una zona del vecchio lead non diventano
+«aggiunte a mano» dopo «Va bene così»), mai il client. Un file salvato non contiene etichette `non_riconosciuta` e ha almeno un'area.
 
 **Contratto per i consumatori** (unica porta: le funzioni di `lib/zone-servite.ts`, mai il JSON letto a mano):
 

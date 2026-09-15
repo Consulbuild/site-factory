@@ -681,7 +681,8 @@ function scriviJson(file: string, data: unknown): void {
 /**
  * Traduce sul server l'elenco dell'operatore; provenienza e origine le decide il server (rispetto al lead
  * attuale), mai il client. Un testo già tra le `confermate` tiene le sue aree, esito e nota invece di
- * essere ritradotto: raggioKm di allora, «X e dintorni» tradotta con la sede di allora.
+ * essere ritradotto: raggioKm di allora, «X e dintorni» tradotta con la sede di allora. Tiene anche la
+ * provenienza: una zona venuta da un lead (la vecchia sede compresa) non diventa «aggiunta a mano» dopo «Va bene così».
  */
 function traduciElenco(etichette: readonly string[], p: Proposta, d: Dati, confermate: readonly Etichetta[] = []): Etichetta[] {
   const dalLead = new Set(p.zone.etichette.map((e) => normalizza(e.testo)));
@@ -696,7 +697,7 @@ function traduciElenco(etichette: readonly string[], p: Proposta, d: Dati, confe
     const eSede = !!p.sede && chiave === p.sede.chiave;
     const c = giaConfermate.get(chiave);
     const t = c ? traduzione(c.esito, c.aree, c.nota) : eSede ? p.sede!.traduzione : traduciEtichetta(testo, p.ctx, d);
-    righe.push({ testo: troncato(testo) || "(vuota)", origine: eSede ? "sede" : "zona", provenienza: dalLead.has(chiave) ? "lead" : "operatore", ...t });
+    righe.push({ testo: troncato(testo) || "(vuota)", origine: eSede ? "sede" : "zona", provenienza: dalLead.has(chiave) ? "lead" : (c?.provenienza ?? "operatore"), ...t });
   }
   return righe;
 }
@@ -878,6 +879,8 @@ export interface VistaZone {
   confermateAt: string | null;
   motivo: string | null;
   file: string | null;
+  /** MAX_ETICHETTE: la card non importa il modulo (fs), il massimo le arriva qui. */
+  maxZone: number;
 }
 
 const interi = new Intl.NumberFormat("it-IT", { useGrouping: "always", maximumFractionDigits: 0 });
@@ -924,7 +927,7 @@ function totale(zone: Zone, d: Dati): string | null {
 
 /** Dalla lettura alla vista della card (nessuna scrittura). */
 export function vistaZone(l: LetturaZone, percorsi: PercorsiDati = PERCORSI_DATI): VistaZone {
-  const vuota = { fonte: null, impronta: "", etichetteLead: [], righe: [], righeNuovoLead: [], esitoNuovoLead: null, avvisi: [], totale: null, confermateAt: null };
+  const vuota = { fonte: null, impronta: "", etichetteLead: [], righe: [], righeNuovoLead: [], esitoNuovoLead: null, avvisi: [], totale: null, confermateAt: null, maxZone: MAX_ETICHETTE };
   if (l.stato === "errore_dati") return { ...vuota, stato: "errore_dati", motivo: l.motivo, file: null };
   if (l.stato === "non_leggibile") return { ...vuota, stato: "non_leggibile", motivo: l.motivo, file: l.file };
   const d = caricaDati(percorsi);
@@ -943,15 +946,17 @@ export function vistaZone(l: LetturaZone, percorsi: PercorsiDati = PERCORSI_DATI
       confermateAt: null,
       motivo: null,
       file: null,
+      maxZone: MAX_ETICHETTE,
     };
   }
   const nuovo = l.proposta.zone;
-  // Ogni salvataggio prende la sede del lead attuale (anche «Va bene così»): il banner lo dice.
+  // Ogni salvataggio prende la sede del lead attuale (anche «Va bene così»): il banner lo dice, anche quando la perde.
   const prima = l.zone.sede;
   const sedeCambiata =
     l.leadCambiato && nuovo.sede && nuovo.sede.codice !== prima?.codice
       ? [`la sede ora è ${conSigla(nuovo.sede.nome, nuovo.sede.sigla)}${prima ? `, non più ${conSigla(prima.nome, prima.sigla)}` : ""}`]
       : [];
+  const sedePersa = l.leadCambiato && prima && !nuovo.sede ? [`nessuna sede riconosciuta, quindi salvando ${conSigla(prima.nome, prima.sigla)} non è più la sede`] : [];
   return {
     stato: l.leadCambiato ? "lead_cambiato" : "confermate",
     fonte: nuovo.lead.fonte,
@@ -960,11 +965,12 @@ export function vistaZone(l: LetturaZone, percorsi: PercorsiDati = PERCORSI_DATI
     righe: l.zone.etichette.map((e) => riga(e, d)),
     righeNuovoLead: l.leadCambiato ? nuovo.etichette.map((e) => riga(e, d)) : [],
     esitoNuovoLead: l.leadCambiato ? l.proposta.esito : null,
-    avvisi: l.leadCambiato ? [...sedeCambiata, ...l.proposta.avvisi] : [],
+    avvisi: l.leadCambiato ? [...sedeCambiata, ...sedePersa, ...l.proposta.avvisi] : [],
     totale: totale(l.zone, d),
     confermateAt: l.zone.confermateAt,
     motivo: null,
     file: null,
+    maxZone: MAX_ETICHETTE,
   };
 }
 

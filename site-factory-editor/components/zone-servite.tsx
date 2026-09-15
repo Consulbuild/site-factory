@@ -216,17 +216,21 @@ export function ZoneServite({ slug, vista: v }: { slug: string; vista: VistaZone
   }
 
   const ignote = modifica ? nonRiconosciute(modifica.righe) : [];
+  // Oltre il massimo il server rifiuterebbe il corpo con un 400 tecnico: il blocco lo dice prima.
+  const inPiu = modifica ? modifica.righe.length - v.maxZone : 0;
   const motivoBlocco = !modifica
     ? null
     : ignote.length
       ? `Togli o riscrivi le zone non riconosciute: ${elenco(ignote.map((r) => r.testo))}.`
-      : !modifica.righe.some((r) => r.ampiezza)
-        ? "Aggiungi almeno una zona."
-        : testo.trim()
-          ? erroreCampo
-            ? "Correggi la zona scritta nel campo, o svuotalo."
-            : "Premi «Aggiungi» per la zona scritta nel campo, o svuotalo."
-          : null;
+      : inPiu > 0
+        ? `Al massimo ${v.maxZone} zone: togline ${inPiu === 1 ? "una" : inPiu}.`
+        : !modifica.righe.some((r) => r.ampiezza)
+          ? "Aggiungi almeno una zona."
+          : testo.trim()
+            ? erroreCampo
+              ? "Correggi la zona scritta nel campo, o svuotalo."
+              : "Premi «Aggiungi» per la zona scritta nel campo, o svuotalo."
+            : null;
   const salvaModifica = useCallback(() => {
     if (modifica && !motivoBlocco && !salvo) void salva(modifica.righe.map((r) => r.testo));
   }, [modifica, motivoBlocco, salvo, salva]);

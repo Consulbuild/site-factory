@@ -367,7 +367,12 @@ try {
     caso("G vista lead_cambiato con un nuovo lead tradotto senza note → esitoNuovoLead riconosciute", v2.esitoNuovoLead === "riconosciute" && vistaZone(l1).esitoNuovoLead === null, v2.esitoNuovoLead);
     const bene = salvaZoneServite(dir, v2.righe.map((r) => r.testo), v2.impronta, "2026-09-16T10:00:00.000Z", true);
     const l3 = leggiZoneServite(dir);
-    caso("G «Va bene così» = risalva le zone con l'impronta nuova → confermate, provenienza ricalcolata", bene.ok && l3.stato === "confermate" && !l3.leadCambiato && l3.zone.etichette[1]!.provenienza === "operatore" && l3.zone.etichette[0]!.provenienza === "lead", l3);
+    caso(
+      "G «Va bene così» = risalva le zone con l'impronta nuova → confermate, ogni zona tiene la sua provenienza (dal vecchio lead resta lead)",
+      bene.ok && l3.stato === "confermate" && !l3.leadCambiato && isDeepStrictEqual(l3.zone.etichette.map((e) => e.provenienza), ["lead", "lead", "operatore"]),
+      l3,
+    );
+    caso("G vista: maxZone = MAX_ETICHETTE (la card blocca il salvataggio oltre, niente 400)", v2.maxZone === MAX_ETICHETTE && vistaZone(l3).maxZone === MAX_ETICHETTE && v0.maxZone === MAX_ETICHETTE, v2.maxZone);
 
     // Proposta riconosciuta: nessuna conferma serve, e un cambio del lead cambia solo la proposta.
     const dirR = cliente(leadForm(["Tutta la regione Veneto"]));
@@ -411,6 +416,54 @@ try {
       "G lead cambiato con un'altra sede → avviso nel banner, e il file prende la sede del lead attuale",
       vC.avvisi[0] === "la sede ora è Lecce (LE), non più Castro (LE)" && lC.stato === "confermate" && lC.zone.sede?.nome === "Lecce" && lC.zone.etichette[0]?.origine === "zona",
       { avvisi: vC.avvisi, sede: lC.stato === "confermate" && lC.zone.sede },
+    );
+
+    // «Va bene così» con la sede del nuovo lead ambigua o non trovata: il file resta senza sede, ma il banner lo dice prima.
+    for (const [nome, sedeNuova] of [
+      ["ambigua «Castro» senza sigla", { comune: "Castro", provincia: "", daVerificare: true }],
+      ["non trovata «Sandrigoo (VI)»", { ...SANDRIGO, comune: "Sandrigoo" }],
+    ] as const) {
+      const dirP = cliente(leadForm(["Sandrigo e dintorni"]));
+      const sP = salvaProposta(dirP);
+      rilead(dirP, leadForm(["Sandrigo e dintorni"], sedeNuova));
+      const vP = vistaZone(leggiZoneServite(dirP));
+      const tieniP = salvaZoneServite(dirP, vP.righe.map((r) => r.testo), vP.impronta, T1, true);
+      const lP = leggiZoneServite(dirP);
+      caso(
+        `G lead cambiato con la sede ${nome} → avviso «non è più la sede» nel banner; «Va bene così» salva senza sede`,
+        sP.ok && vP.stato === "lead_cambiato" && vP.avvisi[0] === "nessuna sede riconosciuta, quindi salvando Sandrigo (VI) non è più la sede" && tieniP.ok && lP.stato === "confermate" && lP.zone.sede === null,
+        { avvisi: vP.avvisi, tieniP },
+      );
+    }
+    {
+      // Senza sede prima e senza sede dopo non si perde nulla: nessun avviso sulla sede.
+      const dirN = cliente(leadForm(["Tutta la regione Veneto"], null));
+      const sN = salvaProposta(dirN);
+      rilead(dirN, leadForm(["Tutta Italia"], null));
+      const vN = vistaZone(leggiZoneServite(dirN));
+      caso("G lead cambiato senza sede né prima né dopo → nessun avviso sulla sede", sN.ok && vN.stato === "lead_cambiato" && !vN.avvisi.some((a) => a.includes("sede riconosciuta")), vN.avvisi);
+    }
+
+    // «Va bene così» con la sede cambiata: la vecchia sede resta «dal form lead», anche dopo una Modifica successiva.
+    const dirS = cliente(leadForm(["Sandrigo e dintorni"]));
+    const sS = salvaProposta(dirS);
+    rilead(dirS, leadForm(["Sandrigo e dintorni"], { ...SANDRIGO, comune: "Vicenza" }));
+    const vS = vistaZone(leggiZoneServite(dirS));
+    const tieniS = salvaZoneServite(dirS, vS.righe.map((r) => r.testo), vS.impronta, T1, true);
+    const lS = leggiZoneServite(dirS);
+    const vS2 = vistaZone(lS);
+    const vecchiaSede = lS.stato === "confermate" ? lS.zone.etichette.find((e) => e.testo === "Sandrigo (VI)") : undefined;
+    caso(
+      "G «Va bene così» con la sede Sandrigo → Vicenza: «Sandrigo (VI)» resta zona dal lead, nessuna correzione a mano nella vista",
+      sS.ok && tieniS.ok && vecchiaSede?.origine === "zona" && vecchiaSede.provenienza === "lead" && vS2.stato === "confermate" && vS2.righe.every((r) => r.provenienza === "lead"),
+      { vecchiaSede, righe: vS2.righe },
+    );
+    const modS = salvaZoneServite(dirS, [...vS2.righe.map((r) => r.testo), "Provincia di Padova"], vS2.impronta, "2026-09-17T10:00:00.000Z");
+    const lS2 = leggiZoneServite(dirS);
+    caso(
+      "G Modifica dopo «Va bene così» → «Sandrigo (VI)» ancora dal lead, solo «Provincia di Padova» aggiunta a mano",
+      modS.ok && lS2.stato === "confermate" && isDeepStrictEqual(lS2.zone.etichette.filter((e) => e.provenienza === "operatore").map((e) => e.testo), ["Provincia di Padova"]),
+      lS2.stato === "confermate" && lS2.zone.etichette,
     );
 
     // «Usa le zone del nuovo lead» con lo stesso testo: si ritraduce col lead nuovo, come l'ha mostrato la card.
