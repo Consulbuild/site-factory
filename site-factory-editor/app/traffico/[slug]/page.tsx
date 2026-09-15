@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { readClientBundle } from "@/lib/clients";
+import { clientDir } from "@/lib/paths";
+import { leggiZoneServite, vistaZone } from "@/lib/zone-servite";
 import {
   ETICHETTA_SERVIZIO,
   MOTIVO_DEMO,
@@ -16,13 +18,16 @@ import {
 import { Banner, Breadcrumb, btnSecondary, formatDate } from "@/components/ui";
 import { ServizioBadge } from "@/components/traffico-ui";
 import { TrafficoAzione } from "@/components/traffico-azione";
+import { ZoneServite } from "@/components/zone-servite";
 
 export const dynamic = "force-dynamic";
 
-// Dettaglio Traffico di un cliente (DESIGN-BRIEF §Area Traffico): le due sezioni
-// Sito e Scheda Google impilate, ciascuna con stato, date, un'azione con conferma
-// e lo spazio onesto per i pannelli dei piani successivi (cosa arriverà, cosa
-// servirà: mai posizioni, clienti in più o tempi). Nessuna primaria in T0.
+// Dettaglio Traffico di un cliente (DESIGN-BRIEF §Area Traffico): in testa la card
+// «Zone servite» (piano T3: serve a entrambi i servizi, visibile anche a servizi spenti
+// e in demo, letta senza scritture), poi le due sezioni Sito e Scheda Google impilate,
+// ciascuna con stato, date, un'azione con conferma e lo spazio onesto per i pannelli dei
+// piani successivi (cosa arriverà, cosa servirà: mai posizioni, clienti in più o tempi).
+// L'unica primaria possibile è quella delle zone, quando chiedono l'operatore.
 // Il motivo di un blocco (demo, client.json illeggibile) si scrive una volta sola
 // in testa e i bottoni disabilitati lo richiamano con aria-describedby.
 
@@ -40,7 +45,7 @@ const CONTENUTI: Record<ServizioKey, { descrizione: string; disponibile: string[
     ],
     servira: [
       "il sito pubblicato con il suo dominio",
-      "i dati per farsi trovare (comuni serviti, prezzi indicativi, orari), chiesti al cliente con un breve modulo",
+      "le zone servite (qui sopra): tradotte dal form lead, controllate da te solo quando serve",
       "le chiavi di Search Console e Bing in Impostazioni",
     ],
   },
@@ -52,7 +57,10 @@ const CONTENUTI: Record<ServizioKey, { descrizione: string; disponibile: string[
       "la checklist di ciò che hai già inserito",
       "il confronto tra la scheda e il sito",
     ],
-    servira: ["l'accesso come Manager alla scheda Google del cliente, che lo concede dal suo profilo"],
+    servira: [
+      "l'accesso come Manager alla scheda Google del cliente, che lo concede dal suo profilo",
+      "le zone servite (qui sopra), per l'area servita della scheda",
+    ],
   },
 };
 
@@ -160,6 +168,8 @@ export default async function TrafficoClientePage({ params }: { params: Promise<
   const dominio = client.steps.build.deploy?.dominio ?? null;
   const traffico = leggiTraffico(client);
   const bloccoDemo = !corrotto && SERVIZI.some((k) => azioneServizio(traffico[k], client.percorso).motivoBlocco);
+  // Indipendente da client.json: le zone vivono in traffico/zone-servite.json o nel lead.
+  const zone = vistaZone(leggiZoneServite(clientDir(slug)));
 
   return (
     <div>
@@ -206,6 +216,7 @@ export default async function TrafficoClientePage({ params }: { params: Promise<
       )}
 
       <div className="mt-6 space-y-4">
+        <ZoneServite slug={slug} vista={zone} />
         {SERVIZI.map((k) => (
           <SezioneServizio
             key={k}

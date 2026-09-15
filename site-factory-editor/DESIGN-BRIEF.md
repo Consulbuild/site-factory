@@ -345,6 +345,12 @@ DETTAGLIO /traffico/[slug]
   Traffico / Azienda                                             [Apri il cliente →]
   Azienda · città · percorso · dominio ↗ | senza dominio
   (demo) frase del blocco  ·  (file illeggibile) Banner err
+  ┌ card ── Zone servite [badge] ─────────── [Conferma le zone] [Modifica | Imposta le zone]
+  │ descrizione · frase di stato (role=status) · (lead cambiato / file illeggibile) Banner
+  │ Tutta la regione Veneto   [Da controllare]                              560 comuni
+  │ regione Veneto · dal form lead  ·  Nota: …            (righe a blocco sotto sm)
+  │ Area servita: 560 comuni · 4.853.472 residenti
+  │ (Modifica) righe con «Togli» · campo «Aggiungi una zona» + aiuto · [Salva e conferma] Annulla · motivo
   ┌ card ── Sito [badge] ─────────────────────── [Attiva… | Sospendi… | Riattiva…]
   │ descrizione · riga date (role=status) · (senza dominio) Banner warn
   │ Cosa comparirà qui            │ Cosa servirà
@@ -389,9 +395,46 @@ HUB /clienti/[slug]  (dopo la lista degli step)
     sempre oltre al colore. Icona sidebar `Signpost` («farsi trovare», senza
     promettere crescita).
 
+### Card «Zone servite» (piano T3, 2026-09-15)
+
+Piano `docs/traffico/piano-T3.md` §4 con i tagli della decisione T3 punto 14
+(`docs/traffico/decisioni-piani.md`). Componente `components/zone-servite.tsx`,
+vista calcolata sul server da `lib/zone-servite.ts` (`vistaZone`).
+
+11. **Sopra Sito e Scheda, sempre visibile** (anche a servizi spenti, in demo e con
+    client.json illeggibile: le zone vivono in `traffico/zone-servite.json` o nel
+    lead), mai scritta all'apertura.
+12. **Nessuna conferma obbligatoria**: una proposta tradotta per intero e senza note
+    ha badge ok «Dal form lead», «Modifica» secondaria e **nessuna primaria**. La
+    primaria compare solo quando l'operatore serve: «Modifica» con zone da
+    controllare («Conferma le zone» secondaria, solo senza zone non riconosciute),
+    «Imposta le zone» senza zone (brief Tally, lead senza zone riconosciute, lead
+    illeggibile), «Usa / Rivedi le zone del nuovo lead» nel banner del lead cambiato
+    (con «Va bene così» ghost, come la staleness). È l'unica primaria della pagina.
+13. **Una riga per etichetta** (non per area): il testo del cliente verbatim, sotto
+    la traduzione e la provenienza («dal form lead», «aggiunta a mano»), a destra
+    l'ampiezza in comuni (mono). Esito come parola in un `Badge` («Da controllare»
+    anche per una traduzione certa con nota, «Non riconosciuta»); le zone salvate
+    tengono la nota ma non il badge, sono già state controllate. In fondo «Area
+    servita: N comuni · M residenti»: quanto è larga l'area, senza promettere nulla.
+14. **Modifica inline**, niente modal: «Togli» ghost con `aria-label`, campo
+    «Aggiungi una zona» → anteprima dal server → riga o errore `role="alert"` sotto
+    il campo (omonimi coi candidati, provincia soppressa con le nuove, «forse …»);
+    aiuto fisso con le forme del form. «Salva e conferma» disabilitata col motivo
+    scritto accanto (zone non riconosciute, nessuna zona, testo non aggiunto nel
+    campo). `useUnsavedGuard`, `⌘S`, focus sul titolo della card dopo il salvataggio;
+    la modifica si chiude insieme alla pagina riletta (`useTransition`), mai un attimo
+    con le zone vecchie.
+15. **Lead cambiato dopo un salvataggio**: `Banner warn` con le etichette nuove; «Usa
+    le zone del nuovo lead» chiede conferma solo se le zone salvate hanno correzioni
+    a mano (le nomina), «Rivedi…» apre la modifica quando il lead nuovo ha zone non
+    riconosciute. Un 409 (lead cambiato mentre si lavorava) offre «Rileggi».
+
 ## Anti-obiettivi
 
 Niente KPI card o numeri-eroe (nessun dato da mostrare), niente switch, niente
-tab, nessun bottone blu nel portafoglio, nel dettaglio o nell'hub, nessun motivo
-di blocco in un `title`, nessuna scrittura di `client.json` alla sola apertura
-delle pagine.
+tab, nessun bottone blu nel portafoglio, nell'hub o nei servizi del dettaglio (l'unico
+è quello delle zone quando chiedono l'operatore), nessun motivo di blocco in un
+`title`, nessuna scrittura di `client.json` o delle zone alla sola apertura delle
+pagine. Zone: nessuna mappa, nessun select con 8.000 comuni, nessun modal per
+modificare, nessuna promessa di risultati.

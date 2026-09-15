@@ -355,9 +355,6 @@ interface Traduzione {
 const traduzione = (esito: Esito, aree: Area[], nota?: string): Traduzione => (nota ? { aree, esito, nota } : { aree, esito });
 const nonRiconosciuta = (nota: string): Traduzione => ({ aree: [], esito: "non_riconosciuta", nota });
 
-/** Le forme che la traduzione riconosce con certezza (le stesse etichette del form), per l'aiuto della card. */
-export const GRAMMATICA = "scrivila come «Monza (MB)», «Monza e dintorni», «Provincia di Monza e della Brianza», «Tutta la regione Lombardia», «Lombardia e regioni vicine» o «Tutta Italia»";
-
 const conSigla = (nome: string, sigla: string) => `${nome} (${sigla})`;
 const elencoO = (xs: string[]) => (xs.length <= 1 ? (xs[0] ?? "") : `${xs.slice(0, -1).join(", ")} o ${xs[xs.length - 1]}`);
 
@@ -436,8 +433,8 @@ function traduciNomeLibero(d: Dati, chiave: string): Traduzione {
     return traduzione("da_controllare", t.aree, note.join("; ") || undefined);
   }
   if (sigla) return traduciProvincia(d, chiave, "da_controllare");
-  const forse = suggerisciRegioni(chiave) || suggerisciProvince(d, chiave);
-  return nonRiconosciuta(forse ? `nessun comune, provincia o regione si chiama così${forse}` : `nessun comune, provincia o regione si chiama così: ${GRAMMATICA}`);
+  // Le forme riconosciute le elenca l'aiuto sotto il campo della card: qui solo il perché.
+  return nonRiconosciuta(`nessun comune, provincia o regione si chiama così${suggerisciRegioni(chiave) || suggerisciProvince(d, chiave)}`);
 }
 
 function traduciParte(d: Dati, n: string, ctx: ContestoSede | null, raggioKm: number): Traduzione {
