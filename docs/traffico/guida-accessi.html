@@ -155,7 +155,16 @@
         <p class="gives"><b>Chiave:</b> Google Cloud (PageSpeed e CrUX) · <b>Sblocca:</b> punteggio e velocità misurata sui visitatori veri.</p>
       </div></li>
     </ol>
-    <p class="note" style="margin-top:12px">Se Google non ti lascia creare la chiave JSON («la creazione di chiavi per gli account di servizio è disattivata»), è una regola di sicurezza delle organizzazioni nuove: da amministratore la togli per questo progetto in «IAM e amministrazione → Criteri dell'organizzazione».</p>
+    <div class="note" style="margin-top:12px">
+      <p><b>Se Google blocca la chiave JSON</b> (policy <code>iam.managed.disableServiceAccountKeyCreation</code>): è una regola di sicurezza delle organizzazioni nuove. Si toglie <b>solo per questo progetto</b>, l'organizzazione resta protetta.</p>
+      <ol style="margin:8px 0 0;padding-left:20px;display:grid;gap:4px">
+        <li>Nel selettore in alto scegli l'<b>organizzazione</b> consulbuild.com → «IAM e amministrazione → IAM» → «Concedi l'accesso»: <code>info@consulbuild.com</code>, ruolo <b>Amministratore criteri dell'organizzazione</b>.</li>
+        <li>Nel selettore torna sul <b>progetto</b> → «IAM e amministrazione → Criteri dell'organizzazione» → cerca <code>disableServiceAccountKeyCreation</code>.</li>
+        <li>Apri il criterio → «Gestisci criterio» → «Sostituisci il criterio dell'elemento padre» → regola con applicazione forzata <b>Off</b> → «Imposta criterio».</li>
+        <li>Se compare anche il vecchio <code>iam.disableServiceAccountKeyCreation</code>, stessa cosa. Attendi qualche minuto e ricrea la chiave.</li>
+      </ol>
+      <p style="margin-top:8px">Al service account non serve nessun ruolo nel progetto: i permessi li ha solo in Search Console.</p>
+    </div>
   </section>
 
   <section>

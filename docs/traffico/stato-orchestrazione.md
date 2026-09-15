@@ -39,7 +39,7 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
 | T4, T5a, T2a, T2b, G1 | piano scritto e decisioni registrate (con gli effetti di T3 punto 13), da sviluppare |
 | T6b | sospeso: nessuna fonte verificata del luogo dei lavori |
 | K1 | chiuso e verificato dall'orchestratore (`7fc53e6`…`aa44ac7`; tsc, banco chiavi 121/0, 9 chiavi reali intatte, 6 campi nuovi pronti). Costo 24 agenti, 3,2 M token. Aperto per Mattia: dev server su tutte le interfacce (`next dev` senza `-H 127.0.0.1`), chip per `btnGhost` disabilitato |
-| T4, G1, T5a | piani riallineati al 15/09 e approvati dal controllore (`e73f98b`, `1d530aa`, `145cf2a`; decisioni T4 8-9, G1 11, T5a 8). **T4 in sviluppo** |
+| T4, G1, T5a | piani riallineati al 15/09 e approvati dal controllore (`e73f98b`, `1d530aa`, `145cf2a`; decisioni T4 8-9, G1 11, T5a 8). **T4 in sviluppo** (run `wf_35a2f5e1-4d3`, task `w63yh5e2i`; tetto di spesa 3 $) |
 | T5b, T5c, T6b, T7a, T7b, T8, G2, G3 | da pianificare (fase 1) |
 | S0 | lavoro manuale di Mattia (README §8) |
 
