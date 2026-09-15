@@ -22,6 +22,24 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
    quota di visite dalle regioni e città delle zone servite dai dati di Umami, così il report dice quanto
    traffico arriva da dove il cliente lavora, non solo il totale.
 4. Il controllore del workflow considera spreco tutto ciò che non porta o non misura quel traffico.
+5. **Decisioni di Mattia del 15/09 sera** (valgono per i piani che restano):
+   - **Velocità per tutti i siti, demo comprese** (T1b punto 10).
+   - Ordine: prima i 6 piani che portano traffico misurabile **G1 → T5a → T5b → T2a → T5c → T2b**, poi **T7a, T7b, T8,
+     G2, G3** (T6b resta sospeso). Via libera allo sviluppo notturno in autonomia (16/09).
+   - **Sito su più pagine (T5a)**: la home a pagina unica, ottimizzata per la conversione, resta identica; si aggiungono
+     solo pagine di atterraggio per servizio e «Zone servite», corte, con gli stessi componenti e le stesse CTA (preventivo,
+     telefono, WhatsApp), e solo col servizio Traffico «Sito». Demo e siti senza servizio restano a pagina unica.
+   - **Scala a 100 clienti**: ogni piano successivo va progettato con processi standard e rodati, pochi minuti di lavoro
+     manuale per cliente, costi per cliente dichiarati; si sfrutta il VPS con n8n acceso 24 ore su 24 per tutto ciò che
+     si può automatizzare.
+   - **Frequenza delle proposte di miglioramento (T7a/T7b)**: da decidere ragionando su tempo e costo per cliente con la
+     priorità ai risultati; giornaliera solo se per noi è gratuita e completamente automatica, altrimenti settimanale o
+     mensile; deve reggere 100 clienti. Proposta dell'orchestratore: segnali ogni giorno sul VPS (gratis), finestre di 28
+     giorni, proposte AI settimanali solo per i clienti con segnali, mensili per quelli con pochi dati.
+   - **Controllo di allineamento (G2)**: controlla davvero tutti i servizi del cliente — sito, dati del form e, se attiva,
+     scheda Google — e segnala subito ogni incongruenza (nome, indirizzo, telefono, orari, servizi, categorie, link).
+   - Indicizzazione: la home di Cavaliere risulta **indicizzata** in Search Console il 15/09 (poche ore dopo la
+     richiesta di Mattia e l'invio della sitemap).
 
 ## T1a — Fondamenta SEO (in sviluppo dal 2026-09-14)
 
@@ -233,6 +251,13 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
     limite di circa 2 ore di Google); «X e dintorni» riempito coi comuni del raggio fino a 20 **sì**; categoria
     primaria dal target T4 col volume più alto **sì**; `validateOnly` non costruito **sì**; campo `orari-speciali`
     senza fonte **tolto**.
+12. **Decisione di Mattia (15/09 sera): nessuna scheda Google reale in G1.** Mattia non ha l'accesso a quella di Cavaliere e
+    il vero rodaggio si farà con i prossimi clienti. G1 si sviluppa completo e si **calibra con test mirati** sulla zona di
+    Cavaliere (schede dei concorrenti sulla mappa, categorie, attributi, servizi, recensioni e foto come segnali) per capire
+    **quali dati spostano davvero la posizione sulla mappa**, senza toccare nessuna scheda. Tetto di spesa della
+    calibrazione **0,60 $**, saldo letto prima e dopo. Dato di partenza: il pacchetto delle mappe compare nel 75 % delle
+    ricerche locali (T4 punto 10). Orari: il form lead li chiede dal 15/09 (commit `a584638`, sezione «Numero e orari»):
+    si leggono dal lead importato con il formato scelto lì.
 
 ## T2a — Motori al deploy (piano pronto)
 
@@ -369,6 +394,14 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
    - **T4**: niente modifiche a `secrets.ts` né alla route delle chiavi; `lib/dataforseo.ts` (da creare in T4) legge le due
      chiavi con `getSecret`.
    - **G1**: nessuna chiave nuova.
+
+## T1b punto 10 — Velocità per tutti i siti (decisione di Mattia, 15/09 sera)
+
+Le fasi «pagine leggere» (varianti T1b+T1c) e «budget pagine» girano per **ogni build completa**, demo comprese, non più
+solo col servizio Sito; le fondamenta SEO restano legate al servizio (decisione 3). Gli avvisi del budget senza fondamenta
+vanno nel log della build (con le fondamenta restano anche nel blocco Pubblicazione). Il criterio «a servizio spento HTML
+identico» di T1b/T1c non vale più per le immagini: vale solo per le fondamenta. Tempo in più alla prima build ~85 s,
+poi dalla cache.
 
 ## T1c — Telefono veloce (piano pronto `ed2ac36`; vale sopra il piano)
 
