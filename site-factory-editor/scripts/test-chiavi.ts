@@ -24,6 +24,7 @@ import {
   MAX_VALORE_SEGRETO,
   motivoValoreNonSalvabile,
   richiestaDaQuestoMac,
+  salvaSegreti,
   type ChiaveTraffico,
   type KeyName,
 } from "../lib/secrets.ts";
@@ -149,6 +150,51 @@ caso("4000 caratteri → salvabile", motivoValoreNonSalvabile("a".repeat(MAX_VAL
 caso("4001 caratteri → rifiutato col conteggio", motivoValoreNonSalvabile("a".repeat(4001)) === "valore troppo lungo per il portachiavi (4001 caratteri, massimo 4000)", motivoValoreNonSalvabile("a".repeat(4001)));
 caso("le virgolette contano dopo l'escape", motivoValoreNonSalvabile(`${"a".repeat(3999)}"`) !== null);
 caso("regola esistente invariata (spazi, < 8)", motivoValoreNonSalvabile("con spazio") !== null && motivoValoreNonSalvabile("corta") !== null);
+
+/* ---------------- Salvataggio della coppia con ripristino ---------------- */
+
+console.log("\nsalvataggio con ripristino (portachiavi finto):");
+{
+  // `nega`: scrittura rifiutata (come «Nega» sul consenso di macOS); `tronca`: valore che il portachiavi rilegge diverso.
+  const portachiavi = (iniziali: Partial<Record<KeyName, string>>, nega: (n: KeyName, v: string) => boolean = () => false, tronca?: string) => {
+    const m = new Map(Object.entries(iniziali) as Array<[KeyName, string]>);
+    const pc = {
+      getSecret: (n: KeyName) => m.get(n) ?? null,
+      setSecret: (n: KeyName, v: string) => {
+        if (nega(n, v)) throw new Error("scrittura Keychain fallita: exit 1\n");
+        m.set(n, v === tronca ? v.slice(0, -1) : v);
+      },
+      deleteSecret: (n: KeyName) => void m.delete(n),
+    };
+    return { pc, stato: () => Object.fromEntries(m) };
+  };
+  const vecchie = { DATAFORSEO_LOGIN: "vecchio@consulbuild.com", DATAFORSEO_PASSWORD: "passwordVecchiaDataForSeo" };
+  const nuove: Array<[KeyName, string]> = [["DATAFORSEO_LOGIN", "nuovo@consulbuild.com"], ["DATAFORSEO_PASSWORD", "passwordNuovaDataForSeo"]];
+  const segreti = [...Object.values(vecchie), ...nuove.map(([, v]) => v)];
+  const senzaSegreti = (e: string | null) => e !== null && !segreti.some((s) => e.includes(s));
+  const negaPassword = (n: KeyName) => n === "DATAFORSEO_PASSWORD";
+
+  const ok = portachiavi(vecchie);
+  caso("coppia scritta e riletta → null, due valori nuovi", salvaSegreti(nuove, ok.pc) === null && isDeepStrictEqual(ok.stato(), Object.fromEntries(nuove)), ok.stato());
+
+  const negata = portachiavi(vecchie, negaPassword);
+  const eNegata = salvaSegreti(nuove, negata.pc);
+  caso("seconda scrittura negata → login e password tornano quelli di prima (mai login nuovo con password vecchia)", isDeepStrictEqual(negata.stato(), vecchie), negata.stato());
+  caso("seconda scrittura negata → messaggio «tornato com'era», senza valori", senzaSegreti(eNegata) && eNegata?.startsWith("scrittura Keychain fallita: exit 1: il portachiavi è tornato com'era, riprova") === true, eNegata);
+
+  const troncata = portachiavi(vecchie, undefined, "passwordNuovaDataForSeo");
+  const eTroncata = salvaSegreti(nuove, troncata.pc);
+  caso("rilettura diversa → «incompleto» e coppia di prima ripristinata", eTroncata === "salvataggio nel portachiavi incompleto: il portachiavi è tornato com'era, riprova" && isDeepStrictEqual(troncata.stato(), vecchie), { eTroncata, stato: troncata.stato() });
+
+  const senzaLogin = portachiavi({ DATAFORSEO_PASSWORD: vecchie.DATAFORSEO_PASSWORD }, negaPassword);
+  salvaSegreti(nuove, senzaLogin.pc);
+  caso("login che prima non c'era → tolto al ripristino, password di prima intatta", isDeepStrictEqual(senzaLogin.stato(), { DATAFORSEO_PASSWORD: vecchie.DATAFORSEO_PASSWORD }), senzaLogin.stato());
+
+  // Password negata, poi negato anche il ripristino del login vecchio.
+  const doppia = portachiavi(vecchie, (n, v) => negaPassword(n) || v === vecchie.DATAFORSEO_LOGIN);
+  const eDoppia = salvaSegreti(nuove, doppia.pc);
+  caso("ripristino negato → il messaggio nomina solo la chiave rimasta diversa e dice di ricaricare", senzaSegreti(eDoppia) && eDoppia?.endsWith("ripristino non riuscito per «DataForSEO (login API)»: ricarica la pagina e inseriscila di nuovo") === true, eDoppia);
+}
 
 /* ---------------- 1-2. Service account ---------------- */
 

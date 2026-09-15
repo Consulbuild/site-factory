@@ -268,6 +268,11 @@ esistenti presenti, 6 nuove assenti.
 4. GET e POST: 403 se Host non è `localhost`/`127.0.0.1`/`[::1]` o se Origin è di un altro host
    (`richiestaDaQuestoMac`). Limite: un `curl` dalla LAN che forgia `Host: localhost` passa; lo chiude solo il dev
    server legato a 127.0.0.1 (`next dev -H 127.0.0.1`, fuori perimetro: decisione di Mattia).
+5. Salvataggio con ripristino (`salvaSegreti` in `lib/secrets.ts`, secondo giro): legge i valori di prima, scrive e
+   rilegge; se una scrittura (es. consenso macOS negato sulla seconda metà) o la rilettura fallisce rimette i valori di
+   prima o toglie la voce che non c'era, così login nuovo e password vecchia non restano mai insieme e gli hint del
+   pannello restano veri. Se fallisce anche il ripristino il 500 nomina le chiavi rimaste diverse e dice di ricaricare.
+   Vale per tutte le 15 chiavi; banco con portachiavi finto (6 casi).
 
 **Punti aperti per Mattia / fasi 4-5.**
 - DataForSEO: una metà salvata da sola non si prova (come da piano); la frase del brief «ogni chiave nuova rifiutata»

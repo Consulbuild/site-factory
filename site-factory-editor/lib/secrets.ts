@@ -160,6 +160,55 @@ export function setSecret(name: KeyName, value: string): void {
   if (r.status !== 0) throw new Error(`scrittura Keychain fallita: ${r.stderr || r.error?.message || `exit ${r.status}`}`);
 }
 
+/** Toglie la voce dal Keychain (solo per il ripristino di salvaSegreti: la voce prima non c'era). */
+export function deleteSecret(name: KeyName): void {
+  const r = spawnSync(SECURITY, ["delete-generic-password", "-s", SERVICE, "-a", name], { encoding: "utf8" });
+  if (r.status !== 0) throw new Error(`rimozione dal Keychain fallita: exit ${r.status}`);
+}
+
+export interface Portachiavi {
+  getSecret: (name: KeyName) => string | null;
+  setSecret: (name: KeyName, value: string) => void;
+  deleteSecret: (name: KeyName) => void;
+}
+
+/**
+ * Salva una o più chiavi come un'operazione sola (coppia DataForSEO): legge i valori di prima, scrive e rilegge;
+ * se una scrittura o la rilettura fallisce rimette i valori di prima (o toglie la voce che non c'era), così una
+ * coppia mai provata non resta nel portachiavi. null se salvato, altrimenti il messaggio (mai i valori).
+ * Portachiavi iniettabile per il banco.
+ */
+export function salvaSegreti(
+  scritture: ReadonlyArray<readonly [KeyName, string]>,
+  pc: Portachiavi = { getSecret, setSecret, deleteSecret },
+): string | null {
+  const prima = scritture.map(([n]) => [n, pc.getSecret(n)] as const);
+  let errore: string | null = null;
+  try {
+    for (const [n, v] of scritture) pc.setSecret(n, v);
+    // Rilettura: un valore troncato dal Keychain non deve sembrare salvato.
+    if (scritture.some(([n, v]) => pc.getSecret(n) !== v)) errore = "salvataggio nel portachiavi incompleto";
+  } catch (e) {
+    errore = (e instanceof Error ? e.message : String(e)).trim();
+  }
+  if (!errore) return null;
+  const nonRipristinate = prima
+    .filter(([n, v]) => {
+      try {
+        if (pc.getSecret(n) === v) return false;
+        if (v === null) pc.deleteSecret(n);
+        else pc.setSecret(n, v);
+        return pc.getSecret(n) !== v;
+      } catch {
+        return true;
+      }
+    })
+    .map(([n]) => `«${KEY_LABELS[n]}»`);
+  return nonRipristinate.length
+    ? `${errore}; ripristino non riuscito per ${nonRipristinate.join(" e ")}: ricarica la pagina e ${nonRipristinate.length > 1 ? "inseriscile" : "inseriscila"} di nuovo`
+    : `${errore}: il portachiavi è tornato com'era, riprova`;
+}
+
 /** Rimuove la riga NAME=… da .env (scrub post-migrazione), preservando il resto. */
 function scrubEnvLine(name: KeyName): void {
   try {

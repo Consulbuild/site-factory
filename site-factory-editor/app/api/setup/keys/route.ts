@@ -11,8 +11,8 @@ import {
   hasSecret,
   motivoValoreNonSalvabile,
   richiestaDaQuestoMac,
+  salvaSegreti,
   secretHint,
-  setSecret,
 } from "@/lib/secrets";
 import { normalizzaServiceAccount, provaChiaveTraffico } from "@/lib/chiavi-traffico";
 import { umamiLogin, n8nPing, registraCliente } from "@/lib/integrazioni";
@@ -125,15 +125,8 @@ export async function POST(req: NextRequest) {
     const err = await provaKey(name, key).catch((e) => (e instanceof Error ? e.message : String(e)));
     if (err) return NextResponse.json({ error: `key non valida: ${err}` }, { status: 400 });
   }
-  const scritture: Array<[KeyName, string]> = coppia && altra ? [[name, key], [coppia, altra]] : [[name, key]];
-  try {
-    for (const [n, v] of scritture) setSecret(n, v);
-  } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
-  }
-  // Rilettura: un valore troncato dal Keychain non deve sembrare salvato.
-  if (scritture.some(([n, v]) => getSecret(n) !== v)) {
-    return NextResponse.json({ error: "salvataggio nel portachiavi incompleto: riprova" }, { status: 500 });
-  }
+  // Scrittura, rilettura e, se qualcosa fallisce, ripristino dei valori di prima (anche della coppia).
+  const errSalvataggio = salvaSegreti(coppia && altra ? [[name, key], [coppia, altra]] : [[name, key]]);
+  if (errSalvataggio) return NextResponse.json({ error: errSalvataggio }, { status: 500 });
   return NextResponse.json({ ok: true, hint: secretHint(name) });
 }
