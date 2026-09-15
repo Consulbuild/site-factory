@@ -905,34 +905,48 @@ Somma prevista 2,46 $ (campione 1,54 + mappa 0,66 + C4-C5 0,26), sotto il tetto 
   imbianchino, serramentista) restano nell'universo e si misurano, ma non sono mai candidate né target (tolti il dimezzamento
   della rilevanza e la sua frase, ora irraggiungibili). Cavaliere (contesto reale = fixture, confrontati il 15/09): altrui
   «elettricista», «idraulico», «imbianchino»; restano le 25 teste di servizio. Banco 24.
-- **C-c domini nazionali**: un dominio fuori elenco (né elenchi, né PA, né cliente) nei risultati di comuni di **almeno 3
-  province** del campione non è un'impresa locale: `portale` se la pagina nomina il luogo o è nel local pack (una pagina per
-  città), altrimenti `altro`; regola `nazionale:piu-province`. Elenco ricavato dal campione con `campione-serp.ts ricalcola`
-  (384 pagine dalla cache, 0 chiamate, 0 $), copiato in `lib/mappa-domini.json` (`nazionali`, 49 domini) con il dettaglio delle
-  province in `calibrazione-T4/nazionali-2026-09-15.json`. Banco 16 e 31.
-  - **Soglia**: su 775 domini fuori elenco, 668 in 1 provincia, 58 in 2, 49 in 3 o più. A 2 province metà dei casi sono imprese
-    vere di due province vicine (27 su 58: Milano e Monza, Vicenza e Treviso: rgmedilizia, supermario24, artedecori…); da 3 in su
-    quasi solo portali, reti di pagine per città, catene e guide (controllo sotto). Le 31 coppie di regioni diverse (idraulicisubito Pescara e Napoli, handoo, finstral…)
-    sono quasi tutte reti o portali: estensione possibile «2 province di regioni diverse», non applicata.
-  - **Controllo a mano dei 20 domini riclassificati più frequenti** (titoli e URL nel campione): 19 corretti — preventivofacile,
-    houzz, taskrabbit, cercoproitalia, pgcasa, archisio, edilportale, la-certificazione-energetica (portali); leroymerlin (catena);
-    costo-ristrutturazione-casa (guide); ristrutturazioni.milano.it, alexprontointervento, sporext-group, ecoisolamentotermico,
-    imbiancatura.com, pronto-intervento24, idraulicoin (reti di pagine per città); sgombero.eu, metrabuilding (elenchi). **1
-    sbagliato**: posainoperapavimentiroma.it, impresa romana che a Roma è locale (fuori elenco anche perinotto.com e
-    vanzinpavimenti.it di Treviso, 1 risultato ciascuno): l'elenco è unico per tutta Italia, e in una mappa della loro provincia
-    contano come portale (+1 solo nei primi 3) invece che come impresa ottimizzata (+1 ovunque).
-  - **Composizione prima → dopo** (`composizione-2026-09-15.json` → `composizione-2026-09-15-nazionali.json`; «prima» ricalcolata
-    identica a quella registrata):
+- **C-c domini nazionali**: un dominio fuori elenco (né elenchi, né PA, né cliente) con una **pagina locale** (segnale locale
+  o local pack) nei risultati di comuni di **almeno 3 province** del campione non è un'impresa locale: `portale` se la pagina
+  nomina il luogo o è nel local pack (una pagina per città), altrimenti `altro`; regola `nazionale:piu-province`. Elenco
+  ricavato dal campione con `campione-serp.ts ricalcola` (384 pagine dalla cache, 0 chiamate, 0 $), copiato in
+  `lib/mappa-domini.json` (`nazionali`, 22 domini, elenchi `2026-09-c`) con il dettaglio delle province in
+  `calibrazione-T4/nazionali-2026-09-15.json`. Banco 16 e 31.
+  - **Correzione del revisore (15/09)**: la prima versione contava una provincia per ogni risultato fuori elenco, anche senza
+    niente di locale. Un articolo «quanto costa» o un «preventivo guidato» esce nelle ricerche «costo»/«preventivo» di qualsiasi
+    città e bastava a superare la soglia: 49 domini, fra cui imprese locali vere — dimensionebagno.it (Monza e Milano, la terza
+    provincia era Lecce solo per /preventivo-guidato/, e nella mappa di Cavaliere risultava portale a Cernusco e a Milano),
+    fratellipellizzari.it (Vicenza), perinotto.com e vanzinpavimenti.it (Treviso), posainoperapavimentiroma.it (Roma). Il
+    controllo a mano aveva guardato solo i primi 20 dei 35 riclassificati. Ora conta solo una pagina per città: 22 domini, tutti
+    riclassificati almeno una volta e **controllati a mano tutti e 22**.
+  - **Soglia**: su 769 domini fuori elenco, 673 hanno una pagina locale: 609 in 1 provincia, 42 in 2, 22 in 3 o più. A 2 province
+    sono soprattutto imprese vere di province vicine (Milano e Monza, Vicenza e Treviso: dimensionebagno, rgmedilizia,
+    artedecori, bragoni…); le coppie di regioni diverse (idraulicisubito Pescara e Napoli, handoo, finstral, paginesi…) sono
+    quasi tutte reti o portali: estensione possibile «2 province di regioni diverse», non applicata.
+  - **Controllo a mano dei 22** (titoli e URL nel campione): preventivofacile, houzz, taskrabbit, cercoproitalia, pgcasa,
+    archisio, edilportale, la-certificazione-energetica, infissiepersiane (portali); leroymerlin, iperceramica, showroominfissi
+    (catene); costo-ristrutturazione-casa (guide); alexprontointervento, sporext-group, ecoisolamentotermico, imbiancatura.com,
+    pronto-intervento24, stilloak (reti di pagine per città); sgombero.eu, metrabuilding (elenchi); it.jooble (lavoro). Nessuna
+    impresa locale.
+  - **Usciti dai nazionali e messi a elenco a mano** perché con la regola corretta tornavano imprese locali pur essendo portali o
+    reti (pagine locali in meno di 3 province del campione): homedeal.it, idraulicoin.it, ristrutturazioni.milano.it,
+    spazibelli.com, coibentarecasa.it (`portali`), reddit.com (`altro`). Gli altri 21 usciti sono imprese locali, siti senza
+    pagine locali che restano «altro/ignoto» (ediliziacrobatica, vivienergia, arredamento.it: 0 risultati da impresa locale) o
+    casi singoli da 1-2 risultati locali (ediliziapoint, bottegadomus), da rivedere col prossimo campione.
+  - **Composizione prima → dopo** (`composizione-2026-09-15-nazionali.json`; «prima» = elenchi `2026-09-c` senza nazionali,
+    diversa da `composizione-2026-09-15.json` registrata con gli elenchi `2026-09-b`: 43 % imprese, 44 % portali, 46 % ignoto,
+    80/107/197):
 
     | | imprese locali | portali + directory | altro | fuori elenco (ignoto) | difficoltà b/m/a |
     |---|---|---|---|---|---|
-    | Totale | 43 % → 35 % | 44 % → 53 % | 13 % → 13 % | 46 % → 33 % | 80/107/197 → 82/114/188 |
-    | Comuni piccoli | 32 % → 26 % | 53 % → 59 % | 15 % | 35 % → 24 % | 67/58/3 → 72/53/3 |
-    | Comuni medi | 44 % → 35 % | 45 % → 54 % | 11 % | 45 % → 33 % | 13/35/80 → 10/46/72 |
-    | Città grandi | 54 % → 43 % | 34 % → 45 % | 12 % | 58 % → 42 % | 0/14/114 → 0/15/113 |
+    | Totale | 42 % → 35 % | 46 % → 53 % | 12 % → 12 % | 45 % → 37 % | 78/108/198 → 81/115/188 |
+    | Comuni piccoli | 32 % → 26 % | 54 % → 60 % | 14 % | 34 % → 28 % | 67/58/3 → 72/53/3 |
+    | Comuni medi | 43 % → 35 % | 46 % → 54 % | 11 % | 45 % → 36 % | 11/36/81 → 9/47/72 |
+    | Città grandi | 52 % → 44 % | 37 % → 45 % | 11 % | 55 % → 46 % | 0/14/114 → 0/15/113 |
 
-    35 dei 49 domini erano imprese locali in almeno una pagina (preventivofacile 29 risultati, leroymerlin 24, houzz 18,
-    taskrabbit 18…). Le pagine «alta» passano da 197 a 188 (meno imprese «ottimizzate» contate in F2); soglie e punti invariati.
+    Tutti i 22 domini erano imprese locali in almeno una pagina (preventivofacile 29 risultati, leroymerlin 24,
+    costo-ristrutturazione-casa 22, houzz 18, taskrabbit 18…). Le pagine «alta» passano da 198 a 188 (meno imprese
+    «ottimizzate» contate in F2); soglie e punti invariati. La mappa di Cavaliere sotto è calcolata con i 49 domini della prima
+    versione: con `lib/mappa-domini.json` cambiato risulta da ricalcolare (pagine di Google in cache).
 - **Ricalcolo della mappa di Cavaliere** (15/09 dall'editor, regole `2026-09-c`): stima prima di spendere 0,42 $ al massimo
   (3 lotti di volumi nuovi, quello della sede in cache, ≤ 75 pagine di Google a 0,002 $ reali; la stima interna a 0,004 $ diceva
   0,57); **spesa reale 0,35 $** (3 lotti 0,27 + 37 pagine 0,076; 26 dalla cache), saldo 49,53 → 49,19 $. Spesa totale dei test T4

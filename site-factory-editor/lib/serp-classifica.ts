@@ -152,15 +152,19 @@ export const REGOLA_NAZIONALE = "nazionale:piu-province";
 export const SOGLIA_PROVINCE_NAZIONALE = 3;
 
 /**
- * Domini fuori elenco (né elenchi, né PA, né cliente) che compaiono nei risultati organici di comuni di almeno
- * SOGLIA_PROVINCE_NAZIONALE province: attori nazionali, non imprese locali. Conta anche quelli già marcati nazionali,
- * così il ricalcolo con l'elenco in vigore dà lo stesso risultato.
+ * Domini fuori elenco (né elenchi, né PA, né cliente) con una pagina LOCALE (segnale locale o local pack) in comuni di
+ * almeno SOGLIA_PROVINCE_NAZIONALE province: una pagina per città è di un attore nazionale, non di un'impresa locale.
+ * Un risultato senza niente di locale (un articolo «quanto costa», un «preventivo guidato») esce nelle ricerche di
+ * qualsiasi città e non conta: altrimenti un'impresa di Monza con un articolo letto a Lecce diventa nazionale. Conta
+ * anche quelli già marcati nazionali con pagina locale (classe portale), così il ricalcolo con l'elenco in vigore dà lo
+ * stesso risultato.
  */
 export function dominiNazionali(pagine: readonly { sigla: string; serp: Pick<Serp, "organici"> | null }[], soglia = SOGLIA_PROVINCE_NAZIONALE): { dominio: string; province: string[] }[] {
   const per = new Map<string, Set<string>>();
   for (const p of pagine) {
     for (const o of p.serp?.organici ?? []) {
-      if (!/^(ignoto|local-pack|nazionale)/.test(o.regola)) continue;
+      const locale = o.regola === "local-pack" || o.regola === "ignoto+segnale-locale" || (o.regola === REGOLA_NAZIONALE && o.classe === "portale");
+      if (!locale) continue;
       per.set(o.dominio, (per.get(o.dominio) ?? new Set()).add(p.sigla));
     }
   }

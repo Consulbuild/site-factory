@@ -222,6 +222,17 @@ try {
       cLodi.ok && vicini.length > 0 && vicini.length < 40 && cLodi.usati.length === 40 && isDeepStrictEqual(cLodi.usati.slice(0, vicini.length), vicini) && lontani.every((c, i) => c.km! > 25 && (i === 0 || lontani[i - 1]!.km! <= c.km!)),
       cLodi.ok && cLodi.usati.map((c) => [c.nome, c.km]),
     );
+    const zBrescia = zoneDi(["Provincia di Brescia"], COLOGNO);
+    const cBrescia = mq.comuniUsati(zBrescia, comuniServiti(zBrescia, d), 32, d);
+    caso(
+      "4. C-a avviso sul raggio: nessun comune entro 25 km (sede Cologno, zona Brescia), una parte (Lodi), nessuno se tutti vicini",
+      cBrescia.ok &&
+        cBrescia.avvisi.includes("Nessun comune delle zone entro 25 km dalla sede: le ricerche con comune si misurano ma non diventano target") &&
+        cLodi.ok &&
+        cLodi.avvisi.includes(`${lontani.length} dei 40 comuni misurati sono oltre 25 km dalla sede: le loro ricerche si misurano ma non diventano target`) &&
+        !com.avvisi.some((a) => a.includes("km dalla sede")),
+      [cBrescia.ok && cBrescia.avvisi, cLodi.ok && cLodi.avvisi],
+    );
     const zLarga = { ...zCologno, etichette: zCologno.etichette.map((e) => ({ ...e, aree: e.aree.map((a) => (a.tipo === "dintorni" ? { ...a, raggioKm: 30 } : a)) })) } as typeof zCologno;
     const cLarga = mq.comuniUsati(zLarga, comuniServiti(zLarga, d), 32, d);
     caso("4. C-a «dintorni» di 30 km → raggio dei vicini 30", cLarga.ok && cLarga.raggioKm === 30, cLarga.ok && cLarga.raggioKm);
@@ -578,18 +589,30 @@ try {
       isDeepStrictEqual(naz.organici.map((o) => `${o.classe}/${o.regola}`), ["portale/nazionale:piu-province", "altro/nazionale:piu-province", "impresa_locale/ignoto+segnale-locale"]),
       naz.organici.map((o) => `${o.classe}/${o.regola}`),
     );
-    const pagina = (sigla: string, righe: [string, string][]) => ({ sigla, serp: { organici: righe.map(([dominio, regola], i) => ({ pos: i + 1, dominio, url: `https://${dominio}/`, titolo: "x", classe: "altro" as const, regola })) } });
+    const pagina = (sigla: string, righe: ([string, string] | [string, string, "portale" | "altro"])[]) => ({
+      sigla,
+      serp: { organici: righe.map(([dominio, regola, classe], i) => ({ pos: i + 1, dominio, url: `https://${dominio}/`, titolo: "x", classe: classe ?? ("altro" as const), regola })) },
+    });
     const nazionali = dominiNazionali([
-      pagina("MI", [["tre.example", "ignoto"], ["due.example", "local-pack"], ["elenco.example", "elenco:portali:elenco.example"]]),
-      pagina("MB", [["tre.example", "ignoto+segnale-locale"], ["due.example", "ignoto"], ["elenco.example", "elenco:portali:elenco.example"]]),
-      pagina("MI", [["due.example", "ignoto"]]),
-      pagina("VI", [["tre.example", "nazionale:piu-province"], ["elenco.example", "elenco:portali:elenco.example"]]),
+      pagina("MI", [["tre.example", "local-pack"], ["due.example", "local-pack"], ["elenco.example", "elenco:portali:elenco.example"]]),
+      pagina("MB", [["tre.example", "ignoto+segnale-locale"], ["due.example", "ignoto+segnale-locale"], ["elenco.example", "elenco:portali:elenco.example"]]),
+      pagina("MI", [["due.example", "ignoto+segnale-locale"]]),
+      pagina("VI", [["tre.example", "nazionale:piu-province", "portale"], ["elenco.example", "elenco:portali:elenco.example"]]),
     ]);
     caso(
       "16. C-c soglia 3 province distinte (stessa provincia contata una volta), mai i domini in elenco",
       SOGLIA_PROVINCE_NAZIONALE === 3 && isDeepStrictEqual(nazionali, [{ dominio: "tre.example", province: ["MB", "MI", "VI"] }]),
       nazionali,
     );
+    // Caso dimensionebagno.it (campione 15/09): impresa di MB e MI con pagine locali, a Lecce solo /preventivo-guidato/
+    // senza segnale locale; un nazionale già marcato conta solo dove ha una pagina locale (portale), non come «altro».
+    const soloLocali = dominiNazionali([
+      pagina("MB", [["bagni.example", "ignoto+segnale-locale"], ["rete.example", "nazionale:piu-province", "portale"]]),
+      pagina("MI", [["bagni.example", "local-pack"], ["rete.example", "nazionale:piu-province", "portale"]]),
+      pagina("LE", [["bagni.example", "ignoto"], ["rete.example", "nazionale:piu-province", "altro"]]),
+      pagina("TV", [["bagni.example", "ignoto"], ["rete.example", "nazionale:piu-province", "altro"]]),
+    ]);
+    caso("16. C-c contano solo le province con una pagina locale: un articolo senza luogo non fa nazionale un'impresa locale", soloLocali.length === 0, soloLocali);
     caso("16. «www.» tolto dal dominio", s.organici[0]!.dominio === "cliente-prova.it" && normalizzaDominio("WWW.Esempio.IT.") === "esempio.it");
     const url = riduciSerp(g([["edil.example", "Edil", "https://edil.example/ristrutturazioni-brugherio/"], ["sigla.example", "Impresa Rossi (MB)"]]), { domini, dominioCliente: null, luogo: brugherio });
     caso("16. segnale locale anche nell'URL o con la sigla tra parentesi", url.organici.every((o) => o.regola === "ignoto+segnale-locale"));
@@ -749,6 +772,14 @@ try {
       "25. C-a target con comune solo entro il raggio (26 km no, 25 km sì; senza sede nessun limite)",
       isDeepStrictEqual(sel.target.map((t) => t.testo), [vicina.testo]) && senzaRaggio.target.length === 1 && !mq.candidatiSerp([lontana], new Set(), [], 25).length,
       sel.target.map((t) => t.testo),
+    );
+    // Sotto il minimo i motivi dicono anche le ricerche che non possono essere target, separate per causa.
+    const altrui = misurato.find((r) => r.testa.mestiereAltrui && r.tipo === "con_comune")!;
+    const poche = mq.seleziona([lontana, { ...lontana, testo: `${lontana.testo} 2` }, vicina, altrui], new Set(), mappa.pagine, "015081", 0, 25);
+    caso(
+      "25. C-a/C-b «Poche ricerche»: motivi con le ricerche oltre il raggio e quelle di un mestiere altrui",
+      poche.stato === "insufficiente" && poche.motivi.includes("2 ricerche in comuni oltre 25 km dalla sede") && poche.motivi.includes("1 ricerca per il mestiere di un altro artigiano"),
+      poche.motivi,
     );
     caso("25. C-a nessun target della mappa oltre 25 km", mappa.ingressi.raggioKm === 25 && mappa.target.every((t) => (misurato.find((r) => r.testo === t.testo)!.comune?.km ?? 0) <= 25));
   }

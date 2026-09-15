@@ -120,7 +120,7 @@ export async function ricalcolaDallaCache(opz: { d: Dati; domini: Domini; client
   const prima = classifica(senza);
   const nazionali = dominiNazionali(prima.map((r) => ({ sigla: r.comune.sigla, serp: r.serp })));
   const province = new Set(voci.map((v) => v.comune.sigla)).size;
-  const fonte = `campione ${opz.data} (${voci.length} pagine di Google, ${province} province): fuori elenco in almeno ${SOGLIA_PROVINCE_NAZIONALE} province`;
+  const fonte = `campione ${opz.data} (${voci.length} pagine di Google, ${province} province): fuori elenco con una pagina locale in almeno ${SOGLIA_PROVINCE_NAZIONALE} province`;
   const dopo = classifica({ ...senza, nazionali: { fonte, domini: nazionali.map((x) => x.dominio).sort() } });
   return { prima, dopo, nazionali, fonte };
 }

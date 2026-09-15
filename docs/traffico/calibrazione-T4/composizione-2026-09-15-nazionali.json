@@ -6,13 +6,13 @@
     "n": 384,
     "lette": 384,
     "quote": {
-      "portale": 0.384,
+      "portale": 0.383,
       "directory": 0.144,
-      "impresa_locale": 0.346,
+      "impresa_locale": 0.352,
       "cliente": 0,
-      "altro": 0.126
+      "altro": 0.121
     },
-    "senzaImpreseLocali": 0.068,
+    "senzaImpreseLocali": 0.065,
     "localPack": {
       "presenza": 0.753,
       "schedeMedie": 5.754
@@ -21,10 +21,10 @@
     "annunciMedi": 0.672,
     "localServices": 0,
     "vuote": 0,
-    "quotaIgnoto": 0.33,
+    "quotaIgnoto": 0.369,
     "difficolta": {
-      "bassa": 82,
-      "media": 114,
+      "bassa": 81,
+      "media": 115,
       "alta": 188
     }
   },
@@ -33,11 +33,11 @@
       "n": 128,
       "lette": 128,
       "quote": {
-        "portale": 0.359,
+        "portale": 0.355,
         "directory": 0.093,
-        "impresa_locale": 0.433,
+        "impresa_locale": 0.441,
         "cliente": 0,
-        "altro": 0.116
+        "altro": 0.111
       },
       "senzaImpreseLocali": 0.023,
       "localPack": {
@@ -48,7 +48,7 @@
       "annunciMedi": 0.813,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.423,
+      "quotaIgnoto": 0.461,
       "difficolta": {
         "bassa": 0,
         "media": 15,
@@ -59,11 +59,11 @@
       "n": 128,
       "lette": 128,
       "quote": {
-        "portale": 0.406,
+        "portale": 0.404,
         "directory": 0.134,
-        "impresa_locale": 0.35,
+        "impresa_locale": 0.354,
         "cliente": 0,
-        "altro": 0.111
+        "altro": 0.108
       },
       "senzaImpreseLocali": 0.078,
       "localPack": {
@@ -74,10 +74,10 @@
       "annunciMedi": 0.555,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.327,
+      "quotaIgnoto": 0.364,
       "difficolta": {
-        "bassa": 10,
-        "media": 46,
+        "bassa": 9,
+        "media": 47,
         "alta": 72
       }
     },
@@ -85,13 +85,13 @@
       "n": 128,
       "lette": 128,
       "quote": {
-        "portale": 0.388,
+        "portale": 0.392,
         "directory": 0.205,
-        "impresa_locale": 0.256,
+        "impresa_locale": 0.26,
         "cliente": 0,
-        "altro": 0.151
+        "altro": 0.143
       },
-      "senzaImpreseLocali": 0.102,
+      "senzaImpreseLocali": 0.094,
       "localPack": {
         "presenza": 0.711,
         "schedeMedie": 5.681
@@ -100,7 +100,7 @@
       "annunciMedi": 0.648,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.24,
+      "quotaIgnoto": 0.283,
       "difficolta": {
         "bassa": 72,
         "media": 53,
@@ -113,11 +113,11 @@
       "n": 48,
       "lette": 48,
       "quote": {
-        "portale": 0.328,
+        "portale": 0.326,
         "directory": 0.068,
-        "impresa_locale": 0.369,
+        "impresa_locale": 0.373,
         "cliente": 0,
-        "altro": 0.235
+        "altro": 0.233
       },
       "senzaImpreseLocali": 0.083,
       "localPack": {
@@ -128,7 +128,7 @@
       "annunciMedi": 0.646,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.405,
+      "quotaIgnoto": 0.545,
       "difficolta": {
         "bassa": 17,
         "media": 14,
@@ -139,11 +139,11 @@
       "n": 48,
       "lette": 48,
       "quote": {
-        "portale": 0.433,
+        "portale": 0.44,
         "directory": 0.197,
         "impresa_locale": 0.274,
         "cliente": 0,
-        "altro": 0.096
+        "altro": 0.09
       },
       "senzaImpreseLocali": 0.125,
       "localPack": {
@@ -154,10 +154,10 @@
       "annunciMedi": 0.979,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.247,
+      "quotaIgnoto": 0.256,
       "difficolta": {
-        "bassa": 10,
-        "media": 14,
+        "bassa": 9,
+        "media": 15,
         "alta": 24
       }
     },
@@ -165,11 +165,11 @@
       "n": 48,
       "lette": 48,
       "quote": {
-        "portale": 0.359,
+        "portale": 0.383,
         "directory": 0.203,
         "impresa_locale": 0.332,
         "cliente": 0,
-        "altro": 0.106
+        "altro": 0.082
       },
       "senzaImpreseLocali": 0.021,
       "localPack": {
@@ -180,7 +180,7 @@
       "annunciMedi": 0.542,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.33,
+      "quotaIgnoto": 0.342,
       "difficolta": {
         "bassa": 4,
         "media": 15,
@@ -191,11 +191,11 @@
       "n": 48,
       "lette": 48,
       "quote": {
-        "portale": 0.436,
+        "portale": 0.442,
         "directory": 0.155,
         "impresa_locale": 0.33,
         "cliente": 0,
-        "altro": 0.079
+        "altro": 0.073
       },
       "senzaImpreseLocali": 0.083,
       "localPack": {
@@ -206,7 +206,7 @@
       "annunciMedi": 0.604,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.283,
+      "quotaIgnoto": 0.29,
       "difficolta": {
         "bassa": 6,
         "media": 14,
@@ -217,13 +217,13 @@
       "n": 48,
       "lette": 48,
       "quote": {
-        "portale": 0.408,
+        "portale": 0.406,
         "directory": 0.214,
-        "impresa_locale": 0.3,
+        "impresa_locale": 0.302,
         "cliente": 0,
         "altro": 0.077
       },
-      "senzaImpreseLocali": 0.042,
+      "senzaImpreseLocali": 0.021,
       "localPack": {
         "presenza": 0.646,
         "schedeMedie": 5.806
@@ -232,7 +232,7 @@
       "annunciMedi": 0.521,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.32,
+      "quotaIgnoto": 0.325,
       "difficolta": {
         "bassa": 7,
         "media": 17,
@@ -243,9 +243,9 @@
       "n": 48,
       "lette": 48,
       "quote": {
-        "portale": 0.468,
+        "portale": 0.449,
         "directory": 0.106,
-        "impresa_locale": 0.292,
+        "impresa_locale": 0.311,
         "cliente": 0,
         "altro": 0.133
       },
@@ -258,7 +258,7 @@
       "annunciMedi": 0.521,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.297,
+      "quotaIgnoto": 0.386,
       "difficolta": {
         "bassa": 14,
         "media": 12,
@@ -269,9 +269,9 @@
       "n": 48,
       "lette": 48,
       "quote": {
-        "portale": 0.41,
+        "portale": 0.393,
         "directory": 0.058,
-        "impresa_locale": 0.389,
+        "impresa_locale": 0.406,
         "cliente": 0,
         "altro": 0.143
       },
@@ -284,7 +284,7 @@
       "annunciMedi": 0.958,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.372,
+      "quotaIgnoto": 0.423,
       "difficolta": {
         "bassa": 13,
         "media": 9,
@@ -310,7 +310,7 @@
       "annunciMedi": 0.604,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.388,
+      "quotaIgnoto": 0.394,
       "difficolta": {
         "bassa": 11,
         "media": 19,
@@ -323,9 +323,9 @@
       "n": 96,
       "lette": 96,
       "quote": {
-        "portale": 0.291,
+        "portale": 0.288,
         "directory": 0.177,
-        "impresa_locale": 0.436,
+        "impresa_locale": 0.438,
         "cliente": 0,
         "altro": 0.097
       },
@@ -338,7 +338,7 @@
       "annunciMedi": 0.76,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.381,
+      "quotaIgnoto": 0.385,
       "difficolta": {
         "bassa": 20,
         "media": 25,
@@ -349,11 +349,11 @@
       "n": 96,
       "lette": 96,
       "quote": {
-        "portale": 0.425,
+        "portale": 0.435,
         "directory": 0.062,
-        "impresa_locale": 0.287,
+        "impresa_locale": 0.29,
         "cliente": 0,
-        "altro": 0.226
+        "altro": 0.212
       },
       "senzaImpreseLocali": 0.125,
       "localPack": {
@@ -364,7 +364,7 @@
       "annunciMedi": 0.521,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.314,
+      "quotaIgnoto": 0.412,
       "difficolta": {
         "bassa": 26,
         "media": 38,
@@ -375,11 +375,11 @@
       "n": 96,
       "lette": 96,
       "quote": {
-        "portale": 0.432,
+        "portale": 0.428,
         "directory": 0.133,
-        "impresa_locale": 0.361,
+        "impresa_locale": 0.365,
         "cliente": 0,
-        "altro": 0.075
+        "altro": 0.074
       },
       "senzaImpreseLocali": 0.052,
       "localPack": {
@@ -390,7 +390,7 @@
       "annunciMedi": 0.625,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.341,
+      "quotaIgnoto": 0.355,
       "difficolta": {
         "bassa": 11,
         "media": 35,
@@ -401,13 +401,13 @@
       "n": 96,
       "lette": 96,
       "quote": {
-        "portale": 0.39,
+        "portale": 0.384,
         "directory": 0.202,
-        "impresa_locale": 0.301,
+        "impresa_locale": 0.312,
         "cliente": 0,
-        "altro": 0.107
+        "altro": 0.102
       },
-      "senzaImpreseLocali": 0.094,
+      "senzaImpreseLocali": 0.083,
       "localPack": {
         "presenza": 0.958,
         "schedeMedie": 5.946
@@ -416,10 +416,10 @@
       "annunciMedi": 0.781,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.284,
+      "quotaIgnoto": 0.326,
       "difficolta": {
-        "bassa": 25,
-        "media": 16,
+        "bassa": 24,
+        "media": 17,
         "alta": 55
       }
     }
@@ -470,7 +470,7 @@
       "annunciMedi": 0.75,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.361,
+      "quotaIgnoto": 0.722,
       "difficolta": {
         "bassa": 0,
         "media": 3,
@@ -496,7 +496,7 @@
       "annunciMedi": 2.5,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.611,
+      "quotaIgnoto": 0.667,
       "difficolta": {
         "bassa": 0,
         "media": 0,
@@ -522,7 +522,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.525,
+      "quotaIgnoto": 0.65,
       "difficolta": {
         "bassa": 0,
         "media": 0,
@@ -559,11 +559,11 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.487,
+        "portale": 0.513,
         "directory": 0.026,
         "impresa_locale": 0.256,
         "cliente": 0,
-        "altro": 0.231
+        "altro": 0.205
       },
       "senzaImpreseLocali": 0,
       "localPack": {
@@ -663,11 +663,11 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.4,
+        "portale": 0.5,
         "directory": 0,
         "impresa_locale": 0.35,
         "cliente": 0,
-        "altro": 0.25
+        "altro": 0.15
       },
       "senzaImpreseLocali": 0,
       "localPack": {
@@ -678,7 +678,7 @@
       "annunciMedi": 0.25,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.4,
+      "quotaIgnoto": 0.5,
       "difficolta": {
         "bassa": 0,
         "media": 0,
@@ -715,11 +715,11 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.35,
+        "portale": 0.375,
         "directory": 0.225,
         "impresa_locale": 0.35,
         "cliente": 0,
-        "altro": 0.075
+        "altro": 0.05
       },
       "senzaImpreseLocali": 0,
       "localPack": {
@@ -912,7 +912,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.5,
+      "quotaIgnoto": 0.528,
       "difficolta": {
         "bassa": 0,
         "media": 0,
@@ -949,9 +949,9 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.45,
+        "portale": 0.425,
         "directory": 0.05,
-        "impresa_locale": 0.475,
+        "impresa_locale": 0.5,
         "cliente": 0,
         "altro": 0.025
       },
@@ -964,7 +964,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.45,
+      "quotaIgnoto": 0.475,
       "difficolta": {
         "bassa": 0,
         "media": 0,
@@ -975,9 +975,9 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.525,
+        "portale": 0.475,
         "directory": 0,
-        "impresa_locale": 0.2,
+        "impresa_locale": 0.25,
         "cliente": 0,
         "altro": 0.275
       },
@@ -990,7 +990,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.25,
+      "quotaIgnoto": 0.475,
       "difficolta": {
         "bassa": 0,
         "media": 2,
@@ -1001,9 +1001,9 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.55,
+        "portale": 0.5,
         "directory": 0.025,
-        "impresa_locale": 0.4,
+        "impresa_locale": 0.45,
         "cliente": 0,
         "altro": 0.025
       },
@@ -1016,7 +1016,7 @@
       "annunciMedi": 1,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.4,
+      "quotaIgnoto": 0.45,
       "difficolta": {
         "bassa": 0,
         "media": 1,
@@ -1027,9 +1027,9 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.5,
+        "portale": 0.45,
         "directory": 0.175,
-        "impresa_locale": 0.3,
+        "impresa_locale": 0.35,
         "cliente": 0,
         "altro": 0.025
       },
@@ -1042,7 +1042,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.325,
+      "quotaIgnoto": 0.375,
       "difficolta": {
         "bassa": 0,
         "media": 0,
@@ -1053,9 +1053,9 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.333,
+        "portale": 0.308,
         "directory": 0.026,
-        "impresa_locale": 0.564,
+        "impresa_locale": 0.59,
         "cliente": 0,
         "altro": 0.077
       },
@@ -1068,7 +1068,7 @@
       "annunciMedi": 2,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.59,
+      "quotaIgnoto": 0.615,
       "difficolta": {
         "bassa": 0,
         "media": 0,
@@ -1079,11 +1079,11 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.368,
+        "portale": 0.342,
         "directory": 0,
         "impresa_locale": 0.368,
         "cliente": 0,
-        "altro": 0.263
+        "altro": 0.289
       },
       "senzaImpreseLocali": 0,
       "localPack": {
@@ -1094,7 +1094,7 @@
       "annunciMedi": 1.75,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.447,
+      "quotaIgnoto": 0.526,
       "difficolta": {
         "bassa": 0,
         "media": 1,
@@ -1105,9 +1105,9 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.41,
+        "portale": 0.385,
         "directory": 0,
-        "impresa_locale": 0.513,
+        "impresa_locale": 0.538,
         "cliente": 0,
         "altro": 0.077
       },
@@ -1120,7 +1120,7 @@
       "annunciMedi": 1,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.462,
+      "quotaIgnoto": 0.487,
       "difficolta": {
         "bassa": 0,
         "media": 0,
@@ -1131,9 +1131,9 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.425,
+        "portale": 0.4,
         "directory": 0.1,
-        "impresa_locale": 0.45,
+        "impresa_locale": 0.475,
         "cliente": 0,
         "altro": 0.025
       },
@@ -1146,7 +1146,7 @@
       "annunciMedi": 0.25,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.35,
+      "quotaIgnoto": 0.375,
       "difficolta": {
         "bassa": 0,
         "media": 0,
@@ -1198,7 +1198,7 @@
       "annunciMedi": 1.5,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.425,
+      "quotaIgnoto": 0.475,
       "difficolta": {
         "bassa": 0,
         "media": 3,
@@ -1276,7 +1276,7 @@
       "annunciMedi": 1.5,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.568,
+      "quotaIgnoto": 0.595,
       "difficolta": {
         "bassa": 0,
         "media": 3,
@@ -1302,7 +1302,7 @@
       "annunciMedi": 0.25,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.361,
+      "quotaIgnoto": 0.611,
       "difficolta": {
         "bassa": 1,
         "media": 3,
@@ -1328,7 +1328,7 @@
       "annunciMedi": 1,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.389,
+      "quotaIgnoto": 0.444,
       "difficolta": {
         "bassa": 0,
         "media": 2,
@@ -1339,9 +1339,9 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.447,
+        "portale": 0.421,
         "directory": 0.026,
-        "impresa_locale": 0.237,
+        "impresa_locale": 0.263,
         "cliente": 0,
         "altro": 0.289
       },
@@ -1354,7 +1354,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.263,
+      "quotaIgnoto": 0.5,
       "difficolta": {
         "bassa": 2,
         "media": 1,
@@ -1443,11 +1443,11 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.421,
+        "portale": 0.447,
         "directory": 0.263,
         "impresa_locale": 0.211,
         "cliente": 0,
-        "altro": 0.105
+        "altro": 0.079
       },
       "senzaImpreseLocali": 0.25,
       "localPack": {
@@ -1458,10 +1458,10 @@
       "annunciMedi": 4,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.184,
+      "quotaIgnoto": 0.211,
       "difficolta": {
-        "bassa": 1,
-        "media": 0,
+        "bassa": 0,
+        "media": 1,
         "alta": 3
       }
     },
@@ -1495,11 +1495,11 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.55,
+        "portale": 0.6,
         "directory": 0.125,
         "impresa_locale": 0.175,
         "cliente": 0,
-        "altro": 0.15
+        "altro": 0.1
       },
       "senzaImpreseLocali": 0.25,
       "localPack": {
@@ -1614,7 +1614,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.231,
+      "quotaIgnoto": 0.256,
       "difficolta": {
         "bassa": 0,
         "media": 2,
@@ -1822,7 +1822,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.108,
+      "quotaIgnoto": 0.405,
       "difficolta": {
         "bassa": 4,
         "media": 0,
@@ -1859,9 +1859,9 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.41,
+        "portale": 0.385,
         "directory": 0.128,
-        "impresa_locale": 0.359,
+        "impresa_locale": 0.385,
         "cliente": 0,
         "altro": 0.103
       },
@@ -1874,7 +1874,7 @@
       "annunciMedi": 0.75,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.333,
+      "quotaIgnoto": 0.41,
       "difficolta": {
         "bassa": 0,
         "media": 1,
@@ -1911,37 +1911,11 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.425,
+        "portale": 0.4,
         "directory": 0,
-        "impresa_locale": 0.275,
+        "impresa_locale": 0.3,
         "cliente": 0,
         "altro": 0.3
-      },
-      "senzaImpreseLocali": 0,
-      "localPack": {
-        "presenza": 1,
-        "schedeMedie": 6
-      },
-      "aiOverview": 0,
-      "annunciMedi": 0,
-      "localServices": 0,
-      "vuote": 0,
-      "quotaIgnoto": 0.275,
-      "difficolta": {
-        "bassa": 0,
-        "media": 3,
-        "alta": 1
-      }
-    },
-    "medio · ristrutturazione bagno · preventivo": {
-      "n": 4,
-      "lette": 4,
-      "quote": {
-        "portale": 0.4,
-        "directory": 0.05,
-        "impresa_locale": 0.5,
-        "cliente": 0,
-        "altro": 0.05
       },
       "senzaImpreseLocali": 0,
       "localPack": {
@@ -1955,6 +1929,32 @@
       "quotaIgnoto": 0.425,
       "difficolta": {
         "bassa": 0,
+        "media": 3,
+        "alta": 1
+      }
+    },
+    "medio · ristrutturazione bagno · preventivo": {
+      "n": 4,
+      "lette": 4,
+      "quote": {
+        "portale": 0.375,
+        "directory": 0.05,
+        "impresa_locale": 0.525,
+        "cliente": 0,
+        "altro": 0.05
+      },
+      "senzaImpreseLocali": 0,
+      "localPack": {
+        "presenza": 1,
+        "schedeMedie": 6
+      },
+      "aiOverview": 0,
+      "annunciMedi": 0,
+      "localServices": 0,
+      "vuote": 0,
+      "quotaIgnoto": 0.45,
+      "difficolta": {
+        "bassa": 0,
         "media": 1,
         "alta": 3
       }
@@ -1963,9 +1963,9 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.4,
+        "portale": 0.375,
         "directory": 0.1,
-        "impresa_locale": 0.4,
+        "impresa_locale": 0.425,
         "cliente": 0,
         "altro": 0.1
       },
@@ -1978,7 +1978,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.35,
+      "quotaIgnoto": 0.375,
       "difficolta": {
         "bassa": 0,
         "media": 2,
@@ -2030,7 +2030,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.425,
+      "quotaIgnoto": 0.45,
       "difficolta": {
         "bassa": 0,
         "media": 3,
@@ -2134,7 +2134,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.286,
+      "quotaIgnoto": 0.686,
       "difficolta": {
         "bassa": 4,
         "media": 0,
@@ -2160,7 +2160,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.306,
+      "quotaIgnoto": 0.389,
       "difficolta": {
         "bassa": 3,
         "media": 1,
@@ -2173,9 +2173,9 @@
       "quote": {
         "portale": 0.436,
         "directory": 0.103,
-        "impresa_locale": 0.282,
+        "impresa_locale": 0.308,
         "cliente": 0,
-        "altro": 0.179
+        "altro": 0.154
       },
       "senzaImpreseLocali": 0.25,
       "localPack": {
@@ -2186,7 +2186,7 @@
       "annunciMedi": 0.75,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.256,
+      "quotaIgnoto": 0.359,
       "difficolta": {
         "bassa": 4,
         "media": 0,
@@ -2275,11 +2275,11 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.421,
+        "portale": 0.447,
         "directory": 0.316,
         "impresa_locale": 0.158,
         "cliente": 0,
-        "altro": 0.105
+        "altro": 0.079
       },
       "senzaImpreseLocali": 0.25,
       "localPack": {
@@ -2290,7 +2290,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.105,
+      "quotaIgnoto": 0.184,
       "difficolta": {
         "bassa": 2,
         "media": 2,
@@ -2327,11 +2327,11 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.4,
+        "portale": 0.475,
         "directory": 0.125,
         "impresa_locale": 0.325,
         "cliente": 0,
-        "altro": 0.15
+        "altro": 0.075
       },
       "senzaImpreseLocali": 0,
       "localPack": {
@@ -2342,7 +2342,7 @@
       "annunciMedi": 0.75,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.35,
+      "quotaIgnoto": 0.375,
       "difficolta": {
         "bassa": 1,
         "media": 3,
@@ -2379,11 +2379,11 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.325,
+        "portale": 0.35,
         "directory": 0.3,
         "impresa_locale": 0.175,
         "cliente": 0,
-        "altro": 0.2
+        "altro": 0.175
       },
       "senzaImpreseLocali": 0,
       "localPack": {
@@ -2394,7 +2394,7 @@
       "annunciMedi": 1.25,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.25,
+      "quotaIgnoto": 0.275,
       "difficolta": {
         "bassa": 2,
         "media": 2,
@@ -2431,11 +2431,11 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.486,
+        "portale": 0.568,
         "directory": 0.189,
         "impresa_locale": 0.162,
         "cliente": 0,
-        "altro": 0.162
+        "altro": 0.081
       },
       "senzaImpreseLocali": 0.25,
       "localPack": {
@@ -2446,7 +2446,7 @@
       "annunciMedi": 0.5,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.189,
+      "quotaIgnoto": 0.243,
       "difficolta": {
         "bassa": 2,
         "media": 2,
@@ -2587,13 +2587,13 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.436,
+        "portale": 0.41,
         "directory": 0.333,
-        "impresa_locale": 0.103,
+        "impresa_locale": 0.128,
         "cliente": 0,
         "altro": 0.128
       },
-      "senzaImpreseLocali": 0.5,
+      "senzaImpreseLocali": 0.25,
       "localPack": {
         "presenza": 1,
         "schedeMedie": 5.5
@@ -2602,7 +2602,7 @@
       "annunciMedi": 1.25,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.179,
+      "quotaIgnoto": 0.205,
       "difficolta": {
         "bassa": 2,
         "media": 2,
@@ -2654,7 +2654,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.194,
+      "quotaIgnoto": 0.389,
       "difficolta": {
         "bassa": 3,
         "media": 1,
@@ -2691,9 +2691,9 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.425,
+        "portale": 0.4,
         "directory": 0.15,
-        "impresa_locale": 0.15,
+        "impresa_locale": 0.175,
         "cliente": 0,
         "altro": 0.275
       },
@@ -2706,7 +2706,7 @@
       "annunciMedi": 0,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.2,
+      "quotaIgnoto": 0.375,
       "difficolta": {
         "bassa": 4,
         "media": 0,
@@ -2732,7 +2732,7 @@
       "annunciMedi": 1.5,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.256,
+      "quotaIgnoto": 0.282,
       "difficolta": {
         "bassa": 3,
         "media": 1,
@@ -2758,7 +2758,7 @@
       "annunciMedi": 1,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.361,
+      "quotaIgnoto": 0.528,
       "difficolta": {
         "bassa": 3,
         "media": 0,
@@ -2769,11 +2769,11 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.487,
+        "portale": 0.513,
         "directory": 0.154,
         "impresa_locale": 0.231,
         "cliente": 0,
-        "altro": 0.128
+        "altro": 0.103
       },
       "senzaImpreseLocali": 0.25,
       "localPack": {
@@ -2784,7 +2784,7 @@
       "annunciMedi": 1.25,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.205,
+      "quotaIgnoto": 0.231,
       "difficolta": {
         "bassa": 3,
         "media": 0,
@@ -2795,9 +2795,9 @@
       "n": 4,
       "lette": 4,
       "quote": {
-        "portale": 0.575,
+        "portale": 0.525,
         "directory": 0.05,
-        "impresa_locale": 0.275,
+        "impresa_locale": 0.325,
         "cliente": 0,
         "altro": 0.1
       },
@@ -2810,7 +2810,7 @@
       "annunciMedi": 1.75,
       "localServices": 0,
       "vuote": 0,
-      "quotaIgnoto": 0.275,
+      "quotaIgnoto": 0.325,
       "difficolta": {
         "bassa": 3,
         "media": 1,

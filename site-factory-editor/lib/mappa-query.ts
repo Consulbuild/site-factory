@@ -501,6 +501,12 @@ export function comuniUsati(zone: Pick<Zone, "etichette" | "sede">, comuni: Comu
   const sedeInArea = sedeCodice ? area.find((c) => c.istat === sedeCodice) : undefined;
   if (sedeInArea && !usati.includes(sedeInArea)) usati = [...usati.slice(0, tetto - 1), sedeInArea];
   const fuori = area.filter((c) => !usati.includes(c));
+  const lontani = raggioKm === null ? 0 : usati.filter((c) => !vicino(c)).length;
+  if (raggioKm !== null && lontani === usati.length) {
+    avvisi.push(`Nessun comune delle zone entro ${raggioKm} km dalla sede: le ricerche con comune si misurano ma non diventano target`);
+  } else if (lontani) {
+    avvisi.push(`${formatoIntero(lontani)} dei ${formatoIntero(usati.length)} comuni misurati sono oltre ${raggioKm} km dalla sede: le loro ricerche si misurano ma non diventano target`);
+  }
   if (fuori.length) {
     avvisi.push(`${formatoIntero(fuori.length)} comuni dell'area non misurati (tetto ${tetto}): ${fuori.slice(0, 5).map((c) => c.nome).join(", ")}${fuori.length > 5 ? "…" : ""}`);
   }
@@ -914,8 +920,13 @@ export function seleziona(universo: readonly Riga[], escluse: ReadonlySet<string
   const motivi: string[] = [];
   if (target.length < MIN_TARGET) {
     const attive = universo.filter((r) => r.ammessa && !escluse.has(r.testo));
-    const alte = attive.filter((r) => r.difficolta?.livello === "alta").length;
+    // Le ricerche che non possono essere target (C-a, C-b) si misurano ma non si leggono: vanno dette, non taciute.
+    const altrui = attive.filter((r) => r.testa.mestiereAltrui).length;
+    const lontane = attive.filter((r) => !r.testa.mestiereAltrui && !puoEssereTarget(r, raggioKm)).length;
+    const alte = attive.filter((r) => puoEssereTarget(r, raggioKm) && r.difficolta?.livello === "alta").length;
     const quante = (n: number, testo: string) => `${formatoIntero(n)} ${n === 1 ? "ricerca" : "ricerche"} ${testo}`;
+    if (lontane) motivi.push(quante(lontane, `in comuni oltre ${formatoIntero(raggioKm!)} km dalla sede`));
+    if (altrui) motivi.push(quante(altrui, "per il mestiere di un altro artigiano"));
     if (alte) motivi.push(quante(alte, "con difficoltà alta"));
     if (serpNonLette) motivi.push(quante(serpNonLette, "senza pagina di Google letta"));
     if (escluse.size) motivi.push(quante([...escluse].filter((t) => universo.some((r) => r.testo === t)).length, "escluse da te"));

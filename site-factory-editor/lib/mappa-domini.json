@@ -1,5 +1,5 @@
 {
-  "versione": "2026-09-b",
+  "versione": "2026-09-c",
   "aggiornato": "2026-09-15",
   "portali": [
     { "dominio": "prontopro.it", "nome": "ProntoPro", "nota": "p4 §4.1: impresa edile Cologno Monzese, San Severo; imbianchino Vicenza" },
@@ -11,7 +11,12 @@
     { "dominio": "cronoshare.it", "nome": "Cronoshare", "nota": "p4 §2: citato nel brief della ricerca" },
     { "dominio": "ristrutturazioni.com", "nome": "Ristrutturazioni.com", "nota": "p4 §4.1: ristrutturazione appartamento Milano" },
     { "dominio": "artinrete.it", "nome": "Artinrete", "nota": "p4 §4.1: cappotto termico Treviso" },
-    { "dominio": "starcasa.it", "nome": "StarCasa", "nota": "p4 §4.1: elettricista Bergamo" }
+    { "dominio": "starcasa.it", "nome": "StarCasa", "nota": "p4 §4.1: elettricista Bergamo" },
+    { "dominio": "homedeal.it", "nome": "HomeDeal", "nota": "campione 2026-09-15: portale di preventivi (infissi a Roma), pagine locali in meno di 3 province" },
+    { "dominio": "idraulicoin.it", "nome": "IdraulicoIn", "nota": "campione 2026-09-15: rete di pagine per città (idraulici a Monza Brianza, Cologno Monzese), pagine locali in 2 province" },
+    { "dominio": "ristrutturazioni.milano.it", "nome": "Ristrutturazioni Milano", "nota": "campione 2026-09-15: portale di imprese selezionate (Milano), pagine locali in 1 provincia" },
+    { "dominio": "spazibelli.com", "nome": "Spazibelli", "nota": "campione 2026-09-15: elenco di professionisti (imprese edili a Milano, Torino)" },
+    { "dominio": "coibentarecasa.it", "nome": "Coibentare Casa", "nota": "campione 2026-09-15: rete di pagine per città (coibentazione Napoli, Pescara)" }
   ],
   "directory": [
     { "dominio": "paginegialle.it", "nome": "PagineGialle", "nota": "p4 §4.1" },
@@ -32,19 +37,16 @@
     { "dominio": "linkedin.com", "nome": "LinkedIn", "nota": "social e lavoro" },
     { "dominio": "indeed.com", "nome": "Indeed", "nota": "lavoro (p4 §4.1: it.indeed.com su elettricista Bergamo)" },
     { "dominio": "subito.it", "nome": "Subito", "nota": "annunci" },
-    { "dominio": "wikipedia.org", "nome": "Wikipedia", "nota": "enciclopedia" }
+    { "dominio": "wikipedia.org", "nome": "Wikipedia", "nota": "enciclopedia" },
+    { "dominio": "reddit.com", "nome": "Reddit", "nota": "forum (campione 2026-09-15: discussioni su ristrutturazioni a Milano)" }
   ],
   "nazionali": {
-    "fonte": "campione 2026-09-15 (384 pagine di Google, 10 province): fuori elenco in almeno 3 province",
+    "fonte": "campione 2026-09-15 (384 pagine di Google, 10 province): fuori elenco con una pagina locale in almeno 3 province",
     "domini": [
-      "academy.dakota.eu", "alexprontointervento.it", "archisio.it", "arredamento.it", "artigian.casa", "blogbisacchi.it", "bottegadomus.it",
-      "ceramicstore.eu", "cercoproitalia.it", "coibentarecasa.it", "costo-ristrutturazione-casa.it", "dimensionebagno.it", "duco.it",
-      "ecoisolamentotermico.it", "ediliziacrobatica.com", "ediliziapoint.it", "edilportale.com", "fratellipellizzari.it", "homedeal.it",
-      "houzz.it", "idraulicoin.it", "idrauligo.it", "imbiancatura.com", "infissiepersiane.it", "infobuildenergia.it", "iperceramica.it",
-      "isolconfort.it", "it.jooble.org", "la-certificazione-energetica.net", "leroymerlin.it", "manticeramicitalia.it", "metrabuilding.com",
-      "perinotto.com", "pgcasa.it", "posainoperapavimentiroma.it", "preventivofacile.it", "pronto-intervento24.it", "reddit.com",
-      "ristrutturazioni.milano.it", "rivaingegnere.it", "sgombero.eu", "showroominfissi.com", "spazibelli.com", "sporext-group.com",
-      "stilloak.app", "studiomadera.it", "taskrabbit.it", "vanzinpavimenti.it", "vivienergia.it"
+      "alexprontointervento.it", "archisio.it", "cercoproitalia.it", "costo-ristrutturazione-casa.it", "ecoisolamentotermico.it", "edilportale.com",
+      "houzz.it", "imbiancatura.com", "infissiepersiane.it", "iperceramica.it", "it.jooble.org", "la-certificazione-energetica.net",
+      "leroymerlin.it", "metrabuilding.com", "pgcasa.it", "preventivofacile.it", "pronto-intervento24.it", "sgombero.eu",
+      "showroominfissi.com", "sporext-group.com", "stilloak.app", "taskrabbit.it"
     ]
   }
 }
