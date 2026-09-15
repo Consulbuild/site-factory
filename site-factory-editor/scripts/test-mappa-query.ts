@@ -11,7 +11,7 @@ import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import * as mq from "../lib/mappa-query.ts";
 import { difficolta, fraseFeature, livelloDaPunti, normalizzaDominio, riduciSerp, spazioOrganico, type Domini, type LuogoQuery, type SerpGrezza } from "../lib/serp-classifica.ts";
-import { ATTESE_MS, BASE_URL, ErroreDfs, creaClientDfs, corpoSerp, corpoVolumi, fetchRegistrato, trovaLocalita, type Localita } from "../lib/dataforseo.ts";
+import { ATTESE_MS, BASE_URL, ErroreDfs, creaClientDfs, corpoSerp, corpoVolumi, erroreDaCodice, fetchRegistrato, trovaLocalita, type Localita } from "../lib/dataforseo.ts";
 import { FASI, escludiRicerca, eseguiMappa, leggiContesto, leggiEsclusioni, leggiIngressi, leggiMappa, leggiRegole, riammettiRicerca } from "../lib/mappa-lavoro.ts";
 import { agenteDaFase, nomeStep, percorsoRun } from "../lib/agenti.ts";
 import { accordo, csvGiudizio, eseguiCampione, leggiCsv, matrice, selezionaGiudizio } from "./campione-serp.ts";
@@ -954,6 +954,12 @@ try {
     const tutte = FASI.map((f) => agenteDaFase(f, "mappa", "traffico"));
     caso("30. le sei fasi hanno il chip «script», mai la sfera", tutte.every((a) => a.sfera === false && a.key === "script"));
     caso("30. percorso e nome del lavoro", percorsoRun({ kind: "traffico", slug: "zz-test-t4", step: "mappa" }) === "/traffico/zz-test-t4" && nomeStep({ kind: "traffico", step: "mappa" }) === "Traffico · mappa");
+  }
+  {
+    // Codici reali (docs.dataforseo.com/v3/appendix/errors): 40101 = «Internal SE Server Error», visto dal vivo il 15/09.
+    const tipo = (http: number, codice: number) => erroreDaCodice(http, codice)?.tipo ?? null;
+    caso("31. 40101 è un guasto di Google da ritentare, non credenziali sbagliate", tipo(200, 40101) === "servizio");
+    caso("31. 40100 e HTTP 401 restano credenziali rifiutate", tipo(200, 40100) === "auth" && tipo(401, 40100) === "auth");
   }
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });

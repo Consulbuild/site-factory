@@ -61,7 +61,10 @@ export function erroreDaCodice(http: number, codice: number | null, messaggio?: 
   const c = codice ?? http;
   const dettaglio = breve(messaggio);
   if (codice === 40207) return new ErroreDfs("auth", "L'IP di questo Mac non è nella whitelist di DataForSEO: aggiungilo in app.dataforseo.com → API Access.", c);
-  if (http === 401 || codice === 40100 || codice === 40101) return new ErroreDfs("auth", "DataForSEO ha rifiutato login o password: controllali in Impostazioni → Chiavi API.", c);
+  if (http === 401 || codice === 40100) return new ErroreDfs("auth", "DataForSEO ha rifiutato login o password: controllali in Impostazioni → Chiavi API.", c);
+  // 40101 è «Internal SE Server Error» (Google non ha risposto a DataForSEO), non un problema di credenziali: visto
+  // dal vivo nel campione del 15/09 dopo 11 e 48 pagine riuscite con le stesse chiavi. Si ritenta come un guasto del servizio.
+  if (codice === 40101) return new ErroreDfs("servizio", `Google non ha risposto a DataForSEO (40101${dettaglio ? ` ${dettaglio}` : ""}): riprova più tardi.`, c);
   if (codice === 40104 || codice === 40201 || codice === 40204 || codice === 40206) {
     return new ErroreDfs("auth", `L'account DataForSEO non può usare queste API (${c}${dettaglio ? ` ${dettaglio}` : ""}): controllalo su app.dataforseo.com.`, c);
   }
