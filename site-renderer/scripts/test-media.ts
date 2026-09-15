@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import sharp from "sharp";
 import { generaVarianti, hashRicetta, raccogliRiferimenti, RICETTA, scala, urlVariante } from "./media-varianti.ts";
-import { budgetDist, famigliePreset, fontLatini, leggiSrcset, scegliCandidato, valutaSizes } from "./budget-pagine.ts";
+import { budgetDist, famigliePreset, fontLatini, leggiSrcset, scegliCandidato, SOGLIE, valutaMedia, valutaSizes } from "./budget-pagine.ts";
 import { RITAGLIO, SIZES, sizesGalleria, sizesPerZoom } from "../src/lib/media.ts";
 
 let passati = 0;
@@ -95,6 +95,11 @@ const siteBase = {
     ]) && r.favicon === `${P}favicon.svg` && r.hero === `${P}hero.jpg`,
     { immagini: [...r.immagini], favicon: r.favicon, hero: r.hero },
   );
+  caso(
+    "riferimenti: hero senza variante = A a tutta pagina (ritaglio); la stessa foto anche in galleria conta come altro uso",
+    uguali([...r.heroPiene], [`${P}hero.jpg`]) && uguali([...r.altriUsi], [`${P}card.jpg`, `${P}lavoro.jpg`, `${P}hero.jpg`, `${P}trasparente.png`, `${P}disegno.svg`]),
+    { heroPiene: [...r.heroPiene], altriUsi: [...r.altriUsi] },
+  );
 }
 
 /* ---------- manifest da immagini sintetiche ---------- */
@@ -131,16 +136,20 @@ try {
   caso("foto 1300×800: AVIF e JPEG a 400/640/960/1280/1300, dimensioni della sorgente", hero?.w === 1300 && hero.h === 800 && uguali(hero.avif?.map(([, w]) => w), [400, 640, 960, 1280, 1300]) && uguali(hero.jpeg?.map(([, w]) => w), [400, 640, 960, 1280, 1300]) && !hero.png, hero);
   caso("URL delle varianti in /media/zz-banco/v/ con sha8", !!hero?.avif?.every(([u]) => /^\/media\/zz-banco\/v\/hero\.[0-9a-f]{8}-\d+\.avif$/.test(u)), hero?.avif);
   const fileV = readdirSync(join(media, "v"));
-  const tuttiPresenti = Object.values(m.immagini).flatMap((v) => [...(v.avif ?? []), ...(v.jpeg ?? []), ...(v.png ?? [])]).every(([u]) => fileV.includes(u.split("/").pop()!));
-  caso("ogni URL del manifest ha il suo file in v/", tuttiPresenti, fileV);
+  const urlManifest = Object.values(m.immagini).flatMap((v) => [...(v.avif ?? []), ...(v.jpeg ?? []), ...(v.png ?? []), ...(v.telefono ?? []), ...(v.ritaglio?.avif ?? [])]);
+  caso("ogni URL del manifest (serie da telefono e ritaglio compresi) ha il suo file in v/, e v/ non ha file in più", urlManifest.every(([u]) => fileV.includes(u.split("/").pop()!)) && new Set(urlManifest.map(([u]) => u)).size + (m.favicon ? 1 : 0) + (m.og ? 1 : 0) === fileV.length, fileV);
   const larghezzaVera = await sharp(join(media, "v", hero!.avif![1][0].split("/").pop()!)).metadata();
   caso("la variante da 640 è davvero larga 640 e in AVIF (heif)", larghezzaVera.width === 640 && larghezzaVera.format === "heif", { w: larghezzaVera.width, f: larghezzaVera.format });
   const tr = m.immagini[`${P}trasparente.png`];
   caso("foto con trasparenza: ripiego PNG, niente JPEG", !!tr?.png?.length && !tr.jpeg && uguali(tr.avif?.map(([, w]) => w), [400, 500]), tr);
   const mark = m.immagini[`${P}mark.png`];
-  caso("marchio 285×240 (sotto i 288 px): solo PNG senza perdita alla misura dell'originale", mark?.w === 285 && mark.h === 240 && !mark.avif && uguali(mark.png?.map(([, w]) => w), [285]), mark);
-  const markVero = await sharp(join(media, "v", mark!.png![0][0].split("/").pop()!)).metadata();
-  caso("il PNG del marchio è 285×240", markVero.width === 285 && markVero.height === 240 && markVero.format === "png", { w: markVero.width, h: markVero.height });
+  caso(
+    "marchio 285×240: solo PNG senza perdita; per il computer quello di sempre (285, sotto i 288 px), da telefono -t143 (120 px × 285/240 = 142,5 in su) più quello di sempre",
+    mark?.w === 285 && mark.h === 240 && !mark.avif && !mark.ritaglio && uguali(mark.png?.map(([, w]) => w), [285]) && uguali(mark.telefono?.map(([, w]) => w), [143, 285]) && !!mark.telefono?.[0][0].endsWith("-t143.png") && mark.telefono?.[1][0] === mark.png?.[0][0],
+    mark,
+  );
+  const markVeri = await Promise.all(mark!.telefono!.map(([u]) => sharp(join(media, "v", u.split("/").pop()!)).metadata()));
+  caso("i PNG del marchio sono 143×120 e 285×240", uguali(markVeri.map((x) => [x.width, x.height, x.format]), [[143, 120, "png"], [285, 240, "png"]]), markVeri.map((x) => [x.width, x.height]));
   const heroJpegTop = readFileSync(join(media, "v", hero!.jpeg!.at(-1)![0].split("/").pop()!));
   caso("gradino più grande del JPEG = il file originale (senza metadati), gli altri ricodificati", heroJpegTop.equals(readFileSync(join(media, "hero.jpg"))) && !readFileSync(join(media, "v", hero!.jpeg![0][0].split("/").pop()!)).equals(readFileSync(join(media, "hero.jpg"))));
   caso("SVG: solo dimensioni", uguali(m.immagini[`${P}disegno.svg`], { w: 64, h: 48 }), m.immagini[`${P}disegno.svg`]);
@@ -154,7 +163,8 @@ try {
   const t1 = performance.now();
   const r2 = await generaVarianti({ site: siteBase, mediaDir: media, cacheDir: cache });
   const secondaMs = performance.now() - t1;
-  caso("seconda esecuzione: manifest identico e tutte le voci dalla cache", uguali(r2.manifest, m) && r2.righe.at(-1)!.includes(`${Object.keys(m.immagini).length + 2} voci, ${Object.keys(m.immagini).length + 2} dalla cache`), r2.righe.at(-1));
+  // 6 immagini + 5 serie da telefono (foto fuori dalla hero a tutta pagina) + 1 ritaglio + favicon + og.
+  caso("seconda esecuzione: manifest identico e tutte le 14 voci dalla cache", uguali(r2.manifest, m) && r2.righe.at(-1)!.startsWith("14 voci, 14 dalla cache"), r2.righe.at(-1));
   caso(`seconda esecuzione più veloce (${Math.round(primaMs)} → ${Math.round(secondaMs)} ms)`, secondaMs < primaMs / 2);
 
   // Una sola foto cambiata: nuovo sha8 solo per lei.
@@ -168,6 +178,73 @@ try {
   writeFileSync(join(cache, voceHero, "voce.json"), "{ troncato");
   const r4 = await generaVarianti({ site: siteBase, mediaDir: media, cacheDir: cache });
   caso("voce di cache illeggibile → ricodificata, stesso risultato", r4.manifest.og?.src === r3.manifest.og?.src && uguali(r4.manifest.immagini, r3.manifest.immagini), r4.righe.at(-1));
+
+  // Telefoni (piano T1c): serie da telefono, ritaglio della hero a tutta pagina, hero B e foto verticale.
+  {
+    // Hero 1920×1088 a bande: fascia centrale larga 860 px verde, lati rossi (il ritaglio deve essere tutto verde).
+    const [W, H, L] = [1920, 1088, 860];
+    const bande = Buffer.alloc(W * H * 3);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) bande[(y * W + x) * 3 + (Math.abs(x + 0.5 - W / 2) < L / 2 ? 1 : 0)] = 255;
+    // PNG: bordi netti anche nella sorgente (il JPEG sbava il colore tra blocchi).
+    await sharp(bande, { raw: { width: W, height: H, channels: 3 } }).png().toFile(join(media, "hero-larga.png"));
+    await foto(1300, 800, 7).jpeg({ quality: 90 }).toFile(join(media, "hero-b.jpg"));
+    const siteT1c = {
+      brand: { preset: "meridian", logo: null, mark: null, favicon: null },
+      sections: [
+        { type: "Hero", variant: "A", props: { image: { src: `${P}hero-larga.png`, alt: "a" } } },
+        { type: "Hero", variant: "B", props: { image: { src: `${P}hero-b.jpg`, alt: "b" } } },
+        { type: "Hero", variant: "C", props: { image: { src: `${P}lavoro.jpg`, alt: "verticale" } } },
+        { type: "Gallery", props: { images: [{ src: `${P}lavoro.jpg`, alt: "l" }] } },
+        { type: "Services", props: { items: [{ image: { src: `${P}card.jpg`, alt: "c" } }] } },
+      ],
+    };
+    const rT = raccogliRiferimenti(siteT1c, P);
+    caso(
+      "riferimenti: hero A e C a tutta pagina, hero B come altro uso, foto sia hero sia galleria in entrambi",
+      uguali([...rT.heroPiene], [`${P}hero-larga.png`, `${P}lavoro.jpg`]) && uguali([...rT.altriUsi], [`${P}hero-b.jpg`, `${P}lavoro.jpg`, `${P}card.jpg`]) && rT.hero === `${P}hero-larga.png`,
+      { heroPiene: [...rT.heroPiene], altriUsi: [...rT.altriUsi] },
+    );
+    const { manifest: mT, righe: righeT } = await generaVarianti({ site: siteT1c, mediaDir: media, cacheDir: cache });
+    const larga = mT.immagini[`${P}hero-larga.png`];
+    const meta = async (u: string) => sharp(join(media, "v", u.split("/").pop()!)).metadata();
+    caso(
+      "ritaglio 860×1088 da 1920×1088: gradini 640/860 (niente 400), nomi -r<w>.avif, niente serie da telefono per la sola hero",
+      uguali(larga?.ritaglio && { w: larga.ritaglio.w, h: larga.ritaglio.h, larghezze: larga.ritaglio.avif.map(([, w]) => w) }, { w: 860, h: 1088, larghezze: [640, 860] }) &&
+        !!larga?.ritaglio?.avif.every(([u, w]) => u.endsWith(`-r${w}.avif`)) && !larga?.telefono && uguali(larga?.avif?.map(([, w]) => w), [400, 640, 960, 1280, 1920]),
+      larga,
+    );
+    const [m640, m860] = await Promise.all(larga!.ritaglio!.avif.map(([u]) => meta(u)));
+    caso("file del ritaglio: AVIF 640×810 e 860×1088", uguali([[m640.width, m640.height, m640.format], [m860.width, m860.height, m860.format]], [[640, 810, "heif"], [860, 1088, "heif"]]), [[m640.width, m640.height], [m860.width, m860.height]]);
+    const bordi = await Promise.all([0, 859].map((x) => sharp(join(media, "v", larga!.ritaglio!.avif[1][0].split("/").pop()!)).extract({ left: x, top: 0, width: 1, height: 1088 }).stats()));
+    caso(
+      "ritaglio centrato come object-cover: prima e ultima colonna nella fascia centrale (verdi, niente rosso dei lati)",
+      bordi.every((s) => s.channels[1].mean > 200 && s.channels[0].mean < 60),
+      bordi.map((s) => s.channels.slice(0, 3).map((c) => Math.round(c.mean))),
+    );
+    const hb = mT.immagini[`${P}hero-b.jpg`];
+    caso("hero B (incorniciata): nessun ritaglio, serie da telefono 400/640/960/1280/1300", !hb?.ritaglio && uguali(hb?.telefono?.map(([, w]) => w), [400, 640, 960, 1280, 1300]), hb);
+    const vert = mT.immagini[`${P}lavoro.jpg`];
+    caso(
+      "foto 3:4 già più stretta di 430/544 come hero C: ritaglio senza taglio (720×960) e, usata anche in galleria, serie da telefono 400/640/720",
+      uguali(vert?.ritaglio && { w: vert.ritaglio.w, h: vert.ritaglio.h, l: vert.ritaglio.avif.map(([, w]) => w) }, { w: 720, h: 960, l: [640, 720] }) && uguali(vert?.telefono?.map(([, w]) => w), [400, 640, 720]),
+      vert,
+    );
+    const card = mT.immagini[`${P}card.jpg`];
+    const pesi = (c: [string, number][] | undefined) => (c ?? []).map(([u]) => readFileSync(join(media, "v", u.split("/").pop()!)).length);
+    const [pesoT, pesoPc] = [pesi(card?.telefono), pesi(card?.avif)];
+    caso(
+      "serie da telefono della card: stessi gradini della serie di sempre (400/640/960/1216), nomi -t<w>.avif, più leggera gradino per gradino (q70 contro q90)",
+      uguali(card?.telefono?.map(([, w]) => w), card?.avif?.map(([, w]) => w)) && !!card?.telefono?.every(([u, w]) => u.endsWith(`-t${w}.avif`)) && pesoT.length === 4 && pesoT.every((b, i) => b < pesoPc[i]),
+      { pesoT, pesoPc },
+    );
+    caso(
+      "log: una riga per ritaglio e serie da telefono",
+      righeT.includes(`${P}hero-larga.png: ritaglio da telefono 860×1088, 640/860 px (codificata)`) && righeT.some((r) => r.startsWith(`${P}card.jpg: serie da telefono 400/640/960/1216 px (`)),
+      righeT,
+    );
+    const rT2 = await generaVarianti({ site: siteT1c, mediaDir: media, cacheDir: cache });
+    caso("telefoni a caldo: manifest identico, tutto dalla cache", uguali(rT2.manifest, mT) && /^(\d+) voci, \1 dalla cache/.test(rT2.righe.at(-1)!), rT2.righe.at(-1));
+  }
 
   // Errori leggibili.
   const assente = await rifiuta(() => generaVarianti({ site: { ...siteBase, sections: [{ type: "Hero", props: { image: { src: `${P}manca.jpg`, alt: "m" } } }] }, mediaDir: media, cacheDir: cache }));
@@ -245,14 +322,14 @@ const lancia = (fn: () => unknown): string | null => {
     delete process.env.MEDIA_VARIANTI_JSON;
     const s = [sizesLogo(`${P2}mark.png`, 48), sizesLogo(`${P2}mark.png`, 40), sizesLogo(`${P2}mark.png`, 32), sizesLogo(`${P2}lockup.png`, 40), sizesLogo(`${P2}assente.png`, 48)];
     caso(
-      "sizesLogo: sotto 768 px l'altezza del telefono (40 px) se quella del computer è più alta; senza voce stringa vuota",
-      uguali(s, ["(max-width: 767px) 48px, 57px", "48px", "38px", "179px", ""]) && uguali(s.slice(0, 4).map((x) => sizesPerZoom(x)), ["(max-width: 767px) 48px, 114px", "(max-width: 767px) 48px, 96px", "(max-width: 767px) 38px, 76px", "(max-width: 767px) 179px, 358px"]),
+      "sizesLogo: sotto 768 px l'altezza del telefono (40 px) se quella del computer è più alta, larghezza esatta arrotondata in su al millesimo; senza voce stringa vuota",
+      uguali(s, ["(max-width: 767px) 47.5px, 57px", "47.5px", "38px", "178.704px", ""]) && uguali(s.slice(0, 4).map((x) => sizesPerZoom(x)), ["(max-width: 767px) 47.5px, 114px", "(max-width: 767px) 47.5px, 95px", "(max-width: 767px) 38px, 76px", "(max-width: 767px) 178.704px, 357.408px"]),
       s,
     );
-    // Telefoni di riferimento: marchio 285×240 con le varianti alte 120 (143 px) e 240 (285 px); a 40 px d'altezza
-    // il DPR 3 chiede 144 px e la regola di Chromium (media geometrica delle densità) sceglie 143, il DPR 1,75 chiede 84.
+    // Telefoni di riferimento: marchio 285×240 con -t143 e 285; Chromium prende il primo candidato con densità ≥ DPR
+    // (come scegliCandidato): a 40 px d'altezza il DPR 3 chiede 142,5 px, il DPR 1,75 ne chiede 83.
     const candidati = [{ url: "143", w: 143 }, { url: "285", w: 285 }];
-    caso("marchio a 412@1,75: variante alta 120 px", scegliCandidato(candidati, valutaSizes(sizesPerZoom(s[0]), 412) * 1.75).w === 143);
+    caso("marchio da telefono a 390@3, 412@1,75 e 430@3: variante -t143", [3, 1.75, 3].every((dpr, i) => scegliCandidato(candidati, valutaSizes(sizesPerZoom(s[0]), [390, 412, 430][i]) * dpr).w === 143));
   } finally {
     rmSync(dirLogo, { recursive: true, force: true });
   }
@@ -305,7 +382,7 @@ try {
   caso("budget: sceglie AVIF 640 per 364 px × 1,75, conta marchio AVIF, font latin del preset, favicon; JSON-LD e script inline ignorati", uguali(tipi.slice(1).sort(), ["css:stile.css", "favicon:favicon.cccccccc-96.png", "font:archivo-400-latin.woff2", "immagine:hero.aaaaaaaa-640.avif", "immagine:mark.bbbbbbbb-171.avif"]) && Math.round(home.immaginiKb) === 168, { tipi, immaginiKb: home.immaginiKb });
   caso("budget: richieste = documento + css + favicon + font + 2 immagini + 1 script esterno = 7", home.richieste === 7, home.richieste);
   caso("budget sotto soglia: nessun errore né avviso, pagine in ordine di path", ok.errori.length === 0 && ok.avvisi.length === 0 && uguali(ok.pagine.map((p) => p.pagina), ["/", "/privacy/"]), ok);
-  const oltre = budgetDist(tmpDist, { totaleKb: 100, immaginiKb: 50, richieste: 6 });
+  const oltre = budgetDist(tmpDist, { totaleKb: 100, immaginiKb: 50, richieste: 6, fotoLcpKb: SOGLIE.fotoLcpKb });
   const msg = oltre.avvisi.find((a) => a.startsWith("budget superato su /:"));
   caso(
     "budget sforato → avviso leggibile con le voci oltre soglia e le 3 risorse più pesanti (non un errore)",
@@ -336,7 +413,7 @@ try {
   const righeTabella = r2.stdout.split("\n").filter((r) => !r.startsWith("ESITO"));
   caso(
     "CLI: tabella leggibile senza spazi di fila (soglie in una riga, poi una riga etichettata per pagina)",
-    righeTabella[0] === "soglie per pagina (412 px, DPR 1,75): totale 6400 KB · immagini 6100 KB · 30 richieste" &&
+    righeTabella[0] === `soglie per pagina (412 px, DPR 1,75): totale ${SOGLIE.totaleKb.toLocaleString("it-IT")} KB · immagini ${SOGLIE.immaginiKb.toLocaleString("it-IT")} KB · ${SOGLIE.richieste} richieste · foto LCP ${SOGLIE.fotoLcpKb} KB` &&
       /^\/ · totale \d+ KB · immagini 168 KB · 7 richieste · ok$/.test(righeTabella[1]) &&
       /^\/privacy\/ · totale \d+ KB · immagini 8 KB · \d+ richieste · ok$/.test(righeTabella[2]) &&
       !r2.stdout.includes("  "),
@@ -344,6 +421,41 @@ try {
   );
 } finally {
   rmSync(tmpDist, { recursive: true, force: true });
+}
+
+/* ---------- budget con le sorgenti da telefono (piano T1c) ---------- */
+
+const tmpTel = mkdtempSync(join(tmpdir(), "test-budget-telefono-"));
+try {
+  const scrivi = (rel: string, kb: number) => {
+    mkdirSync(join(tmpTel, rel, ".."), { recursive: true });
+    writeFileSync(join(tmpTel, rel), Buffer.alloc(Math.round(kb * 1024), 7));
+  };
+  const v = "/media/zz/v/";
+  for (const [f, kb] of [["hero.aaaaaaaa-r640.avif", 150], ["hero.aaaaaaaa-r860.avif", 260], ["hero.aaaaaaaa-1280.avif", 500], ["hero.aaaaaaaa-1920.avif", 700], ["hero.aaaaaaaa-1280.jpg", 600], ["hero.aaaaaaaa-1920.jpg", 900], ["card.bbbbbbbb-t400.avif", 20], ["card.bbbbbbbb-t640.avif", 45], ["card.bbbbbbbb-640.avif", 90], ["card.bbbbbbbb-1216.avif", 300], ["card.bbbbbbbb-640.jpg", 100], ["card.bbbbbbbb-1216.jpg", 350]] as const) scrivi(`media/zz/v/${f}`, kb);
+  const hero = (media = "(max-width: 430px)", extra = ' fetchpriority="high"') =>
+    `<picture><source media="${media}" type="image/avif" srcset="${v}hero.aaaaaaaa-r640.avif 640w, ${v}hero.aaaaaaaa-r860.avif 860w" sizes="600px" width="860" height="1088"><source type="image/avif" srcset="${v}hero.aaaaaaaa-1280.avif 1280w, ${v}hero.aaaaaaaa-1920.avif 1920w" sizes="(max-width: 767px) 1170px, (max-width: 1469px) 2940px, 200vw"><img src="${v}hero.aaaaaaaa-1280.jpg" srcset="${v}hero.aaaaaaaa-1280.jpg 1280w, ${v}hero.aaaaaaaa-1920.jpg 1920w" sizes="(max-width: 767px) 1170px, (max-width: 1469px) 2940px, 200vw" width="1920" height="1088" alt="h"${extra}></picture>`;
+  const card = `<picture><source media="(max-width: 767px)" type="image/avif" srcset="${v}card.bbbbbbbb-t400.avif 400w, ${v}card.bbbbbbbb-t640.avif 640w" sizes="(max-width: 639px) calc(100vw - 3rem), (max-width: 767px) calc(50vw - 2.25rem), (max-width: 1023px) calc(100vw - 4.5rem), 800px"><source type="image/avif" srcset="${v}card.bbbbbbbb-640.avif 640w, ${v}card.bbbbbbbb-1216.avif 1216w" sizes="(max-width: 639px) calc(100vw - 3rem), (max-width: 767px) calc(50vw - 2.25rem), (max-width: 1023px) calc(100vw - 4.5rem), 800px"><img src="${v}card.bbbbbbbb-640.jpg" srcset="${v}card.bbbbbbbb-640.jpg 640w, ${v}card.bbbbbbbb-1216.jpg 1216w" sizes="(max-width: 639px) calc(100vw - 3rem), 800px" width="1216" height="912" alt="c" loading="lazy"></picture>`;
+  const pagina = (corpo: string) => `<!doctype html><html lang="it"><head></head><body>${corpo}</body></html>`;
+  writeFileSync(join(tmpTel, "index.html"), pagina(hero() + card));
+  const t = budgetDist(tmpTel);
+  const scelte = t.pagine[0].risorse.filter((r) => r.tipo === "immagine").map((r) => `${r.nota} ${r.url.split("-").pop()}`);
+  caso("budget a 412 px: hero dal ritaglio (sizes 600px × 1,75 → r860), card dalla serie da telefono (364 × 1,75 → t640)", uguali(scelte, ["hero 860w r860.avif", "card 640w t640.avif"]) && t.errori.length === 0, { scelte, errori: t.errori });
+  caso(
+    "avviso foto LCP da telefono oltre 250 KB (r860 da 260 KB), non un errore",
+    uguali(t.avvisi, ["foto LCP da telefono pesante su /: hero 860w 260 KB (max 250 KB), la prima schermata compare più tardi sul telefono. Una foto hero con meno dettagli fini pesa meno."]),
+    t.avvisi,
+  );
+  caso("foto LCP sotto soglia o card pigra pesante: nessun avviso", budgetDist(tmpTel, { ...SOGLIE, fotoLcpKb: 260 }).avvisi.length === 0);
+  writeFileSync(join(tmpTel, "index.html"), pagina(hero("(max-width: 400px)") + card));
+  const oltre400 = budgetDist(tmpTel).pagine[0].risorse.filter((r) => r.tipo === "immagine").map((r) => r.nota);
+  caso("media che non vale a 412 px: sorgente successiva senza media (hero 1920 per 1170 × 1,75)", uguali(oltre400, ["hero 1920w", "card 640w"]), oltre400);
+  writeFileSync(join(tmpTel, "index.html"), pagina(hero("(min-width: 768px)") + card));
+  const fuori = budgetDist(tmpTel).errori;
+  caso("media fuori grammatica → errore tecnico leggibile", fuori.length === 1 && fuori[0].includes("media «(min-width: 768px)» fuori grammatica"), fuori);
+  caso("valutaMedia: assente vale sempre, (max-width: 430px) vale fino a 430 compresi", valutaMedia(undefined, 2000) && valutaMedia("(max-width: 430px)", 430) && !valutaMedia("(max-width: 430px)", 431));
+} finally {
+  rmSync(tmpTel, { recursive: true, force: true });
 }
 
 console.log(`\n${passati} passati, ${falliti} falliti`);

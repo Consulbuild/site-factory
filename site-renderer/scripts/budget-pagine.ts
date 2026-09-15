@@ -8,14 +8,17 @@
 // mobile di Lighthouse (412 px, DPR 1,75), pagina scorsa tutta:
 // - peso = HTML gzip + CSS/JS locali gzip + i file «latin» delle famiglie titoli/testo del
 //   preset + per ogni immagine il candidato che sceglie il browser (il più piccolo largo almeno
-//   `sizes` × DPR, altrimenti il più grande; AVIF se c'è il <source>) + favicon;
+//   `sizes` × DPR, altrimenti il più grande; dal primo <source> senza `media` o con un `media` che
+//   vale a 412 px, come il browser (i formati che scrive Foto.astro, AVIF e PNG, li legge il
+//   dispositivo di riferimento), altrimenti dall'<img>) + favicon;
 // - richieste = documento + fogli + script (gli esterni contano 1, peso 0) + font + immagini + favicon.
 //
-// Budget superato → AVVISO (decisione dell'orchestratore, docs/traffico/decisioni-piani.md T1b
+// Budget superato o foto LCP da telefono (l'immagine con fetchpriority="high") oltre
+// SOGLIE.fotoLcpKb → AVVISO (decisione dell'orchestratore, docs/traffico/decisioni-piani.md T1b
 // punto 2): tabella nel log, exit 0 e riga `ESITO {"avvisi":[…]}` che la build accoda agli avvisi
 // delle fondamenta. Errori tecnici → exit 1 con al massimo 3 righe su stderr: file referenziato
-// assente nella dist, <img> di /media senza width/height o (raster) senza srcset, `sizes` fuori
-// dalla grammatica di src/lib/media.ts.
+// assente nella dist, <img> di /media senza width/height o (raster) senza srcset, `sizes` o
+// `media` fuori dalla grammatica di src/lib/media.ts.
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
@@ -32,7 +35,7 @@ export const DISPOSITIVO = { larghezza: 412, dpr: 1.75 } as const;
  * (qualità degli originali anche con lo zoom: 5.320 KB con canon, 5.112 KB di immagini, 25
  * richieste) + ~20 %, arrotondato. Fanno da guardia contro le regressioni, non da obiettivo.
  */
-export const SOGLIE = { totaleKb: 6400, immaginiKb: 6100, richieste: 30 };
+export const SOGLIE = { totaleKb: 6400, immaginiKb: 6100, richieste: 30, fotoLcpKb: 250 };
 
 const RASTER = /\.(jpe?g|png|webp|avif|tiff?)$/i;
 
@@ -84,6 +87,17 @@ export function leggiSrcset(srcset: string): Candidato[] {
       if (!m) throw new Error(`candidato di srcset «${c}» senza descrittore di larghezza`);
       return { url: m[1], w: Number(m[2]) };
     });
+}
+
+/**
+ * `media` di un <source> al viewport `vw`: assente o vuoto vale sempre; altrimenti la sola forma
+ * «(max-width: Npx)» che scrive Foto.astro. Lancia se fuori grammatica.
+ */
+export function valutaMedia(media: string | undefined, vw: number): boolean {
+  if (!media?.trim()) return true;
+  const m = /^\(max-width: (\d+)px\)$/.exec(media.trim());
+  if (!m) throw new Error(`media «${media.trim()}» fuori grammatica ((max-width: Npx))`);
+  return vw <= Number(m[1]);
 }
 
 /** Scelta del browser: il più piccolo largo almeno `bisogno` px, altrimenti il più grande. */
@@ -159,7 +173,7 @@ export type Risorsa = { tipo: "html" | "css" | "js" | "font" | "immagine" | "fav
 export type EsitoPagina = { pagina: string; totaleKb: number; immaginiKb: number; richieste: number; risorse: Risorsa[]; errori: string[]; avvisi: string[] };
 
 /** Budget di una pagina. `dist` serve a leggere i file locali (e a dire quali mancano). */
-export function analizzaPagina(dist: string, pagina: string, html: string): EsitoPagina {
+export function analizzaPagina(dist: string, pagina: string, html: string, soglie = SOGLIE): EsitoPagina {
   const errori: string[] = [];
   const avvisi: string[] = [];
   const risorse: Risorsa[] = [{ tipo: "html", url: pagina, kb: gzipSync(html).length / 1024 }];
@@ -192,7 +206,7 @@ export function analizzaPagina(dist: string, pagina: string, html: string): Esit
   let preset: string | null = null;
   let stileHtml = "";
   const fogli: string[] = [];
-  let sorgenteAvif: Record<string, string> | null = null;
+  let sorgenti: Record<string, string>[] = [];
   let dentroPicture = false;
   let priorita = 0;
 
@@ -201,7 +215,7 @@ export function analizzaPagina(dist: string, pagina: string, html: string): Esit
     const nome = nomeGrezzo.toLowerCase();
     if (nome === "picture") {
       dentroPicture = !chiusura;
-      sorgenteAvif = null;
+      sorgenti = [];
       continue;
     }
     if (chiusura) continue;
@@ -217,8 +231,8 @@ export function analizzaPagina(dist: string, pagina: string, html: string): Esit
       } else if (rel.includes("icon")) aggiungi("favicon", a.href, false);
     } else if (nome === "script" && a.src) {
       aggiungi("js", a.src, true);
-    } else if (nome === "source" && dentroPicture && (a.type ?? "").toLowerCase() === "image/avif") {
-      sorgenteAvif = a;
+    } else if (nome === "source" && dentroPicture) {
+      sorgenti.push(a);
     } else if (nome === "img") {
       const src = a.src ?? "";
       const media = src.startsWith("/media/");
@@ -232,10 +246,12 @@ export function analizzaPagina(dist: string, pagina: string, html: string): Esit
         else avvisi.push(`${pagina}: immagine senza dimensioni (può spostare il layout): ${src}`);
       }
       if (media && RASTER.test(src) && !a.srcset) errori.push(`${pagina}: <img> di /media senza srcset (varianti non generate): ${src}`);
-      const origine = sorgenteAvif ?? a;
       let scelta: Candidato = { url: src, w: 0 };
       try {
-        for (const s of [a.srcset, sorgenteAvif?.srcset]) if (s) for (const c of leggiSrcset(s)) if (locale(c.url)) file(c.url);
+        for (const s of [a.srcset, ...sorgenti.map((x) => x.srcset)]) if (s) for (const c of leggiSrcset(s)) if (locale(c.url)) file(c.url);
+        // Come il browser: il primo <source> il cui `media` vale (tutti validati), altrimenti l'<img>.
+        const valide = sorgenti.filter((x) => valutaMedia(x.media, DISPOSITIVO.larghezza));
+        const origine = valide[0] ?? a;
         if (origine.srcset) {
           const sizes = origine.sizes ?? "100vw";
           const bisogno = valutaSizes(sizes, DISPOSITIVO.larghezza) * DISPOSITIVO.dpr;
@@ -244,8 +260,14 @@ export function analizzaPagina(dist: string, pagina: string, html: string): Esit
       } catch (e) {
         errori.push(`${pagina}: ${src}: ${e instanceof Error ? e.message : String(e)}`);
       }
-      if (scelta.url) aggiungi("immagine", scelta.url, false, `${etichetta.replace(/\.[0-9a-f]{8}-\d+\.\w+$/, "")} ${scelta.w ? `${scelta.w}w` : "originale"}`);
-      if (!dentroPicture) sorgenteAvif = null;
+      // Nome senza hash e misura (-640, -t640 da telefono, -r860 ritaglio) + larghezza scelta.
+      const nota = `${etichetta.replace(/\.[0-9a-f]{8}-[rt]?\d+\.\w+$/, "")} ${scelta.w ? `${scelta.w}w` : "originale"}`;
+      if (scelta.url) aggiungi("immagine", scelta.url, false, nota);
+      const lcp = a.fetchpriority === "high" ? risorse.find((r) => r.url === scelta.url) : undefined;
+      if (lcp && lcp.kb > soglie.fotoLcpKb) {
+        avvisi.push(`foto LCP da telefono pesante su ${pagina}: ${nota} ${kb(lcp.kb)} (max ${kb(soglie.fotoLcpKb)}), la prima schermata compare più tardi sul telefono. Una foto hero con meno dettagli fini pesa meno.`);
+      }
+      if (!dentroPicture) sorgenti = [];
     }
   }
   if (priorita > 1) avvisi.push(`${pagina}: ${priorita} immagini con fetchpriority="high" (attesa al massimo una, la hero)`);
@@ -303,7 +325,7 @@ export function budgetDist(dist: string, soglie = SOGLIE): { pagine: EsitoPagina
       if (e.isDirectory()) visita(join(dir, e.name), r);
       else if (e.name.endsWith(".html")) {
         const pagina = e.name === "index.html" ? `/${rel ? `${rel}/` : ""}` : `/${r}`;
-        pagine.push(analizzaPagina(dist, pagina, readFileSync(join(dir, e.name), "utf8")));
+        pagine.push(analizzaPagina(dist, pagina, readFileSync(join(dir, e.name), "utf8"), soglie));
       }
     }
   };
@@ -329,7 +351,7 @@ function main(): void {
   }
   // Una riga per pagina con le etichette scritte: il log della scheda Build riduce gli spazi di fila
   // a uno solo, quindi niente colonne allineate con gli spazi.
-  console.log(`soglie per pagina (412 px, DPR 1,75): totale ${kb(SOGLIE.totaleKb)} · immagini ${kb(SOGLIE.immaginiKb)} · ${SOGLIE.richieste} richieste`);
+  console.log(`soglie per pagina (412 px, DPR 1,75): totale ${kb(SOGLIE.totaleKb)} · immagini ${kb(SOGLIE.immaginiKb)} · ${SOGLIE.richieste} richieste · foto LCP ${kb(SOGLIE.fotoLcpKb)}`);
   for (const p of esito.pagine) {
     const oltre = avvisoBudget(p) !== null;
     console.log(`${p.pagina} · totale ${kb(p.totaleKb)} · immagini ${kb(p.immaginiKb)} · ${p.richieste} richieste · ${oltre ? "OLTRE" : "ok"}`);

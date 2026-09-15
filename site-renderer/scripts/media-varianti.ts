@@ -7,8 +7,10 @@
 //
 // Per ogni `src` di site.json sotto /media/<slug>/: foto → larghezze della scala in AVIF +
 // JPEG mozjpeg (PNG se la sorgente ha trasparenza), con la larghezza dell'originale sempre come
-// gradino più grande; logo e marchio → PNG senza perdita alto fino a 288 px; SVG e GIF → solo
-// le dimensioni. In più una copia leggera della favicon e
+// gradino più grande; logo e marchio → PNG senza perdita alto fino a 288 px e, per il telefono, ~120 px;
+// SVG e GIF → solo le dimensioni. Telefoni (piano T1c): serie AVIF da telefono per le foto usate
+// fuori dalla hero a tutta pagina; per la foto della hero a tutta pagina (varianti A, C, D) il
+// ritaglio da telefono. In più una copia leggera della favicon e
 // l'anteprima og:image 1200×630 dalla foto della hero. Le varianti vanno in
 // public/media/<slug>/v/ (le copia Astro, le cancella la pulizia dei media della build
 // successiva) con il nome <nome>.<sha8>-<misura>.<formato>: una foto rigenerata con lo stesso
@@ -50,13 +52,29 @@ export const RICETTA = {
     generata: { avif: 90, jpeg: 95 },
     reale: { avif: 90, jpeg: 95 },
   },
+  /**
+   * Telefoni (decisione di Mattia T1b punto 9, piano T1c C1): serie AVIF a parte, stessa scala, che il
+   * browser sceglie fino a 767 px, a qualità calibrata sulla dimensione resa sul telefono (non sullo
+   * zoom). Serve una serie a parte perché i gradini della scala li usa anche il computer a q90.
+   */
+  qualitaTelefono: { generata: 70, reale: 70 },
+  /**
+   * Ritaglio da telefono della foto della hero a tutta pagina (piano T1c §2.3 e C2-C3): fascia
+   * centrale alta quanto l'originale e larga h × 430/544. Fino a 430 px il riquadro è alto almeno
+   * 34rem = 544 px, quindi `object-cover` centrato mostra dal ritaglio gli stessi pixel
+   * dell'originale alla stessa scala. Una foto già più stretta resta intera. Gradini: quelli che un
+   * telefono può scegliere con `sizes` 600px (il 400 no), più la larghezza del ritaglio.
+   */
+  ritaglio: { rapporto: [430, 544], larghezze: [640, 960, 1280, 1920], qualita: 70 },
   /** Effort 2 è 3× più veloce ma perde SSIM a pari peso (C2): la codifica si fa una volta sola. */
   avifEffort: 4,
   /**
    * Logo e marchio: PNG senza perdita (C4, «nel dubbio PNG lossless»), alto quanto l'originale fino
-   * a 288 px = 2 × 48 px dell'intestazione × DPR 3 (regola dello zoom).
+   * a 288 px = 2 × 48 px dell'intestazione × DPR 3 (regola dello zoom) e, per il telefono, fino a
+   * 120 px = 3 × 40 px (decisione T1b punto 9: logo ≤ 3× l'altezza resa).
    */
   logoAltezzaMax: 288,
+  logoAltezzaTelefono: 120,
   /** Favicon: lato del PNG e soglia sotto cui l'originale resta com'è. */
   faviconLato: 96,
   faviconMaxByte: 10 * 1024,
@@ -64,7 +82,7 @@ export const RICETTA = {
 } as const;
 
 export type Origine = keyof typeof RICETTA.qualita;
-export type Tipo = "foto-generata" | "foto-reale" | "logo" | "favicon" | "og";
+export type Tipo = "foto-generata" | "foto-reale" | "logo" | "favicon" | "og" | "telefono-generata" | "telefono-reale" | "ritaglio";
 
 /** sha256 del sorgente di questo script: ogni modifica alla logica di codifica cambia la chiave della cache. */
 const CODICE = createHash("sha256").update(readFileSync(fileURLToPath(import.meta.url))).digest("hex");
@@ -92,6 +110,10 @@ export type Riferimenti = {
   immagini: Map<string, "foto-generata" | "foto-reale" | "logo">;
   favicon: string | null;
   hero: string | null;
+  /** Foto a tutta pagina delle hero A, C, D: ricevono il ritaglio da telefono. */
+  heroPiene: Set<string>;
+  /** Foto usate fuori dalla hero a tutta pagina (hero B compresa): ricevono la serie da telefono. */
+  altriUsi: Set<string>;
 };
 
 type Rec = Record<string, unknown>;
@@ -105,12 +127,18 @@ export function raccogliRiferimenti(site: unknown, prefisso: string): Riferiment
     const prima = immagini.get(src);
     if (!prima || (prima === "foto-generata" && tipo === "foto-reale")) immagini.set(src, tipo);
   };
-  const visita = (v: unknown, tipo: "foto-generata" | "foto-reale") => {
-    if (Array.isArray(v)) return v.forEach((x) => visita(x, tipo));
+  const heroPiene = new Set<string>();
+  const altriUsi = new Set<string>();
+  // `piena` = l'oggetto image della hero a tutta pagina: il suo src non conta come «altro uso».
+  const visita = (v: unknown, tipo: "foto-generata" | "foto-reale", piena: unknown) => {
+    if (Array.isArray(v)) return v.forEach((x) => visita(x, tipo, piena));
     if (!v || typeof v !== "object") return;
     for (const [k, x] of Object.entries(v)) {
-      if (k === "src" && locale(x)) aggiungi(x, tipo);
-      else visita(x, tipo);
+      if (k === "src" && locale(x)) {
+        aggiungi(x, tipo);
+        if (v === piena) heroPiene.add(x);
+        else altriUsi.add(x);
+      } else visita(x, tipo, piena);
     }
   };
   const s = rec(site);
@@ -122,16 +150,27 @@ export function raccogliRiferimenti(site: unknown, prefisso: string): Riferiment
   let hero: string | null = null;
   for (const sezione of Array.isArray(s.sections) ? s.sections : []) {
     const r = rec(sezione);
+    const image = rec(r.props).image;
+    // Hero senza variante = A (default dello schema); B è la foto incorniciata accanto al testo.
+    const piena = r.type === "Hero" && r.variant !== "B" ? image : null;
     // Le foto della galleria sono i lavori reali del cliente (lavori.json); le altre le genera la pipeline.
-    visita(r.props, r.type === "Gallery" ? "foto-reale" : "foto-generata");
-    const img = rec(rec(r.props).image).src;
+    visita(r.props, r.type === "Gallery" ? "foto-reale" : "foto-generata", piena);
+    const img = rec(image).src;
     if (r.type === "Hero" && hero === null && locale(img)) hero = img;
   }
-  return { immagini, favicon: locale(brand.favicon) ? brand.favicon : null, hero };
+  return { immagini, favicon: locale(brand.favicon) ? brand.favicon : null, hero, heroPiene, altriUsi };
 }
 
 export type Candidato = [url: string, larghezza: number];
-export type VociImmagine = { w: number; h: number; avif?: Candidato[]; jpeg?: Candidato[]; png?: Candidato[] };
+export type VociImmagine = {
+  w: number;
+  h: number;
+  avif?: Candidato[];
+  jpeg?: Candidato[];
+  png?: Candidato[];
+  telefono?: Candidato[];
+  ritaglio?: { w: number; h: number; avif: Candidato[] };
+};
 export type Manifest = {
   versione: 1;
   ricetta: string;
@@ -141,7 +180,7 @@ export type Manifest = {
 };
 
 /** Voce in cache: file per suffisso e voce del manifest con i suffissi al posto degli URL. */
-type VoceCache = { w: number; h: number; formati: Partial<Record<"avif" | "jpeg" | "png", Candidato[]>>; file: string[] };
+type VoceCache = { w: number; h: number; formati: Partial<Record<"avif" | "jpeg" | "png" | "telefono", Candidato[]>>; file: string[] };
 
 const RASTER = new Set(["jpeg", "png", "webp", "heif", "tiff"]);
 const SOLO_DIMENSIONI = new Set(["svg", "gif"]);
@@ -199,7 +238,31 @@ async function codifica(buf: Buffer, tipo: Tipo, ricetta: typeof RICETTA, dir: s
   if (tipo === "logo") {
     const alt = Math.min(h, ricetta.logoAltezzaMax);
     const lw = Math.round((w * alt) / h);
-    voce.formati.png = [[await scrivi(base.clone().resize({ height: alt }), "png", lw), lw]];
+    const grande: Candidato = [await scrivi(base.clone().resize({ height: alt }), "png", lw), lw];
+    voce.formati.png = [grande];
+    // Telefono: larga quanto il logo alto 120 px arrotondato in su, così con `sizes` = larghezza esatta a
+    // 40 px (sizesLogo) un DPR 3 la sceglie; il computer continua a vedere solo `png`.
+    const tw = Math.ceil((w * ricetta.logoAltezzaTelefono) / h);
+    if (h > ricetta.logoAltezzaTelefono && tw < lw) voce.formati.telefono = [[await scrivi(base.clone().resize({ width: tw }), "png", `t${tw}`), tw], grande];
+    return voce;
+  }
+  if (tipo === "telefono-generata" || tipo === "telefono-reale") {
+    const q = ricetta.qualitaTelefono[tipo === "telefono-reale" ? "reale" : "generata"];
+    voce.formati.avif = [];
+    for (const lw of scala(w, ricetta.larghezze)) voce.formati.avif.push([await scrivi(base.clone().resize({ width: lw }), "avif", `t${lw}`, q), lw]);
+    return voce;
+  }
+  if (tipo === "ritaglio") {
+    // Fascia centrale (come `object-cover` senza object-position): ogni gradino è ridotto e tagliato
+    // in un passo solo, il più largo è il ritaglio alla scala dell'originale.
+    const [rw, rh] = ricetta.ritaglio.rapporto;
+    const larga = Math.min(w, Math.round((h * rw) / rh));
+    voce.w = larga;
+    voce.formati.avif = [];
+    for (const lw of scala(larga, ricetta.ritaglio.larghezze)) {
+      const img = base.clone().resize(lw, Math.max(1, Math.round((h * lw) / larga)), { fit: "cover", position: "centre" });
+      voce.formati.avif.push([await scrivi(img, "avif", `r${lw}`, ricetta.ritaglio.qualita), lw]);
+    }
     return voce;
   }
   const q = ricetta.qualita[tipo === "foto-reale" ? "reale" : "generata"];
@@ -266,6 +329,12 @@ export async function generaVarianti(opts: { site: unknown; mediaDir: string; ca
   mkdirSync(cacheDir, { recursive: true });
 
   const lavori: { src: string; tipo: Tipo }[] = [...rif.immagini].map(([src, tipo]) => ({ src, tipo }));
+  // Voci da telefono dopo quelle delle immagini: nel manifest si aggiungono alla voce della foto.
+  for (const [src, tipo] of rif.immagini) {
+    if (tipo === "logo") continue;
+    if (rif.altriUsi.has(src)) lavori.push({ src, tipo: tipo === "foto-reale" ? "telefono-reale" : "telefono-generata" });
+    if (rif.heroPiene.has(src)) lavori.push({ src, tipo: "ritaglio" });
+  }
   if (rif.favicon) lavori.push({ src: rif.favicon, tipo: "favicon" });
   if (rif.hero) lavori.push({ src: rif.hero, tipo: "og" });
 
@@ -317,11 +386,23 @@ export async function generaVarianti(opts: { site: unknown; mediaDir: string; ca
       } else righe.push(`${src}: og:image non generata (hero non raster), resta l'originale della hero`);
       continue;
     }
+    if (tipo === "ritaglio" || tipo === "telefono-generata" || tipo === "telefono-reale") {
+      // SVG e GIF: nessuna variante da telefono (la voce della foto dice già «solo dimensioni»).
+      const avif = aUrl(voce.formati.avif);
+      const foto = manifest.immagini[src];
+      if (!avif?.length || !foto) continue;
+      if (tipo === "ritaglio") foto.ritaglio = { w: voce.w, h: voce.h, avif };
+      else foto.telefono = avif;
+      const larghezze = avif.map(([, w]) => w).join("/");
+      righe.push(`${src}: ${tipo === "ritaglio" ? `ritaglio da telefono ${voce.w}×${voce.h}, ${larghezze}` : `serie da telefono ${larghezze}`} px (${come})`);
+      continue;
+    }
     const v: VociImmagine = { w: voce.w, h: voce.h };
-    for (const k of ["avif", "jpeg", "png"] as const) if (voce.formati[k]) v[k] = aUrl(voce.formati[k]);
+    for (const k of ["avif", "jpeg", "png", "telefono"] as const) if (voce.formati[k]) v[k] = aUrl(voce.formati[k]);
     manifest.immagini[src] = v;
     const larghezze = (v.avif ?? v.png ?? v.jpeg ?? []).map(([, w]) => w);
-    righe.push(`${src}: ${larghezze.length ? `${tipo} ${larghezze.join("/")} px` : `${tipo}, solo dimensioni ${voce.w}×${voce.h}`} (${come})`);
+    const telefono = v.telefono ? `, da telefono ${v.telefono[0][1]} px` : "";
+    righe.push(`${src}: ${larghezze.length ? `${tipo} ${larghezze.join("/")} px${telefono}` : `${tipo}, solo dimensioni ${voce.w}×${voce.h}`} (${come})`);
   }
   righe.push(`${esiti.length} voci, ${daCache} dalla cache, ${esiti.length - daCache} codificate in ${((performance.now() - t0) / 1000).toFixed(1)} s · ricetta ${manifest.ricetta}`);
   return { manifest, righe };

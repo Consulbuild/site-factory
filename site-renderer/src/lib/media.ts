@@ -12,10 +12,11 @@ export type Candidato = [url: string, larghezza: number];
 /**
  * Voce di un'immagine di /media/<slug>/: `w`/`h` della sorgente (già raddrizzata). Le foto
  * hanno `avif` + `jpeg` (o `png` se la sorgente ha trasparenza); logo e marchio solo `png`
- * (alto 120 px per il telefono e alto fino a 288 px); SVG e GIF solo `w`/`h`.
- * Piano T1c: `telefono` = serie AVIF da telefono delle foto usate fuori dalla hero a tutta
- * pagina; `ritaglio` = fascia centrale della foto della hero a tutta pagina (A, C, D) per i
- * telefoni fino a 430 px, con le sue dimensioni.
+ * (alto fino a 288 px); SVG e GIF solo `w`/`h`.
+ * Piano T1c: `telefono` = candidati fino a 767 px, serie AVIF da telefono per le foto usate
+ * fuori dalla hero a tutta pagina, PNG alto ~120 px più quello di sempre per logo e marchio;
+ * `ritaglio` = fascia centrale della foto della hero a tutta pagina (A, C, D) per i telefoni
+ * fino a 430 px, con le sue dimensioni.
  */
 export type VociImmagine = {
   w: number;
@@ -105,12 +106,14 @@ export const LOGO_ALTEZZA_TELEFONO = 40;
 /**
  * `sizes` di logo e marchio: la larghezza a `altezza` px (la misura massima nell'intestazione)
  * e, sotto 768 px, a quella del telefono (decisioni-piani.md T1c punto 2: un telefono DPR 3
- * sceglie la variante alta 120 px invece di quella da 288).
+ * sceglie la variante alta 120 px invece di quella da 288). Larghezza esatta arrotondata in su
+ * al millesimo: arrotondata al pixel (47,5 → 48) farebbe chiedere a un DPR 3 un pixel in più
+ * della variante da telefono e il browser prenderebbe quella grande.
  */
 export function sizesLogo(src: string, altezza: number): string {
   const v = manifest?.immagini[src];
   if (!v) return "";
-  const larghezza = (h: number) => `${Math.round((v.w * h) / v.h)}px`;
+  const larghezza = (h: number) => `${Math.ceil((v.w * h * 1000) / v.h) / 1000}px`;
   const telefono = larghezza(Math.min(altezza, LOGO_ALTEZZA_TELEFONO));
   const computer = larghezza(altezza);
   return telefono === computer ? computer : `(max-width: ${TELEFONO_MAX}px) ${telefono}, ${computer}`;
