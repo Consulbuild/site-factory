@@ -124,6 +124,23 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
       anno. La pagina «comune» predisposta non si costruisce.
     - **T5b**: copy senza prezzi. **T6b** (pagine-comune): sospeso finché non esiste una fonte verificata del luogo
       dei lavori; le zone restano coperte da «Zone servite», `areaServed` e area servita della scheda.
+14. Dubbi del nuovo `piano-T3.md` (§12) e tagli del controllore, risolti dall'orchestratore (15/09):
+    - Artifact `traffico/zone-servite.json` e modulo `lib/zone-servite.ts`: **sì** (nomi del piano, sopra il punto 12).
+    - **Nessuna conferma obbligatoria** (niente lavoro manuale per cliente): `zoneUsabili` è ok con zone
+      `confermate` **oppure** con una proposta in stato `riconosciute` (tutte le etichette del form v4 tradotte, nessuna
+      nota); serve l'operatore solo per `da_controllare` e `da_impostare`, o col lead cambiato dopo un salvataggio. La
+      card nello stato `riconosciute` ha badge ok «Dal form lead» e «Modifica» come secondaria, nessuna primaria.
+    - **Tagli**: niente lettura della prosa Tally (righe 9-10 del §2: Tally è dismesso, 2 clienti) → per i brief Tally lo
+      stato è `da_impostare` e l'operatore imposta le zone una volta; niente azione `ricalcola` (basta «Modifica»);
+      niente `improntaZone` per la staleness a valle (la aggiunge T4 se gli serve). L'impronta del lead per
+      `leadCambiato` resta.
+    - «Sud Sardegna e provincia»: non riconosciuta con la nota del piano; `site-intake/public/data/province.json` è
+      pre-riordino sardo → da segnalare a Mattia per la chat del form.
+    - Card visibile anche a servizi spenti e in demo, senza scritture all'apertura: sì.
+    - Raggio «dintorni»: 20 km, 15 se una sede di calibrazione supera 150 comuni (regola del piano, nessun input di Mattia).
+    - **T4 e G1** si allineano al contratto del §3 di `piano-T3.md` (valgono sopra i loro testi): leggono le zone solo con
+      `leggiZoneServite` + `zoneUsabili` + `comuniServiti`; non esistono `dati.json`, `foto.json`, orari o priorità di
+      T3; `lib/dataforseo.ts` e il tipo di lavoro `kind: "traffico"` sul run-bus nascono nel primo piano che li usa (T4).
 
 ## T5a — Contratto multipagina e renderer (piano pronto)
 
