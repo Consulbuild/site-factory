@@ -246,6 +246,11 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
    `steps.build.motori` in `client.json`.
 5. Servizio sospeso: nessuna chiamata ai motori.
 6. Tetto di 30 s atteso dentro il deploy; ciò che resta «in attesa» lo riprende il timer.
+7. **Standard dominio al deploy (Mattia, 15/09)**: oltre alla verifica Search Console, il deploy imposta per ogni cliente il
+   record `www` (A proxied `192.0.2.1`), la Single Redirect «www → dominio» (301, percorso e query) e «Always Use HTTPS»,
+   idempotenti (se esistono non si ricreano). Il token `CLOUDFLARE_DNS_API_TOKEN` ha già **Zone Read, DNS Edit, Zone
+   Settings Edit, Single Redirect Edit** (aggiunti da Mattia il 15/09, verificati in sola lettura su cavalierebuild.it:
+   1 record www, `always_use_https=on`, 1 regola di redirect). Il token del deploy resta invariato.
 
 ## T2b — Sensori VPS e pannello Sito (piano pronto)
 
