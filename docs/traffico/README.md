@@ -43,7 +43,9 @@ di stato. Ricerca a monte: `docs/ricerca-traffico-2026-09.md`; fonti primarie in
   catena demo.
 - Il deploy (`lib/deploy.ts`) confronta ciò che la build ha cotto con ciò che è atteso
   (`siteUrl`, integrazioni): lo stato traffico entra nello stesso interlock.
-- `dist` di Cavaliere pesa 9,8 MB (JPG 350-610 KB senza srcset).
+- `dist` di Cavaliere pesa 9,8 MB (JPG 350-610 KB senza srcset). Il «~1 MB di font» è il peso su disco dei font di
+  tutti i preset: una pagina scarica solo i file latin del suo preset (34-180 KB). Col servizio Sito le foto passano
+  dalle varianti di T1b (`Foto.astro`, `scripts/media-varianti.ts`).
 - Cavaliere non ha comuni precisi (`zona.area_intervento` in prosa); `site-intake/data-src/
   comuni.json` ha i codici ISTAT.
 
@@ -136,7 +138,7 @@ si calibra con 4-8 settimane di dati Search Console.
 | T7a | Volano: segnali e proposte | regole pure → segnali → proposte approvate | da fare | — |
 | T7b | Volano automatico e rollback | correzioni automatiche con guardrail, effetti, rollback | da fare | — |
 | T8 | Report «Come ti trovano» | sezione nel report mensile | da fare | — |
-| T1b | Pagine leggere | immagini responsive, EXIF, font, budget come gate | da fare | — |
+| T1b | Pagine leggere | immagini responsive, EXIF, font, budget come gate | fatto (2026-09-15) col servizio Sito attivo o sospeso: varianti AVIF q90 + JPEG (originale in cima alla scala) con la regola dello zoom di Mattia (candidato ≥ 2 × resa × DPR), logo PNG senza perdita, favicon 148 → 6 KB, og:image 1200×630, font precaricati sulle sottopagine (CLS 0,19 → 0), budget per pagina come avviso «Pagine leggere:»; a servizio spento HTML identico. Home della fixture 3,5 → 2,3 MB ma Lighthouse mobile resta 75 (hero da mobile a 1920 px): punto aperto nel piano | `8bbfe85`, `86a5c6f`, `1974f91` + chiusura documenti |
 | R1 | Ricerca scheda Google | rapporto con fonti primarie e schema della scheda consigliata | fatto (2026-09-14): `docs/traffico/ricerca-scheda-google-2026-09.md` | `56732cc` |
 | G1 | Scheda consigliata | dati competitor + keyword → `scheda-consigliata.json` | da fare | — |
 | G2 | Checklist e allineamento | copia-incolla con «fatto», confronto scheda pubblica ↔ sito, kit presenza | da fare | — |

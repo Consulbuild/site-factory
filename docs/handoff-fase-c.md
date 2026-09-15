@@ -143,6 +143,19 @@ prossime schede.
   collaudato e chiuso: ricalcolo indipendente identico per 7.830 comuni). Il
   comando per completare le famiglie è nei punti aperti del piano. Tutti i 7.904 comuni del
   form si risolvono in un solo codice 2026: T3 parte da qui.
+- **Traffico T1b — pagine leggere dietro l'interruttore** (2026-09-15, piano chiuso in
+  `docs/traffico/piano-T1b.md`): ogni foto e logo dei componenti passa da `Foto.astro`; con il servizio «Sito»
+  attivo o sospeso la build (fase «pagine leggere», `site-renderer/scripts/media-varianti.ts` con `sharp` 0.34.5,
+  cache sul contenuto in `node_modules/.cache/media-varianti/`) scrive in `public/media/<slug>/v/` le varianti AVIF
+  q90 + JPEG q95 (alla larghezza dell'originale il file stesso), il logo PNG senza perdita, la favicon leggera e
+  l'og:image, e il manifest `out/<slug>/traffico/media-varianti.json` arriva al renderer con `MEDIA_VARIANTI_JSON`.
+  `sizes` = larghezza resa per uso in `src/lib/media.ts`, × 2 nell'HTML (**decisione di Mattia: qualità degli
+  originali anche con lo zoom**, candidato ≥ 2 × resa × DPR). Sottopagine con i font del preset precaricati. Dopo
+  astro la fase «budget pagine» (`scripts/budget-pagine.ts`, profilo mobile di Lighthouse) accoda gli avvisi
+  «Pagine leggere:» a `steps.build.fondamenta.avvisi`; bloccano solo i guasti tecnici. A servizio spento HTML
+  identico (CSS + 2 regole `picture`). Banco `scripts/test-media.ts`. Nessun cliente ribuildato. Aperti: Lighthouse
+  mobile 75 sulla home con la hero a 1920 px, varianti per tutti i siti o solo col servizio, `dist` ~4,8× su disco;
+  schermate da rivedere in `~/.cache/site-factory/revisione-T1b/`.
 
 ## Clienti in `site-renderer/out/` (fuori git)
 

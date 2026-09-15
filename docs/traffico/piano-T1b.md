@@ -1,9 +1,9 @@
 # Piano T1b — Pagine leggere
 
-Brief: `docs/traffico/brief-T1b.md`. Roadmap: `docs/traffico/README.md`. Stato: **fase 1 (piano) scritta il
-2026-09-14, da rivedere dall'orchestratore**. Nessun file del repo toccato: misure in sola lettura, prove e
-spike solo nello scratchpad. `.claude/scope.json` è occupato dal perimetro «T6a» di un'altra sessione: la
-fase 2 parte solo quando quel perimetro è svuotato (README §5).
+Brief: `docs/traffico/brief-T1b.md`. Roadmap: `docs/traffico/README.md`. Stato: **fasi 2-5 chiuse il
+2026-09-15** (sviluppo, calibrazione con la decisione di Mattia T1b punto 8, test, revisione): commit `8bbfe85`,
+`86a5c6f`, `1974f91` + chiusura documenti; esiti in «Calibrazione» e «Verifica». Il testo dei §1-§11 è il piano
+approvato: dove la decisione 8 lo cambia (qualità, regola dello zoom, logo PNG, hero, soglie) vale «Calibrazione».
 
 ## 1. Contesto
 
@@ -611,3 +611,83 @@ candidato ≥ resa × DPR.
   perdita ingrandita al 200 % (originale ridotto · AVIF q90 · JPEG di ripiego), 10 foto reali e generate.
 
 ## Verifica
+
+14-15/09/2026. `BASE` = `0e9c902`. Script di verifica nello scratchpad (`t1b-dev/`: `id/identita.sh` +
+`id/confronta-dist.mjs`, `m2/acceso.sh`, `verifica-acceso.mjs`, `hash-pagine.ts`, `calib/`); nessun file del repo
+modificato per i test.
+
+**M0 allestimento.** Fixture `out/zz-test-t1b` da Cavaliere senza `dist`, `.wrangler`, `wrangler.jsonc`, `logs`; in
+`client.json` tolti `siteUrl`, `umamiWebsiteId`, `integrazioni`, `deploy`, `infra`, poi `dominio:
+"zz-test-t1b.invalid"` (`grep -c` di id Umami e `cavalierebuild.it` = 0). In `images.json` della fixture i `src`
+puntavano a `/media/cavaliere-build-srls/` (foto hero e card rotte nel clone, già così in T1a F5): corretti in
+`/media/zz-test-t1b/` prima delle build «prima». Build A e B dall'editor: `diff -r` vuoto (determinismo).
+
+**§8.1 identità a servizio spento** (a ogni commit che tocca il renderer; ultimo giro sul codice finale): golden +
+Cavaliere + Costruzioni Generali + Mattia Saggin × env (a) `SITE_URL` + `DATI_STRUTTURATI_JSON` + `FORM_ACTION`/`UMAMI_*`,
+(b) `NOINDEX=1`, (c) nessuna: **12/12 dist con HTML identico a meno degli hash**, anteprime comprese; file e asset
+identici; CSS con 2 sole dichiarazioni in più, `@layer base › picture { display: contents }` e `picture > source {
+display: none }` (senza la seconda il `<source>` vuoto contava nel gap del flex e spostava di 10 px il marchio non
+lockup: trovato dal banco del browser in M2). Nessuna utility nata dai file nuovi. `npm run test:visual` senza
+aggiornare: **28/28**, `git status` delle baseline vuoto. Il comparatore riconosce una differenza vera (prova con env
+diverse: 18 errori).
+
+**§8.2 servizio acceso** (fixture × 7 preset, build senza e con manifest): box di immagini, sezioni e altezza pagina
+identici su 390@3, 412@1,75, 768@2, 1280@1, 1280@2, 1920@1, 1920@2; regola dello zoom rispettata ovunque (0 errori);
+axe a 390@3 e 1280: 0 violazioni in entrambe le build; `hashPagina` e `controllaPagina` invariati su 28 pagine (e sulle
+sottopagine col precaricamento dei font); scarti pixel in «Calibrazione». Budget: dist con varianti senza errori; dist
+senza varianti → errori tecnici leggibili (`<img> di /media senza width/height`, `senza srcset`), 44 in tutto
+riassunti in 3 righe.
+
+**§8.3 prestazioni**: Lighthouse 13.4.1 ×5, in «Calibrazione» (home 75 → 75, LCP 10,88 → 9,75 s, 3.550 → 2.288 KB;
+privacy 90 → 99, CLS 0,189 → 0).
+
+**§8.4 banchi e suite** (codice finale): `scripts/test-media.ts` **57/0** (scala con l'originale in cima, nomi con sha8,
+cache e ricetta, voce di cache illeggibile ricodificata, manifest da immagini sintetiche JPEG/PNG con alfa/SVG/favicon/
+og, JPEG originale riusato, errori su file assente, fuori cartella e illeggibile senza cartelle temporanee residue,
+`SIZES` a 412/700/1280/1920, `sizesPerZoom`, grammatica chiusa, scelta del candidato, font latin, budget su dist
+sintetica con avviso e 4 errori tecnici, CLI con 3 righe su stderr ed `ESITO`). Renderer: `npm run build` ok, `npm run
+check` 68 file con il solo errore noto di `registry.ts`, validatore ok su golden e 3 clienti, `test:visual` 28/28,
+`test:a11y` 14/14, `gate:tokens` pulito, `gate:overflow` 7/7. Editor: `npx tsc --noEmit` ok, `npm run build` ok,
+`test-fondamenta` 114/0, `test-traffico-stato` 58/0, `test-demo` 19/0, `test-stati` 30/0, `test-portafoglio` 43/0,
+`test-import-form` ok.
+
+**§8.5 E2E dall'editor** (route della scheda Build, dev server :3311):
+
+- E1 spento: HTML uguale a «prima» a meno del nome del CSS, CSS + 2 dichiarazioni; nessun `traffico/`, nessuna `v/`;
+  fasi della build quelle di sempre.
+- E2 attivo: fasi «pagine leggere (varianti immagini)» e «budget pagine» con la tabella; `dist/media/zz-test-t1b/v/`;
+  `lastmod.json` con lo stesso hash di una build T1a del renderer a `BASE` con gli stessi ingressi (`8c742c93…`);
+  `steps.build.fondamenta` presente. Con la ricetta finale: 21 voci codificate in 51 s, build 55 s.
+- E3 stabilità: seconda build `diff -r` vuoto, 21/21 dalla cache, build 3 s, `lastmod` invariato.
+- E4 foto cambiata (`card-2.jpg` ← byte di `card-3.jpg`): cambiano solo `card-2.jpg`, le sue varianti (sha8 nuovo) e i
+  riferimenti in `index.html`; `lastmod` invariato.
+- E5 budget: soglie abbassate in uno script dello scratchpad → avviso con le 3 risorse più pesanti; dall'editor, con
+  una foto di rumore al posto di `lavoro-1.jpg` → build ok, riga `avviso:` nel log e `steps.build.fondamenta.avvisi` =
+  «Pagine leggere: budget superato su /: …»; con `img/card-5.jpg` tolta → build ferma con «media-varianti:
+  /media/zz-test-t1b/card-5.jpg: site.json lo usa ma il file non c'è in public/media/zz-test-t1b».
+- E6 sospeso: `diff -r` con E3 vuoto, avvisi di E5 spariti. (Da attivo o sospeso non si torna a spento: transizione
+  rifiutata da T0, decisione 11.)
+- E7 pulizia: `DELETE /api/clients/zz-test-t1b` con il nome esatto → `{"ok":true}` (sito Umami di prova
+  `c87bf5d4…` e registrazione n8n tolti senza avvisi); `ls out/` = i 3 clienti; hash di `cavaliere-build-srls/client.json`
+  uguale a M0 (`1c440378…`); nulla in Cavaliere più recente del marcatore.
+
+**File toccati rispetto al §5**: tutti quelli elencati tranne `src/pagine/*` (T5a non chiuso, decisione 7); `Base.astro`
+toccato per favicon e og:image (decisione 6) e per il precaricamento dei font (C5); `SubPage.astro` anche per
+`precaricaFont`. Nessun file fuori perimetro. Fuori da git: cache delle varianti in
+`site-renderer/node_modules/.cache/media-varianti/` (79 MB: 21 voci della ricetta finale `c82d03650afa` e 43 delle
+due ricette provate prima, `328a769f57e4` e `564d4b92f27c`, cancellabili),
+schermate in `~/.cache/site-factory/revisione-T1b/`.
+
+**Punti aperti**
+
+1. **Lighthouse mobile ≥ 90 non raggiunto** con la decisione 8 (home 75, LCP 9,75 s): la hero da mobile resta a 1920 px
+   (707 KB). Alternativa misurata nella tornata 1 (hero a `100vw`, AVIF q62/q70: 98 / LCP 2,33-2,48 s). Decide Mattia.
+2. **Budget**: con le soglie a massimo + 20 % nessuno dei siti di riferimento produce avvisi; se Mattia vuole un avviso
+   di velocità servono soglie più basse (sarebbe fisso su ogni sito con la galleria).
+3. **Ambito** (§10): varianti solo col servizio Sito o per tutti i siti.
+4. `dist` su disco ~4,8× (Cavaliere 9,5 → 45,9 MB): nessun limite di Workers vicino, ma più upload al primo deploy e
+   più spazio nel sync di Drive.
+5. CLS 0,189 delle sottopagine a servizio spento (cambio di font sul testo legale): risolto solo col servizio Sito; per
+   tutti i siti servirebbe il precaricamento senza manifest (criterio di identità di T5a da rivedere).
+6. Safari/iOS non verificato in locale (solo Chromium): comportamento standard di `<picture>`/`srcset`, da guardare
+   sull'iPhone di Mattia alla prima pubblicazione col servizio.

@@ -97,6 +97,9 @@ L'alternanza scuro/chiaro va preservata quando si riordina.
 - Mai gradient text, mai glassmorphism decorativo.
 - Il maiuscolo è solo per titoli/label brevi, mai per body copy.
 - Ogni foto ha `alt` parlante; `loading="lazy"` sotto il fold, hero `eager`.
+- Ogni foto e ogni logo passano da `Foto.astro` con il `sizes` della larghezza resa (`SIZES`, `sizesGalleria`,
+  `sizesLogo` in `src/lib/media.ts`), mai un `<img>` diretto: col servizio Sito riceve varianti AVIF alla
+  qualità degli originali anche con lo zoom (docs/traffico/piano-T1b.md).
 - Le didascalie/label vengono dai dati, mai hardcoded nel componente.
 
 ## Legale by-design (verificato 2026-07-03, Garante + GDPR)
