@@ -160,6 +160,10 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
 7. `lastmod` onesto con il footer che elenca i servizi: `testoIndicizzabile` in
    `site-factory-editor/lib/fondamenta.ts` deve ignorare header, nav e footer (conta il contenuto
    principale). Rientra nel perimetro di T5a con un caso nel banco `test-fondamenta.ts`.
+8. Riallineamento del 15/09 (`145cf2a`), dubbi risolti: **niente pagina «Lavori»** in T5a (stesse foto della home senza
+   luogo né anno: poco traffico; si riapre se arriva una fonte del luogo dei lavori); `areaServed` per «X e dintorni»
+   = `City` del comune centro **sì**; «Zone servite» con aree larghe = i 40 comuni più vicini alla sede con l'etichetta
+   dell'area intera **sì**; `areaServed` attivo dalla build successiva a T5a per i clienti col servizio Sito **sì**.
 
 ## T1b — Pagine leggere (piano pronto)
 
@@ -213,6 +217,11 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
 9. Descrizione modificata a mano da Mattia: passano sempre i controlli rigidi (lunghezza, URL,
    telefono, keyword ripetute, promesse vietate); salta solo il critico di stile; salvare = approvare.
 10. Descrizione in prima persona plurale.
+11. Riallineamento del 15/09 (`1d530aa`), dubbi risolti: orari della scheda = orari di lavoro del form, quelli del
+    telefono solo nel motivo se diversi **sì**; «Tutta Italia» → **provincia della sede** (non la regione: più vicina al
+    limite di circa 2 ore di Google); «X e dintorni» riempito coi comuni del raggio fino a 20 **sì**; categoria
+    primaria dal target T4 col volume più alto **sì**; `validateOnly` non costruito **sì**; campo `orari-speciali`
+    senza fonte **tolto**.
 
 ## T2a — Motori al deploy (piano pronto)
 
@@ -248,11 +257,19 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
 2. Spesa di prova con API vere (campione 384 SERP ~1,54 $, una mappa ~0,42 $) quando Mattia
    inserisce la chiave.
 3. Solo Live e solo mobile.
-4. Pagina comune candidata solo con un cantiere verificato in quel comune.
+4. ~~Pagina comune candidata solo con un cantiere verificato in quel comune.~~ **Superato** da T3 punto 13
+   (nessuna pagina-comune candidata).
 5. **Esclusione reversibile dall'interfaccia** («Riammetti» con il motivo), mai correzione a mano
    di un file.
 6. Servizi abbinati per nome normalizzato.
 7. Soglie e pesi iniziali del piano, da calibrare con chiave (accordo ≥ 80 % su 20 righe cieche).
+8. Riallineamento del 15/09 (`e73f98b`), dubbi risolti: tetto di 40 comuni misurati e «Tutta Italia» solo nella
+   provincia della sede **sì** (il tetto si riconsidera dopo la calibrazione); niente ricerche «costo …» senza prezzi
+   **sì**; sede tolta dalle zone → avviso, sola «Tutta Italia» senza sede → mappa bloccata **sì**. I dati grezzi di
+   calibrazione (~1,2 MB) restano nella cache locale, in git solo il riepilogo e 3 risposte reali come fixture.
+9. **Spesa API dello sviluppo**: senza chiavi DataForSEO la calibrazione a pagamento resta «in attesa» e si fa dopo,
+   come test mirato. Con le chiavi presenti: solo il campione e una mappa di Cavaliere, **tetto 3 $ in tutto**, costo
+   registrato; nessuna chiamata ripetuta (cache).
 
 ## K1 — Chiavi per gruppi (piano pronto, sviluppo dopo T3; valgono sopra T2a, T2b, T4, G1)
 
