@@ -104,9 +104,24 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
     `dati-traffico.json` conserva sia le etichette originali sia le aree tradotte (con `provenienza: lead`).
     Chi le usa: T4 (universo query nei comuni dell'area, pesati per popolazione e distanza dalla sede), G1
     (area servita: province e regioni intere dove l'etichetta è larga, comuni dove è precisa, massimo 20),
-    T5a (pagina «Zone servite» e `areaServed`), T2b/T8 (quota di visite dalle zone). Il passo foto #7
-    propone come chip i comuni dell'area (sede e comuni precisi prima) più la ricerca. L'operatore può
+    T5a (pagina «Zone servite» e `areaServed`), T2b/T8 (quota di visite dalle zone). L'operatore può
     correggere le aree nell'editor (modifica per sezione già prevista dal piano).
+13. **Decisione di Mattia (2026-09-15): niente mini-form.** Piccole ditte, spesso appena aperte: domande che
+    non sanno come compilare le mettono in crisi. Non si chiedono lavori prioritari, «prezzo da», luogo e anno
+    delle foto; gli attestati non contano. L'unico dato mancante utile, gli **orari**, lo chiede Mattia su
+    WhatsApp e lo inserisce nell'editor. **T3 si riscrive** come «Dati del cliente senza form»: zone servite
+    tradotte dal form lead (punto 12) con correzione dell'operatore nell'editor, orari inseriti dall'operatore
+    (facoltativi), nessun link, nessun workflow n8n, nessuna pagina su `site-intake/`. `piano-T3.md` attuale è
+    superato: si riscrive in fase 1. Effetti sugli altri piani (valgono sopra i loro testi):
+    - **T4**: priorità = nessuna dichiarata (ordine dai volumi e dai servizi del contesto); comuni dalle zone
+      tradotte; nessun `foto.json` → nessuna pagina-comune candidata da cantieri; `lib/dataforseo.ts` nasce in T4.
+    - **G1**: orari da quelli inseriti dall'operatore, altrimenti la voce resta «da completare»; area servita
+      dalle zone tradotte; attestati fuori.
+    - **T5a**: niente prezzi né abilitazioni nel contratto; niente pagine «cantiere» (servono comune e anno delle
+      foto); restano pagine servizio, «Zone servite» e, se ci sono foto reali, l'indice «Lavori» senza comune né
+      anno. La pagina «comune» predisposta non si costruisce.
+    - **T5b**: copy senza prezzi. **T6b** (pagine-comune): sospeso finché non esiste una fonte verificata del luogo
+      dei lavori; le zone restano coperte da «Zone servite», `areaServed` e area servita della scheda.
 
 ## T5a — Contratto multipagina e renderer (piano pronto)
 

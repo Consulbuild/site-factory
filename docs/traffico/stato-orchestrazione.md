@@ -34,8 +34,10 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
 |---|---|
 | T0, R1, T1a (+ integrazione) | chiusi e verificati |
 | T6a | chiuso e verificato dall'orchestratore (banco 141/0/5, build, check): edifici 2011 presenti (`04d6203`…`673bbb3`); mancano solo le famiglie 2021 (esploradati giù, comando in `piano-T6a.md`) |
-| T1b | **in fase finale**: sviluppo, calibrazione e giro 1 di correzioni committati (`8bbfe85`…`e40e87c`); run `wf_9156f412-030` ripresa col controllore (task `wy7eed3yh`); Lighthouse mobile home 75 (sotto 90: vince la qualità, decisione 8) |
-| T3, T4, T5a, T2a, T2b, G1 | piano scritto e decisioni registrate, da sviluppare |
+| T1b | chiuso (`8bbfe85`…`30d049a`); controllore: nessuna allucinazione, secondo giro saltato; Lighthouse mobile home 75 → 75 (LCP 10,9 → 9,8 s, 3,5 → 2,3 MB; sotto 90: vince la qualità, decisione 8), privacy 90 → 99; `dist` ~4,8× su disco |
+| T3 | piano da riscrivere senza mini-form (T3 punti 12-13) |
+| T4, T5a, T2a, T2b, G1 | piano scritto e decisioni registrate (con gli effetti di T3 punto 13), da sviluppare |
+| T6b | sospeso: nessuna fonte verificata del luogo dei lavori |
 | T5b, T5c, T6b, T7a, T7b, T8, G2, G3 | da pianificare (fase 1) |
 | S0 | lavoro manuale di Mattia (README §8) |
 
@@ -46,8 +48,8 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
 Rivisto il 2026-09-15 sulla priorità di Mattia (traffico dall'Italia e dalle zone servite prima di tutto;
 `decisioni-piani.md`, sezione «Priorità assoluta»):
 
-3. **T3** mini-form (solo dati mancanti, stesso design del form lead; le zone NON si richiedono: tradotte da
-   quelle del form lead, T3 punto 12; codici ISTAT 2026)
+3. **T3** «Dati del cliente senza form» (decisione di Mattia del 15/09, T3 punti 12-13): **niente mini-form**;
+   zone servite tradotte dal form lead, orari inseriti dall'operatore; piano da riscrivere (fase 1)
 4. **T4** mappa query (solo DataForSEO, solo zone servite; esclusione reversibile «Riammetti»)
 5. **G1** scheda Google consigliata (area servita dalle zone di T3)
 6. **T5a** multipagina renderer (criterio di sicurezza: HTML uguale a meno degli hash, CSS solo
