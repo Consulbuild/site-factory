@@ -1,8 +1,9 @@
 # Piano T1c — Telefono veloce
 
 Brief: `docs/traffico/brief-T1c.md`. Decisione di riferimento: `decisioni-piani.md` T1b punto 9 (sopra il punto 8
-per i telefoni). Stato: **fasi 2-3 (sviluppo e calibrazione)**, 15/09/2026: M1 `5daed74`, M2 `18f7fbd`, calibrazione
-in «Calibrazione». Stime nello scratchpad: `t1c/stima.mjs` (foto di Cavaliere, sola lettura).
+per i telefoni). Stato: **sviluppo e calibrazione fatti** (15/09/2026: M1 `5daed74`, M2 `18f7fbd`, M3 `1eb6fe7`,
+documenti a seguire); **pubblicazione di Cavaliere e PageSpeed dal vivo in attesa della conferma di Mattia** («Verifica»,
+«Dubbi aperti»). Stime nello scratchpad: `t1c/stima.mjs` (foto di Cavaliere, sola lettura).
 
 ## 1. Contesto e numeri
 
@@ -297,9 +298,62 @@ della decisione non scatta; resta la ricetta con il gradino di margine (q70/q62)
 (zoom, q90) affiancata alla ricetta T1c (serie q70, ritaglio q62); per meridian e canon una terza colonna con la qualità
 minima del gate (q62/q55).
 
+## Verifica
+
+15/09/2026. `BASE` = `a5e5b25` (ricetta T1b). Script nello scratchpad (`t1c/`: `id/identita.sh` +
+`id/confronta-dist.mjs`, `acceso.sh`, `acceso90.sh`, `verifica-t1c.mjs`, `hash-pagine.ts`, `lh.mjs`, `c4.sh`,
+`revisione.mjs`, `live/rotte.mjs`); nessun file del repo modificato per i test.
+
+- **M0**: fixture `out/zz-test-t1c` da Cavaliere come M0 di T1b (senza `dist`, log, `traffico/`, `siteUrl`, Umami,
+  integrazioni, deploy, infra; servizio spento; `dominio: "zz-test-t1c.invalid"`; `src` allo slug). Riferimento con la
+  ricetta T1b: Lighthouse 75, LCP 9,68 s, 2.287 KB.
+- **Identità a servizio spento** (M1, M2, M3): golden + 3 clienti × env (a)(b)(c) **12/12**, HTML identico a meno degli
+  hash, **CSS identico** (0 dichiarazioni aggiunte); il comparatore segnala le differenze vere (18 errori con env diverse).
+- **Banchi e suite** (codice di M3): `test-media.ts` **83/0** (sizes per l'HTML su 16 usi da 320 a 2000 px, 767/768
+  esatti, `sizesLogo` esatto, serie `-t`, ritaglio 860×1088 e 1146×1450 centrato, hero B, hero verticale, marchio `-t143`
+  solo da telefono, cache a caldo, budget con `<source media>`, avviso foto LCP, `media` fuori grammatica; mutazioni del
+  centraggio e della scelta della sorgente fanno fallire i casi). Renderer: `npm run build` ok, `npm run check` 68 file
+  con il solo errore noto di `registry.ts`, validatore ok su golden e 3 clienti, `test:visual` **28/28** senza aggiornare
+  (`git status` delle baseline vuoto), `test:a11y` **14/14**, `gate:tokens` pulito, `gate:overflow` 7/7. Editor (non
+  toccato): `npx tsc --noEmit` ok, `test-fondamenta` 114/0, `test-traffico-stato` 58/0.
+- **M2-M3 servizio acceso** (fixture × 7 preset × 360@2, 390@3, 412@1,75, 430@3, 768@2, 1280@1, 1280@2, 1920@1, 1920@2):
+  **0 errori** su box di immagini e sezioni (unica differenza ammessa e annotata: larghezza del marchio da telefono,
+  scostamento 2), sizes onesti, file da 768 px uguali a T1b, marchio `-t143` sui telefoni, axe 0 violazioni come senza
+  varianti; zona visibile della hero allineata (0,0) 28/28 («Calibrazione» C2); `hashPagina` e `controllaPagina` invariati
+  su 28 pagine; budget con la ricetta T1b → avvisi (5.320 KB, foto LCP 707 KB), con T1c nessun avviso.
+- **M4 E2E**: le prove E1, E6 ed E7 sulla fixture dall'editor **non fatte**: la prima build con dominio crea un sito Umami di
+  prova sul VPS (e E7 lo cancella), una modifica online esclusa dall'orchestratore per questo piano. T1c non tocca
+  `lib/build.ts` (fasi e condizioni del servizio verificate in T1b E1-E7) e l'identità a servizio spento è provata sul
+  renderer; E2 ed E3 fatti sulla build reale di Cavaliere (sotto). Fixture spostata nello scratchpad
+  (`t1c/fixture-zz-test-t1c`), `out/` = 3 clienti, `client.json` di Cavaliere uguale a M0 fino alla build.
+- **M5 build di Cavaliere dall'editor** (route della scheda Build, servizio Sito attivo): fasi di sempre più «pagine
+  leggere» (**39 voci codificate in 84,3 s**) e «budget pagine» (home 1.098 KB / 1.034 KB / 24 richieste, sottopagine
+  86-88 KB, nessun avviso); `robots.txt`, `sitemap.xml`, `_headers`, JSON-LD e `lastmod.json` **identici** alla versione
+  pubblicata; HTML identico fuori dai `<picture>`, CSS invariato; 0 immagini rotte e 0 richieste fallite su 4 pagine a
+  390@3, 412@1,75, 430@3 e 1280@1 (a 1280 gli stessi file di prima); seconda build 39/39 dalla cache, `dist` e manifest
+  identici (E3). Lighthouse locale ×5 sulla `dist` di Cavaliere: **75 → 94**, LCP 9,75 → 3,08 s, 2.288 → 482 KB,
+  /privacy/ 99 → 100. Schermate della home a 390 e 1280 in `~/.cache/site-factory/revisione-T1c/cavaliere-prima-del-deploy/`.
+- **Pubblicazione e PageSpeed dal vivo: non fatti.** Conferma della build, deploy su cavalierebuild.it e le due chiamate
+  PageSpeed (mobile e desktop) cambiano un sito pubblico del cliente: vanno lanciati con la conferma diretta di Mattia
+  (l'agente di sviluppo non può riceverla). Stato di Cavaliere: build nuova **da verificare** nell'editor, sito online
+  ancora con la ricetta T1b. Comandi, nell'ordine: `POST /api/clients/cavaliere-build-srls/build {"action":"confirm"}`,
+  `POST /api/clients/cavaliere-build-srls/deploy`, poi PageSpeed `strategy=mobile` e `strategy=desktop` su
+  `https://cavalierebuild.it/` con `GOOGLE_API_KEY` da `lib/secrets.ts`, JSON in
+  `~/.cache/site-factory/psi-{mobile,desktop}-cavaliere-2026-09-15-t1c.json` (quello del mattino resta come «prima»);
+  attesi mobile ≥ 90 (prima 79, LCP 5,7 s) e desktop ≥ 98.
+
+**File toccati rispetto al §4**: `scripts/media-varianti.ts`, `src/lib/media.ts`, `src/components/Foto.astro`,
+`src/sections/Hero.astro` (una prop), `scripts/budget-pagine.ts`, `scripts/test-media.ts`, `docs/traffico/piano-T1c.md`,
+`docs/traffico/README.md`, `docs/handoff-fase-c.md`, `docs/DEBUG.md`. Nessun file fuori perimetro; `astro.config.mjs`
+provato solo nello scratchpad e non aggiunto. Fuori da git: cache delle varianti in `site-renderer/node_modules/.cache/
+media-varianti/` (voci di Cavaliere della ricetta `705ff5a2904e`), schermate in `~/.cache/site-factory/revisione-T1c/`.
+
 ## Dubbi aperti per Mattia
 
 1. **Canon a 88 in locale.** (a) Ricetta calibrata con un gradino di margine: 6 preset su 7 ≥ 91, canon 88; (b) qualità
    minima del gate per tutti i siti (serie q62, ritaglio q55): canon 91, foto al limite del gate su tutti i preset; (c)
    alleggerire i font di canon (Source Serif 4 latin 120 KB) in un piano a parte, fuori da T1c. Proposta: **(a) + (c)**;
    nessun cliente oggi usa canon, Cavaliere (meridian) è a 95.
+2. **Pubblicazione di Cavaliere** con la build T1c già pronta e verificata in locale (94): conferma, deploy e PageSpeed dal
+   vivo con i comandi in «Verifica», dopo l'ok diretto di Mattia; poi controllo sull'iPhone (Safari non verificabile in
+   locale).

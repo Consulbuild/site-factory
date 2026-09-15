@@ -160,6 +160,17 @@ prossime schede.
   allo script) e collaudo finale del 15/09: suite verdi (banco 61/0), identità a servizio spento 12/12, E1-E7
   dall'editor sulla fixture poi cancellata; `load` della home da profilo Google 11,2 → 7,8 s. Ogni modifica a
   `media-varianti.ts` fa ricodificare tutte le foto alla prima build (cache da potare a mano, 114 MB).
+- **Traffico T1c — telefono veloce** (2026-09-15, `docs/traffico/piano-T1c.md`; decisione di Mattia T1b punto 9): sotto
+  768 px niente margine per lo zoom. `sizesPerZoom` lascia la resa vera fino a 767 px e raddoppia da 768 (tablet e
+  computer scelgono gli stessi file di T1b); `media-varianti.ts` aggiunge la serie AVIF da telefono q70 per le foto fuori
+  dalla hero a tutta pagina, il ritaglio centrale h × 430/544 q62 della hero A/C/D (fino a 430 px, `sizes` 590px) e il PNG
+  da telefono del marchio (~120 px), resi da `Foto.astro` come `<source media>`; il budget sceglie la sorgente come il
+  browser, avvisa oltre 250 KB di foto LCP da telefono, soglie 1.500/1.250 KB. Servizio spento identico (CSS compreso).
+  Lighthouse locale: Cavaliere 75 → 94, altri preset 91-95, **canon 88** per i suoi font (158 KB prima del primo disegno:
+  scelta per Mattia nel piano). Build di Cavaliere fatta dall'editor e verificata in locale (robots, sitemap, JSON-LD,
+  `lastmod` identici; 0 immagini rotte): **resta «da verificare», sito online ancora T1b** finché Mattia non dà l'ok
+  diretto a conferma, deploy e PageSpeed dal vivo (comandi in «Verifica» del piano). Schermate da rivedere in
+  `~/.cache/site-factory/revisione-T1c/`. La prima build di ogni cliente col servizio ricodifica tutto (~85 s su Cavaliere).
 - **Traffico T3 — zone servite dal form lead** (2026-09-15, piano chiuso in `docs/traffico/piano-T3.md`): nessun
   mini-form. `site-factory-editor/lib/zone-servite.ts` traduce in modo deterministico le zone di
   `raw-submission.json` (sede + «X e dintorni» a 20 km, «Provincia di X», «Tutta la regione X», «X e regioni vicine»,
