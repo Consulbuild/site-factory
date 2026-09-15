@@ -16,6 +16,12 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
   massimo 2 giri → collaudo con suite completa, chiusura documenti, `scope.json` svuotato.
   Le correzioni fuori perimetro tornano in `fuoriPerimetroDaDecidere`: l'orchestratore le decide
   (finora: giro «T1a-integrazione» e fix a mano da una riga).
+- **Controllore (decisione di Mattia 2026-09-15)**: un agente Fable 5.1 a effort medium, con pochi comandi
+  in sola lettura, a 4 punti del workflow: fine sviluppo (lavoro dichiarato reale e utile), prima degli
+  scettici (scarta segnalazioni allucinate o futili, mai sicurezza, perdita di dati o regressioni), fine
+  correzioni (commit reali; decide se serve il secondo giro), fine collaudo (report vs repo). Può fermare il
+  workflow («ferma»): decide l'orchestratore. Sviluppo, piani, ricerche, revisioni e test restano su Opus 5.
+  Per riprendere una run già oltre un punto: `args.saltaControlli` (es. `["sviluppo","triage1"]`).
 - Dopo ogni workflow l'orchestratore rilancia `npx tsc --noEmit` e i banchi, controlla i file
   toccati (`git show --stat`) e committa i documenti in sospeso.
 - Regole dure per gli agenti: mai `git stash`/`checkout -- file`/`reset`/`restore`; mai deploy su
@@ -28,7 +34,7 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
 |---|---|
 | T0, R1, T1a (+ integrazione) | chiusi e verificati |
 | T6a | chiuso e verificato dall'orchestratore (banco 141/0/5, build, check): edifici 2011 presenti (`04d6203`…`673bbb3`); mancano solo le famiglie 2021 (esploradati giù, comando in `piano-T6a.md`) |
-| T1b | **in sviluppo** col workflow «piano-traffico» (run `wf_9156f412-030`, task `w3p0iii7h`) |
+| T1b | **in fase finale**: sviluppo, calibrazione e giro 1 di correzioni committati (`8bbfe85`…`e40e87c`); run `wf_9156f412-030` ripresa col controllore (task `wy7eed3yh`); Lighthouse mobile home 75 (sotto 90: vince la qualità, decisione 8) |
 | T3, T4, T5a, T2a, T2b, G1 | piano scritto e decisioni registrate, da sviluppare |
 | T5b, T5c, T6b, T7a, T7b, T8, G2, G3 | da pianificare (fase 1) |
 | S0 | lavoro manuale di Mattia (README §8) |
@@ -46,6 +52,12 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
 8. poi fase 1 e sviluppo di T5b → T5c → T6b → T7a → T7b → T8, e G1 → G2 → G3
 
 ## Punti aperti da ricordare
+
+- **Misura di riferimento per T1b** (14/09 sera, cavalierebuild.it dal vivo, telefono 390 px DPR 3, cache
+  vuota, mediana di 3; script `scratchpad/misura-lcp.mjs`): LCP = foto hero; rete del Mac 0,2 s · mobile
+  buona 20 Mbps/50 ms CPU ×4 **1,1 s** · mobile debole 5 Mbps/100 ms **3,8 s** · profilo del test mobile di
+  Google 1,6 Mbps/150 ms **11,3 s**; ~2,1 MB scaricati al load. Dopo T1b rifare la stessa misura sulla build
+  della fixture e, col consenso di Mattia, sul sito online.
 
 - **Domanda per Mattia (T1b)**: varianti immagini leggere per tutti i siti, demo comprese, o solo col
   servizio Sito attivo? Oggi dietro l'interruttore.
