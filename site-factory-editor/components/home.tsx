@@ -22,6 +22,8 @@ export function KeySetup({
   placeholder,
   compact = false,
   aiuto,
+  coppia,
+  onBusyChange,
   onSaved,
 }: {
   name: string;
@@ -32,24 +34,34 @@ export function KeySetup({
   compact?: boolean;
   /** Riga d'aiuto sotto il form (es. «Incolla tutto il file JSON»). */
   aiuto?: string;
+  /** Altra metà di una credenziale a due pezzi: secondo campo facoltativo, provato e salvato insieme. */
+  coppia?: { name: string; label: string; placeholder?: string };
+  /** Avvisa il contenitore che la verifica è in corso (la POST non si può annullare). */
+  onBusyChange?: (busy: boolean) => void;
   onSaved?: () => void;
 }) {
   const router = useRouter();
   const [key, setKey] = useState("");
+  const [altra, setAltra] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function save() {
     setBusy(true);
+    onBusyChange?.(true);
     setError(null);
     const res = await fetch("/api/setup/keys", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, key }),
-    });
+      body: JSON.stringify({ name, key, ...(coppia && altra.trim() ? { altra } : {}) }),
+    }).catch(() => null);
     setBusy(false);
-    if (res.ok) {
+    onBusyChange?.(false);
+    if (!res) {
+      setError("L'editor non ha risposto: riprova");
+    } else if (res.ok) {
       setKey("");
+      setAltra("");
       if (onSaved) onSaved();
       else router.refresh();
     } else {
@@ -75,9 +87,21 @@ export function KeySetup({
           autoComplete="off"
           autoFocus={compact}
           className={compact ? "min-w-0 grow sm:max-w-sm" : "max-w-sm"}
-          aria-label={`API key ${title}`}
+          aria-label={title}
           aria-describedby={aiuto ? `${name}-aiuto` : undefined}
         />
+        {coppia && (
+          <input
+            type="password"
+            value={altra}
+            onChange={(e) => setAltra(e.target.value)}
+            placeholder={coppia.placeholder}
+            autoComplete="off"
+            className={compact ? "min-w-0 grow sm:max-w-sm" : "max-w-sm"}
+            aria-label={coppia.label}
+            aria-describedby={aiuto ? `${name}-aiuto` : undefined}
+          />
+        )}
         <button type="submit" className={btnPrimary} disabled={busy || !key.trim()}>
           {busy ? "Verifico…" : "Salva e verifica"}
         </button>
@@ -110,6 +134,8 @@ interface KeyInfo {
   dove?: string;
   segnaposto?: string;
   aiuto?: string;
+  /** Altra metà della credenziale (DataForSEO), inseribile nello stesso form. */
+  coppia?: string;
 }
 
 interface KeyGroup {
@@ -124,6 +150,8 @@ export function ApiKeysPanel() {
   // null = in caricamento, "errore" = GET fallito (mai una lista vuota muta).
   const [gruppi, setGruppi] = useState<KeyGroup[] | "errore" | null>(null);
   const [openKey, setOpenKey] = useState<string | null>(null);
+  // Prova in corso: la POST arriva comunque al salvataggio, quindi niente Annulla né altre righe finché non risponde.
+  const [verifica, setVerifica] = useState(false);
 
   async function load() {
     const res = await fetch("/api/setup/keys").catch(() => null);
@@ -183,6 +211,7 @@ export function ApiKeysPanel() {
                 <ul className="mt-2 divide-y divide-line">
                   {g.chiavi.map((k) => {
                     const aperta = openKey === k.name;
+                    const coppia = k.coppia ? g.chiavi.find((x) => x.name === k.coppia) : undefined;
                     return (
                       <li key={k.name} className="flex flex-wrap items-center gap-3 py-2.5">
                         <div className="min-w-0 flex-1">
@@ -211,8 +240,9 @@ export function ApiKeysPanel() {
                           </div>
                         </div>
                         <button
-                          className={aperta ? btnGhost : btnSecondary}
+                          className={aperta ? `${btnGhost} disabled:cursor-not-allowed disabled:opacity-40` : btnSecondary}
                           aria-expanded={aperta}
+                          disabled={verifica}
                           onClick={() => setOpenKey(aperta ? null : k.name)}
                         >
                           {aperta ? "Annulla" : k.configured ? "Aggiorna" : "Aggiungi"}
@@ -225,8 +255,10 @@ export function ApiKeysPanel() {
                               title={k.label}
                               placeholder={k.segnaposto}
                               aiuto={k.aiuto}
+                              coppia={coppia && { name: coppia.name, label: coppia.label, placeholder: coppia.segnaposto }}
+                              onBusyChange={setVerifica}
                               onSaved={() => {
-                                setOpenKey(null);
+                                setOpenKey((o) => (o === k.name ? null : o));
                                 load();
                               }}
                               description=""

@@ -266,8 +266,15 @@ async function provaBing(valore: string, t: Trasporto): Promise<Esito> {
   return erroreComune(servizio, r.status) ?? `${servizio} ha risposto ${r.status}${r.status === 200 ? " in un formato inatteso" : ""}`;
 }
 
-async function provaDataForSeo(name: "DATAFORSEO_LOGIN" | "DATAFORSEO_PASSWORD", valore: string, t: Trasporto, segreti: string[]): Promise<Esito> {
-  const altra = t.getSecret(name === "DATAFORSEO_LOGIN" ? "DATAFORSEO_PASSWORD" : "DATAFORSEO_LOGIN");
+async function provaDataForSeo(
+  name: "DATAFORSEO_LOGIN" | "DATAFORSEO_PASSWORD",
+  valore: string,
+  t: Trasporto,
+  segreti: string[],
+  nuova?: string,
+): Promise<Esito> {
+  // L'altra metà inserita insieme (cambio account) vale sopra quella salvata.
+  const altra = nuova || t.getSecret(name === "DATAFORSEO_LOGIN" ? "DATAFORSEO_PASSWORD" : "DATAFORSEO_LOGIN");
   if (!altra) return null; // la prova parte quando ci sono entrambe (come l'account ID Cloudflare)
   const [login, password] = name === "DATAFORSEO_LOGIN" ? [valore, altra] : [altra, valore];
   const basic = Buffer.from(`${login}:${password}`).toString("base64");
@@ -282,7 +289,11 @@ async function provaDataForSeo(name: "DATAFORSEO_LOGIN" | "DATAFORSEO_PASSWORD",
     return "L'IP di questo Mac non è nella whitelist di DataForSEO: aggiungilo, o togli la whitelist, in app.dataforseo.com → API Access";
   }
   if (r.status === 401 || codice === 40100) {
-    return "DataForSEO ha rifiutato login o password: controllali su app.dataforseo.com → API Access";
+    if (nuova) return "DataForSEO ha rifiutato login o password: controllali su app.dataforseo.com → API Access";
+    // La coppia provata comprende la metà già salvata: può essere quella il problema.
+    return name === "DATAFORSEO_LOGIN"
+      ? "DataForSEO ha rifiutato il login con la password già salvata: se hai cambiato account inserisci anche la password nuova nel secondo campo, altrimenti controlla login e password su app.dataforseo.com → API Access"
+      : "DataForSEO ha rifiutato la password con il login già salvato: se hai cambiato account inserisci anche il login nuovo nel secondo campo, altrimenti controlla login e password su app.dataforseo.com → API Access";
   }
   const comune = erroreComune(servizio, r.status);
   if (comune) return comune;
@@ -318,9 +329,10 @@ async function provaCloudflareDns(valore: string, t: Trasporto): Promise<Esito> 
 /**
  * Prova gratuita di una chiave del Traffico. null = valida (o, per DataForSEO,
  * metà della coppia senza l'altra salvata); altrimenti il motivo in italiano,
- * senza il valore. Non lancia mai.
+ * senza il valore. `altra`: solo DataForSEO, l'altra metà inserita insieme
+ * (si prova la coppia nuova, non quella salvata). Non lancia mai.
  */
-export async function provaChiaveTraffico(name: ChiaveTraffico, valore: string, t: Trasporto): Promise<Esito> {
+export async function provaChiaveTraffico(name: ChiaveTraffico, valore: string, t: Trasporto, altra?: string): Promise<Esito> {
   const segreti = [valore];
   try {
     let esito: Esito;
@@ -328,7 +340,7 @@ export async function provaChiaveTraffico(name: ChiaveTraffico, valore: string, 
     else if (name === "GOOGLE_API_KEY") esito = await provaApiKeyGoogle(valore, t);
     else if (name === "BING_WEBMASTER_API_KEY") esito = await provaBing(valore, t);
     else if (name === "CLOUDFLARE_DNS_API_TOKEN") esito = await provaCloudflareDns(valore, t);
-    else esito = await provaDataForSeo(name, valore, t, segreti);
+    else esito = await provaDataForSeo(name, valore, t, segreti, altra);
     return esito === null ? null : redigi(esito, ...segreti);
   } catch (e) {
     if (e instanceof ProvaFallita) return redigi(e.message, ...segreti);

@@ -79,8 +79,11 @@ export const KEY_GROUPS: ReadonlyArray<{ id: string; titolo: string; frase: stri
   },
 ];
 
-/** Dove si prende (URL), segnaposto e aiuto: solo per le chiavi del Traffico (le altre restano com'erano). */
-export const KEY_INFO: Record<ChiaveTraffico, { dove: string; segnaposto: string; aiuto?: string }> = {
+/**
+ * Dove si prende (URL), segnaposto e aiuto: solo per le chiavi del Traffico (le altre restano com'erano).
+ * `coppia`: l'altra metà di una credenziale a due pezzi, inseribile nello stesso form (cambio account).
+ */
+export const KEY_INFO: Record<ChiaveTraffico, { dove: string; segnaposto: string; aiuto?: string; coppia?: ChiaveTraffico }> = {
   GOOGLE_SERVICE_ACCOUNT: {
     dove: "https://console.cloud.google.com/iam-admin/serviceaccounts",
     segnaposto: '{ "type": "service_account", … }',
@@ -95,15 +98,33 @@ export const KEY_INFO: Record<ChiaveTraffico, { dove: string; segnaposto: string
   DATAFORSEO_LOGIN: {
     dove: "https://app.dataforseo.com/api-access",
     segnaposto: "login API…",
-    aiuto: "La prova parte quando ci sono login e password.",
+    aiuto: "La prova parte quando ci sono login e password; se lasci vuota la password usa quella già salvata. Per cambiare account compila i due campi.",
+    coppia: "DATAFORSEO_PASSWORD",
   },
   DATAFORSEO_PASSWORD: {
     dove: "https://app.dataforseo.com/api-access",
     segnaposto: "password API…",
-    aiuto: "La prova parte quando ci sono login e password.",
+    aiuto: "La prova parte quando ci sono login e password; se lasci vuoto il login usa quello già salvato. Per cambiare account compila i due campi.",
+    coppia: "DATAFORSEO_LOGIN",
   },
   CLOUDFLARE_DNS_API_TOKEN: { dove: "https://dash.cloudflare.com/profile/api-tokens", segnaposto: "token…" },
 };
+
+/**
+ * La route delle chiavi risponde solo all'editor aperto su questo Mac: Host locale (niente browser
+ * dalla LAN, niente DNS rebinding) e Origin, se presente, con lo stesso host (niente fetch da altri
+ * siti). Chi forgia l'header Host da un altro host (curl) passa: lo ferma solo il dev server legato
+ * a 127.0.0.1. Funzione pura, esportata per il banco.
+ */
+export function richiestaDaQuestoMac(host: string | null, origin: string | null): boolean {
+  if (!host || !/^(localhost|127\.0\.0\.1|\[::1\])(:\d{1,5})?$/i.test(host)) return false;
+  if (origin === null) return true;
+  try {
+    return new URL(origin).host === host.toLowerCase();
+  } catch {
+    return false; // «null» (origine opaca) o valore malformato
+  }
+}
 
 /** Buffer di `security -i` (4096 byte per comando) meno il comando attorno al valore. */
 export const MAX_VALORE_SEGRETO = 4000;

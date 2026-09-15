@@ -10,6 +10,7 @@ import {
   getSecret,
   hasSecret,
   motivoValoreNonSalvabile,
+  richiestaDaQuestoMac,
   secretHint,
   setSecret,
 } from "@/lib/secrets";
@@ -22,8 +23,16 @@ export const dynamic = "force-dynamic";
 
 const isChiaveTraffico = (name: KeyName): name is ChiaveTraffico => (CHIAVI_TRAFFICO as readonly string[]).includes(name);
 
+/** 403 se la richiesta non viene dall'editor aperto su questo Mac (vedi richiestaDaQuestoMac). */
+function nonLocale(req: NextRequest): NextResponse | null {
+  if (richiestaDaQuestoMac(req.headers.get("host"), req.headers.get("origin"))) return null;
+  return NextResponse.json({ error: "le chiavi si gestiscono solo dall'editor aperto su questo Mac (localhost)" }, { status: 403 });
+}
+
 /** Stato delle key per la UI, per gruppi: MAI il valore, solo presenza + ultimi 4. */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const vietata = nonLocale(req);
+  if (vietata) return vietata;
   return NextResponse.json({
     gruppi: KEY_GROUPS.map(({ id, titolo, frase, chiavi }) => ({
       id,
@@ -86,6 +95,8 @@ async function provaKey(name: KeyName, key: string): Promise<string | null> {
 
 /** Valida la key con una chiamata reale, poi la salva nel Keychain macOS e la rilegge. */
 export async function POST(req: NextRequest) {
+  const vietata = nonLocale(req);
+  if (vietata) return vietata;
   const body = await req.json().catch(() => ({}));
   const name = String(body.name ?? "") as KeyName;
   let key = String(body.key ?? "").trim();
@@ -93,6 +104,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "key sconosciuta" }, { status: 400 });
   }
   if (!key) return NextResponse.json({ error: "key mancante" }, { status: 400 });
+  // Credenziale a due metà (DataForSEO): l'altra metà facoltativa, provata e salvata insieme.
+  const coppia = isChiaveTraffico(name) ? KEY_INFO[name].coppia : undefined;
+  const altra = coppia ? String(body.altra ?? "").trim() : "";
   if (isChiaveTraffico(name)) {
     // Traffico: forma salvata (service account compatto), limiti del Keychain prima
     // della rete, prova gratuita con messaggio già in italiano e senza il valore.
@@ -103,19 +117,22 @@ export async function POST(req: NextRequest) {
     }
     const motivo = motivoValoreNonSalvabile(key);
     if (motivo) return NextResponse.json({ error: motivo }, { status: 400 });
-    const err = await provaChiaveTraffico(name, key, { fetch: (url, init) => fetch(url, init), getSecret });
+    const motivoAltra = coppia && altra ? motivoValoreNonSalvabile(altra) : null;
+    if (coppia && motivoAltra) return NextResponse.json({ error: `${KEY_LABELS[coppia]}: ${motivoAltra}` }, { status: 400 });
+    const err = await provaChiaveTraffico(name, key, { fetch: (url, init) => fetch(url, init), getSecret }, altra || undefined);
     if (err) return NextResponse.json({ error: err }, { status: 400 });
   } else {
     const err = await provaKey(name, key).catch((e) => (e instanceof Error ? e.message : String(e)));
     if (err) return NextResponse.json({ error: `key non valida: ${err}` }, { status: 400 });
   }
+  const scritture: Array<[KeyName, string]> = coppia && altra ? [[name, key], [coppia, altra]] : [[name, key]];
   try {
-    setSecret(name, key);
+    for (const [n, v] of scritture) setSecret(n, v);
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
   }
   // Rilettura: un valore troncato dal Keychain non deve sembrare salvato.
-  if (getSecret(name) !== key) {
+  if (scritture.some(([n, v]) => getSecret(n) !== v)) {
     return NextResponse.json({ error: "salvataggio nel portachiavi incompleto: riprova" }, { status: 500 });
   }
   return NextResponse.json({ ok: true, hint: secretHint(name) });

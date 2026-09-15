@@ -23,6 +23,7 @@ import {
   KNOWN_KEYS,
   MAX_VALORE_SEGRETO,
   motivoValoreNonSalvabile,
+  richiestaDaQuestoMac,
   type ChiaveTraffico,
   type KeyName,
 } from "../lib/secrets.ts";
@@ -90,9 +91,9 @@ const timeout = () => new DOMException("The operation was aborted due to timeout
 const rete = () => new TypeError("fetch failed");
 
 /** Esegue una prova registrando le chiamate per i controlli trasversali (endpoint, numero, timeout). */
-async function prova(name: ChiaveTraffico, valore: string, rispondi: Rispondi, salvate: Partial<Record<KeyName, string>> = {}) {
+async function prova(name: ChiaveTraffico, valore: string, rispondi: Rispondi, salvate: Partial<Record<KeyName, string>> = {}, altra?: string) {
   const { t, chiamate } = trasporto(rispondi, salvate);
-  const esito = await provaChiaveTraffico(name, valore, t);
+  const esito = await provaChiaveTraffico(name, valore, t, altra);
   for (const c of chiamate) tutteLeChiamate.push({ ...c, name });
   if (chiamate.length > MAX_CHIAMATE[name]) sforamenti.push(`${name}: ${chiamate.length}`);
   provate.add(name);
@@ -119,6 +120,27 @@ caso("le 9 chiavi esistenti restano in testa con le etichette di prima", KNOWN_K
 caso("KEY_INFO solo per le 6 chiavi del Traffico", isDeepStrictEqual(Object.keys(KEY_INFO).sort(), [...CHIAVI_TRAFFICO].sort()));
 caso("ogni «dove si prende» è https://", Object.values(KEY_INFO).every((i) => i.dove.startsWith("https://")));
 caso("il modulo non esporta una lista di endpoint", !Object.keys(moduloChiavi).some((k) => /ENDPOINT/i.test(k)), Object.keys(moduloChiavi));
+caso(
+  "coppia solo DataForSEO, simmetrica (login ↔ password)",
+  isDeepStrictEqual(Object.entries(KEY_INFO).filter(([, i]) => i.coppia).map(([n, i]) => [n, i.coppia]), [["DATAFORSEO_LOGIN", "DATAFORSEO_PASSWORD"], ["DATAFORSEO_PASSWORD", "DATAFORSEO_LOGIN"]]),
+);
+
+/* ---------------- Route solo da questo Mac ---------------- */
+
+console.log("\nroute delle chiavi solo dall'editor su questo Mac (Host e Origin):");
+const casiHost: Array<[string, string | null, string | null, boolean]> = [
+  ["localhost senza Origin (fetch GET, curl locale)", "localhost:3311", null, true],
+  ["127.0.0.1 con Origin uguale", "127.0.0.1:3311", "http://127.0.0.1:3311", true],
+  ["[::1] con Origin uguale", "[::1]:3311", "http://[::1]:3311", true],
+  ["browser dalla LAN (Host = IP del Mac)", "192.168.1.20:3311", null, false],
+  ["DNS rebinding (Host = dominio esterno)", "attaccante.example:3311", null, false],
+  ["Host che inizia con localhost ma è un altro dominio", "localhost.attaccante.example:3311", null, false],
+  ["fetch no-cors da un altro sito (Origin diverso)", "localhost:3311", "https://attaccante.example", false],
+  ["altra porta locale", "localhost:3311", "http://localhost:3000", false],
+  ["Origin «null» (origine opaca)", "localhost:3311", "null", false],
+  ["Host assente", null, null, false],
+];
+for (const [nome, host, origin, atteso] of casiHost) caso(`${nome} → ${atteso ? "ammessa" : "403"}`, richiestaDaQuestoMac(host, origin) === atteso);
 
 /* ---------------- 8. Tetto del Keychain ---------------- */
 
@@ -280,10 +302,24 @@ const basic = Buffer.from(`${login}:${password}`).toString("base64");
   caso("coppia completa → una chiamata con Basic auth", ok.esito === null && ok.chiamate.length === 1 && new Headers(ok.chiamate[0]?.init.headers).get("Authorization") === `Basic ${basic}`);
   const inversa = await prova("DATAFORSEO_PASSWORD", password, () => json(200, { status_code: 20000 }), { DATAFORSEO_LOGIN: login });
   caso("simmetrica: password con login salvato → stessa coppia", inversa.esito === null && new Headers(inversa.chiamate[0]?.init.headers).get("Authorization") === `Basic ${basic}`);
+
+  // Cambio account: la coppia salvata è di un altro account, le due metà nuove arrivano insieme.
+  const vecchie = { DATAFORSEO_LOGIN: "vecchio@consulbuild.com", DATAFORSEO_PASSWORD: "passwordVecchiaDataForSeo" };
+  const cambio = await prova("DATAFORSEO_LOGIN", login, (_url, init) => json(new Headers(init.headers).get("Authorization") === `Basic ${basic}` ? 200 : 401, { status_code: 20000 }), vecchie, password);
+  caso("cambio account: login e password insieme → prova la coppia nuova, non la password salvata", cambio.esito === null && cambio.chiamate.length === 1 && new Headers(cambio.chiamate[0]?.init.headers).get("Authorization") === `Basic ${basic}`, cambio.esito);
+  const cambioInverso = await prova("DATAFORSEO_PASSWORD", password, () => json(200, { status_code: 20000 }), vecchie, login);
+  caso("cambio account dalla riga password → stessa coppia nuova", cambioInverso.esito === null && new Headers(cambioInverso.chiamate[0]?.init.headers).get("Authorization") === `Basic ${basic}`);
+  const insiemeSenzaSalvate = await prova("DATAFORSEO_LOGIN", login, () => json(200, { status_code: 20000 }), {}, password);
+  caso("primo inserimento con i due campi → una prova (non salvataggio senza prova)", insiemeSenzaSalvate.esito === null && insiemeSenzaSalvate.chiamate.length === 1);
+  const coppiaNuovaRifiutata = await prova("DATAFORSEO_LOGIN", login, () => json(401, { status_code: 40100 }), vecchie, password);
+  messaggio("coppia nuova rifiutata → «login o password», senza parlare della metà salvata", coppiaNuovaRifiutata.esito, "DataForSEO ha rifiutato login o password", [login, password, basic]);
+  caso("coppia nuova rifiutata: nessun «già salvat…»", !coppiaNuovaRifiutata.esito?.includes("già salvat"), coppiaNuovaRifiutata.esito);
+  const loginConVecchia = await prova("DATAFORSEO_LOGIN", login, () => json(401, { status_code: 40100 }), vecchie);
+  messaggio("login nuovo con password salvata rifiutato → il messaggio nomina la password già salvata e il secondo campo", loginConVecchia.esito, "rifiutato il login con la password già salvata: se hai cambiato account inserisci anche la password nuova nel secondo campo", [login, vecchie.DATAFORSEO_PASSWORD]);
 }
 const casiDfs: Array<[string, Rispondi, string]> = [
-  ["401", () => json(401, { status_code: 40100, status_message: "You are not authorized" }), "DataForSEO ha rifiutato login o password"],
-  ["40100 con HTTP 200", () => json(200, { status_code: 40100 }), "DataForSEO ha rifiutato login o password"],
+  ["401", () => json(401, { status_code: 40100, status_message: "You are not authorized" }), "DataForSEO ha rifiutato la password con il login già salvato"],
+  ["40100 con HTTP 200", () => json(200, { status_code: 40100 }), "DataForSEO ha rifiutato la password con il login già salvato"],
   ["40104 account da verificare", () => json(403, { status_code: 40104 }), "va verificato prima di usare le API"],
   ["40207 IP non in whitelist", () => json(403, { status_code: 40207 }), "non è nella whitelist di DataForSEO"],
   ["codice ignoto", () => json(402, { status_code: 40200 }), "DataForSEO ha risposto 402 (codice 40200)"],

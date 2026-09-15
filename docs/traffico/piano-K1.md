@@ -258,6 +258,17 @@ esistenti presenti, 6 nuove assenti.
    senza `key`): verificato con un listener, non è un difetto del form (invariato). Schede Immagini e Pubblicazione:
    `KeySetup` non compatto identico nel DOM; oggi non visibili perché BFL e Cloudflare sono configurate.
 
+**Correzioni della revisione indipendente (fase 4).**
+1. DataForSEO, cambio account: `KEY_INFO.coppia` lega login e password; la riga aperta mostra il secondo campo
+   facoltativo, la POST accetta `altra`, prova la coppia nuova e salva e rilegge le due chiavi. Con la sola metà nuova il
+   401 dice che la coppia comprende la metà già salvata. Mai salvataggio senza prova sopra una coppia esistente.
+2. «Annulla» e Aggiungi/Aggiorna disabilitati durante «Verifico…» (la POST non si interrompe lato server); `onSaved`
+   chiude solo la riga ancora aperta; fetch fallita → «L'editor non ha risposto: riprova» invece di «Verifico…» infinito.
+3. Nome accessibile del campo = etichetta della chiave (niente «API key …» su login, password, JSON).
+4. GET e POST: 403 se Host non è `localhost`/`127.0.0.1`/`[::1]` o se Origin è di un altro host
+   (`richiestaDaQuestoMac`). Limite: un `curl` dalla LAN che forgia `Host: localhost` passa; lo chiude solo il dev
+   server legato a 127.0.0.1 (`next dev -H 127.0.0.1`, fuori perimetro: decisione di Mattia).
+
 **Punti aperti per Mattia / fasi 4-5.**
 - DataForSEO: una metà salvata da sola non si prova (come da piano); la frase del brief «ogni chiave nuova rifiutata»
   vale solo con l'altra metà presente. Nell'E2E la password finta è stata salvata (200, riletta), il login finto rifiutato
