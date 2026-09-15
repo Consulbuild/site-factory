@@ -1,0 +1,270 @@
+<title>Accessi Traffico ConsulBuild</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  :root {
+    --ground: #f4f6fb; --surface: #ffffff; --ink: #111a2e; --muted: #56607a; --line: #dde2ee;
+    --accent: #2f5bd9; --accent-soft: #e7edfc; --ok: #1f7a4d; --ok-soft: #e3f3ea; --warn: #9a5200; --warn-soft: #fbefdf;
+    --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0b1020; --surface: #131a31; --ink: #e6eaf5; --muted: #9aa4bf; --line: #27314f;
+      --accent: #86a2ff; --accent-soft: #1c2752; --ok: #62cf95; --ok-soft: #12301f; --warn: #f2b25c; --warn-soft: #33240f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0b1020; --surface: #131a31; --ink: #e6eaf5; --muted: #9aa4bf; --line: #27314f;
+    --accent: #86a2ff; --accent-soft: #1c2752; --ok: #62cf95; --ok-soft: #12301f; --warn: #f2b25c; --warn-soft: #33240f;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--ground); color: var(--ink); font: 400 17px/1.55 var(--body); padding-inline: 16px; padding-block: 0 64px; }
+  .wrap { max-width: 780px; margin: 0 auto; }
+  header { padding-block: 44px 28px; border-bottom: 1px solid var(--line); }
+  .eyebrow { font: 700 12px/1 var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  h1 { font: 800 clamp(30px, 6vw, 44px)/1.08 var(--display); margin: 12px 0 14px; text-wrap: balance; letter-spacing: -.01em; }
+  h2 { font: 700 23px/1.2 var(--display); margin: 0 0 6px; text-wrap: balance; }
+  h3 { font: 700 17px/1.3 var(--display); margin: 0; }
+  p { margin: 0; max-width: 65ch; }
+  .lead { color: var(--muted); font-size: 18px; }
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 24px; }
+  .fact { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .fact b { display: block; font: 800 22px/1.15 var(--display); font-variant-numeric: tabular-nums; }
+  .fact span { color: var(--muted); font-size: 15px; }
+  section { padding-block: 36px 8px; }
+  .intro { color: var(--muted); margin-bottom: 18px; }
+  .when { display: inline-block; font: 700 11px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; padding: 5px 8px; border-radius: 999px; margin-bottom: 10px; }
+  .when.now { background: var(--ok-soft); color: var(--ok); }
+  .when.soon { background: var(--accent-soft); color: var(--accent); }
+  .when.later { background: var(--warn-soft); color: var(--warn); }
+  ol.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: s; }
+  ol.steps > li { counter-increment: s; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px 14px 16px; display: grid; grid-template-columns: 28px 1fr; gap: 4px 12px; }
+  ol.steps > li > input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--accent); cursor: pointer; }
+  ol.steps > li > input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  ol.steps > li > div { display: grid; gap: 6px; min-width: 0; }
+  ol.steps > li:has(input:checked) h3 { text-decoration: line-through; color: var(--muted); }
+  ol.steps > li h3::before { content: counter(s) ". "; color: var(--accent); }
+  .how { color: var(--ink); }
+  .how ul { margin: 4px 0 0; padding-left: 20px; display: grid; gap: 3px; }
+  .gives { font-size: 15px; color: var(--muted); }
+  .gives b { color: var(--ink); font-weight: 600; }
+  code, .key { font: 500 13.5px/1.4 var(--mono); background: var(--accent-soft); color: var(--ink); padding: 1px 6px; border-radius: 5px; overflow-wrap: anywhere; }
+  .note { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 15.5px; }
+  .table-box { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 15.5px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font: 700 12px/1.2 var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .group { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
+  .group.focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+  .group ul { margin: 0; padding-left: 18px; font-size: 15.5px; display: grid; gap: 2px; }
+  .rules { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 65ch; }
+  .no { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .no li { padding-left: 22px; position: relative; }
+  .no li::before { content: "×"; position: absolute; left: 4px; color: var(--warn); font-weight: 700; }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14.5px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Area Traffico · lavoro manuale di Mattia</div>
+    <h1>Accessi e chiavi per far trovare i siti dei clienti</h1>
+    <p class="lead">Gli account che solo tu puoi creare, in ordine di importanza. Ogni passo dice cosa sblocca: senza questi accessi i test girano su dati inventati, con questi girano su Google e sui visitatori veri. Spunta i passi fatti: la spunta resta su questo dispositivo.</p>
+    <div class="facts">
+      <div class="fact"><b>0 € al mese</b><span>Google Search Console, PageSpeed, CrUX, Bing e Cloudflare: gratis nelle quote</span></div>
+      <div class="fact"><b>50 $ una volta</b><span>credito prepagato DataForSEO: la spesa non può superarlo</span></div>
+      <div class="fact"><b>~1 $ a cliente</b><span>ricerche e scheda consigliata la prima volta (stime dei piani T4 e G1)</span></div>
+    </div>
+  </header>
+
+  <section>
+    <span class="when now">Subito · gratis</span>
+    <h2>I dati veri partono da qui</h2>
+    <p class="intro">Senza Search Console non sappiamo per quali ricerche Cavaliere compare, da dove arrivano i clic e se le modifiche funzionano. È il primo passo perché tutto il resto si misura contro questa base.</p>
+    <ol class="steps">
+      <li><input type="checkbox" id="s-consenso" aria-labelledby="t-consenso"><div>
+        <h3 id="t-consenso">Consenso scritto di Cavaliere Build</h3>
+        <p class="how">Un messaggio o una mail in cui accetta che il sito cavalierebuild.it venga modificato per portare più contatti e che leggiamo i suoi dati di Search Console.</p>
+        <p class="gives"><b>Sblocca:</b> le modifiche al sito online del pilota (nessuna modifica senza consenso).</p>
+      </div></li>
+      <li><input type="checkbox" id="s-gsc" aria-labelledby="t-gsc"><div>
+        <h3 id="t-gsc">Search Console: verifica cavalierebuild.it</h3>
+        <div class="how">Con <code>info@consulbuild.com</code> su <a href="https://search.google.com/search-console" rel="noopener">search.google.com/search-console</a>:
+          <ul>
+            <li>«Aggiungi proprietà» → tipo <b>Dominio</b> → <code>cavalierebuild.it</code>.</li>
+            <li>Copia il record TXT e aggiungilo nel DNS del dominio su Cloudflare (tipo TXT, nome <code>@</code>).</li>
+            <li>Torna su Search Console e premi «Verifica» (se non passa subito, riprova dopo qualche minuto).</li>
+          </ul></div>
+        <p class="gives"><b>Sblocca:</b> la fotografia di partenza (ricerche, pagine, clic dall'Italia) e ogni misura dei risultati.</p>
+      </div></li>
+      <li><input type="checkbox" id="s-bing" aria-labelledby="t-bing"><div>
+        <h3 id="t-bing">Bing Webmaster Tools e la sua chiave</h3>
+        <div class="how">Su <a href="https://www.bing.com/webmasters" rel="noopener">bing.com/webmasters</a> accedi con lo stesso account Google:
+          <ul>
+            <li>«Importa da Google Search Console»: i siti verificati arrivano già verificati.</li>
+            <li>Ingranaggio in alto → <b>Accesso API</b> → «Chiave API» → Genera.</li>
+          </ul></div>
+        <p class="gives"><b>Chiave:</b> Bing Webmaster (API key) · <b>Sblocca:</b> l'invio delle pagine nuove a Bing a ogni pubblicazione.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <span class="when now">Subito · gratis</span>
+    <h2>Google Cloud per il servizio Sito</h2>
+    <p class="intro">Un progetto solo, nell'organizzazione consulbuild.com, per leggere Search Console dal software, verificare i domini nuovi da solo e misurare la velocità.</p>
+    <ol class="steps">
+      <li><input type="checkbox" id="s-progetto" aria-labelledby="t-progetto"><div>
+        <h3 id="t-progetto">Progetto e API abilitate</h3>
+        <div class="how">Su <a href="https://console.cloud.google.com" rel="noopener">console.cloud.google.com</a> crea il progetto (es. <code>site-factory-traffico</code>), poi in «API e servizi → Libreria» abilita:
+          <ul>
+            <li>Google Search Console API</li>
+            <li>Site Verification API</li>
+            <li>PageSpeed Insights API</li>
+            <li>Chrome UX Report API</li>
+          </ul></div>
+      </div></li>
+      <li><input type="checkbox" id="s-sa-scrittura" aria-labelledby="t-sa-scrittura"><div>
+        <h3 id="t-sa-scrittura">Service account di scrittura (per il Mac)</h3>
+        <div class="how">«IAM e amministrazione → Account di servizio → Crea» (es. <code>sf-scrittura</code>), poi «Chiavi → Aggiungi chiave → JSON»: si scarica un file.
+          <ul>
+            <li>In Search Console di cavalierebuild.it: «Impostazioni → Utenti e autorizzazioni → Aggiungi utente» con l'email del service account, autorizzazione <b>Completa</b>. I domini dei clienti nuovi li verifica poi il software da solo.</li>
+            <li>Incolla il contenuto del file JSON nel campo dell'editor, poi cancella il file scaricato.</li>
+          </ul></div>
+        <p class="gives"><b>Chiave:</b> Google Cloud (service account di scrittura) · <b>Sblocca:</b> verifica dei domini nuovi e invio della sitemap a ogni pubblicazione.</p>
+      </div></li>
+      <li><input type="checkbox" id="s-sa-lettura" aria-labelledby="t-sa-lettura"><div>
+        <h3 id="t-sa-lettura">Service account di lettura (per il VPS)</h3>
+        <div class="how">Stesso procedimento (es. <code>sf-lettura</code>), chiave JSON.
+          <ul>
+            <li>In Search Console: aggiungilo con autorizzazione <b>Limitata</b> (solo lettura).</li>
+            <li>Il JSON va nelle credenziali di n8n sul VPS, non nell'editor: te lo chiedo quando parte la raccolta notturna (piano T2b).</li>
+          </ul></div>
+        <p class="gives"><b>Sblocca:</b> la raccolta dei dati anche col Mac spento.</p>
+      </div></li>
+      <li><input type="checkbox" id="s-apikey" aria-labelledby="t-apikey"><div>
+        <h3 id="t-apikey">Chiave API per la velocità</h3>
+        <p class="how">«API e servizi → Credenziali → Crea credenziali → Chiave API», poi «Limita chiave» → solo <b>PageSpeed Insights API</b> e <b>Chrome UX Report API</b>.</p>
+        <p class="gives"><b>Chiave:</b> Google Cloud (PageSpeed e CrUX) · <b>Sblocca:</b> punteggio e velocità misurata sui visitatori veri.</p>
+      </div></li>
+    </ol>
+    <p class="note" style="margin-top:12px">Se Google non ti lascia creare la chiave JSON («la creazione di chiavi per gli account di servizio è disattivata»), è una regola di sicurezza delle organizzazioni nuove: da amministratore la togli per questo progetto in «IAM e amministrazione → Criteri dell'organizzazione».</p>
+  </section>
+
+  <section>
+    <span class="when soon">Prima della prima pubblicazione con le pagine nuove</span>
+    <h2>Cloudflare e DataForSEO</h2>
+    <ol class="steps">
+      <li><input type="checkbox" id="s-cf" aria-labelledby="t-cf"><div>
+        <h3 id="t-cf">Secondo token Cloudflare, solo DNS</h3>
+        <p class="how">Su Cloudflare: «Profilo → Token API → Crea token → Modello personalizzato». Permessi <b>Zona: Lettura</b> e <b>DNS: Modifica</b>, sulle zone dei domini dei clienti. Il token del deploy resta com'è.</p>
+        <p class="gives"><b>Chiave:</b> Cloudflare (token solo DNS) · <b>Sblocca:</b> la verifica automatica in Search Console di ogni dominio cliente nuovo.</p>
+      </div></li>
+      <li><input type="checkbox" id="s-dfs" aria-labelledby="t-dfs"><div>
+        <h3 id="t-dfs">DataForSEO</h3>
+        <div class="how">Registrati su <a href="https://dataforseo.com" rel="noopener">dataforseo.com</a> con l'account dell'agenzia:
+          <ul>
+            <li>Ricarica <b>50 $</b>: è credito prepagato, quindi è anche il tetto di spesa.</li>
+            <li>Nel pannello, sezione API: copia <b>login</b> e <b>password API</b> (la password API è diversa da quella del sito).</li>
+          </ul></div>
+        <p class="gives"><b>Chiavi:</b> DataForSEO (login e password) · <b>Sblocca:</b> le ricerche che la gente fa davvero nelle zone del cliente, chi compare oggi su Google e nelle mappe, la scheda Google consigliata.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <span class="when later">Quando un cliente attiva il servizio Scheda</span>
+    <h2>Scheda Google del cliente</h2>
+    <ol class="steps">
+      <li><input type="checkbox" id="s-gestore" aria-labelledby="t-gestore"><div>
+        <h3 id="t-gestore">Accesso da Gestore</h3>
+        <p class="how">Il cliente, dalla sua scheda su Google: «Impostazioni del profilo → Persone e accesso → Aggiungi» con <code>info@consulbuild.com</code>, ruolo Gestore. Tu accetti l'invito. La scheda consigliata la inserisci tu a mano.</p>
+        <p class="gives"><b>Non serve nessuna chiave</b> per preparare la scheda consigliata: usa DataForSEO.</p>
+      </div></li>
+      <li><input type="checkbox" id="s-gbp-api" aria-labelledby="t-gbp-api"><div>
+        <h3 id="t-gbp-api">Domanda di accesso alle API della scheda (più avanti)</h3>
+        <p class="how">Serve solo per il monitor automatico delle schede (piano G3). Google la accetta da un account che gestisce una scheda verificata e attiva da almeno 60 giorni, con sito collegato; la risposta arriva in giorni o settimane. Te la preparo io quando ci arriviamo.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <span class="when soon">Nell'altra chat</span>
+    <h2>Form lead</h2>
+    <ol class="steps">
+      <li><input type="checkbox" id="s-orari" aria-labelledby="t-orari"><div>
+        <h3 id="t-orari">Orari di lavoro e di risposta al telefono</h3>
+        <p class="how">Salvali come giorni e fasce orarie, non come testo libero, e tieni separati lavoro e telefono: così finiscono direttamente nella scheda consigliata.</p>
+      </div></li>
+      <li><input type="checkbox" id="s-sardegna" aria-labelledby="t-sardegna"><div>
+        <h3 id="t-sardegna">Province sarde del 2026</h3>
+        <p class="how"><code>site-intake/public/data/province.json</code> ha ancora «Sud Sardegna», soppressa dal 1° gennaio 2026, e non ha Sulcis Iglesiente, Medio Campidano, Ogliastra e Gallura Nord-Est Sardegna.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Dove incollare le chiavi</h2>
+    <p class="intro">Editor → <b>Impostazioni</b>. Le chiavi saranno divise in tre gruppi (piano K1, in preparazione: i campi del traffico arrivano con K1). Ogni chiave ha il tasto «Prova», che fa una sola chiamata gratuita.</p>
+    <div class="groups">
+      <div class="group"><h3>Produzione e sviluppo siti</h3><ul><li>Black Forest Labs (immagini)</li><li>OpenAI (logo)</li><li>Cloudflare deploy (token e account)</li></ul></div>
+      <div class="group"><h3>VPS e dashboard clienti</h3><ul><li>Umami</li><li>n8n (webhook e API)</li><li>Stripe</li><li>Gatus</li></ul></div>
+      <div class="group focus"><h3>Ottimizzazione del traffico</h3><ul><li>Google Cloud service account</li><li>Google Cloud PageSpeed e CrUX</li><li>Bing Webmaster</li><li>DataForSEO login e password</li><li>Cloudflare solo DNS</li></ul></div>
+    </div>
+    <p class="intro" style="margin-top:14px">Le chiavi restano nel Portachiavi del Mac: mai in git, mai nei messaggi.</p>
+  </section>
+
+  <section>
+    <h2>Come useremo le chiamate a pagamento</h2>
+    <p class="intro">Ogni test parte da una domanda e finisce con una decisione. Leggiamo i risultati prima di fare il test successivo, e ogni risposta resta salvata per non ripagarla.</p>
+    <div class="table-box">
+      <table>
+        <thead><tr><th>Test</th><th>Domanda a cui risponde</th><th>Chiamate</th><th>Costo</th></tr></thead>
+        <tbody>
+          <tr><td>Prova delle chiavi</td><td>La chiave funziona?</td><td>1 per chiave</td><td class="num">0 $</td></tr>
+          <tr><td>Fotografia di partenza</td><td>Dove compare oggi Cavaliere, quanti clic dall'Italia, quanto è veloce</td><td>Search Console, Umami, PageSpeed, una volta</td><td class="num">0 $</td></tr>
+          <tr><td>Campione di ricerche (T4)</td><td>Quali ricerche «lavoro + comune» mostrano risultati locali in Italia, e quindi quali conviene puntare</td><td>384 ricerche, una volta sola per tutti i clienti</td><td class="num">~1,54 $</td></tr>
+          <tr><td>Mappa delle ricerche (T4)</td><td>Su quali ricerche delle sue zone puntare per quel cliente</td><td>una per cliente, rifatta solo se cambiano servizi o zone</td><td class="num">~0,42 $</td></tr>
+          <tr><td>Scheda consigliata (G1)</td><td>Categorie e dati che usano le schede che compaiono nella zona</td><td>calibrazione, poi una per cliente col servizio Scheda</td><td class="num">~0,30 $</td></tr>
+          <tr><td>Misura continua (T2b)</td><td>Le modifiche portano più clic dalle zone servite?</td><td>Search Console e CrUX ogni notte</td><td class="num">0 $</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="rules" style="margin-top:16px">
+      <li>Nessuna conclusione sul posizionamento prima di 4-8 settimane per ricerca: Google ci mette quel tempo a stabilizzarsi.</li>
+      <li>I dati di Search Console arrivano con 2-3 giorni di ritardo: i confronti si fanno su 28 giorni contro la fotografia di partenza.</li>
+      <li>La spesa di ogni cliente resta registrata; i costi sono le stime dei piani verificate sulle pagine prezzi il 14/09/2026.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Cosa non serve</h2>
+    <ul class="no">
+      <li>Developer token di Google Ads: DataForSEO dà gli stessi volumi senza approvazione.</li>
+      <li>Abbonamenti a strumenti SEO come Ahrefs o Semrush.</li>
+      <li>Places API di Google: non restituisce l'area servita delle schede.</li>
+      <li>Una licenza Google Workspace in più: basta <code>info@consulbuild.com</code>.</li>
+    </ul>
+  </section>
+
+  <footer>Fonte: <code>docs/traffico/README.md</code> §8, piani T2a, T2b, T4, G1 e ricerca sulla scheda Google. Aggiornata il 15/09/2026.</footer>
+</div>
+
+<script>
+  (function () {
+    const PREFIX = "accessi-traffico:";
+    document.querySelectorAll('ol.steps input[type="checkbox"]').forEach(function (box) {
+      try { box.checked = localStorage.getItem(PREFIX + box.id) === "1"; } catch (e) {}
+      box.addEventListener("change", function () {
+        try { localStorage.setItem(PREFIX + box.id, box.checked ? "1" : "0"); } catch (e) {}
+      });
+    });
+  })();
+</script>

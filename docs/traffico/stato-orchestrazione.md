@@ -35,7 +35,7 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
 | T0, R1, T1a (+ integrazione) | chiusi e verificati |
 | T6a | chiuso e verificato dall'orchestratore (banco 141/0/5, build, check): edifici 2011 presenti (`04d6203`…`673bbb3`); mancano solo le famiglie 2021 (esploradati giù, comando in `piano-T6a.md`) |
 | T1b | chiuso (`8bbfe85`…`30d049a`); controllore: nessuna allucinazione, secondo giro saltato; Lighthouse mobile home 75 → 75 (LCP 10,9 → 9,8 s, 3,5 → 2,3 MB; sotto 90: vince la qualità, decisione 8), privacy 90 → 99; `dist` ~4,8× su disco |
-| T3 | piano da riscrivere senza mini-form (T3 punti 12-13) |
+| T3 | piano riscritto «Zone servite dal form lead» (`aaa89d1`, decisioni T3 punto 14); **in sviluppo** (run `wf_33cd84c6-4a8`, task `wtx5pmhnk`) |
 | T4, T5a, T2a, T2b, G1 | piano scritto e decisioni registrate (con gli effetti di T3 punto 13), da sviluppare |
 | T6b | sospeso: nessuna fonte verificata del luogo dei lavori |
 | T5b, T5c, T6b, T7a, T7b, T8, G2, G3 | da pianificare (fase 1) |

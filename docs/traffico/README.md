@@ -146,6 +146,10 @@ si calibra con 4-8 settimane di dati Search Console.
 
 ## 8. Lavoro manuale di Mattia (non automatizzabile)
 
+Guida passo passo con ordine, costi e test mirati: `docs/traffico/guida-accessi.html`
+(pubblicata su https://claude.ai/code/artifact/e07e6e6a-6f22-45a6-8dff-17291f3a6bbd). Le chiavi si incollano in
+Impostazioni, divise in gruppi dal piano K1.
+
 - Google Cloud (servizio Sito): progetto, abilitazione Search Console API, Site Verification
   API, PageSpeed Insights API, CrUX API; due service account (scrittura dal Mac, lettura dal
   VPS) con chiave JSON.
