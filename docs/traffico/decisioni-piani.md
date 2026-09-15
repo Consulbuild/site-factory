@@ -200,6 +200,17 @@ lavori.** Ogni piano si giudica su quanto avvicina o misura quel risultato; il r
    - **Hero da mobile (C3)**: vince l'opzione più nitida (`sizes` onesto o più largo), mai `100vw` se
      sceglie un candidato sotto la soglia qui sopra.
    - Logo e mark (C4): nessuna perdita visibile dei bordi ingranditi; nel dubbio PNG lossless.
+9. **Decisione di Mattia (2026-09-15, dopo la misura dal vivo): telefono veloce, obiettivo PageSpeed mobile ≥ 90**, con
+   un'ottimizzazione ragionata, calibrata e standard per tutti i siti col servizio Sito (piano **T1c**). Il punto 8
+   resta per tablet e computer. Dati di partenza (PSI mobile dal vivo su Cavaliere, 15/09): punteggio 79, FCP 0,9 s, TBT 0,
+   CLS 0, **LCP 5,7 s = foto hero** servita a 1920 px (708 KB, `sizes` del telefono gonfiato a 2340px), 5 card a 1216 px
+   (~300 KB l'una per 362×272 px resi), `mark.png` 112 KB per 48 px, CSS bloccante 11 KB (160 ms). Regole:
+   - **Telefoni (≤ 767 px)**: niente margine 2× per lo zoom; candidato ≥ larghezza resa × DPR.
+   - **Hero da telefono**: ritaglio dedicato alle proporzioni del riquadro (stessa zona visibile di `object-position`),
+     larghezze e qualità AVIF calibrate a dimensione resa (la foto sta sotto il velo scuro del titolo).
+   - Qualità per uso calibrata alla dimensione resa sul telefono (non allo zoom 200 %); logo ≤ 3× l'altezza resa.
+   - Siti a servizio spento identici; baseline VRT invariate; verifica con Lighthouse locale (5 esecuzioni, mediana), poi
+     PSI dal vivo su Cavaliere dopo la ripubblicazione (autorizzata da Mattia il 15/09).
 
 ## G1 — Scheda Google consigliata (piano pronto)
 
