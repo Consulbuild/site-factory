@@ -34,7 +34,7 @@ export function KeySetup({
   compact?: boolean;
   /** Riga d'aiuto sotto il form (es. «Incolla tutto il file JSON»). */
   aiuto?: string;
-  /** Altra metà di una credenziale a due pezzi: secondo campo facoltativo, provato e salvato insieme. */
+  /** Altra metà di una credenziale a due pezzi: secondo campo obbligatorio, provato e salvato insieme. */
   coppia?: { name: string; label: string; placeholder?: string };
   /** Avvisa il contenitore che la verifica è in corso (la POST non si può annullare). */
   onBusyChange?: (busy: boolean) => void;
@@ -76,7 +76,7 @@ export function KeySetup({
         className={compact ? "flex flex-wrap gap-2" : "mt-3 flex gap-2"}
         onSubmit={(e) => {
           e.preventDefault();
-          if (key.trim()) save();
+          if (key.trim() && (!coppia || altra.trim())) save();
         }}
       >
         <input
@@ -102,7 +102,7 @@ export function KeySetup({
             aria-describedby={aiuto ? `${name}-aiuto` : undefined}
           />
         )}
-        <button type="submit" className={btnPrimary} disabled={busy || !key.trim()}>
+        <button type="submit" className={btnPrimary} disabled={busy || !key.trim() || (!!coppia && !altra.trim())}>
           {busy ? "Verifico…" : "Salva e verifica"}
         </button>
       </form>
@@ -143,6 +143,18 @@ interface KeyGroup {
   titolo: string;
   frase: string;
   chiavi: KeyInfo[];
+}
+
+/** Righe del pannello: una credenziale a due metà (DataForSEO) è una riga sola, sulla metà che viene prima. */
+function righeGruppo(chiavi: KeyInfo[]) {
+  return chiavi.flatMap((k, i) => {
+    const coppia = k.coppia ? chiavi.find((x) => x.name === k.coppia) : undefined;
+    if (coppia && chiavi.indexOf(coppia) < i) return [];
+    const parti = (l: string) => /^(.*) \((.*)\)$/.exec(l);
+    const [a, b] = [parti(k.label), coppia && parti(coppia.label)];
+    const label = !coppia ? k.label : a && b && a[1] === b[1] ? `${a[1]} (${a[2]} e ${b[2]})` : `${k.label} e ${coppia.label}`;
+    return [{ k, coppia, label, configurata: k.configured && (!coppia || coppia.configured), incompleta: !!coppia && k.configured !== coppia.configured }];
+  });
 }
 
 /** Pannello di gestione di tutte le API key della pipeline, per gruppi (stato + aggiorna). */
@@ -196,7 +208,8 @@ export function ApiKeysPanel() {
           </div>
         ) : (
           gruppi.map((g) => {
-            const configurate = g.chiavi.filter((k) => k.configured).length;
+            const righe = righeGruppo(g.chiavi);
+            const configurate = righe.filter((r) => r.configurata).length;
             return (
               <section key={g.id} aria-labelledby={`chiavi-${g.id}`} className="mt-4 border-t border-line pt-4">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
@@ -204,24 +217,25 @@ export function ApiKeysPanel() {
                     {g.titolo}
                   </h3>
                   <span className="text-xs text-muted">
-                    {configurate} di {g.chiavi.length} {configurate === 1 ? "configurata" : "configurate"}
+                    {configurate} di {righe.length} {configurate === 1 ? "configurata" : "configurate"}
                   </span>
                 </div>
                 <p className="mt-1 text-sm text-muted">{g.frase}</p>
                 <ul className="mt-2 divide-y divide-line">
-                  {g.chiavi.map((k) => {
+                  {righe.map(({ k, coppia, label, configurata, incompleta }) => {
                     const aperta = openKey === k.name;
-                    const coppia = k.coppia ? g.chiavi.find((x) => x.name === k.coppia) : undefined;
                     return (
                       <li key={k.name} className="flex flex-wrap items-center gap-3 py-2.5">
                         <div className="min-w-0 flex-1">
-                          <div className="text-sm font-medium">{k.label}</div>
+                          <div className="text-sm font-medium">{label}</div>
                           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                            {k.configured ? (
+                            {configurata ? (
                               <>
                                 <Badge tone="ok">Configurata</Badge>
                                 {k.hint && <span className="mono text-xs text-muted">{k.hint}</span>}
                               </>
+                            ) : incompleta ? (
+                              <Badge tone="warn">Incompleta</Badge>
                             ) : (
                               <Badge tone="idle">Mancante</Badge>
                             )}
@@ -245,7 +259,7 @@ export function ApiKeysPanel() {
                           disabled={verifica}
                           onClick={() => setOpenKey(aperta ? null : k.name)}
                         >
-                          {aperta ? "Annulla" : k.configured ? "Aggiorna" : "Aggiungi"}
+                          {aperta ? "Annulla" : configurata ? "Aggiorna" : "Aggiungi"}
                         </button>
                         {aperta && (
                           <div className="basis-full">
@@ -254,7 +268,7 @@ export function ApiKeysPanel() {
                               name={k.name}
                               title={k.label}
                               placeholder={k.segnaposto}
-                              aiuto={k.aiuto}
+                              aiuto={coppia ? "Compila entrambi i campi: la prova gratuita li verifica insieme." : k.aiuto}
                               coppia={coppia && { name: coppia.name, label: coppia.label, placeholder: coppia.segnaposto }}
                               onBusyChange={setVerifica}
                               onSaved={() => {
