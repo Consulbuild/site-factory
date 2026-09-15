@@ -57,10 +57,14 @@ di stato. Ricerca a monte: `docs/ricerca-traffico-2026-09.md`; fonti primarie in
 - **Renderer**: fondamenta SEO e pagine extra si accendono con un'env di build derivata dallo
   stato del servizio Sito (`attivo` o `sospeso`). A servizio spento l'HTML è identico a oggi.
 - **Artifact separati** (mai dentro `contesto.json`, per non rendere stale la pipeline):
-  `out/<slug>/traffico/` → `dati.json` (mini-form), `mappa-query.json`, `pagine-copy.json`,
+  `out/<slug>/traffico/` → `zone-servite.json` (T3: zone del form lead tradotte, scritto solo
+  quando l'operatore salva; senza file vale la proposta dal lead), `mappa-query.json`, `pagine-copy.json`,
   `scheda-consigliata.json`, `slug-registro.json`, `registro.ndjson` (una riga per pubblicazione:
   chi, cosa, prima/dopo), `volano.ndjson`, `baseline-*.json`. Dati condivisi:
-  `site-renderer/data/comuni-fatti.json`.
+  `site-renderer/data/comuni-fatti.json`. Niente mini-form (decisione T3 punto 13).
+- **Zone servite** (T3): i piani a valle le leggono solo da `site-factory-editor/lib/zone-servite.ts`
+  (`leggiZoneServite` → `zoneUsabili` → `comuniServiti` / `areeServite` / `etichettaArea` /
+  `regioneDiSigla`), mai il JSON a mano; se `zoneUsabili` non è ok si fermano col suo motivo.
 - **Sensori sul VPS**: n8n raccoglie aggregati e stato indicizzazione in Data Tables; Search
   Console resta l'archivio a 16 mesi letto su richiesta. L'editor legge con `fonte()` e `memo`
   (`lib/portafoglio.ts`, `lib/cache.ts`): stati ok / non configurata / non raggiungibile, mai
@@ -127,7 +131,7 @@ si calibra con 4-8 settimane di dati Search Console.
 | T0 | Area Traffico: forma e scheletro | pagina portafoglio + dettaglio Sito/Scheda, stati spento/attivo/sospeso, chiavi con prova | fatto (2026-09-14) | `fb2ade6`, `a6e10b9`, `ff95365`, `4d859cc`, `e307917` + chiusura documenti |
 | T1a | Fondamenta SEO | sitemap, robots per cliente, JSON-LD reale, title/H1/description per pagina, chiave IndexNow, interlock deploy | fatto (2026-09-14), con l'integrazione: catena e scheda Build rifanno la build quando le fondamenta non sono quelle attese, avvisi nel blocco Pubblicazione, dialog Attiva Sito aggiornato; integrazione collaudata e chiusa (piano § Integrazione; aperto: il dettaglio Traffico dice ancora che le fondamenta non sono disponibili) | `78ddf16`, `29ea851`, `bd1578d`, `93ad659`, `e44fb95`, `10692a0` + chiusura documenti; integrazione `90adaca`, `0376844`, `4e9f327` + documenti `a103da2` e chiusura |
 | T5a | Contratto multipagina e renderer | `pages` additivo, pagine servizio/zone/lavori, navbar/footer, 404, breadcrumb | da fare | — |
-| T3 | Mini-form «Dati per farti trovare» | link firmato → form → `traffico/dati.json` | da fare | — |
+| T3 | Zone servite dal form lead | zone del form lead tradotte col dataset T6a in comuni, dintorni, province e regioni → `traffico/zone-servite.json`, card nel dettaglio Traffico | fatto (2026-09-15), collaudato e chiuso (piano § Verifica): nessun mini-form, nessuna conferma obbligatoria (proposta tradotta per intero già usabile), Tally «da impostare», raggio «dintorni» 20 km. Aperti per Mattia: testi della card, raggio 15 km per le sedi dense, `province.json` del form pre-riordino sardo | `aaa89d1`, `f2b3c9f`, `f8d84e6`, `c636daf`, `4050039`, `84993b2`; revisione `0e7b6c9`, `c175482` + chiusura documenti |
 | T6a | Fatti comunali | `comuni-fatti.json` con fonte/licenza, offline in build | fatto (2026-09-14), collaudato e chiuso (piano § Verifica) con **dataset dichiarato incompleto**; completamento della sera (fasi 2-3, piano § Completamento): **edifici 2011 presenti** dal file per sezioni di censimento di `www.istat.it` (5 comuni e totali nazionali identici), **mancano solo le famiglie 2021** (`esploradati.istat.it` irraggiungibile, nessuna copia ufficiale altrove; comando per completarle nei punti aperti del piano). Completamento collaudato e chiuso (piano § Verifica, Collaudo finale del completamento): banco 141/0/5 anche senza rete, edifici ricalcolati in modo indipendente identici per 7.830 comuni | `14f2fe3`, `8561389`, `1f66586`, `c22a76e`, `866e6f6`, `4997dad` + chiusura documenti; completamento `04d6203`, `a87bd75`, revisione `42edae0`, `ed8041c` + chiusura documenti |
 | T4 | Mappa query → pagine | universo query, volumi e SERP (DataForSEO/Ads), 8-20 query target | da fare | — |
 | T5b | Copy delle pagine | job `traffico:` sul run-bus, skill e critico estesi, gate di similarità | da fare | — |

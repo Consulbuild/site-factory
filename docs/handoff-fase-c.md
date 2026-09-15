@@ -160,6 +160,18 @@ prossime schede.
   allo script) e collaudo finale del 15/09: suite verdi (banco 61/0), identità a servizio spento 12/12, E1-E7
   dall'editor sulla fixture poi cancellata; `load` della home da profilo Google 11,2 → 7,8 s. Ogni modifica a
   `media-varianti.ts` fa ricodificare tutte le foto alla prima build (cache da potare a mano, 114 MB).
+- **Traffico T3 — zone servite dal form lead** (2026-09-15, piano chiuso in `docs/traffico/piano-T3.md`): nessun
+  mini-form. `site-factory-editor/lib/zone-servite.ts` traduce in modo deterministico le zone di
+  `raw-submission.json` (sede + «X e dintorni» a 20 km, «Provincia di X», «Tutta la regione X», «X e regioni vicine»,
+  «Tutta Italia», «Nome (SIGLA)», nomi esatti scritti a mano) col dataset T6a e `site-intake/public/data/province.json`
+  (+ 4 province sarde 2026); banco `scripts/test-zone-servite.ts` (110/0, parità con `CONFINI` e col lettore T6a). Card
+  «Zone servite» in testa al dettaglio `/traffico/[slug]` (Dal form lead · Da controllare · Da impostare · Confermate · Da
+  rivedere · Non leggibile), modifica inline, `POST /api/clients/[slug]/traffico/zone` (`anteprima`, `salva` con impronta
+  del lead, CSRF). `traffico/zone-servite.json` nasce solo da un salvataggio; una proposta tradotta per intero è già
+  usabile. Consumatori (T4, G1, T5a, T2b/T8) solo via `leggiZoneServite` + `zoneUsabili`. Clienti reali: Saggin usabile
+  (Veneto), Cavaliere e La Cecilia (Tally) da impostare a mano una volta. Collaudo finale: suite verde, E2E API e UI su
+  fixture poi nel Cestino, file dei clienti reali identici. Aperti per Mattia: testi della card, raggio 15 km per sedi
+  dense (Monza 156 comuni), `province.json` del form ancora con «Sud Sardegna».
 
 ## Clienti in `site-renderer/out/` (fuori git)
 

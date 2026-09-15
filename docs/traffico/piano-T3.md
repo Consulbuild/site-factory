@@ -1,9 +1,8 @@
 # Piano T3 — Zone servite dal form lead
 
 Versione precedente (mini-form, **superata** dalle decisioni T3 punti 12-13): `git show 550126f:docs/traffico/piano-T3.md`.
-Stato: **fasi 2 e 3 fatte, 2026-09-15** (sezioni «Sviluppo» e «Calibrazione» in fondo); restano test, debug finale e
-chiusura documenti. Sopra questo testo valgono `decisioni-piani.md` («Priorità assoluta», T3 punti 12-14). Fonti: `README.md`
-§3-§5, `stato-orchestrazione.md`, `brief-T3.md`. La sezione «Verifica» si aggiunge in fase 4.
+Stato: **chiuso, 2026-09-15** (sezioni «Sviluppo», «Calibrazione» e «Verifica» in fondo). Sopra questo testo valgono
+`decisioni-piani.md` («Priorità assoluta», T3 punti 12-14). Fonti: `README.md` §3-§5, `stato-orchestrazione.md`, `brief-T3.md`.
 
 ## 1. Contesto
 
@@ -367,3 +366,50 @@ dall'agente; restano per Mattia i testi del punto 3 e il dubbio del punto 1.
 
 Da segnalare a Mattia per la chat del form (decisione 14): `site-intake/public/data/province.json` è precedente al riordino
 sardo e offre ancora «Sud Sardegna e provincia», che T3 non può tradurre.
+
+## Verifica (fasi 4-5, collaudo finale, 2026-09-15)
+
+Dopo 11 problemi corretti nei giri di revisione (`0e7b6c9`, `c175482`). Editor su :3311 (dev), esiti reali.
+
+| Comando (in `site-factory-editor/`) | Esito |
+|---|---|
+| `npx tsc --noEmit` | exit 0, nessun errore |
+| `npm run build` | exit 0, route `ƒ /api/clients/[slug]/traffico/zone` e `ƒ /traffico/[slug]` |
+| `node --experimental-strip-types scripts/test-zone-servite.ts` | 110 passati, 0 falliti (gruppi A-G del §7) |
+| `scripts/test-traffico-stato.ts` | 58 passati, 0 falliti |
+| `scripts/test-fondamenta.ts` | 114 passati, 0 falliti |
+| `scripts/test-import-form.ts` | exit 0, ✓ import dal form (lista, brief, intake, foto, logo, client.json, pulizia `_inbox`) |
+| `scripts/test-portafoglio.ts` | 43 passati, 0 falliti |
+
+**E2E API** su `zz-test-t3` (form v4, sede Sandrigo): 403 cross-site, 415 senza JSON, 400 slug non valido, 400 azione
+`ricalcola` (tolta), 400 corpo non JSON, 404 cliente assente; `anteprima` «Castro» → non riconosciuta coi 2 candidati,
+«Monza e dintorni» → 156 comuni, «Sandrigo e dintorni» → provenienza lead; `salva` con «zona nord» → 422 con l'elenco,
+impronta sbagliata → 409, salva valido → 200 e file conforme allo schema (sede, provenienza lead/operatore, `raggioKm` 20);
+lead cambiato nel `raw-submission.json` della fixture → `salva` con l'impronta vecchia 409, `zoneUsabili` falso col motivo
+del lead cambiato; `zone-servite.json` fuori schema (`versione: 2`) su `zz-test-t3-tally` → card «Non leggibile» e `salva`
+409 senza sovrascrivere.
+
+**UI nel browser** (1280 e 400 px, chiaro e scuro): proposta da controllare con «Modifica» primaria e «zona nord» non
+riconosciuta; confermate «con correzioni a mano» e «Nel form lead: …»; lead cambiato con banner, «Usa le zone del nuovo lead»
+→ ConfirmDialog che nomina «Monza (MB)» → confermate con Provincia di Padova (101 comuni); lead cambiato non pulito → «Rivedi
+le zone del nuovo lead», «Va bene così» → confermate con le aree salvate e la nuova impronta; Modifica: «Castro» → errore sotto
+il campo coi candidati, «Castro (LE) e dintorni» → 38 comuni, «Togli» sposta il focus sul «Togli» successivo, «Salva e
+conferma» → focus sul titolo; Tally «Da impostare» → «Imposta le zone», «Sud Sardegna e provincia» → nota con le province nuove,
+«Tutta la regione Lombardia» + ⌘S → «Impostate a mano», 1.502 comuni. A 400 px nessuno scroll orizzontale
+(`scrollWidth` 400), righe a blocco. Nota: l'Invio nel campo non si è potuto provare, perché lo strumento del browser non
+invia i form con l'Invio nemmeno su un form HTML di prova; «Aggiungi» col clic funziona.
+
+**Clienti reali** solo aperti: Saggin «Dal form lead», Sandrigo (VI) + Veneto, 560 comuni · 4.853.472 residenti, nessuna
+primaria; Cavaliere e La Cecilia «Da impostare» dal modulo Tally. sha256 dei 300 file dei 3 clienti identici prima e dopo;
+nessun `client.json` creato dall'apertura del dettaglio (fixture Tally senza `client.json`). `lib/staleness.ts` non legge
+`traffico/`: contesto, copy e build non diventano stale. Stato di prova ripristinato: `raw-submission.json` della fixture
+identico all'inizio (sha256), fixture nel Cestino a fine collaudo. Tema dell'editor riportato su chiaro.
+
+**Perimetro**: i commit del piano (`aaa89d1`, `f2b3c9f`, `f8d84e6`, `c636daf`, `4050039`, `84993b2`, `0e7b6c9`, `c175482` e
+la chiusura) toccano solo file del §6 più `docs/traffico/**`, `docs/DEBUG.md` e `docs/handoff-fase-c.md`; nessuna modifica del
+piano resta fuori dai commit (`factory/assignments.json` modificato nel working tree è di un'altra sessione, non di T3).
+Revisione del diff: nessun difetto nuovo. Minore, lasciato com'è: con l'elenco vuoto e un testo non riconosciuto nel campo,
+il motivo accanto a «Salva e conferma» dice «Aggiungi almeno una zona.» mentre l'errore sotto il campo spiega il perché.
+
+**Per Mattia**: i testi della card (Calibrazione §3), il dubbio sul raggio a 15 km per le sedi dense come Monza (Calibrazione
+§1) e `province.json` del form da portare al riordino sardo 2026.
