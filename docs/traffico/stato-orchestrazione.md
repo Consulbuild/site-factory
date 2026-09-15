@@ -35,10 +35,10 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
 | T0, R1, T1a (+ integrazione) | chiusi e verificati |
 | T6a | chiuso e verificato dall'orchestratore (banco 141/0/5, build, check): edifici 2011 presenti (`04d6203`…`673bbb3`); mancano solo le famiglie 2021 (esploradati giù, comando in `piano-T6a.md`) |
 | T1b | chiuso (`8bbfe85`…`30d049a`); controllore: nessuna allucinazione, secondo giro saltato; Lighthouse mobile home 75 → 75 (LCP 10,9 → 9,8 s, 3,5 → 2,3 MB; sotto 90: vince la qualità, decisione 8), privacy 90 → 99; `dist` ~4,8× su disco |
-| T3 | piano riscritto «Zone servite dal form lead» (`aaa89d1`, decisioni T3 punto 14); **in sviluppo** (run `wf_33cd84c6-4a8`, task `wtx5pmhnk`) |
+| T3 | chiuso e verificato dall'orchestratore (`f8d84e6`…`c2a28aa`; tsc, banco zone 110/0 in 16 s, stato 58/0). Costo: 48 agenti (30 scettici), 6,1 M token, 2 h → scettici ridotti (3 solo per gravità alta). Aperto: l'editor legge `site-intake/public/data/province.json` generato e fuori da git (su un checkout pulito errore leggibile «npm run comuni»); si deriva da `data-src/comuni.json` solo se serve un checkout pulito |
 | T4, T5a, T2a, T2b, G1 | piano scritto e decisioni registrate (con gli effetti di T3 punto 13), da sviluppare |
 | T6b | sospeso: nessuna fonte verificata del luogo dei lavori |
-| K1 | chiavi per gruppi in Impostazioni: piano pronto (`3282bae`, decisioni K1), **si sviluppa subito dopo T3** |
+| K1 | chiavi per gruppi in Impostazioni: piano pronto (`3282bae`, decisioni K1), **in sviluppo** |
 | T5b, T5c, T6b, T7a, T7b, T8, G2, G3 | da pianificare (fase 1) |
 | S0 | lavoro manuale di Mattia (README §8) |
 
