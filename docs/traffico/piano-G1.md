@@ -1,8 +1,12 @@
 # Piano G1 — Scheda Google consigliata
 
-Stato: **fase 1 (piano) — in revisione dall'orchestratore**, 2026-09-14. Fonti: `docs/traffico/README.md` (§1-§5),
-`decisioni-piani.md` (T3 punto 10, T4), `brief-G1.md`, `ricerca-scheda-google-2026-09.md` (§0-§6, §7.1, §8.2-§8.3, §9,
-§10 G1, §11.1), `piano-T3.md` (R.3-R.4, §5.2-§5.4, §6.1, §8.3), `piano-T4.md` (§2, §3.2, §6, §7, §8, §10-§13). Codice letto:
+Riallineato il 15/09 alle decisioni T3 12-14 e K1.
+
+Stato: **fase 1 (piano) — pronto per lo sviluppo dopo T4**, scritto il 2026-09-14, riallineato il 2026-09-15 (decisioni G1
+1-10, T3 punti 12-14, K1, «Priorità assoluta»). Contratti reali letti nel codice il 15/09: `lib/zone-servite.ts` (T3, chiuso),
+`lib/secrets.ts` e `lib/chiavi-traffico.ts` (K1, chiuso). Fonti: `docs/traffico/README.md` (§1-§5),
+`decisioni-piani.md` (Priorità assoluta, T3 punti 10-14, T4, G1, K1), `brief-G1.md`, `ricerca-scheda-google-2026-09.md` (§0-§6, §7.1, §8.2-§8.3, §9,
+§10 G1, §11.1), `piano-T3.md` (§3, contratto delle zone), `piano-T4.md` (§2, §3.2, §6, §7, §8, §10-§13). Codice letto:
 `lib/traffico.ts`, `app/traffico/[slug]/page.tsx`, `components/traffico-ui.tsx`, `lib/run-bus.ts`, `lib/run-step.ts`,
 `lib/portafoglio.ts`, `lib/cache.ts`, `lib/secrets.ts`, `app/api/setup/keys/route.ts`, `.claude/skills/copy-critic/SKILL.md`,
 `.claude/skills/local-service-copywriter/SKILL.md`, forma di `contesto.json`/`brief.json` di Cavaliere (senza dati personali),
@@ -15,40 +19,62 @@ forma di `copy-coverage.json`, `lavori.json`, `site.json`.
 
 Obiettivo: per un cliente con servizio **Scheda Google** attivo, un lavoro dell'editor produce
 `out/<slug>/traffico/scheda-consigliata.json`: categoria primaria e aggiuntive scelte dai competitor della zona e dai servizi
-veri, servizi, descrizione ≤ 750 caratteri, orari, area servita, telefono, sito con UTM, social, foto reali, link, ciascuna
-voce con fonte, motivo, rischio e giorno di inserimento. Mattia la legge nell'area Traffico e la copia a mano nella scheda
-(decisione 1). Checklist «fatto» e confronto con la scheda pubblica: G2. Monitor: G3.
+veri, servizi, descrizione ≤ 750 caratteri, orari, **area servita dalle zone servite del form lead** (la leva più forte nelle
+mappe della zona: priorità assoluta del 15/09), telefono, sito con UTM, social, foto reali, link, ciascuna voce con fonte,
+motivo, rischio e giorno di inserimento. Mattia la legge nell'area Traffico e la copia a mano nella scheda (decisione 1).
+Checklist «fatto» e confronto con la scheda pubblica: G2. Monitor: G3.
 
-Fatti che vincolano il piano (letti oggi):
+Fatti che vincolano il piano (letti il 14/09, riletti il 15/09):
 
-- **Nessun `StepKey`**: il lavoro è `traffico:<slug>:scheda` sul run-bus con `kind: "traffico"`, introdotto da T3
-  (`startTrafficoRun`, `busIdTraffico`, eventi in `out/<slug>/traffico/logs/run-<lavoro>.ndjson`) ed esteso da T4. G1 non tocca
-  la catena demo né `client.json`.
+- **Nessun `StepKey`**: il lavoro è `traffico:<slug>:scheda` sul run-bus con `kind: "traffico"`, che **nasce in T4**
+  (`startTrafficoRun`, `busIdTraffico`, eventi in `out/<slug>/traffico/logs/run-<lavoro>.ndjson`; oggi `run-bus.ts` ha solo
+  `"cliente" | "fabbrica"`). G1 non tocca la catena demo né `client.json`.
+- **Zone servite (T3, chiuso)**: `lib/zone-servite.ts` è l'unica via per leggerle (decisione T3 punto 14):
+  `leggiZoneServite(dir)` → `zoneUsabili(lettura)` (`{ok: true, zone}` con zone `confermate` o proposta `riconosciute`, altrimenti
+  `{ok: false, motivo}` con le frasi `MOTIVO_DA_CONTROLLARE` / `MOTIVO_DA_IMPOSTARE` / `MOTIVO_LEAD_CAMBIATO`); `areeServite(zone)`
+  → `Area[]` unica nell'ordine delle etichette (`comune` · `dintorni` con `raggioKm` · `provincia` · `regione` · `italia`);
+  `comuniServiti(zone, d)` → comuni 2026 con `kmDallaSede` e indici delle aree; `comuniEntroKm`, `regioneDiSigla`,
+  `etichettaArea`, `nomeBreveRegione`, `caricaDati()` (dataset T6a `site-renderer/data/comuni-fatti.json` con `centro: [lat, lng]`
+  + `site-intake/public/data/province.json`, generato e fuori da git). `zone.sede` = `{codice, nome, sigla} | null`. Il lead è
+  `raw-submission.json` (`risposte.zone`, `risposte.sede`); per i brief Tally lo stato è `da_impostare`.
+- **Non esistono** `traffico/dati.json`, `traffico/foto.json`, priorità dei lavori, prezzi, attestati né orari di T3 (T3 punti
+  13-14): niente mini-form.
+- **Orari**: oggi nessun campo nel form lead né in `brief.json`. Mattia li aggiunge al form lead in un'altra chat (form, n8n,
+  import): G1 li legge dal lead importato quando esistono, col nome del campo scelto là (verifica in M0), altrimenti la voce resta
+  «da completare».
+- **Chiavi (K1, chiuso)**: `DATAFORSEO_LOGIN` e `DATAFORSEO_PASSWORD` esistono già in `CHIAVI_TRAFFICO` di `lib/secrets.ts`
+  (gruppo «Ottimizzazione del traffico» in Impostazioni, prova gratuita coi dati utente in `lib/chiavi-traffico.ts`). G1 non
+  aggiunge chiavi né prove e non tocca `secrets.ts`, `chiavi-traffico.ts` o la route delle chiavi: legge le credenziali solo
+  attraverso `lib/dataforseo.ts` di T4 (`getSecret`).
 - `run-step.ts` esporta `ioWithSignal(signal, sink)`: le fasi `claude -p` del lavoro lo riusano così com'è (login Max,
   `--model claude-opus-4-8 --effort xhigh`, errori come valore di ritorno, `isErroreLimite`). Le costanti degli strumenti
   (`READ_SKILL_WRITE`, `NO_NET_NO_BASH`) sono private in `lib/steps.ts`, che nessun piano Traffico tocca.
 - `lib/agenti.ts`: la fase è il nome della skill; `/critic/i` vince su tutto, `/logo/i` cattura qualunque fase con «logo».
   Le etichette delle fasi di G1 non contengono «logo»; la skill di scrittura richiede una regola nuova.
-- `lib/dataforseo.ts` nasce in T3 (`schedaPubblica`, costi) e cresce in T4 (cache su disco, `saldo`, `ErroreDfs`, SERP
-  organica). T4 legge anche il `local_pack` della SERP organica: la documentazione del `local_pack` **non** ha categorie
-  (solo `cid`, `title`, `domain`, `phone`, `rating`), quindi le categorie vengono solo da Maps SERP e My Business Info.
+- `lib/dataforseo.ts` **nasce in T4** (client con Basic auth, trasporto iniettabile, `SF_DATAFORSEO_REGISTRATE`, cache su disco,
+  tentativi, `ErroreDfs`, `saldo`, `configurata()`, costi); G1 lo estende con i due endpoint Maps e My Business Info. T4 legge
+  anche il `local_pack` della SERP organica: la documentazione del `local_pack` **non** ha categorie (solo `cid`, `title`,
+  `domain`, `phone`, `rating`), quindi le categorie vengono solo da Maps SERP e My Business Info.
 - `lib/legale.ts` esporta `inferForma(denominazione)` → `societa | ditta_individuale` (inferenza incerta → ditta individuale,
-  degrado sicuro): è il criterio «nomi senza forma societaria» di T3 punto 10.
+  degrado sicuro): decide solo se è ammessa una ricerca col nome del cliente (decisione G1 punto 1).
 - `contesto.json` ha `servizi_atomizzati[].servizio` senza id, `macro_categorie`, `settore_normalizzato`, `zona.sede` (solo nome),
   `punti_di_forza[{claim, fonte}]`, `promesse_consentite`, `promesse_vietate` (Cavaliere: 15, tra cui anni di esperienza, garanzie,
   materiali di qualità, bonus fiscali), `promessa_martello`, `tono`. `copy-coverage.json` lega ogni servizio alla card del sito.
-- Foto: `lavori.json` → `img/lavoro-N.jpg` sono le foto reali del form (EXIF tolto); `img/hero.jpg` e `img/card-*.jpg` sono
-  generate con FLUX e **non** vanno mai sulla scheda (T1a decisione 2, ricerca §5.4). T3 aggiunge `traffico/foto.json` verificato.
+- Foto: `lavori.json` (`[{file, alt, caption}]`) → `img/lavoro-N.jpg` sono le foto reali del form (EXIF e GPS tolti all'import);
+  nessun servizio, comune o anno per foto. `img/hero.jpg` e `img/card-*.jpg` sono generate con FLUX e **non** vanno mai sulla
+  scheda (T1a decisione 2, ricerca §5.4).
+- Logo: fornito dal cliente in `logo/fornito-*.png`, oppure generato dalla pipeline in `mark.png` (con `client.steps.logo.status
+  === "verificato"`); i `mark*.svg` non sono formati ammessi da Google.
 - `lib/slop.ts` esegue `check-slop.mjs` solo su `copy.json`; lo script accetta qualunque mappa piatta `slot → testo`, quindi la
   descrizione si controlla con lo stesso script su un file temporaneo (nessuna copia delle frasi bandite).
-- Il servizio Sito e il servizio Scheda sono separati: `dati.json` (orari, comuni, prezzi) nasce solo dal modulo di T3, che
-  richiede il Sito attivo; `mappa-query.json` nasce solo da T4, che richiede il Sito attivo e i dati verificati. G1 deve
-  funzionare anche senza entrambi.
-- `.claude/scope.json` oggi = perimetro di **T6a**; T3 e T4 modificheranno `app/traffico/[slug]/page.tsx`, `lib/dataforseo.ts`,
-  `lib/agenti.ts`, `DESIGN-BRIEF.md`: la fase 2 di G1 parte **dopo T3 e T4 chiusi** (M0).
+- Il servizio Sito e il servizio Scheda sono separati: le zone servite e gli orari vengono dal form lead e valgono per entrambi (la
+  card delle zone è visibile anche a servizi spenti); `mappa-query.json` nasce solo da T4, che richiede il Sito attivo. G1 deve
+  funzionare anche senza mappa.
+- `.claude/scope.json` oggi vuoto; T4 modificherà `app/traffico/[slug]/page.tsx`, `lib/run-bus.ts`, `lib/agenti.ts`,
+  `DESIGN-BRIEF.md` e creerà `lib/dataforseo.ts`: la fase 2 di G1 parte **dopo T4 chiuso** (M0).
 
-Fuori perimetro: scrittura sulla scheda via API; proposte di nome; post; Q&A; foto AI; recensioni; checklist e stati
-`fatto`/`in-revisione` (G2); geogrid e monitor (G3); letture Business Profile API e `cache-api.json` (§2.7).
+Fuori perimetro: scrittura sulla scheda via API; proposte di nome; post; Q&A; foto AI; recensioni; prezzi e attestati (T3 punto
+13); checklist e stati `fatto`/`in-revisione` (G2); geogrid e monitor (G3); letture Business Profile API e `cache-api.json` (§2.7).
 
 ## 2. Decisioni motivate
 
@@ -58,7 +84,7 @@ Le Business Profile API sono a quota 0 e il token OAuth vivrà in n8n (ricerca �
 `locations.get`, `categories.batchGet`, `attributes.list` e nessuna `cache-api.json` (nessuno le scriverebbe). Lo schema
 riserva `modalita: "api"` e la fonte `api-gbp` con puntatore obbligatorio: il giorno dell'accesso si aggiungono lettori e
 cache senza cambiare versione. Conseguenza dichiarata: nomi italiani delle categorie «da confermare» (§4.4 della ricerca),
-nessun servizio predefinito italiano, nessun attributo impostabile con prova. (Dubbio 4.)
+nessun servizio predefinito italiano, nessun attributo impostabile con prova. (Decisione G1 punto 4.)
 
 ### 2.2 Fonti DataForSEO (verificate oggi su docs.dataforseo.com e sulle pagine prezzi)
 
@@ -66,7 +92,7 @@ nessun servizio predefinito italiano, nessun attributo impostabile con prova. (D
 |---|---|---|---|---|
 | Schede della zona | `POST /v3/serp/google/maps/live/advanced` | `keyword`, `location_coordinate: "lat,lng,17z"` (7 decimali max, zoom 3z-21z, default 17z), `language_code: "it"`, `device: "mobile"`, `os: "android"`, `depth: 20` («for mobile device, only 20 results are returned») | item `maps_search`: `rank_absolute`, `cid`, `place_id`, `title`, `category`, `additional_categories`, `category_ids` («universal category IDs that do not change based on the selected country»), `domain`, `url`, `phone`, `is_claimed`; `check_url`, `cost` | **0,002 $** a SERP («billed per each SERP containing up to 100 results»); standard 0,0006, priority 0,0012 |
 | Dettaglio di una scheda | `POST /v3/business_data/google/my_business_info/live` | `keyword: "cid:<cid>"` con `location_coordinate: "lat,lng,raggio"` (raggio 199,9-199.999 mm, richiesto anche col `cid:`), `language_code: "it"` | `category`, `category_ids`, `additional_categories`, `description`, `services[]` (`category`, `title`, `snippet`, `price`), `work_time`, `url`, `phone`, `title` | **0,0054 $** a scheda; standard 0,0015, priority 0,003 |
-| Scheda del cliente | `schedaPubblica({keyword, coordinate})` di T3 (stesso endpoint, controllo d'identità su telefono o dominio) | — | come sopra | 0,0054 $, spesso già in cache da T3 |
+| Scheda del cliente | prima dagli item delle schede della zona (identità su telefono o dominio, §4.2 passo 2); se assente e **solo per una società**, una SERP Maps con `keyword` = `brief.azienda` al centro della sede, stessa identità; poi My Business Info sul `cid` trovato | come sopra | come sopra | 0,002 $ + 0,0054 $ |
 
 - **Prezzi 2026**: l'aggiornamento del 1/7/2026 tocca Business Listings Search e Categories Aggregation, non Maps SERP né My
   Business Info (pagina «pricing update» riletta oggi). Solo Live (decisione T4 punto 3).
@@ -78,27 +104,33 @@ nessun servizio predefinito italiano, nessun attributo impostabile con prova. (D
   endpoint; all'avvio del lavoro si cancellano i file scaduti dei due endpoint (le risposte contengono nomi e telefoni di
   competitor, anche ditte individuali). Nel file della scheda non entra nessun nome né telefono di competitor.
 
-### 2.3 Ditte individuali, chiavi assenti, sede non risolta
+### 2.3 Ditte individuali, chiavi assenti, zone non usabili
 
-- `inferForma(brief.azienda).forma === "ditta_individuale"` → **nessuna chiamata DataForSEO** (brief, T3 punto 10), neppure la
-  ricerca della zona. (Dubbio 1: la ricerca della zona non invia il nome del cliente.)
-- Senza chiavi, ditta individuale o sede non risolta: la scheda si prepara lo stesso; le categorie si scelgono dai servizi e dal
-  dizionario (§4.7), con `ricercaCategorie.zona` che dice perché e `datiInsufficienti: true`. Il resto della scheda non dipende
-  da DataForSEO. (Dubbio 2.)
+- `inferForma(brief.azienda).forma === "ditta_individuale"` → **nessuna ricerca col nome del cliente** (decisione G1 punto 1):
+  le schede della zona si leggono (le query sono di mestiere e servizio, la località è una coordinata), la scheda del cliente si
+  cerca solo tra quegli item per telefono o dominio. Il banco verifica che nessun corpo di richiesta contenga il nome.
+- Senza chiavi DataForSEO (`configurata()` di T4 falsa): la scheda si prepara lo stesso (decisione G1 punto 2); le categorie si
+  scelgono dai servizi e dal dizionario (§4.2 passo 7), segnate «da confermare coi concorrenti», `ricercaCategorie.zona:
+  "non-configurata"`, `datiInsufficienti: true`. Il resto della scheda non dipende da DataForSEO.
+- Zone non usabili (`zoneUsabili` → `ok: false`) o senza sede: nessuna lettura della zona (non c'è un centro affidabile),
+  `ricercaCategorie.zona: "zone-non-usabili"`, categorie dai servizi, area servita `null` col motivo di `zoneUsabili` in `mancanti`.
 
 ### 2.4 Query e punti
 
 - **Con `mappa-query.json`** (T4, `stato` ≠ `insufficiente`, sha degli ingressi coerenti): dalle `target`, le teste distinte per
   `testa.gruppo` nell'ordine delle target, sempre inclusa la testa di mestiere del cliente; **massimo 5**; il testo della query
-  Maps è `testa.testo` senza comune (la località la dà la coordinata).
+  Maps è `testa.testo` senza comune (la località la dà la coordinata). Nomi dei campi della mappa da riverificare in M0 sul
+  `piano-T4.md` chiuso.
 - **Senza mappa** (Sito spento, T4 non eseguito, mappa insufficiente): dal lessico di T4 (`lib/mappa-lessico.json`), la prima testa
-  di mestiere del `settore_normalizzato` + le teste primarie dei servizi in ordine di priorità (`dati.json` verificato) o, senza
-  dati, in ordine di `macro_categorie`; gruppi distinti, massimo 5. `fonteQuery: "lessico"`, pesi 1.
-- **Punti**: centro del comune della sede (dataset T6a, stessa risoluzione di T3/T4: mai l'indirizzo, che per una SAB è una casa)
-  + 4 punti a 2,5 km verso N, E, S, O: `lat ± 2,5/111,32`, `lng ± 2,5/(111,32·cos lat)`, arrotondati a 5 decimali. Zoom `17z`
-  (default documentato) finché il test 3 della ricerca non sceglie (Calibrazione C3).
-- **Tetti rigidi**: ≤ 5 query × 5 punti = 25 SERP; ≤ 10 My Business Info di competitor + 1 del cliente; saldo (`user_data`) ≥ 2 ×
-  stima prima di spendere.
+  di mestiere del `settore_normalizzato` + le teste primarie dei servizi in ordine di `macro_categorie` (nessuna priorità
+  dichiarata: T3 punto 13); gruppi distinti, massimo 5. `fonteQuery: "lessico"`, pesi 1. Query solo in italiano
+  (`language_code: "it"`).
+- **Punti**: centro del comune della sede da `zone.sede.codice` sul dataset T6a (`caricaDati().comuni[codice].centro`, `[lat, lng]`;
+  mai l'indirizzo, che per una SAB è una casa) + 4 punti a 2,5 km verso N, E, S, O: `lat ± 2,5/111,32`, `lng ± 2,5/(111,32·cos
+  lat)`, arrotondati a 5 decimali. La sede è sempre tra le zone servite (etichetta con `origine: "sede"`), quindi nessuna SERP fuori
+  zona. Zoom `17z` (default documentato) finché il test 3 della ricerca non sceglie (Calibrazione C3).
+- **Tetti rigidi**: ≤ 5 query × 5 punti = 25 SERP + 1 SERP col nome (solo società, solo se il cliente non è tra gli item); ≤ 10 My
+  Business Info di competitor + 1 del cliente; saldo (`user_data`) ≥ 2 × stima prima di spendere.
 
 ### 2.5 Costo per cliente
 
@@ -106,11 +138,11 @@ nessun servizio predefinito italiano, nessun attributo impostabile con prova. (D
 |---|---|---|
 | Schede della zona | 25 SERP | 0,050 $ |
 | Dettaglio dei primi competitor | 10 | 0,054 $ |
-| Scheda del cliente (se non già in cache da T3) | 1 | 0,005 $ |
-| **Prima preparazione** | 36 | **≈ 0,11 $** |
+| Scheda del cliente (SERP col nome solo per società non trovate + dettaglio) | 1-2 | 0,005-0,007 $ |
+| **Prima preparazione** | 36-37 | **≈ 0,11 $** |
 | Nuova preparazione entro 14 giorni | 0 (cache) | 0 $ |
 | Anno, aggiornamento trimestrale | — | ≈ 0,44 $ |
-| Ditta individuale · senza chiavi | 0 | 0 $ |
+| Senza chiavi · zone non usabili | 0 | 0 $ |
 
 Quota Max: da 2 (scrittura + critico) a 7 fasi `claude -p` a preparazione, **zero** quando gli ingressi della descrizione non sono
 cambiati (§6.5). Costo reale dal campo `cost`, una riga per chiamata pagata in `traffico/costi.ndjson` con `lavoro: "scheda"`.
@@ -133,16 +165,17 @@ confronto tra clienti su dati API; il gate di similarità della descrizione legg
 
 ```
 contesto.json (verificato) ─┐
-brief.json ─────────────────┤                                        ┌─ categorie (§4) ──┐
-traffico/dati.json ─────────┤  1 Controllo dei dati                  │                   │
-traffico/foto.json ─────────┤  2 Schede della zona ─── Maps SERP ────┤                   ├─ servizi (§5)
-traffico/mappa-query.json ──┤  3 Dettaglio delle schede ─ MBI ───────┘                   │
-copy.json · copy-coverage ──┤  4 Categorie e servizi (puro) ─────────────────────────────┤
-site.json · client.json ────┤  5 gbp-description-writer ─┐                               │
-T6a comuni-fatti.json ──────┤  6 Controlli sulla descrizione ◄─ gate (§6.3)              ├─ descrizione (§6)
-lib/scheda-categorie.json ──┤  7 gbp-description-critic (round n) ─► 8 correzioni ─┘     │
-lib/mappa-lessico.json ─────┘  9 Scrittura della scheda ◄── orari · area · telefono · sito/UTM · social · chat
-                                                            · link · foto · piano di inserimento
+brief.json · raw-submission ┤                                        ┌─ categorie (§4) ──┐
+zone servite (lib/zone-     ┤  1 Controllo dei dati                  │                   │
+  servite.ts, T3) ──────────┤  2 Schede della zona ─── Maps SERP ────┤                   ├─ servizi (§5)
+lavori.json · logo ─────────┤  3 La scheda del cliente               │                   │
+traffico/mappa-query.json ──┤  4 Dettaglio delle schede ─ MBI ───────┘                   │
+copy.json · copy-coverage ──┤  5 Categorie e servizi (puro) ─────────────────────────────┤
+site.json · client.json ────┤  6 gbp-description-writer ─┐                               │
+T6a comuni-fatti.json ──────┤  7 Controlli sulla descrizione ◄─ gate (§6.3)              ├─ descrizione (§6)
+lib/scheda-categorie.json ──┤  8 gbp-description-critic (round n) ─► 9 correzioni ─┘     │
+lib/mappa-lessico.json ─────┘ 10 Scrittura della scheda ◄── orari · area servita · telefono · sito/UTM · social
+                                                            · chat · link · foto · piano di inserimento
                                                             └─► traffico/scheda-consigliata.json (Zod)
 ```
 
@@ -153,13 +186,13 @@ il lavoro vale alla preparazione successiva («Da aggiornare», §8).
 
 | Campo | Fonte ammessa | Regola | Senza fonte |
 |---|---|---|---|
-| Nome | `dati.nomeUso` verificato, altrimenti `brief.azienda` | `solo-controllo`, `consigliato: null`; `confronto` col titolo della scheda pubblica del cliente (normalizzati con `normAlnum`, con e senza forma giuridica); se il titolo pubblico contiene una testa del lessico o un comune: `rischio: "sospensione"` e motivo | — |
+| Nome | `brief.azienda` | `solo-controllo`, `consigliato: null`; `confronto` col titolo della scheda pubblica del cliente (normalizzati con `normAlnum`, con e senza forma giuridica); se il titolo pubblico contiene una testa del lessico o un comune: `rischio: "sospensione"` e motivo | — |
 | Categorie | §4 | §4 | mai vuota: dizionario |
-| Servizi | `contesto.servizi_atomizzati` + `dati.prezzi` verificati | §5 | — |
+| Servizi | `contesto.servizi_atomizzati` | §5 | — |
 | Descrizione | §6 | §6 | `null` se i gate non passano, in `mancanti` |
-| Orari | `dati.orari` verificato | gruppi → `{giorno 1..7, apre, chiude}` ordinati; nessuna fascia inventata | `null` · «chiedili col modulo «Dati per farti trovare» (servizio Sito) o al cliente» |
+| Orari | orari del form lead importato (campo scelto da Mattia, verificato in M0; fonte `lead` col puntatore al campo) | fasce → `{giorno 1..7, apre, chiude}` ordinate; nessuna fascia inventata né completata; gli orari «in cui risponde al telefono», se diversi, solo nel motivo (dubbio 1) | `null` · «da completare: gli orari arrivano dal form lead» (lead senza il campo, lead Tally o campo vuoto) |
 | Orari speciali | — | nessuna fonte in G1 | `null`, non elencata tra i mancanti |
-| Area servita | `dati.comuni` verificati | sede prima, poi `km` crescente, nome; **massimo 20** (limite Google), gli esclusi nel motivo; `indirizzoVisibile: null` (nessuna fonte dice se riceve clienti in sede) | `null` · «servono i comuni confermati dal modulo» |
+| Area servita | zone servite via `zoneUsabili` (T3) | §3.1; **massimo 20** (limite Google); `indirizzoVisibile: null` (nessuna fonte dice se riceve clienti in sede) | `null` · il `motivo` di `zoneUsabili` («Zone servite da impostare nel dettaglio Traffico», …) |
 | Indirizzo visibile · pin | — | `null` in G1 (nessuna fonte su ricevimento in sede) | in `mancanti`: «chiedi al cliente se riceve in sede: se no, l'indirizzo va nascosto» |
 | Telefono | `brief.telefono` (numero dell'attività) | E.164 `+39…`; `copiaIncolla` nel formato nazionale del sito | `null` |
 | Sito | `client.steps.build.deploy.dominio` | §2.6 | `null` · «il sito non è pubblicato col suo dominio» |
@@ -168,7 +201,26 @@ il lavoro vale alla preparazione successiva («Da aggiornare», §8).
 | Chat | `brief.ricontatto_preferito` contiene «WhatsApp» e `promesse_consentite` lo ammette | `{tipo: "whatsapp", valore: telefono}` | `null` |
 | Link azione | `site.json` con form | §2.6 | `[]` |
 | Attributi | — | nessuna fonte del cliente in modalità pubblica | `[]` · «disponibili per categoria solo con l'accesso API (ricerca §8.3, chiamata 1)» |
-| Foto | `traffico/foto.json` (con `dati.json` verificato, `escludi: false`), altrimenti `lavori.json` → `img/lavoro-N.jpg`; logo solo se fornito dal cliente (`logo/fornito-*.png`) | §5.3 | `[]` · «nessuna foto reale» |
+| Foto | `lavori.json` → `img/lavoro-N.jpg`; logo fornito (`logo/fornito-*.png`) o generato e verificato (`mark.png`) | §5.3 | `[]` · «nessuna foto reale» |
+
+### 3.1 Area servita (`areaScheda(zone, dati)`, pura)
+
+Regola della decisione T3 punto 12: province e regioni intere dove l'etichetta del cliente è larga, comuni dove è precisa.
+
+1. Aree = `areeServite(zone)` (ordine delle etichette, la sede per prima). `italia` → la regione della sede
+   (`regioneDiSigla(zone.sede.sigla)`) con avviso «Google chiede un'area servita entro circa 2 ore dalla sede: "Tutta Italia" diventa
+   la regione della sede» (dubbio 2); senza sede → voce `null`.
+2. Voci primarie, una per area: `regione` → la regione; `provincia` → la provincia, tolta se la sua regione è già in elenco;
+   `comune` e il centro di `dintorni` → il comune, tolto se la sua provincia o la sua regione sono già in elenco.
+3. Riempimento (dubbio 3): per ogni `dintorni`, i comuni di `comuniEntroKm(codice, raggioKm)` non coperti da una voce, per `km` crescente e poi
+   nome, dopo tutte le voci primarie.
+4. Taglio a **20**: se le voci primarie superano 20, restano la sede e i comuni più vicini (`comuniServiti(...).kmDallaSede`),
+   province e regioni prima dei comuni; gli esclusi si contano nel motivo («5 comuni oltre il limite di 20 di Google, i più
+   lontani dalla sede»). Nessuna area fuori dalle zone servite.
+5. `copiaIncolla` per voce = il nome da cercare nel campo di Google: comune → `nome`; provincia → «Provincia di `nome`»; regione →
+   `nomeBreveRegione(nome)`. Il motivo cita le etichette del cliente («dal form lead: "Monza e provincia"»), fonte
+   `zone-servite` con `rif` `traffico/zone-servite.json#/etichette/<i>` (zone confermate) o `raw-submission.json#/risposte/zone/<i>`
+   (proposta riconosciuta).
 
 ## 4. Algoritmo delle categorie
 
@@ -205,7 +257,7 @@ il lavoro vale alla preparazione successiva («Da aggiornare», §8).
 1. **Raccolta.** Per ogni query `q` (peso `w_q`) e punto `p` (`n_p` punti): SERP Maps (§2.2). Item validi: `type = maps_search`,
    `cid` presente, `category_ids` non vuoto.
 2. **Cliente e omonimi.** Il cliente è l'item con `domain` (senza `www.`) = dominio del cliente, oppure `soloCifre(phone)` senza
-   `39` iniziale = telefono del brief, oppure `cid` = `cid` della scheda del cliente (da `schedaPubblica`): escluso. Un item con
+   `39` iniziale = telefono del brief, oppure `cid` = `cid` della scheda del cliente (trovata così, §2.2): escluso. Un item con
    titolo normalizzato uguale al nome del cliente ma senza telefono né dominio uguali resta competitor e genera l'avviso «Una
    scheda con lo stesso nome del cliente ma telefono e sito diversi: omonimo o duplicato, controllala» (con `check_url`, senza nome).
    Nessuna identificazione per solo nome.
@@ -229,18 +281,20 @@ il lavoro vale alla preparazione successiva («Da aggiornare», §8).
    ```
 
 6. **Test «È».** Per ogni `g` del dizionario:
-   - **passa** se almeno un servizio reale del cliente (contesto; per le priorità anche `dati.priorita`) soddisfa una `prova` di `g`
+   - **passa** se almeno un servizio reale del cliente (`contesto.servizi_atomizzati`) soddisfa una `prova` di `g`
      **e** `settore_normalizzato` (minuscolo) ∈ `g.settori`; il servizio che lo prova è `servizioReale`, la card del sito da
      `copy-coverage.json` entra nel motivo («sul sito: card "Ristrutturazioni e manutenzioni"»), la sua assenza è un avviso;
    - **da decidere** se la prova c'è ma il settore no (mestiere altrui: «l'impresa fa Impianti idraulici: è anche un idraulico?»):
      va in `categorieDaDecidere`, mai tra le voci;
    - **scartata** senza prova, anche con punteggio alto (motivo registrato solo per le categorie osservate nella zona).
-7. **Primaria.** Servizio principale = `dati.priorita[0]` verificato, altrimenti nessuno. Cluster `Q*` = query la cui testa copre il
-   servizio principale ∪ query di mestiere; `S*_prim` = `S_prim` calcolato su `Q*`. Candidate `K` = categorie che passano con
+7. **Primaria.** Servizio principale: nessuna priorità dichiarata dal cliente (T3 punto 13); con la mappa T4 è il servizio della
+   target col volume più alto, senza mappa nessuno. Cluster `Q*` = query la cui testa copre il servizio principale ∪ query di
+   mestiere; `S*_prim` = `S_prim` calcolato su `Q*`. Candidate `K` = categorie che passano con
    `tipo = "mestiere"`, più quelle la cui prova è il servizio principale.
    - Con dati sufficienti: `argmax_{g∈K} S*_prim(g)`; parità (differenza < 0,01) → `specificita` maggiore → `nSchede` → `gcid`.
    - Con dati insufficienti: `primariaDiSettore` se ∈ K; altrimenti la candidata con più servizi che la provano → `specificita` →
-     `gcid`. Motivo: «Scelta dai servizi: nella zona solo N schede lette» o il perché della zona non letta.
+     `gcid`. Motivo: «Scelta dai servizi: nella zona solo N schede lette» o il perché della zona non letta; senza chiavi anche «da
+     confermare coi concorrenti» (decisione G1 punto 2).
 8. **Primaria attuale diversa** (dalla scheda pubblica del cliente, se identificata): se l'attuale `a` passa il test «È» → si
    consiglia `a` (`azione: "conferma"`) e la candidata va nel motivo; se `a` non passa e `S*_prim(candidata) ≥ 1,5 · S*_prim(a)` →
    `azione: "modifica"`, `rischio: "riverifica"`, ultimo giorno del piano; se `a` non passa e la soglia non è raggiunta →
@@ -262,8 +316,7 @@ piccoli meno di 5 schede → dati insufficienti; nomi italiani da confermare fin
 
 ### 5.1 Servizi
 
-1. Ordine: servizi di `dati.priorita` verificati (abbinati per nome normalizzato, decisione T4 punto 8), poi gli altri nell'ordine
-   di `macro_categorie`; un servizio assente dal contesto → avviso, nessuna voce.
+1. Ordine: quello di `macro_categorie` e, dentro ogni macro, di `servizi_atomizzati` (nessuna priorità dichiarata: T3 punto 13).
 2. Categoria: la prima tra primaria e aggiuntive (in ordine) con una prova che copre il servizio; altrimenti la primaria («nessuna
    categoria specifica: sotto la principale»).
 3. Nome = `servizio` del contesto, così com'è. **Mai** città, sinonimi, prezzi o slogan aggiunti. Gate `servizi-nome`: ≤ 140
@@ -274,8 +327,8 @@ piccoli meno di 5 schede → dati insufficienti; nomi italiani da confermare fin
    «nome usato identico da N schede della zona: forse è un servizio predefinito, cercalo tra le proposte di Google» [inferenza].
 5. Keyword: `ricerca` = testa primaria del lessico per quel servizio, con il volume alla sede se c'è la mappa («ristrutturazione
    bagno · 90 al mese a Cologno»). È informazione per Mattia, non entra nel nome: un servizio = una ricerca principale.
-6. Prezzo solo da `dati.prezzi` verificato con `validoFino ≥ oggi` (importo, unità, IVA, scadenza). Mai stimato.
-7. Descrizione del singolo servizio (≤ 300): **non generata** in G1 (facoltativa, nessun effetto sul ranking dimostrato). (Dubbio 6.)
+6. Nessun prezzo (T3 punto 13: non si chiede, mai stimato).
+7. Descrizione del singolo servizio (≤ 300): **non generata** in G1 (decisione G1 punto 6).
 8. `id` = `servizio:<kebab del nome>`, unico; `rischio: "rifiuto"`; `core: false`.
 
 ### 5.2 Nome, telefono, sito: nessuna ottimizzazione
@@ -284,15 +337,15 @@ Il software non propone nomi (ricerca §5.4), non aggiunge numeri, non sceglie p
 
 ### 5.3 Foto
 
-1. Candidate: foto di `foto.json` con `escludi: false` (se `dati.json` è verificato), altrimenti `lavori.json`. Mai `hero.jpg`,
-   `card-*.jpg`, `mark*` o immagini generate.
-2. Gate `foto-formato` (limiti Google): JPG o PNG, 10 KB-5 MB, lato minimo ≥ 250 px (misure da `foto.json` o `sips -g`); fuori
-   limite → esclusa col motivo.
-3. Ordine: servizio in priorità (1, 2, 3, poi gli altri), comune della sede prima, anno decrescente, file crescente. Massimo **10**
-   (regola nostra: un primo caricamento, non un archivio).
-4. `copertina` = la prima orizzontale (larghezza ≥ altezza) del servizio in priorità 1, altrimenti la prima orizzontale; le altre
-   `lavoro`. Logo (`tipo: "logo"`) solo se il cliente ha fornito il file (`logo/fornito-*.png`, quadrato o quasi, ≥ 250 px). (Dubbio 5.)
-5. Nessun testo sovrapposto, nessun geotag: i file sono già senza EXIF (T3, import del form).
+1. Candidate: le foto di `lavori.json` (`img/lavoro-N.jpg`). Mai `hero.jpg`, `card-*.jpg`, `mark*.svg` o immagini generate.
+2. Gate `foto-formato` (limiti Google): JPG o PNG, 10 KB-5 MB, lato minimo ≥ 250 px (misure con `sips -g`); fuori limite → esclusa
+   col motivo.
+3. Ordine: quello di `lavori.json` (l'ordine del form; nessun servizio, comune o anno per foto). Massimo **10** (regola nostra: un
+   primo caricamento, non un archivio). Il motivo usa `caption` se c'è.
+4. `copertina` = la prima orizzontale (larghezza ≥ altezza), le altre `lavoro`. Logo (`tipo: "logo"`, decisione G1 punto 5): il
+   file fornito dal cliente (`logo/fornito-*.png`, il più recente) oppure `mark.png` se la riga Logo è `verificato`; quadrato o
+   quasi, ≥ 250 px; mai un logo non approvato.
+5. Nessun testo sovrapposto, nessun geotag: i file sono già senza EXIF né GPS (import del form lead).
 
 ## 6. Descrizione
 
@@ -302,7 +355,7 @@ Il software non propone nomi (ricerca §5.4), non aggiunge numeri, non sceglie p
   - Ruolo: descrizione della scheda Google di un'impresa locale, 3-4 frasi, ≤ 750 caratteri; non è copy del sito né marketing.
   - Input: **solo** `out/<slug>/traffico/descrizione-ingressi.json`, composto dal lavoro (§6.2): ogni fatto ha un `id`.
   - Struttura (ricerca §5.2): (1) chi è e cosa fa: mestiere + zona reale; (2) 2-4 servizi principali con le loro parole; (3) cosa
-    distingue, solo con prova (punti di forza, attestati, anno di inizio se non vietato); (4) come si lavora: cortesia di settore
+    distingue, solo con prova (punti di forza, anno di inizio se non vietato); (4) come si lavora: cortesia di settore
     ammessa (preventivo o sopralluogo gratuito, senza impegno).
   - Regole: prima persona plurale, registro dal `tono`; ogni frase cita gli `id` dei fatti che usa; niente frasi sul lettore;
     niente URL, telefoni, email, prezzi, promozioni, superlativi, recensioni; ogni servizio nominato una volta; al massimo 2 nomi di
@@ -319,11 +372,11 @@ Il software non propone nomi (ricerca §5.4), non aggiunge numeri, non sceglie p
 
 ### 6.2 `traffico/descrizione-ingressi.json` (composto da `componiIngressi`, puro)
 
-`{ versione: 1, nome, mestiere (nome IT della primaria), altreCategorie (≤ 3 nomi), sede, area (contesto.zona.area_intervento),
-servizi (≤ 4: priorità, poi il primo di ogni macro), puntiDiForza[], attestati[] (solo pubblicabili da dati.json verificato),
-annoInizio | null, cortesie (promesse_consentite), promesseVietate, martello, tono, frasiSito (titoli e sottotitoli di copy.json),
-precedente: { testo, approvataAt } | null }`. Ogni fatto è `{ id, testo, rif }` con `rif` al campo d'origine
-(`contesto.json#/punti_di_forza/2`, `dati.json#/attestati/0`, `brief.json#/anno_inizio`). `ingressiSha` = sha256 della
+`{ versione: 1, nome, mestiere (nome IT della primaria), altreCategorie (≤ 3 nomi), sede, area (≤ 3 nomi pubblici delle aree
+larghe di `areeServite` con `etichettaArea`, se le zone sono usabili; altrimenti contesto.zona.area_intervento), servizi (≤ 4: il
+primo di ogni macro), puntiDiForza[], annoInizio | null, cortesie (promesse_consentite), promesseVietate, martello, tono, frasiSito
+(titoli e sottotitoli di copy.json), precedente: { testo, approvataAt } | null }`. Ogni fatto è `{ id, testo, rif }` con `rif` al
+campo d'origine (`contesto.json#/punti_di_forza/2`, `traffico/zone-servite.json#/etichette/1`, `brief.json#/anno_inizio`). `ingressiSha` = sha256 della
 serializzazione canonica senza `precedente`.
 
 ### 6.3 Gate deterministici (`gateDescrizione(bozza, ingressi, altri)`, puri)
@@ -340,12 +393,14 @@ serializzazione canonica senza `precedente`.
 | `descrizione-fonti` | tracciabilità | una frase senza `fatti`, un `id` inesistente, o le frasi unite (spazi normalizzati) ≠ `testo` |
 | `descrizione-numeri` | numeri con fonte | un numero del testo assente dai testi dei fatti citati da quella frase |
 | `descrizione-claim` | claim ad alto rischio | una radice di `CLAIM_RISCHIO` (`esperienz`, `decenn`, `storic`, `affermat`, `leader`, `miglior`, `n\.?\s?1`, `numero uno`, `garanz`, `garantit`, `certificat`, `assicurat`, `polizz`, `24\s?\/\s?7`, `24 ore`, `entro \d+ ore`, `puntual`, `nei tempi`, `bonus`, `detrazion`, `sconto in fattura`, `cessione del credito`, `qualit`, `prima scelta`, `soddisf`) presente nella frase e assente dai testi dei fatti che la frase cita |
+| `descrizione-vietate` | promesse vietate (decisione G1 punto 9) | una radice di `CLAIM_RISCHIO` presente nella descrizione e in un testo di `promesse_vietate` del contesto |
 | `descrizione-slop` | frasi bandite | `check-slop.mjs --json` su `{"descrizione": testo}` (file temporaneo in `traffico/`, `--consenti` nome e sede) ha bloccanti |
 
 Casi del banco (§12): falliscono «Visita cavalierebuild.it», «www.…», «chiamaci al 02 1234 5678», «+39 333 123 4567», un'email,
 «sconto del 10%», «Ristrutturazione bagni» due volte, «a Cologno Monzese, Monza e Brugherio», una sequenza di 3 parole ripetuta, 751
 caratteri, una frase senza `fatti`, «15 anni di lavori» senza un fatto con 15, «garanzia di 10 anni», «impresa leader in zona»,
-«materiali di qualità», 6 parole del titolo hero di `copy.json`, una bozza le cui frasi non ricompongono il testo. Passano: una
+«materiali di qualità», 6 parole del titolo hero di `copy.json`, una bozza le cui frasi non ricompongono il testo, «esperienza»
+citata da un punto di forza ma presente in `promesse_vietate` (`descrizione-vietate`). Passano: una
 descrizione di 600 caratteri con tutte le frasi citate; «sopralluogo gratuito e senza impegno» con fatto `cortesie.0`; «un'offerta
 completa» con il punto di forza che la contiene; «attivi dal 2026» con `annoInizio`; «Cologno Monzese» due volte.
 
@@ -375,19 +430,20 @@ d'inglese o refusi. Verdetto **FAIL** con un bloccante, una dimensione a 0 o due
 3. Fasi: timeout 5 min, `maxTurns` 15; strumenti ammessi `Read`, `Skill`, `Write`; vietati `WebSearch`, `WebFetch`, `Bash`, `Edit`,
    `Task` (costanti locali in `scheda-lavoro.ts`: *ponytail: doppione di `lib/steps.ts`, che i piani Traffico non toccano*).
 4. Record delle fasi con `makeSink(rollClientRecords(out/<slug>/traffico/logs/scheda, 10))` come gli step cliente.
-5. Approvazione: `redazione.approvataAt`. Modifica di Mattia: gate `lunghezza`, `link`, `contatti`, `promo`, `keyword`,
-   `ripetizioni`, `copia-sito`, `slop` (non quelli che richiedono i fatti per frase); fonte `mattia`; salvare = approvare. (Dubbio 10.)
+5. Approvazione: `redazione.approvataAt`. Modifica di Mattia (decisione G1 punto 9): gate `lunghezza`, `link`, `contatti`,
+   `promo`, `keyword`, `ripetizioni`, `copia-sito`, `vietate`, `slop` (non quelli che richiedono i fatti per frase); salta solo il
+   critico; fonte `mattia`; salvare = approvare.
 
 ## 7. Schema Zod di `scheda-consigliata.json` (`lib/scheda-consigliata.ts`)
 
 Coerente con ricerca §9. Scostamenti dichiarati: voci **nullable** quando manca la fonte (con `mancanti`), perché «voce senza fonte =
-file non valido»; fonti `lead` (brief.json) e `dizionario`; foto con `file` relativo a `out/<slug>` al posto di `fileDrive`;
-`indirizzoVisibile` nullable; blocchi `regole`, `ingressi`, `redazione`, `categorieDaDecidere`, `mancanti`, `avvisi`;
-`ricercaCategorie` estesa; `giorno: 0` = niente da inserire; servizi senza `descrizione`.
+file non valido»; fonti `lead` (brief.json, raw-submission.json), `zone-servite` e `dizionario`; foto con `file` relativo a
+`out/<slug>` al posto di `fileDrive`; area servita come aree (comune, provincia, regione) al posto dei soli comuni; `indirizzoVisibile`
+nullable; blocchi `regole`, `ingressi`, `redazione`, `categorieDaDecidere`, `mancanti`, `avvisi`; `ricercaCategorie` estesa;
+`giorno: 0` = niente da inserire; servizi senza `descrizione` né prezzo.
 
 ```ts
 import { z } from "zod";
-import { UNITA } from "./dati-traffico.ts"; // T3
 
 export const VERSIONE_REGOLE_SCHEDA = "2026-09-a";
 const Sha = z.string().regex(/^[a-f0-9]{64}$/);
@@ -396,7 +452,6 @@ const Data = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const Gcid = z.string().regex(/^[a-z0-9_]+$/).max(80);
 const Ora = z.string().regex(/^(([01]\d|2[0-3]):[0-5]\d|24:00)$/);
 const Tel = z.string().regex(/^\+39\d{6,11}$/);
-const Istat = z.string().regex(/^\d{6}$/);
 
 export const Grado = z.enum(["fatto", "settore", "contestato"]);
 export const Rischio = z.enum(["basso", "rifiuto", "riverifica", "sospensione"]);
@@ -409,7 +464,7 @@ export const Campo = z.enum(CAMPI);
 export const CORE: readonly (typeof CAMPI)[number][] = ["nome", "categoria-primaria", "indirizzo-visibile", "telefono", "sito"];
 
 export const Fonte = z.object({
-  tipo: z.enum(["contesto", "dati-form", "lead", "sito", "dizionario", "api-gbp", "dataforseo", "google-ads", "pleper",
+  tipo: z.enum(["contesto", "zone-servite", "lead", "sito", "dizionario", "api-gbp", "dataforseo", "google-ads", "pleper",
     "fabriziodelrio", "gbp-latlng", "geocoding-indirizzo", "places", "policy", "mattia"]),
   rif: z.string().min(1).max(300),     // puntatore, mai un valore: "contesto.json#/servizi_atomizzati/3", "maps:<sha>"
   lettoAt: Iso,
@@ -449,11 +504,9 @@ const Categoria = z.object({ gcid: Gcid, nome: z.string().min(1).max(100),
 const Servizio = z.object({
   serviceTypeId: z.string().regex(/^job_type_id:[a-z0-9_]+$/).optional(),   // solo in modalità api
   categoria: Gcid, nome: z.string().min(1).max(140), ricerca: z.string().max(80).optional(),
-  prezzo: z.object({ da: z.number().positive(), valuta: z.literal("EUR"), unita: z.enum(UNITA),
-    iva: z.enum(["inclusa", "esclusa"]), validoFino: Data }).strict().optional(),
 }).strict();
 const Foto = z.object({
-  file: z.string().regex(/^(img\/lavoro-\d+\.jpg|traffico\/foto\/f\d{2}\.jpg|logo\/fornito-[\w.-]+\.png)$/),
+  file: z.string().regex(/^(img\/lavoro-\d+\.jpg|logo\/fornito-[\w.-]+\.png|mark\.png)$/),
   tipo: z.enum(["copertina", "logo", "lavoro", "team", "esterno"]),
   larghezza: z.number().int().min(250), altezza: z.number().int().min(250),
   bytes: z.number().int().min(10_000).max(5_000_000),
@@ -465,7 +518,9 @@ export const SchedaConsigliataSchema = z.object({
   generataAt: Iso,
   modalita: z.enum(["pubblica", "api"]),
   regole: z.object({ versione: z.string(), dizionarioSha: Sha, lessicoSha: Sha.nullable() }).strict(),
-  ingressi: z.object({ contestoSha: Sha, briefSha: Sha, datiSha: Sha.nullable(), fotoSha: Sha.nullable(), lavoriSha: Sha.nullable(),
+  ingressi: z.object({ contestoSha: Sha, briefSha: Sha, leadSha: Sha.nullable(),   // raw-submission.json (orari)
+    zoneSha: Sha.nullable(),    // sha di `zone` restituite da zoneUsabili (confermate o proposta), null se non usabili
+    lavoriSha: Sha.nullable(), logoSha: Sha.nullable(),
     mappaSha: Sha.nullable(), copySha: Sha.nullable(), coverageSha: Sha.nullable(), siteSha: Sha.nullable(),
     dominio: z.string().nullable(), registrate: z.boolean() }).strict(),
   scheda: z.object({ cid: z.string().regex(/^\d{1,25}$/).optional(), placeId: z.string().max(200).optional(),
@@ -481,9 +536,11 @@ export const SchedaConsigliataSchema = z.object({
     descrizione: voce(z.literal("descrizione"), z.string().min(1).max(750)).nullable(),
     orari: voce(z.literal("orari"), z.array(z.object({ giorno: z.number().int().min(1).max(7), apre: Ora, chiude: Ora }).strict()).min(1).max(14)).nullable(),
     orariSpeciali: voce(z.literal("orari-speciali"), z.array(z.object({ data: Data, chiuso: z.boolean(), apre: Ora.optional(), chiude: Ora.optional() }).strict()).max(6)).nullable(),
-    areaServita: voce(z.literal("area-servita"), z.object({ comuni: z.array(z.object({ istat: Istat, nome: z.string().min(1),
-      sigla: z.string().regex(/^[A-Z]{2}$/), km: z.number().int().min(0).nullable() }).strict()).min(1).max(20),
-      indirizzoVisibile: z.boolean().nullable() }).strict()).nullable(),
+    areaServita: voce(z.literal("area-servita"), z.object({ aree: z.array(z.object({
+      tipo: z.enum(["comune", "provincia", "regione"]), codice: z.string().regex(/^(\d{2}|\d{3}|\d{6})$/),
+      nome: z.string().min(1), sigla: z.string().regex(/^[A-Z]{2}$/).nullable(), km: z.number().int().min(0).nullable(),
+      copiaIncolla: z.string().min(1).max(80), etichetta: z.number().int().min(0) /* indice dell'etichetta del cliente */ }).strict()).min(1).max(20),
+      esclusi: z.number().int().min(0), indirizzoVisibile: z.boolean().nullable() }).strict()).nullable(),
     telefono: voce(z.literal("telefono"), z.object({ principale: Tel, aggiuntivi: z.array(Tel).max(2) }).strict()).nullable(),
     sito: voce(z.literal("sito"), z.object({ url: z.string().url().startsWith("https://"), utm: z.string().regex(/^utm_source=google&utm_medium=organic&utm_campaign=gbp$/),
       esitoHttp: z.number().int().optional(), redirectFinale: z.string().url().optional() }).strict()).nullable(),
@@ -502,7 +559,7 @@ export const SchedaConsigliataSchema = z.object({
   mancanti: z.array(z.object({ campo: Campo, motivo: z.string().max(300), comeAverlo: z.string().max(300) }).strict()).max(20),
   avvisi: z.array(z.string().max(300)).max(30),
   ricercaCategorie: z.object({
-    zona: z.enum(["letta", "non-configurata", "ditta-individuale", "sede-non-risolta"]),
+    zona: z.enum(["letta", "non-configurata", "zone-non-usabili"]),
     fonteQuery: z.enum(["mappa-query", "lessico", "nessuna"]),
     query: z.array(z.object({ testo: z.string().min(2).max(80), peso: z.number().min(0).max(1),
       checkUrl: z.string().url().nullable() }).strict()).max(5),
@@ -523,7 +580,7 @@ export const SchedaConsigliataSchema = z.object({
   pianoInserimento: z.array(z.object({ giorno: z.number().int().min(1), voci: z.array(z.string()).min(1) }).strict()),
 }).strict().superRefine((s, ctx) => {
   /* 1 gcid unici tra primaria e aggiuntive; id delle voci unici in tutto il file
-     2 areaServita: istat unici · servizi: nomi normalizzati unici
+     2 areaServita: (tipo, codice) unici, nessun comune la cui provincia o regione è in elenco · servizi: nomi normalizzati unici
      3 descrizione: copiaIncolla === consigliato; voce null ⇔ campo "descrizione" in mancanti
      4 ogni voce con azione aggiungi/modifica/rimuovi e stato ≠ scartato compare in UN solo giorno del piano, col suo `giorno`;
        nessun giorno con più di una voce core; giorni consecutivi da 1
@@ -549,16 +606,16 @@ primaria per ultima (una nuova verifica non blocca il resto). Mai modifiche core
 
 - **Id** `traffico:<slug>:scheda`, `kind: "traffico"`, `step: "scheda"`, `label` = azienda; eventi in
   `out/<slug>/traffico/logs/run-scheda.ndjson` (tee del bus, riletto da `eventiDaFile`). Avvio `startTrafficoRun(slug, "scheda",
-  label, esegui)` (T3/T4); rifiuta solo lo stesso id vivo (Maps SERP: 2.000 chiamate/min, nessun conflitto con la mappa).
+  label, esegui)` (T4); rifiuta solo lo stesso id vivo (Maps SERP: 2.000 chiamate/min, nessun conflitto con la mappa).
 - **Ingressi**: la route legge e valida tutto prima di avviare; `motivoBloccoScheda` restituisce la frase o `null`.
 
 | Fase (`phase`) | Cosa fa | Testo tipico |
 |---|---|---|
-| Controllo dei dati | schemi di contesto (verificato), dati, foto, mappa, dataset T6a, dizionario, lessico; forma giuridica; chiavi; sede; stima e saldo | «Società · sede risolta · 5 ricerche dalla mappa · stima 0,11 $ · saldo 48,20 $» |
-| La scheda del cliente | `schedaPubblica` di T3 (cache), controllo d'identità | «Scheda trovata: il telefono coincide» · «Non trovata nelle ricerche lette» · «Saltata: ditta individuale» |
+| Controllo dei dati | schema del contesto (verificato), `leggiZoneServite` + `zoneUsabili`, orari del lead, `lavori.json`, mappa, dizionario, lessico; forma giuridica; chiavi (`configurata()`); stima e saldo | «Società · 12 aree servite · 5 ricerche dalla mappa · stima 0,11 $ · saldo 48,20 $» |
 | Schede della zona | ≤ 25 SERP Maps, 5 in parallelo | «SERP 10/25 · dalla cache 15» |
+| La scheda del cliente | identità tra gli item (telefono, dominio); solo società non trovate: 1 SERP col nome | «Scheda trovata: il telefono coincide» · «Non trovata nelle ricerche lette» · «Ditta individuale: nessuna ricerca col nome» |
 | Dettaglio delle schede | ≤ 10 My Business Info per `cid` (i primi per miglior rank pesato) | «10 schede lette» |
-| Categorie e servizi | §4-§5, orari, area, telefono, foto, controllo HTTP del sito | «Primaria: Impresa edile · 7 aggiuntive · 2 da decidere · 24 servizi · 10 foto» |
+| Categorie e servizi | §4-§5, orari, area servita (§3.1), telefono, foto, controllo HTTP del sito | «Primaria: Impresa edile · 7 aggiuntive · 2 da decidere · 24 servizi · 14 aree · 10 foto» |
 | gbp-description-writer | §6 (saltata con ingressi invariati) | testo e strumenti della fase |
 | Controlli sulla descrizione | gate §6.3 | «11 controlli: 1 da correggere (descrizione-keyword)» |
 | gbp-description-critic (round n) | critico | verdetto |
@@ -569,7 +626,7 @@ primaria per ultima (una nuova verifica non blocca il resto). Mai modifiche core
 
 | Causa | Comportamento | Messaggio |
 |---|---|---|
-| `ErroreDfs` `auth` | stop, nessun file | «DataForSEO ha rifiutato login o password: controllali in Impostazioni → Chiavi API.» |
+| `ErroreDfs` `auth` | stop, nessun file | «DataForSEO ha rifiutato login o password: controllali in Impostazioni → «Ottimizzazione del traffico».» |
 | `credito` o saldo < 2 × stima | stop prima delle chiamate; le risposte già pagate restano in cache | «Credito DataForSEO insufficiente: ricarica e rilancia, le schede già lette non si ripagano.» |
 | `limite`, `servizio` | tentativi di T4, poi stop | come T4 |
 | una SERP in errore permanente dopo i tentativi | la SERP non conta, avviso con `check_url`; se ne restano meno di metà → stop | «Troppe ricerche della zona non lette (14 su 25): riprova più tardi.» |
@@ -598,7 +655,7 @@ all'avvio del servizio e a ogni aggiornamento. *Compito*: inserire ogni campo se
 dove viene, vedere cosa manca e cosa è rischioso, seguire l'ordine dei giorni. *Successo*: nessun valore digitato a mano, nessun
 valore senza fonte incollato, nessuna modifica core insieme a un'altra. *Verità specifica*: il software non scrive su Google; la
 sezione segue l'ordine dell'editor della scheda, non l'ordine del nostro file. *Quantità reali*: 1 primaria, 0-9 aggiuntive, 0-2 da
-decidere, 8-30 servizi (Cavaliere 24), descrizione 400-750 caratteri, 0-14 fasce orarie, 0-20 comuni, 0-10 foto, 0-7 social.
+decidere, 8-30 servizi (Cavaliere 24), descrizione 400-750 caratteri, 0-14 fasce orarie, 0-20 aree servite, 0-10 foto, 0-7 social.
 
 **Posto**: nella card «Scheda Google» di `/traffico/[slug]`, sotto la riga delle date e sopra «Cosa comparirà qui», sotto-sezione
 `<section aria-labelledby>` con h3 **«Scheda consigliata»** + badge. Visibile con Scheda `attivo` o `sospeso`; nascosta se spenta.
@@ -620,9 +677,9 @@ decidere, 8-30 servizi (Cavaliere 24), descrizione 400-750 caratteri, 0-14 fasce
 │   Descrizione            «Siamo un'impresa edile di Cologno Monzese…»   612/750   [Copia]    │
 │                          Critico: promossa al 2° giro · ▸ Rilievi   [Modifica…] [Approva la descrizione] │
 │   Nome                   Solo controllo: il nome su Google coincide col nome d'uso            │
-│ Contatti · Posizione e aree · Orari · Servizi (24) · Link · Foto (10)                        │
+│ Contatti · Posizione e aree (14) · Orari · Servizi (24) · Link · Foto (10)                   │
 │ ▸ Piano di inserimento: 8 giorni · un campo principale al giorno                             │
-│ ▸ Mancano (3): orari · area servita · indirizzo visibile                                     │
+│ ▸ Mancano (2): orari (da completare: arrivano dal form lead) · indirizzo visibile            │
 │ ▸ Come è stata calcolata: 5 ricerche × 5 punti · zoom 17z · 23 schede · fuori dizionario (4) │
 ```
 
@@ -635,8 +692,9 @@ decidere, 8-30 servizi (Cavaliere 24), descrizione 400-750 caratteri, 0-14 fasce
   (`Da aggiungere` brand · `Da cambiare` warn · `Già così su Google` idle · `Solo controllo` idle · `Campo principale` warn ·
   `Può chiedere una nuova verifica` warn · `Rischio sospensione` err), `<details>` «Perché» nativo con i fatti e le fonti in `mono`
   e «Apri la ricerca su Google Maps ↗» (`checkUrl`). A 400 px etichetta sopra il valore, `[Copia]` resta sulla riga del valore.
-- **Liste lunghe**: servizi e categorie una riga per voce con la propria copia; area servita come elenco di comuni ognuno copiabile
-  («Monza»); orari in lettura («lun–ven 8:00–12:00 · 13:30–18:00»), senza copia (Google usa selettori d'ora); foto come miniature
+- **Liste lunghe**: servizi e categorie una riga per voce con la propria copia; area servita come elenco di aree ognuna copiabile
+  («Monza», «Provincia di Monza e della Brianza», «Lombardia») con l'etichetta del cliente da cui viene e, se ci sono, gli esclusi
+  oltre 20; con zone non usabili la riga dice il motivo di `zoneUsabili` e rimanda alla card «Zone servite» della stessa pagina; orari in lettura («lun–ven 8:00–12:00 · 13:30–18:00»), senza copia (Google usa selettori d'ora); foto come miniature
   64 px `rounded-ctl` con numero d'ordine, tipo, motivo e «Scarica» (`<a download>` sulle route esistenti o su quella del logo).
 - **Descrizione**: testo intero, contatore `mono` «612/750», verdetto del critico in una riga, rilievi in `<details>`. «Modifica…»
   (`btnGhost`) apre in linea una textarea con contatore dal vivo e `useUnsavedGuard`; «Salva e approva» esegue i gate lato server,
@@ -644,7 +702,7 @@ decidere, 8-30 servizi (Cavaliere 24), descrizione 400-750 caratteri, 0-14 fasce
   scheda è pronta e la descrizione non è approvata.
 - **Piano di inserimento** e **Mancano**: `<details>` chiusi di default; il piano elenca «Giorno 1: Categorie aggiuntive, Servizi»;
   i mancanti dicono cosa serve e dove si ottiene.
-- **Una sola primaria nella pagina**: la pagina calcola chi ha la primaria; se la card Sito ne mostra una (T3, T4), quella della
+- **Una sola primaria nella pagina**: la pagina calcola chi ha la primaria; se la card delle zone servite (T3) o la card Sito (T4) ne mostrano una, quella della
   Scheda si rende `btnSecondary`.
 - **Aggiorna…** → `ConfirmDialog` tono brand: «Aggiornare la scheda consigliata?» · «Le schede della zona lette negli ultimi 14 giorni
   vengono dalla cache; il resto costa al massimo circa {stima} $. La descrizione resta se i suoi dati non sono cambiati, altrimenti
@@ -655,9 +713,9 @@ decidere, 8-30 servizi (Cavaliere 24), descrizione 400-750 caratteri, 0-14 fasce
 
 | Stato | Badge | Cosa si legge | Primaria | Secondarie |
 |---|---|---|---|---|
-| da preparare | `brand` Da preparare | «Categorie, servizi, descrizione, orari, foto e link da inserire a mano nella scheda del cliente, ciascuno con fonte e motivo. Costo stimato circa {stima} $.» | **Prepara la scheda consigliata** | — |
-| **non configurata** (chiavi DataForSEO assenti) | `brand` Da preparare | `Banner warn` «Senza DataForSEO le categorie si scelgono solo dai servizi, senza guardare le schede della zona. Login e password vanno in Impostazioni → Chiavi API.» | **Prepara la scheda consigliata** | — |
-| **ditta individuale** | `brand` Da preparare | riga `text-sm`: «Ditta individuale: il nome è un dato personale, quindi le schede della zona non si leggono su DataForSEO (decisione T3). Categorie dai soli servizi.» | **Prepara la scheda consigliata** | — |
+| da preparare | `brand` Da preparare | «Categorie, area servita, servizi, descrizione, orari, foto e link da inserire a mano nella scheda del cliente, ciascuno con fonte e motivo. Costo stimato circa {stima} $.» | **Prepara la scheda consigliata** | — |
+| **non configurata** (chiavi DataForSEO assenti) | `brand` Da preparare | `Banner warn` «Senza DataForSEO le categorie si scelgono solo dai servizi, senza guardare le schede della zona. Login e password vanno in Impostazioni → «Ottimizzazione del traffico».» | **Prepara la scheda consigliata** | — |
+| **zone non usabili** | `brand` Da preparare | riga `text-sm` col motivo di `zoneUsabili` («Zone servite da impostare nel dettaglio Traffico»): «Senza zone servite non si leggono le schede della zona e l'area servita resta da completare. Categorie dai soli servizi.» | **Prepara la scheda consigliata** | — |
 | **senza mappa query** | come lo stato di base | riga `text-sm`: «Ricerche su cui puntare non calcolate (servizio Sito spento o mappa assente): la zona si legge con 5 ricerche di base dai servizi, senza volumi.» | invariata | — |
 | bloccata (contesto assente o non verificato · `client.json` illeggibile) | `err` Bloccata | frase col motivo, `aria-describedby` sul bottone disabilitato (regola T0) | disabilitata | — |
 | **in corso** | `brand` In preparazione | fase + tempo + frase | — | — |
@@ -666,7 +724,7 @@ decidere, 8-30 servizi (Cavaliere 24), descrizione 400-750 caratteri, 0-14 fasce
 | descrizione non promossa dal critico | `warn` Descrizione da rivedere | `Banner warn` «Il critico non l'ha promossa dopo 3 giri: leggi i rilievi prima di approvarla.» | **Approva la descrizione** | Modifica… · Aggiorna… |
 | descrizione non pronta (gate FAIL) | `warn` Descrizione mancante | nel campo: `Banner err` con i controlli falliti | — | Aggiorna… · Modifica… |
 | dati insufficienti | invariato | nel gruppo Informazioni: «Solo N schede nella zona: categorie scelte soprattutto dai servizi.» | invariata | — |
-| da aggiornare (sha cambiati) | `warn` Da aggiornare | `Banner warn` con i file cambiati in `mono` (contesto.json, dati.json, mappa-query.json, copy.json, lib/scheda-categorie.json, dominio) | **Aggiorna…** | — |
+| da aggiornare (sha cambiati) | `warn` Da aggiornare | `Banner warn` con i file cambiati in `mono` (contesto.json, zone servite, raw-submission.json, lavori.json, mappa-query.json, copy.json, lib/scheda-categorie.json, dominio) | **Aggiorna…** | — |
 | **errore**, nessuna scheda | `err` Non riuscita | `Banner err` col messaggio (ultimo `error` di `run-scheda.ndjson`) | **Riprova** | — |
 | errore con scheda precedente | come la scheda | `Banner err` «L'ultimo aggiornamento non è riuscito: …; resta la scheda del gg/mm.» | — | Aggiorna… |
 | servizio sospeso | `idle` In pausa | scheda in lettura, copia attiva, «Servizio sospeso: la scheda consigliata resta com'è.» | — | — |
@@ -682,22 +740,22 @@ Impostazioni; l'accesso da Manager resta per la checklist e il monitor.
 
 | File | Tipo | Cosa |
 |---|---|---|
-| `site-factory-editor/lib/scheda-consigliata.ts` | A | schema §7, `punti`, `clienteNellaSerp`, `punteggiCategorie`, `testE`, `scegliCategorie`, `serviziScheda`, `orariScheda`, `areaScheda`, `telefonoScheda`, `sitoScheda` (URL e UTM; il controllo HTTP lo fa il lavoro), `fotoScheda`, `pianoInserimento`, `unisciStati`, `vistaScheda` (modello per la UI + staleness), `motivoBloccoScheda`, `stimaCostoUsd`, `EVIDENZA`, `RISCHIO`; puro, import `.ts` |
+| `site-factory-editor/lib/scheda-consigliata.ts` | A | schema §7, `punti`, `clienteNellaSerp`, `punteggiCategorie`, `testE`, `scegliCategorie`, `serviziScheda`, `orariScheda` (orari del lead), `areaScheda` (§3.1, importa da `lib/zone-servite.ts`), `telefonoScheda`, `sitoScheda` (URL e UTM; il controllo HTTP lo fa il lavoro), `fotoScheda`, `pianoInserimento`, `unisciStati`, `vistaScheda` (modello per la UI + staleness), `motivoBloccoScheda`, `stimaCostoUsd`, `EVIDENZA`, `RISCHIO`; puro, import `.ts` |
 | `site-factory-editor/lib/scheda-descrizione.ts` | A | `componiIngressi`, `ingressiSha`, `BozzaSchema`, `ReviewDescrizioneSchema`, `gateDescrizione`, `gateDescrizioneMattia`, `CLAIM_RISCHIO`, prompt delle 3 fasi; puro salvo `slopDescrizione` (spawn di `check-slop.mjs` su file temporaneo) |
-| `site-factory-editor/lib/scheda-lavoro.ts` | A | lettura ingressi, generatore delle fasi §8, chiamate DataForSEO, controllo HTTP del sito, fasi `claude -p` via `ioWithSignal`, scritture atomiche, `approvaDescrizione`, `salvaDescrizioneMattia` |
+| `site-factory-editor/lib/scheda-lavoro.ts` | A | lettura ingressi (zone solo con `leggiZoneServite` + `zoneUsabili`), generatore delle fasi §8, chiamate DataForSEO, controllo HTTP del sito, fasi `claude -p` via `ioWithSignal`, scritture atomiche, `approvaDescrizione`, `salvaDescrizioneMattia` |
 | `site-factory-editor/lib/scheda-categorie.json` | A | dizionario §4.1 |
-| `site-factory-editor/lib/dataforseo.ts` | M | `serpMaps({keyword, coordinata})`, `infoScheda({cid, coordinata})`, TTL 14 giorni e pulizia dei file scaduti per i due endpoint, endpoint nella lista dei pagati |
+| `site-factory-editor/lib/dataforseo.ts` | M (creato da T4) | `serpMaps({keyword, coordinata})`, `infoScheda({cid, coordinata})`, TTL 14 giorni e pulizia dei file scaduti per i due endpoint, endpoint nella lista dei pagati; credenziali e `configurata()` restano quelli di T4 (nessuna chiave nuova, K1) |
 | `site-factory-editor/lib/mappa-query.ts` | M, solo se T4 vi lascia `ENDPOINT_PAGATI`/`RigaCostoSchema` | due endpoint e `lavoro: "scheda"` nelle costanti delle righe di costo; nient'altro |
-| `site-factory-editor/lib/run-bus.ts` | M, solo se T3/T4 chiudono i lavori in un'unione | `"scheda"` nell'unione dei lavori |
+| `site-factory-editor/lib/run-bus.ts` | M, solo se T4 chiude i lavori in un'unione | `"scheda"` nell'unione dei lavori |
 | `site-factory-editor/lib/agenti.ts` | M | regola `/gbp-description-writer/` → agente `copy`; `nomeStep` «Traffico · scheda» |
 | `site-factory-editor/app/api/clients/[slug]/traffico/scheda/route.ts` | A | `POST {azione:"prepara"}` → 202 `{id}` · `POST {azione:"approva-descrizione", generataAt}` → 200 · `PUT {descrizione, generataAt}` → 200 / 422 `{gate}`; 400 slug o corpo · 403 `Sec-Fetch-Site` · 415 content-type · 404 cliente · 409 `client.json` illeggibile, Scheda non attiva, contesto assente o non verificato, lavoro in corso, scheda assente o cambiata (`generataAt` diverso), descrizione assente |
-| `site-factory-editor/app/api/clients/[slug]/traffico/scheda/logo/route.ts` | A | `GET` del logo fornito (`logo/fornito-*.png`, il più recente), sola lettura, allow-list sul nome (dubbio 5) |
+| `site-factory-editor/app/api/clients/[slug]/traffico/scheda/logo/route.ts` | A | `GET` del logo scelto (`logo/fornito-*.png` il più recente, oppure `mark.png` con la riga Logo verificata), sola lettura, allow-list sul nome (decisione G1 punto 5) |
 | `site-factory-editor/components/traffico-scheda.tsx` | A | sezione §9 (client: azioni, dialog, fase live, copia, modifica della descrizione) |
 | `site-factory-editor/app/traffico/[slug]/page.tsx` | M | legge scheda, vista e blocco; monta `TrafficoScheda` nella card Scheda; primaria unica della pagina; `CONTENUTI.scheda` aggiornato |
 | `.claude/skills/gbp-description-writer/SKILL.md` | A | §6.1 |
 | `.claude/skills/gbp-description-critic/SKILL.md` | A | §6.1, §6.4 |
 | `site-factory-editor/scripts/test-scheda-consigliata.ts` | A | banco §12 |
-| `site-factory-editor/scripts/fixtures/scheda-consigliata/` | A | `contesto.json` (servizi e macro di Cavaliere, niente dati personali), `brief.json` sintetico (telefono e P.IVA di prova), `dati.json` e `foto.json` verificati, `mappa-query.json`, `copy.json`, `copy-coverage.json`, `site.json` ridotto, `lavori.json`; `impresa-idraulica/` (ditta individuale) e `serramenti/` (società, 3 schede nella zona); `risposte/maps-*.json` (5 query, forma documentata), `mbi-cliente.json`, `mbi-competitor-*.json` (3), errori riusati da T4; `descrizione/` (ingressi, bozze che passano e che falliscono, review) |
+| `site-factory-editor/scripts/fixtures/scheda-consigliata/` | A | `contesto.json` (servizi e macro di Cavaliere, niente dati personali), `brief.json` sintetico (telefono e P.IVA di prova), `raw-submission.json` sintetico (`risposte.sede`, `risposte.zone` con un comune preciso, «X e dintorni» e «X e provincia»; orari nel campo scelto da Mattia, se già deciso), `traffico/zone-servite.json` confermato, `mappa-query.json`, `copy.json`, `copy-coverage.json`, `site.json` ridotto, `lavori.json`; `impresa-idraulica/` (ditta individuale, lead Tally → zone `da_impostare`) e `serramenti/` (società, 3 schede nella zona, «Tutta Italia»); `risposte/maps-*.json` (5 query, forma documentata), `mbi-cliente.json`, `mbi-competitor-*.json` (3), errori riusati da T4; `descrizione/` (ingressi, bozze che passano e che falliscono, review) |
 | `site-factory-editor/DESIGN-BRIEF.md` | M | sezione «Scheda consigliata (shape — 2026-09-14)» |
 | `docs/traffico/piano-G1.md` | M | Calibrazione, Verifica, chiusura |
 | `docs/traffico/README.md` | M | §7 G1; §3 nota su `cache-api.json` rinviata |
@@ -705,14 +763,17 @@ Impostazioni; l'accesso da Manager resta per la checklist e il monitor.
 | `docs/DEBUG.md` | M | righe §13 |
 
 Fixture fuori git: `site-renderer/out/zz-test-g1/` (`client.json` con Scheda attiva e dominio finto, contesto verificato, brief,
-`traffico/dati.json` verificato, `lavori.json` + 3 `img/lavoro-N.jpg` di prova) e `zz-test-g1-ditta/`, nel Cestino a fine fase 4.
+`raw-submission.json` con sede e zone, `lavori.json` + 3 `img/lavoro-N.jpg` di prova) e `zz-test-g1-ditta/`, nel Cestino a fine fase 4.
+Il banco usa il dataset reale via `PERCORSI_DATI` come il banco di T3 (`province.json` va generato con `npm run comuni` su un
+checkout pulito).
 
 Non si toccano: `lib/steps.ts`, `lib/catena.ts`, `lib/build.ts`, `lib/deploy.ts`, `lib/schemas.ts`, `lib/traffico.ts`, `lib/clients.ts`,
-`lib/staleness.ts`, `lib/run-step.ts`, `lib/slop.ts`, `lib/legale.ts`, `lib/logo.ts`, `lib/secrets.ts`, `app/api/setup/keys/route.ts`, i file
-di T3 (`lib/dati-traffico*.ts`, `lib/precompila-*.ts`) e di T4 salvo le costanti dichiarate sopra, `.claude/skills/copy-critic/**`,
+`lib/staleness.ts`, `lib/run-step.ts`, `lib/slop.ts`, `lib/legale.ts`, `lib/logo.ts`, `lib/inbox-form.ts`, i file di K1 (`lib/secrets.ts`,
+`lib/chiavi-traffico.ts`, `app/api/setup/keys/route.ts`), i file di T3 (`lib/zone-servite.ts` e la sua card/route) e di T4 salvo le
+estensioni dichiarate sopra, `.claude/skills/copy-critic/**`,
 renderer, `site-intake/`, n8n.
 
-## 11. Perimetro per `.claude/scope.json` (primo atto della fase 2, a T3 e T4 chiusi e perimetro libero)
+## 11. Perimetro per `.claude/scope.json` (primo atto della fase 2, a T4 chiuso e perimetro libero)
 
 ```json
 {
@@ -746,8 +807,12 @@ scrivere). Cache DataForSEO e fixture in `out/` sono scritte da Node o esenti da
 
 ## 12. Milestone (ogni verifica passa prima della successiva)
 
-**M0 — Precondizioni (nessun codice).** T3 e T4 chiusi e committati (`lib/dataforseo.ts` con cache e costi, `lib/mappa-lessico.json`,
-`lib/dati-traffico.ts`, `startTrafficoRun`, `kind: "traffico"` in `agenti.ts`); T6a committato; `scope.json` libero. Dove vivono
+**M0 — Precondizioni (nessun codice).** T4 chiuso e committato (`lib/dataforseo.ts` con cache, costi e `configurata()`,
+`lib/mappa-lessico.json`, `startTrafficoRun`, `kind: "traffico"` in `run-bus.ts` e `agenti.ts`); T3, T6a e K1 già chiusi; `scope.json`
+libero. Firme riverificate nel codice: `leggiZoneServite`, `zoneUsabili`, `areeServite`, `comuniServiti`, `comuniEntroKm`,
+`regioneDiSigla`, `caricaDati` (`lib/zone-servite.ts`); nomi dei campi di `mappa-query.json` sul `piano-T4.md` chiuso. **Orari**: se
+Mattia ha già aggiunto il campo al form lead, nome e forma letti da `raw-submission.json`/`brief.json` e da `lib/inbox-form.ts`
+(sola lettura) e scritti qui; altrimenti `orariScheda` resta «da completare» e il campo si aggancia quando esiste. Dove vivono
 `ENDPOINT_PAGATI`/`RigaCostoSchema` e se i lavori sono un'unione chiusa (decide le due voci condizionali). Rilettura in
 `node_modules/next/dist/docs/` di `route.md`, `dynamic-routes.md`, `use-router.md`. `git log --oneline -5`, `git status --short`.
 
@@ -758,10 +823,11 @@ skill sugli ingressi della fixture (bozza valida per `BozzaSchema`, review valid
 
 **M3 — Lavoro e route.** `scheda-lavoro.ts`, estensioni di `dataforseo.ts` (e costanti condizionali), `agenti.ts`, route; banco casi 25-26,
 31-36. Verifica sul dev server (:3311) con `zz-test-g1` e `SF_DATAFORSEO_REGISTRATE=scripts/fixtures/scheda-consigliata/risposte`:
-(1) `prepara` → 202, le fasi di §8 nella status bar, scheda valida, righe di costo; (2) secondo `prepara` → scheda uguale salvo `generataAt`,
-nessuna riga di costo, nessuna fase `claude -p`; (3) `approva-descrizione` → `approvataAt`, poi `prepara` → approvazione conservata;
-(4) `PUT` con un URL → 422 con `descrizione-link`; (5) `zz-test-g1-ditta` → zero chiamate DataForSEO (spia sul trasporto), zona
-`ditta-individuale`; (6) senza chiavi né variabile → zona `non-configurata`, scheda scritta; (7) risposte 40210 → errore «Credito…»,
+(1) `prepara` → 202, le fasi di §8 nella status bar, scheda valida con area servita dalle zone della fixture, righe di costo; (2)
+secondo `prepara` → scheda uguale salvo `generataAt`, nessuna riga di costo, nessuna fase `claude -p`; (3) `approva-descrizione` →
+`approvataAt`, poi `prepara` → approvazione conservata; (4) `PUT` con un URL → 422 con `descrizione-link`; (5) `zz-test-g1-ditta` →
+nessun corpo di richiesta col nome del cliente (spia sul trasporto), nessuna SERP col nome; (6) senza chiavi né variabile → zona
+`non-configurata`, scheda scritta; (6b) zone `da_impostare` → zona `zone-non-usabili`, area servita in `mancanti` col motivo; (7) risposte 40210 → errore «Credito…»,
 scheda precedente identica (sha); (8) stop → nessun file; (9) contesto non verificato, Scheda sospesa, `client.json` illeggibile → 409
 col motivo; (10) sha256 di `client.json` prima e dopo: identici. **Commit 2** + push.
 
@@ -786,32 +852,32 @@ Categorie
 6. Test «È»: «Ristrutturazione bagni» prova `bathroom_remodeler`; «Impianti idraulici» su impresa edile → da decidere; categoria osservata senza prova → scartata.
 7. Fuori dizionario: `monument` e un GCID vero non in dizionario → `fuoriDizionario` con conteggi, mai tra le voci.
 8. Primaria con dati: cluster del servizio principale; parità → `specificita` → `gcid`.
-9. Primaria senza dati (ditta individuale, 3 schede): `primariaDiSettore`; `datiInsufficienti: true`.
+9. Primaria senza dati (`serramenti`, 3 schede; senza chiavi): `primariaDiSettore`; `datiInsufficienti: true`; senza chiavi il motivo dice «da confermare coi concorrenti».
 10. Primaria attuale diversa: attuale che passa → `conferma`; non passa e 1,6× → `modifica` + `riverifica`; non passa e 1,2× → `solo-controllo`.
 11. Aggiuntive: 12 che passano → 9 + 3 in `categorieDaDecidere` «oltre il limite»; ordine deterministico; permutare gli item SERP non cambia nulla.
 12. Fixture Cavaliere: primaria `general_contractor`; `plumber` ed `electrician` da decidere; nessuna aggiuntiva senza `servizioReale`.
 
 Servizi, campi, foto, piano
-13. Servizi: priorità prima; categoria per prova o primaria; nome del contesto intatto; nome con «a Monza» → escluso con avviso; prezzo scaduto → assente; «forse predefinito» solo con ≥ 3 schede.
-14. Orari da `dati.json` (2 gruppi) → fasce ordinate; `dati.json` da verificare → `orari: null` + mancante.
-15. Area servita: 25 comuni → 20 per distanza con la sede prima; `indirizzoVisibile: null` + mancante.
-16. Sito: URL con UTM; senza dominio → `null` + mancante. Foto: `hero.jpg` e `card-*.jpg` mai candidate; 200 px → esclusa; copertina orizzontale della priorità 1; massimo 10.
+13. Servizi: ordine di `macro_categorie`; categoria per prova o primaria; nome del contesto intatto; nome con «a Monza» → escluso con avviso; nessun prezzo; «forse predefinito» solo con ≥ 3 schede.
+14. Orari: lead con il campo (2 fasce) → fasce ordinate, fonte `lead`; lead senza il campo, Tally o vuoto → `orari: null` + mancante «da completare».
+15. Area servita (§3.1): sede + «Monza e provincia» + «Monza (MB)» → provincia sì, Monza tolta; regione + una sua provincia → solo la regione; «X e dintorni» → X e poi i comuni per km fino a 20; 25 comuni precisi → 20 per distanza con la sede prima, `esclusi: 5`; «Tutta Italia» → regione della sede + avviso; `zoneUsabili` false (`da_impostare`, `lead_cambiato`) → `null` + mancante col motivo; `copiaIncolla` «Provincia di …» e nome breve della regione; `indirizzoVisibile: null` + mancante.
+16. Sito: URL con UTM; senza dominio → `null` + mancante. Foto: `hero.jpg` e `card-*.jpg` mai candidate; 200 px → esclusa; copertina = prima orizzontale nell'ordine di `lavori.json`; massimo 10; logo fornito prima di `mark.png`; `mark.png` con la riga Logo non verificata → assente.
 17. Piano: ≤ 2 sezioni non core al giorno; una core al giorno; primaria ultima; voci `conferma` con `giorno: 0`.
 
 Descrizione
-18. `componiIngressi`: ogni fatto ha `rif` valido; attestati solo pubblicabili; `ingressiSha` stabile e indipendente da `precedente`.
-19. Gate: i 17 casi che falliscono di §6.3, uno per uno, con l'id atteso.
+18. `componiIngressi`: ogni fatto ha `rif` valido; `area` dalle zone usabili (≤ 3 nomi) o da `contesto.zona.area_intervento`; `ingressiSha` stabile e indipendente da `precedente`.
+19. Gate: i 18 casi che falliscono di §6.3, uno per uno, con l'id atteso.
 20. Gate: i 5 casi che passano di §6.3.
 21. `descrizione-copia-sito`: 6 parole del titolo hero → FAIL; 5 parole → PASS; descrizione di un altro cliente dello stesso settore → FAIL, di un altro settore → PASS.
 22. `slopDescrizione`: frase bandita della lista → FAIL; testo pulito → PASS (script vero, file temporaneo cancellato).
-23. `gateDescrizioneMattia`: senza `fatti` passa; con un telefono fallisce.
+23. `gateDescrizioneMattia`: senza `fatti` passa; con un telefono fallisce; con una promessa vietata fallisce (`descrizione-vietate`).
 24. Schemi: `BozzaSchema` e `ReviewDescrizioneSchema` su fixture valide e rotte.
 
 Lavoro (trasporto e IO finti)
 25. Sequenza delle fasi; `done` con l'artifact; bozza scritta da un IO finto che simula PASS al secondo round del critico → `round: 2`.
 26. Ingressi invariati → nessuna chiamata a `io.claude`; approvazione conservata.
-31. Ditta individuale → zero chiamate al trasporto DataForSEO, zona `ditta-individuale`.
-32. Senza chiavi → `configurata()` false, zona `non-configurata`, nessuna eccezione, scheda valida.
+31. Ditta individuale → SERP della zona eseguite, nessun corpo di richiesta contiene il nome del cliente, nessuna SERP col nome anche se il cliente non è tra gli item; società non trovata → una SERP col nome.
+32. Senza chiavi → `configurata()` false, zona `non-configurata`, nessuna eccezione, scheda valida; zone non usabili → zona `zone-non-usabili`, zero chiamate.
 33. 40210 → un solo `error`, nessun file scritto; saldo < 2 × stima → errore prima di ogni chiamata pagata.
 34. Tre giri di critico FAIL → descrizione con `verdetto: "FAIL"`; gate ancora FAIL dopo 2 correzioni → `descrizione: null` + mancante.
 35. `costi.ndjson`: una riga per chiamata pagata col `cost`; cache → nessuna riga; nessuna credenziale né nome di competitor nelle righe o nei messaggi.
@@ -821,7 +887,7 @@ Schema e stati
 27. Scheda della fixture valida; voce senza fonti → FAIL; `api-gbp` con valore al posto del puntatore → FAIL; modalità pubblica con `serviceTypeId` → FAIL.
 28. Piano incoerente (due core lo stesso giorno, voce da inserire assente dal piano) → FAIL.
 29. `unisciStati`: stessa voce e stesso consigliato → stato `fatto` conservato; consigliato cambiato → `da-fare`, note conservate.
-30. Determinismo: pipeline completa due volte con trasporto finto → uguale salvo `generataAt`; input permutati → uguale. `vistaScheda`: cambio di sha di contesto, dati, mappa, copy, dizionario o dominio → «Da aggiornare» con l'elenco dei file.
+30. Determinismo: pipeline completa due volte con trasporto finto → uguale salvo `generataAt`; input permutati → uguale. `vistaScheda`: cambio di sha di contesto, zone, lead, lavori, mappa, copy, dizionario o dominio → «Da aggiornare» con l'elenco dei file.
 
 ## 14. Rischi e contromisure
 
@@ -839,25 +905,34 @@ Schema e stati
 | My Business Info vuoto su schede italiane | le regole che lo usano (servizi «forse predefiniti», confronto della descrizione) degradano a nessun effetto; test 2 (C2) |
 | Dati personali di competitor (ditte individuali) | nessun nome, telefono o indirizzo di competitor in `out/`, nei log o nei costi; cache fuori da git e Drive, file scaduti cancellati |
 | Policy di conservazione Business Profile | modalità pubblica: nessun contenuto API; schema che rifiuta valori al posto dei puntatori `api-gbp` |
-| Servizio Scheda senza Sito (niente `dati.json`, niente mappa) | lessico al posto della mappa; campi senza fonte in `mancanti` con la via per ottenerli; dubbio 3 |
-| Collisione con T3 e T4 (stessi file) | fase 2 dopo T3 e T4 chiusi (M0); voci condizionali del perimetro verificate prima di scrivere |
+| Servizio Scheda senza Sito (niente mappa) | zone e orari vengono dal form lead e valgono anche col solo servizio Scheda; lessico al posto della mappa; campi senza fonte in `mancanti` con la via per ottenerli |
+| Area servita sbagliata o troppo larga (lettura errata delle zone, «Tutta Italia», regioni intere lontane dalla sede) | zone lette solo con `zoneUsabili` (mai una proposta `da_controllare`); nessuna area fuori dalle zone servite; «Tutta Italia» ridotta alla regione della sede con avviso (dubbio 2); taglio a 20 per distanza dalla sede; motivo con l'etichetta del cliente, così Mattia vede da dove viene ogni area |
+| Orari mancanti finché il form lead non ha il campo | voce «da completare» in `mancanti`, mai orari stimati; aggancio al campo in M0 o appena Mattia lo aggiunge (dubbio 1) |
+| Nome del cliente verso DataForSEO per una ditta individuale | nessuna SERP col nome per le ditte (`inferForma`, incerta → ditta); identità solo per telefono o dominio tra gli item della zona; banco con spia sui corpi delle richieste |
+| Collisione con T4 (stessi file) | fase 2 dopo T4 chiuso (M0); voci condizionali del perimetro verificate prima di scrivere |
 | Etichette diverse dall'interfaccia di Google | confronto a vista in C6 prima di chiudere la UI |
 
-## 15. Dubbi che richiedono una decisione (proposta tra parentesi)
+## 15. Decisioni e dubbi
 
-1. **Ditte individuali**: nessuna chiamata DataForSEO neppure per le schede della zona, che usano query di servizio e il centro del
-   comune senza il nome del cliente (sì per ora, come il brief; riaprire quando T3 M6 chiude la qualifica di DataForSEO).
-2. **Senza chiavi DataForSEO**: la scheda si prepara lo stesso con le categorie dai soli servizi (sì) oppure resta bloccata.
-3. **Scheda attiva senza Sito**: orari, comuni e prezzi arrivano solo dal modulo di T3, che richiede il Sito; G1 li elenca in
-   «Mancano» (sì); aprire il modulo T3 anche col solo servizio Scheda è un cambio di T3 da decidere a parte.
-4. **Business Profile API e `cache-api.json`** rinviate a quando esistono approvazione e credenziale OAuth su n8n (sì: G1 solo modalità pubblica).
-5. **Logo sulla scheda**: solo il file fornito dal cliente; il marchio generato con GPT Image no, per coerenza con «nessuna foto AI» (sì).
-6. **Descrizioni dei singoli servizi** (≤ 300): non generate in G1 (sì).
-7. **Parametri iniziali**: zoom 17z, 5 punti a 2,5 km, `k_i` 0,5, soglia 1,5×, 5 competitor minimi, 10 foto, 2 sezioni al giorno, fino a C3-C6 (sì).
-8. **Spesa di calibrazione** circa 0,30 $ (test 1-3 della ricerca ≈ 0,09 $, due preparazioni vere ≈ 0,22 $ su `zz-test-g1` e Cavaliere) (sì, dopo M4).
-9. **`locations.patch?validateOnly=true`**: non costruito (sì).
-10. **Descrizione modificata da Mattia**: gate ridotti senza i fatti per frase, fonte «mattia», salvare = approvare (sì).
-11. **Descrizione in prima persona plurale** (sì, da confermare in C5 sulle prime 6 descrizioni).
+Già decisi (`decisioni-piani.md`, sezione G1, e T3 punti 12-14, K1), recepiti nel testo: ditte individuali con lettura della zona
+e nessuna ricerca col nome (G1-1); senza chiavi la scheda si prepara con categorie «da confermare coi concorrenti» (G1-2); niente
+mini-form: zone dal form lead, orari dal form lead quando ci saranno, niente prezzi né attestati (T3-12/13, sopra G1-3); Business
+Profile API e `cache-api.json` in G3 (G1-4); logo fornito o generato con la riga Logo verificata (G1-5); nessuna descrizione dei
+singoli servizi (G1-6); parametri iniziali fino alla calibrazione (G1-7); spesa di calibrazione circa 0,30 $ con la chiave (G1-8);
+descrizione modificata a mano con i controlli rigidi, promesse vietate comprese, salvare = approvare (G1-9); prima persona plurale
+(G1-10); nessuna chiave nuova (K1).
+
+Aperti (proposta tra parentesi):
+
+1. **Orari del form lead**: nome e forma del campo li decide Mattia nell'altra chat; il form raccoglie orari di lavoro e orari in cui
+   risponde al telefono (proposta: gli orari principali della scheda = orari di lavoro; quelli del telefono, se diversi, solo nel
+   motivo; «Altri orari» di Google non in G1).
+2. **«Tutta Italia»** nell'area servita: Google chiede un'area entro circa 2 ore dalla sede (proposta: la regione della sede con
+   avviso; in alternativa la provincia della sede).
+3. **«X e dintorni»**: riempire l'area coi comuni entro il raggio fino a 20 (proposta: sì, dopo le voci primarie) oppure solo il
+   comune X.
+4. **Servizio principale** per la primaria: il servizio della target T4 col volume più alto (proposta: sì; senza mappa nessuno).
+5. **`locations.patch?validateOnly=true`**: non costruito (sì).
 
 ## Calibrazione
 
@@ -865,7 +940,9 @@ Schema e stati
 campi di My Business Info su 5 schede italiane; C3 test 3, zoom 13z/15z/17z e rumore a +24 h; C4 categorie contro la scelta esperta di
 Mattia su 3 casi (Cavaliere, `impresa-idraulica`, `serramenti`), atteso primaria 3/3 e aggiuntive con Jaccard ≥ 0,7; C5 critico della
 descrizione contro il giudizio di Mattia su 6 descrizioni, atteso accordo ≥ 5/6; C6 etichette e ordine dei gruppi confrontati a vista con
-l'interfaccia della scheda; C7 costo reale per preparazione da `costi.ndjson`. Senza chiave: protocollo pronto, stato «da calibrare con
+l'interfaccia della scheda; C7 costo reale per preparazione da `costi.ndjson`; C8, senza spesa, area servita di Cavaliere (zone impostate
+dall'operatore) e di 2 lead del form v4: ogni `copiaIncolla` trovato dall'autocompletamento dell'area servita di Google (comuni,
+«Provincia di …», regioni) e confronto a vista con le zone del form. Senza chiave: protocollo pronto, stato «da calibrare con
 chiave» nel README §7.)*
 
 ## Verifica
