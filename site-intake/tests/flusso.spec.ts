@@ -72,6 +72,18 @@ test("@flusso dal mestiere al «Fatto» con correzioni", async ({ page }) => {
   // orari: lunedì con pausa, «usa per tutti i giorni», poi il sabato a mezza giornata
   await page.getByRole("button", { name: "Continua" }).click();
   await expect(page.getByRole("alert")).toContainText("Manca l'orario di lunedì");
+  // orari suggeriti al tocco: 8:00–18:00, con la pausa 8:00–12:00 e 13:00–18:00; «Cancella» svuota il giorno
+  await page.getByLabel("Lunedì, dalle", { exact: true }).focus();
+  await expect(page.getByLabel("Lunedì, dalle", { exact: true })).toHaveValue("08:00");
+  await page.getByLabel("Lunedì, alle", { exact: true }).focus();
+  await expect(page.getByLabel("Lunedì, alle", { exact: true })).toHaveValue("18:00");
+  await page.getByRole("button", { name: "Lunedì: pausa in mezzo" }).click();
+  await expect(page.getByLabel("Lunedì, alle", { exact: true })).toHaveValue("12:00");
+  await expect(page.getByLabel("Lunedì, seconda fascia dalle", { exact: true })).toHaveValue("13:00");
+  await expect(page.getByLabel("Lunedì, seconda fascia alle", { exact: true })).toHaveValue("18:00");
+  await page.getByRole("button", { name: "Lunedì: cancella gli orari" }).click();
+  await expect(page.getByLabel("Lunedì, dalle", { exact: true })).toHaveValue("");
+  await expect(page.getByLabel("Lunedì, seconda fascia dalle", { exact: true })).toBeHidden();
   await page.getByLabel("Lunedì, dalle", { exact: true }).fill("08:00");
   await page.getByLabel("Lunedì, alle", { exact: true }).fill("12:00");
   await page.getByRole("button", { name: "Lunedì: pausa in mezzo" }).click();

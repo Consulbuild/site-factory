@@ -11,6 +11,21 @@ import { OK, blocco, h, svgIcona, type ArgomentiComponente, type Componente, typ
 
 const GIORNI_DEFAULT: readonly Giorno[] = ["lun", "mar", "mer", "gio", "ven"];
 
+/**
+ * Orari suggeriti: compaiono solo quando si tocca una casella vuota, così il selettore
+ * di sistema si apre già sull'ora giusta invece che sull'ora attuale (le ditte iniziano
+ * tra le 7 e le 9). Senza pausa 8:00–18:00; con la pausa 8:00–12:00 e 13:00–18:00.
+ */
+const SUGGERITO = { dalle: "08:00", alle: "18:00", alleConPausa: "12:00", riprende: "13:00" };
+
+/** Al primo tocco su una casella vuota mette il valore suggerito (e avvisa chi ascolta `input`). */
+const suggerisci = (input: HTMLInputElement, valore: () => string) =>
+  input.addEventListener("focus", () => {
+    if (input.value) return;
+    input.value = valore();
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+
 interface Strumento {
   el: HTMLElement;
   focus(): void;
@@ -43,6 +58,7 @@ function creaStrumento(iniziale: Orari | undefined): Strumento {
     f2: [HTMLInputElement, HTMLInputElement];
     fascia2: HTMLElement;
     pausa: HTMLButtonElement;
+    cancella: HTMLButtonElement;
   }
   const righe: Riga[] = GIORNI.map((g) => {
     const nome = NOME_GIORNO[g];
@@ -53,15 +69,20 @@ function creaStrumento(iniziale: Orari | undefined): Strumento {
     const d = campoOra("alle", `${nome}, seconda fascia alle`, v[1]?.alle ?? "");
     const fascia2 = h("div", { class: "orari__fascia orari__fascia--2", hidden: !v[1] }, c.el, d.el);
     const pausa = h("button", { class: "orari__pausa", type: "button", "aria-pressed": v[1] ? "true" : "false", "aria-label": `${nome}: pausa in mezzo` }, "+ pausa");
+    const cancella = h("button", { class: "orari__cancella", type: "button", "aria-label": `${nome}: cancella gli orari`, hidden: true }, "Cancella");
+    suggerisci(a.input, () => SUGGERITO.dalle);
+    suggerisci(b.input, () => (pausa.getAttribute("aria-pressed") === "true" ? SUGGERITO.alleConPausa : SUGGERITO.alle));
+    suggerisci(c.input, () => SUGGERITO.riprende);
+    suggerisci(d.input, () => SUGGERITO.alle);
     const el = h(
       "div",
       { class: "orari__riga", "data-giorno": g, hidden: !attivi.has(g) },
       h("span", { class: "orari__giorno" }, nome),
-      pausa,
+      h("span", { class: "orari__azioni" }, cancella, pausa),
       h("div", { class: "orari__fascia" }, a.el, b.el),
       fascia2,
     );
-    return { el, g, f1: [a.input, b.input], f2: [c.input, d.input], fascia2, pausa };
+    return { el, g, f1: [a.input, b.input], f2: [c.input, d.input], fascia2, pausa, cancella };
   });
   const copia = h("button", { class: "btn btn--secondario btn--sm btn--blocco orari__copia", type: "button", hidden: true }, "Usa questi orari per tutti i giorni");
   const conferma = h("p", { class: "conferma", "aria-live": "polite", hidden: true });
@@ -84,6 +105,8 @@ function creaStrumento(iniziale: Orari | undefined): Strumento {
     const prima = v[0];
     copia.hidden = !(prima && completa(prima) && v.length > 1);
     if (prima) prima.el.after(copia);
+    // «Cancella» solo dove c'è qualcosa da cancellare.
+    for (const r of righe) r.cancella.hidden = !fasceDi(r).some((f) => f.dalle || f.alle);
     const g = giudicaOrari(leggi());
     conferma.hidden = !g.ok;
     if (g.ok) conferma.replaceChildren(h("span", { class: "conferma__eti" }, "Orari: "), h("strong", {}, formattaOrari(leggi())));
@@ -102,7 +125,23 @@ function creaStrumento(iniziale: Orari | undefined): Strumento {
       r.pausa.setAttribute("aria-pressed", String(on));
       r.pausa.textContent = on ? "senza pausa" : "+ pausa";
       r.fascia2.hidden = !on;
-      if (on) r.f2[0].focus();
+      if (on) {
+        // Con la pausa la giornata suggerita diventa 8:00–12:00 e 13:00–18:00: si riempie solo ciò che è vuoto o ancora suggerito.
+        const [dalle, alle] = r.f1;
+        const [riprende, fine] = r.f2;
+        if (!alle.value || alle.value === SUGGERITO.alle) alle.value = SUGGERITO.alleConPausa;
+        if (!riprende.value) riprende.value = SUGGERITO.riprende;
+        if (!fine.value) fine.value = SUGGERITO.alle;
+        if (!dalle.value) dalle.value = SUGGERITO.dalle;
+        riprende.focus();
+      }
+      aggiorna();
+    });
+    r.cancella.addEventListener("click", () => {
+      for (const i of [...r.f1, ...r.f2]) i.value = "";
+      r.pausa.setAttribute("aria-pressed", "false");
+      r.pausa.textContent = "+ pausa";
+      r.fascia2.hidden = true;
       aggiorna();
     });
     if (conPausa(r)) r.pausa.textContent = "senza pausa";

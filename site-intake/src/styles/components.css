@@ -726,7 +726,13 @@
   font-weight: 700;
   color: var(--ink);
 }
-.orari__pausa {
+.orari__azioni {
+  display: flex;
+  gap: var(--s-1);
+  justify-self: end;
+}
+.orari__pausa,
+.orari__cancella {
   min-height: var(--tap);
   padding: 0 var(--s-3);
   border: 0;
@@ -742,6 +748,13 @@
 .orari__pausa:hover,
 .orari__pausa[aria-pressed="true"] {
   background: var(--accent-soft);
+}
+.orari__cancella {
+  color: var(--ink-3);
+}
+.orari__cancella:hover {
+  background: var(--surface-3);
+  color: var(--ink);
 }
 .orari__fascia {
   grid-column: 1 / -1;
@@ -777,7 +790,7 @@
   .orari__riga .orari__fascia {
     grid-column: 2;
   }
-  .orari__riga .orari__pausa {
+  .orari__riga .orari__azioni {
     grid-column: 3;
     grid-row: 1;
   }

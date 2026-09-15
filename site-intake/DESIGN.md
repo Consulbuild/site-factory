@@ -74,8 +74,10 @@ offset 10 px. Target minimo 48 px (`--tap`), CTA e campi 56 px. Spazi su base 4 
 - **Orari** (schema della scheda Google, ridotto per il telefono): chip dei giorni
   (Lun–Ven già toccati), una riga per giorno selezionato con «Dalle / Alle» nativi da
   48 px e «+ pausa» per la seconda fascia, un solo bottone «Usa questi orari per tutti i
-  giorni» sotto la prima riga completa, conferma «Orari: Lun–Ven 8:00–12:00 e
-  13:30–18:00» in chiaro. Il telefono parte da tre scelte a righe (stessi orari /
+  giorni» sotto la prima riga completa, «Cancella» per giorno, conferma «Orari: Lun–Ven
+  8:00–12:00 e 13:30–18:00» in chiaro. Orari suggeriti solo al tocco di una casella
+  vuota (8:00–18:00; con la pausa 8:00–12:00 e 13:00–18:00): il selettore si apre già
+  sull'ora giusta, la casella non è mai precompilata. Il telefono parte da tre scelte a righe (stessi orari /
   diversi / 24 ore) e apre lo strumento già riempito solo se serve.
 - **Stile**: card con anteprima SVG 4:3 e nome. **Colori**: pallini 44 px con anello blu
   alla selezione. **Foto**: griglia 3 colonne di miniature quadrate con barra in basso,

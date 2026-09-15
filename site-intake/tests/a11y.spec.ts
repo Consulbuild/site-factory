@@ -4,6 +4,9 @@ import AxeBuilder from "@axe-core/playwright";
 // WCAG 2.x A/AA via axe-core sui passi rappresentativi (scelte, testo, sede, foto,
 // riepilogo, dialog privacy). `npm run test:a11y`.
 async function verifica(page: Page, nome: string) {
+  // Prima che finiscano le animazioni in corso: un avviso a metà dissolvenza fa misurare ad axe
+  // colori sbiaditi (rilievo di contrasto intermittente, non reale).
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))));
   // `as never`: @axe-core/playwright porta un playwright-core più nuovo di @playwright/test 1.61
   // (pinnato per riusare i browser già installati); a runtime la Page è la stessa.
   const r = await new AxeBuilder({ page: page as never }).withTags(["wcag2a", "wcag2aa"]).analyze();
