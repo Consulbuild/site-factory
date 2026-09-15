@@ -1,8 +1,8 @@
 # Piano T1c — Telefono veloce
 
 Brief: `docs/traffico/brief-T1c.md`. Decisione di riferimento: `decisioni-piani.md` T1b punto 9 (sopra il punto 8
-per i telefoni). Stato: **fase 1 (piano)**, 15/09/2026. Stime nello scratchpad: `t1c/stima.mjs` (foto di Cavaliere,
-sola lettura).
+per i telefoni). Stato: **fasi 2-3 (sviluppo e calibrazione)**, 15/09/2026: M1 `5daed74`, M2 `18f7fbd`, calibrazione
+in «Calibrazione». Stime nello scratchpad: `t1c/stima.mjs` (foto di Cavaliere, sola lettura).
 
 ## 1. Contesto e numeri
 
@@ -210,3 +210,96 @@ Non toccati: `global.css` (le regole `picture` e `picture > source` bastano), `H
 6. **Avviso foto LCP da telefono** a 250 KB e soglie del budget ricalibrate a massimo + 20 % (**sì**, avvisi).
 7. **Lighthouse locale** su meridian e canon, non su tutti i 7 preset (**sì**: canon ha la hero più alta; gli altri
    5 condividono la stessa hero e differiscono solo nei byte dei font).
+
+## Scostamenti dal piano nello sviluppo (M1-M2)
+
+Emersi dal banco del browser o dalle correzioni del controllore; nessun file fuori perimetro.
+
+1. **Marchio da telefono solo sotto 768 px.** Con il `png` a due candidati del §3 il computer a DPR 1 (1280@1, 1920@1)
+   sceglieva il PNG da telefono al posto di quello di T1b: contro «tablet e computer scelgono gli stessi file di oggi».
+   Il PNG da telefono sta nella voce `telefono` (`[-t143, 285]`) e Foto.astro lo offre con un `<source media="(max-width:
+   767px)">`; l'`<img>` resta con il solo PNG di T1b.
+2. **Larghezza esatta per il marchio.** Con `sizes` arrotondato al pixel (47,5 → 48 px) un DPR 3 chiedeva 144 px e
+   Chromium (primo candidato con densità ≥ DPR, nessuna media geometrica) prendeva il PNG da 285: `sizesLogo` scrive la
+   larghezza esatta arrotondata in su al millesimo (47.5px) e la variante da telefono è larga `ceil(w × 120 / h)` (143 px,
+   alta 120). Il riquadro del marchio sul telefono cambia di 0,14 px (42,89 contro 42,75 a 36 px d'altezza: il PNG
+   intero non ha il rapporto esatto 285/240); da 768 px nessuna differenza.
+3. **Serie da telefono e ritaglio come voci di cache a parte** (tipi `telefono-generata`, `telefono-reale`, `ritaglio`):
+   con la correzione del controllore la foto usata solo come hero a tutta pagina non riceve la serie da telefono, quindi
+   la serie non può stare nella voce della foto.
+4. **Foto della hero già più stretta di 430/544** (verticale): ritaglio = foto intera alla qualità del ritaglio, invece di
+   «nessun ritaglio», così fino a 430 px non torna alla serie q90 con `sizes` 1170px; la zona visibile è la stessa (niente
+   da tagliare) e `sizes` resta onesto (larghezza coperta ≤ quella del ritaglio 430/544).
+5. **Il budget legge ogni `<source>`** (anche il PNG del marchio), non solo quelli AVIF.
+
+## Calibrazione
+
+Fase 3, 15/09/2026, nello scratchpad (`t1c/`: `c1.mjs`, `acceso.sh`, `acceso90.sh`, `verifica-t1c.mjs`, `lh.mjs`,
+`c4.sh`, `revisione.mjs`) sulla fixture `out/zz-test-t1c` (clone di Cavaliere) e sulle copie delle foto dei 3 clienti.
+Lighthouse **13.4.1** con il Chromium di Playwright, profilo mobile predefinito, 5 esecuzioni e mediana, server statico che
+comprime il testo; Umami e n8n bloccati.
+
+- **C1 qualità da telefono** (SSIM luminanza, finestre 8×8 passo 4, contro l'originale ridotto alla larghezza scelta dal
+  telefono: card generate 640 e originale, lavori reali 400/640/originale, hero = ritaglio 860 sotto il velo 0,38; KB
+  medi · SSIM media mediana / peggiore; gate: mediana ≥ 0,97 e peggiore ≥ 0,94):
+
+  | | q55 | q62 | **q70** | q78 | q85 |
+  |---|---|---|---|---|---|
+  | generate (26 misure) | 45 · 0,963/0,946 no | 58 · 0,973/0,961 passa | **71 · 0,979/0,969** | 90 · 0,985/0,977 | 124 · 0,991/0,984 |
+  | reali (54 misure) | 74 · 0,964/0,918 no | 89 · 0,972/0,943 passa | **102 · 0,979/0,959** | 119 · 0,985/0,973 | 144 · 0,991/0,986 |
+  | hero sotto il velo (3) | 87 · 0,978/0,966 passa | **109 · 0,984/0,970** | 132 · 0,988/0,974 | 165 · 0,991/0,981 | 220 · 0,994/0,988 |
+
+  Prima qualità che passa: q62 per generate e reali, q55 (la più bassa provata) per la hero sotto il velo. Più un
+  gradino: **serie da telefono q70** (generate e reali), **ritaglio q62**. Peggiori: lavoro-10 di Cavaliere a 400 px
+  (0,959 a q70), hero di Costruzioni Generali (0,974 sotto il velo a q62; 0,935 senza velo, che però non si vede mai).
+- **C2 ritaglio**: riquadro della hero fino a 430 px alto 626-734 px nei 7 preset (meridian 626 a 412, atelier 734 a
+  360), sempre ≥ 544: rapporto **430/544** confermato. Zona visibile: il confronto del piano «scarto medio ≤ 1, 0 % oltre
+  24» non è raggiungibile nemmeno a pari qualità, perché due codifiche AVIF indipendenti (1920 q90 intera contro 860 q90
+  ritagliata) differiscono sui bordi fini e il telefono le ingrandisce (×1,06-1,73): scarto medio 0,48-3,34, il più alto su
+  vita a 412@1,75 (impalcature sotto la parte chiara del velo). Criterio sostituito con quello geometrico: a pari qualità
+  (ritaglio q90) lo scarto minimo sta a spostamento **(0,0) su 28/28** confronti (7 preset × 360/390/412/430) cercando a un
+  quarto di pixel del dispositivo; uno spostamento di 1 px vale 2-6 volte lo scarto. Con q62: medio 0,84-3,41, oltre 24
+  ≤ 2,86 %; a occhio al 100 % nessuna differenza (schermate sotto).
+- **C3 `sizes` del ritaglio**: larghezza coperta massima 580 px (atelier a 360 px) → **590px**. Con 590px ogni telefono da
+  DPR 1,09 in su chiede più di 640 px, quindi nessun viewport di verifica sceglie i gradini 400 e 640: la scala del
+  ritaglio parte da 960 più la larghezza del ritaglio, e per le hero 1920×1088 è **un file solo** (`-r860`, 157 KB su
+  Cavaliere). Banco del browser sulla ricetta finale, 7 preset × 9 viewport: 0 errori (box, sizes onesti fino a 767 px, da
+  768 px stessi file di T1b, marchio `-t143` a 390@3, 412@1,75 e 430@3, axe 0 violazioni come senza varianti).
+- **C4 soglie del budget** (412 px · DPR 1,75, ricetta finale): home della fixture 1.098 KB (meridian) - **1.243 KB
+  (canon)**, immagini 1.034 KB, 23-25 richieste; Mattia Saggin 610/755 KB, 17/19 richieste; Costruzioni Generali 139/284
+  KB; sottopagine 47-242 KB. Soglie = massimo + ~20 %: **totale 1.500 KB, immagini 1.250 KB, 30 richieste** (la ricetta
+  T1b sul telefono, 5.320 KB, torna ad avvisare). Foto LCP da telefono: massimo 157 KB (hero di Mattia Saggin), + 20 % =
+  188 KB sotto i 250: resta **250 KB**.
+- **Marchio**: PNG senza perdita `-t143` 33 KB contro 114 KB (nessuna calibrazione, come da piano).
+- **Tempi e disco**: 39 voci di Cavaliere a freddo 81-124 s (T1b 51-81 s; timeout di fase 300 s), a caldo dalla cache;
+  `dist` 45,2 → 54,4 MB (222 varianti contro 151).
+
+**Lighthouse locale** (home e /privacy/, mediana di 5):
+
+| Dist | Home | LCP | FCP | Peso | /privacy/ |
+|---|---|---|---|---|---|
+| M0 riferimento, ricetta T1b (meridian) | 75 | 9,68 s | 1,06 s | 2.287 KB | 100 |
+| **T1c meridian** (preset di Cavaliere) | **95** | **3,00 s** | 1,06 s | 481 KB | 100 |
+| T1c ferro · nova · terra · vita · atelier | 94 · 92 · 92 · 92 · 91 | 3,08-3,38 s | 1,20-1,51 s | 493-539 KB | — |
+| **T1c canon** | **88** | 3,75 s | 1,80 s | 604 KB | 99 |
+| canon con CSS inline (prova, `astro.config.mjs` non toccato) | 87 | 3,83 s | 1,80 s | 604 KB | 100 |
+| canon alla qualità minima che passa il gate (serie q62, ritaglio q55) | 91 | 3,30 s | 1,80 s | 527 KB | — |
+
+LCP sempre sulla foto della hero. **Canon resta sotto 90 per i font**, non per le foto: Playfair Display 600 (38 KB) e
+Source Serif 4 400 (120 KB) partono prima del primo disegno e il simulatore li mette davanti a FCP e LCP (+0,75 s su
+entrambi rispetto a meridian con 34 KB di Archivo). Il CSS inline non sposta nulla (la home aspetta font e foto, non i 9 KB
+di CSS): `astro.config.mjs` resta fuori dal perimetro. La qualità minima del gate arriva a 91, quindi la condizione di stop
+della decisione non scatta; resta la ricetta con il gradino di margine (q70/q62) e la scelta per canon passa a Mattia
+(«Dubbi aperti»).
+
+**Schermate per la revisione di Mattia** (fuori da git e da `out/`, `~/.cache/site-factory/revisione-T1c/`):
+`<preset>/<390|412>-<hero|servizi|lavori>.png` = sezione a 390@3 e 412@1,75 al 100 % (pixel del dispositivo), ricetta T1b
+(zoom, q90) affiancata alla ricetta T1c (serie q70, ritaglio q62); per meridian e canon una terza colonna con la qualità
+minima del gate (q62/q55).
+
+## Dubbi aperti per Mattia
+
+1. **Canon a 88 in locale.** (a) Ricetta calibrata con un gradino di margine: 6 preset su 7 ≥ 91, canon 88; (b) qualità
+   minima del gate per tutti i siti (serie q62, ritaglio q55): canon 91, foto al limite del gate su tutti i preset; (c)
+   alleggerire i font di canon (Source Serif 4 latin 120 KB) in un piano a parte, fuori da T1c. Proposta: **(a) + (c)**;
+   nessun cliente oggi usa canon, Cavaliere (meridian) è a 95.

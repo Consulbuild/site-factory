@@ -96,9 +96,9 @@ export const TELEFONO_MAX = 767;
 /**
  * Ritaglio da telefono della foto della hero a tutta pagina (piano T1c §2.3): lo sceglie il
  * browser fino a 430 px di viewport; `sizes` = larghezza coperta massima misurata nei 7 preset
- * (altezza del riquadro × 430/544, calibrazione C3).
+ * (altezza del riquadro × 430/544: 580 px, atelier a 360 px), arrotondata in su (calibrazione C3).
  */
-export const RITAGLIO = { media: "(max-width: 430px)", sizes: "600px" } as const;
+export const RITAGLIO = { media: "(max-width: 430px)", sizes: "590px" } as const;
 
 /** Altezza di logo e marchio sul telefono (h-10 = 40 px, la più alta sotto md). */
 export const LOGO_ALTEZZA_TELEFONO = 40;

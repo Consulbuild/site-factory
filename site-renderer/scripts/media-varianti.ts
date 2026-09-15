@@ -56,16 +56,20 @@ export const RICETTA = {
    * Telefoni (decisione di Mattia T1b punto 9, piano T1c C1): serie AVIF a parte, stessa scala, che il
    * browser sceglie fino a 767 px, a qualità calibrata sulla dimensione resa sul telefono (non sullo
    * zoom). Serve una serie a parte perché i gradini della scala li usa anche il computer a q90.
+   * q70 = un gradino sopra q62, la prima che passa il gate (SSIM media ≥ 0,97 sulla misura mediana e
+   * ≥ 0,94 sulla peggiore, alle larghezze scelte a 412@1,75 e 390@3) per foto generate e reali.
    */
   qualitaTelefono: { generata: 70, reale: 70 },
   /**
-   * Ritaglio da telefono della foto della hero a tutta pagina (piano T1c §2.3 e C2-C3): fascia
+   * Ritaglio da telefono della foto della hero a tutta pagina (piano T1c §2.3 e C1-C3): fascia
    * centrale alta quanto l'originale e larga h × 430/544. Fino a 430 px il riquadro è alto almeno
-   * 34rem = 544 px, quindi `object-cover` centrato mostra dal ritaglio gli stessi pixel
-   * dell'originale alla stessa scala. Una foto già più stretta resta intera. Gradini: quelli che un
-   * telefono può scegliere con `sizes` 600px (il 400 no), più la larghezza del ritaglio.
+   * 34rem = 544 px (misurati 626-734 px nei 7 preset), quindi `object-cover` centrato mostra dal
+   * ritaglio gli stessi pixel dell'originale alla stessa scala. Una foto già più stretta resta intera.
+   * Gradini: con `sizes` 590px ogni telefono da DPR 1,1 in su chiede più di 640 px, quindi da 960 in su
+   * più la larghezza del ritaglio (860 per le hero 1920×1088: un file solo). q62 = un gradino sopra
+   * q55, che passa già il gate sotto il velo più chiaro del gradiente (0,38).
    */
-  ritaglio: { rapporto: [430, 544], larghezze: [640, 960, 1280, 1920], qualita: 70 },
+  ritaglio: { rapporto: [430, 544], larghezze: [960, 1280, 1920], qualita: 62 },
   /** Effort 2 è 3× più veloce ma perde SSIM a pari peso (C2): la codifica si fa una volta sola. */
   avifEffort: 4,
   /**

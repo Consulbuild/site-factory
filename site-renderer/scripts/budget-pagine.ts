@@ -30,12 +30,14 @@ const RADICE_RENDERER = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 /** Profilo mobile di Lighthouse (Moto G Power). */
 export const DISPOSITIVO = { larghezza: 412, dpr: 1.75 } as const;
 /**
- * Soglie per pagina (calibrazione C6, piano T1b § Calibrazione): massimo misurato sulle home dei
- * 3 clienti e della fixture di Cavaliere nei 7 preset con la ricetta della decisione di Mattia
- * (qualità degli originali anche con lo zoom: 5.320 KB con canon, 5.112 KB di immagini, 25
- * richieste) + ~20 %, arrotondato. Fanno da guardia contro le regressioni, non da obiettivo.
+ * Soglie per pagina (calibrazione C4, piano T1c § Calibrazione): massimo misurato a 412 px sulle
+ * home e sottopagine dei 3 clienti (fixture di Cavaliere nei 7 preset) con la ricetta da telefono
+ * (1.243 KB con canon, 1.034 KB di immagini, 25 richieste) + ~20 %, arrotondato: un ritorno al
+ * raddoppio per lo zoom sul telefono (5.175 KB) torna ad avvisare. Foto LCP da telefono: 250 KB
+ * (massimo misurato 157 KB; oltre, il LCP simulato da telefono supera ~3,5 s). Fanno da guardia
+ * contro le regressioni, non da obiettivo.
  */
-export const SOGLIE = { totaleKb: 6400, immaginiKb: 6100, richieste: 30, fotoLcpKb: 250 };
+export const SOGLIE = { totaleKb: 1500, immaginiKb: 1250, richieste: 30, fotoLcpKb: 250 };
 
 const RASTER = /\.(jpe?g|png|webp|avif|tiff?)$/i;
 
