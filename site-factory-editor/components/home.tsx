@@ -5,7 +5,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { btnPrimary, btnSecondary, btnGhost } from "./ui";
+import { ExternalLink } from "lucide-react";
+import { Badge, Banner, btnPrimary, btnSecondary, btnGhost } from "./ui";
 import { ConfirmDialog } from "./confirm-dialog";
 
 /**
@@ -20,6 +21,7 @@ export function KeySetup({
   description,
   placeholder,
   compact = false,
+  aiuto,
   onSaved,
 }: {
   name: string;
@@ -28,6 +30,8 @@ export function KeySetup({
   placeholder?: string;
   /** true = solo form, senza il riquadro sezione (per righe di pannello). */
   compact?: boolean;
+  /** Riga d'aiuto sotto il form (es. «Incolla tutto il file JSON»). */
+  aiuto?: string;
   onSaved?: () => void;
 }) {
   const router = useRouter();
@@ -57,7 +61,7 @@ export function KeySetup({
   const form = (
     <>
       <form
-        className={compact ? "flex gap-2" : "mt-3 flex gap-2"}
+        className={compact ? "flex flex-wrap gap-2" : "mt-3 flex gap-2"}
         onSubmit={(e) => {
           e.preventDefault();
           if (key.trim()) save();
@@ -69,13 +73,20 @@ export function KeySetup({
           onChange={(e) => setKey(e.target.value)}
           placeholder={placeholder}
           autoComplete="off"
-          className="max-w-sm"
+          autoFocus={compact}
+          className={compact ? "min-w-0 grow sm:max-w-sm" : "max-w-sm"}
           aria-label={`API key ${title}`}
+          aria-describedby={aiuto ? `${name}-aiuto` : undefined}
         />
         <button type="submit" className={btnPrimary} disabled={busy || !key.trim()}>
           {busy ? "Verifico…" : "Salva e verifica"}
         </button>
       </form>
+      {aiuto && (
+        <p id={`${name}-aiuto`} className="mt-1.5 text-xs text-muted">
+          {aiuto}
+        </p>
+      )}
       {error && <p className="mt-2 text-sm text-err">{error}</p>}
     </>
   );
@@ -95,16 +106,29 @@ interface KeyInfo {
   label: string;
   configured: boolean;
   hint: string | null;
+  /** Solo chiavi del Traffico: pagina dove si crea, segnaposto, riga d'aiuto. */
+  dove?: string;
+  segnaposto?: string;
+  aiuto?: string;
 }
 
-/** Pannello di gestione di tutte le API key della pipeline (stato + aggiorna). */
+interface KeyGroup {
+  id: string;
+  titolo: string;
+  frase: string;
+  chiavi: KeyInfo[];
+}
+
+/** Pannello di gestione di tutte le API key della pipeline, per gruppi (stato + aggiorna). */
 export function ApiKeysPanel() {
-  const [keys, setKeys] = useState<KeyInfo[] | null>(null);
+  // null = in caricamento, "errore" = GET fallito (mai una lista vuota muta).
+  const [gruppi, setGruppi] = useState<KeyGroup[] | "errore" | null>(null);
   const [openKey, setOpenKey] = useState<string | null>(null);
 
   async function load() {
     const res = await fetch("/api/setup/keys").catch(() => null);
-    setKeys(res?.ok ? await res.json() : []);
+    const data = res?.ok ? await res.json().catch(() => null) : null;
+    setGruppi(Array.isArray(data?.gruppi) ? data.gruppi : "errore");
   }
   useEffect(() => {
     load();
@@ -120,37 +144,102 @@ export function ApiKeysPanel() {
           Salvate nel portachiavi macOS (Keychain, cifrate a riposo), mai in chiaro su disco. Al primo accesso macOS
           può chiedere un consenso una tantum.
         </p>
-        {keys === null ? (
+        {gruppi === null ? (
           <p className="mt-3 text-sm text-muted">Carico…</p>
+        ) : gruppi === "errore" ? (
+          <div className="mt-3">
+            <Banner
+              tone="err"
+              title="Stato delle chiavi non leggibile"
+              actions={
+                <button
+                  className={btnSecondary}
+                  onClick={() => {
+                    setGruppi(null);
+                    load();
+                  }}
+                >
+                  Riprova
+                </button>
+              }
+            >
+              L&apos;editor non ha risposto: le chiavi salvate non sono state toccate.
+            </Banner>
+          </div>
         ) : (
-          <ul className="mt-3 divide-y divide-line">
-            {keys.map((k) => (
-              <li key={k.name} className="flex flex-wrap items-center gap-3 py-2.5">
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium">{k.label}</div>
-                  <div className="mono mt-0.5 text-xs text-muted">
-                    {k.configured ? `configurata · ${k.hint}` : "mancante"}
-                  </div>
+          gruppi.map((g) => {
+            const configurate = g.chiavi.filter((k) => k.configured).length;
+            return (
+              <section key={g.id} aria-labelledby={`chiavi-${g.id}`} className="mt-4 border-t border-line pt-4">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                  <h3 id={`chiavi-${g.id}`} className="text-sm font-semibold">
+                    {g.titolo}
+                  </h3>
+                  <span className="text-xs text-muted">
+                    {configurate} di {g.chiavi.length} {configurate === 1 ? "configurata" : "configurate"}
+                  </span>
                 </div>
-                {openKey === k.name ? (
-                  <KeySetup
-                    compact
-                    name={k.name}
-                    title={k.label}
-                    onSaved={() => {
-                      setOpenKey(null);
-                      load();
-                    }}
-                    description=""
-                  />
-                ) : (
-                  <button className={btnSecondary} onClick={() => setOpenKey(k.name)}>
-                    {k.configured ? "Aggiorna" : "Aggiungi"}
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
+                <p className="mt-1 text-sm text-muted">{g.frase}</p>
+                <ul className="mt-2 divide-y divide-line">
+                  {g.chiavi.map((k) => {
+                    const aperta = openKey === k.name;
+                    return (
+                      <li key={k.name} className="flex flex-wrap items-center gap-3 py-2.5">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium">{k.label}</div>
+                          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                            {k.configured ? (
+                              <>
+                                <Badge tone="ok">Configurata</Badge>
+                                {k.hint && <span className="mono text-xs text-muted">{k.hint}</span>}
+                              </>
+                            ) : (
+                              <Badge tone="idle">Mancante</Badge>
+                            )}
+                            {k.dove && (
+                              <a
+                                href={k.dove}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-muted underline-offset-2 hover:text-ink hover:underline"
+                              >
+                                Dove si prende
+                                <ExternalLink aria-hidden className="size-3" />
+                                <span className="sr-only">(nuova scheda)</span>
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          className={aperta ? btnGhost : btnSecondary}
+                          aria-expanded={aperta}
+                          onClick={() => setOpenKey(aperta ? null : k.name)}
+                        >
+                          {aperta ? "Annulla" : k.configured ? "Aggiorna" : "Aggiungi"}
+                        </button>
+                        {aperta && (
+                          <div className="basis-full">
+                            <KeySetup
+                              compact
+                              name={k.name}
+                              title={k.label}
+                              placeholder={k.segnaposto}
+                              aiuto={k.aiuto}
+                              onSaved={() => {
+                                setOpenKey(null);
+                                load();
+                              }}
+                              description=""
+                            />
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            );
+          })
         )}
       </div>
     </details>

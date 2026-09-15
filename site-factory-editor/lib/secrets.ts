@@ -11,6 +11,17 @@ import { ENV_FILE } from "./paths.ts"; // .ts: importabile anche standalone (scr
 const SECURITY = "/usr/bin/security";
 const SERVICE = "site-factory";
 
+/** Chiavi dei servizi Traffico (docs/traffico/piano-K1.md): prove gratuite in lib/chiavi-traffico.ts. */
+export const CHIAVI_TRAFFICO = [
+  "GOOGLE_SERVICE_ACCOUNT",
+  "GOOGLE_API_KEY",
+  "BING_WEBMASTER_API_KEY",
+  "DATAFORSEO_LOGIN",
+  "DATAFORSEO_PASSWORD",
+  "CLOUDFLARE_DNS_API_TOKEN",
+] as const;
+export type ChiaveTraffico = (typeof CHIAVI_TRAFFICO)[number];
+
 export const KNOWN_KEYS = [
   "BFL_API_KEY",
   "OPENAI_API_KEY",
@@ -23,6 +34,7 @@ export const KNOWN_KEYS = [
   // Dashboard clienti (docs/piano-dashboard-clienti.md)
   "STRIPE_API_KEY",
   "GATUS_PASSWORD",
+  ...CHIAVI_TRAFFICO,
 ] as const;
 export type KeyName = (typeof KNOWN_KEYS)[number];
 
@@ -36,7 +48,75 @@ export const KEY_LABELS: Record<KeyName, string> = {
   N8N_API_KEY: "n8n (API key: import workflow e lettura lead)",
   STRIPE_API_KEY: "Stripe (chiave ristretta: abbonamenti ed entrate)",
   GATUS_PASSWORD: "Gatus (password del monitor, per «Siti down»)",
+  GOOGLE_SERVICE_ACCOUNT: "Google Cloud (service account di scrittura: verifica siti e Search Console)",
+  GOOGLE_API_KEY: "Google Cloud (API key: PageSpeed Insights e CrUX)",
+  BING_WEBMASTER_API_KEY: "Bing Webmaster Tools (API key)",
+  DATAFORSEO_LOGIN: "DataForSEO (login API)",
+  DATAFORSEO_PASSWORD: "DataForSEO (password API)",
+  CLOUDFLARE_DNS_API_TOKEN: "Cloudflare (token solo DNS: verifica Google e Bing)",
 };
+
+/** Gruppi del pannello «Chiavi API»: ogni chiave di KNOWN_KEYS in uno solo (banco test-chiavi.ts). */
+export const KEY_GROUPS: ReadonlyArray<{ id: string; titolo: string; frase: string; chiavi: readonly KeyName[] }> = [
+  {
+    id: "siti",
+    titolo: "Produzione e sviluppo siti",
+    frase: "Servono alla catena che crea i siti: immagini, logo e pubblicazione su Cloudflare.",
+    chiavi: ["BFL_API_KEY", "OPENAI_API_KEY", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"],
+  },
+  {
+    id: "vps",
+    titolo: "VPS e dashboard clienti",
+    frase: "Collegano l'editor ai servizi sul VPS e a Stripe: form, statistiche, monitor e abbonamenti.",
+    chiavi: ["UMAMI_PASSWORD", "N8N_REGISTRA_KEY", "N8N_API_KEY", "STRIPE_API_KEY", "GATUS_PASSWORD"],
+  },
+  {
+    id: "traffico",
+    titolo: "Ottimizzazione del traffico",
+    frase:
+      "Servono ai servizi Traffico: avvisare Google e Bing, misurare la velocità, leggere ricerche e schede della zona. Le prove usano solo chiamate gratuite.",
+    chiavi: CHIAVI_TRAFFICO,
+  },
+];
+
+/** Dove si prende (URL), segnaposto e aiuto: solo per le chiavi del Traffico (le altre restano com'erano). */
+export const KEY_INFO: Record<ChiaveTraffico, { dove: string; segnaposto: string; aiuto?: string }> = {
+  GOOGLE_SERVICE_ACCOUNT: {
+    dove: "https://console.cloud.google.com/iam-admin/serviceaccounts",
+    segnaposto: '{ "type": "service_account", … }',
+    aiuto: "Incolla tutto il file JSON scaricato da Google Cloud.",
+  },
+  GOOGLE_API_KEY: {
+    dove: "https://console.cloud.google.com/apis/credentials",
+    segnaposto: "AIza…",
+    aiuto: "La prova misura google.com: può servire fino a un minuto.",
+  },
+  BING_WEBMASTER_API_KEY: { dove: "https://www.bing.com/webmasters/settings/api", segnaposto: "API key…" },
+  DATAFORSEO_LOGIN: {
+    dove: "https://app.dataforseo.com/api-access",
+    segnaposto: "login API…",
+    aiuto: "La prova parte quando ci sono login e password.",
+  },
+  DATAFORSEO_PASSWORD: {
+    dove: "https://app.dataforseo.com/api-access",
+    segnaposto: "password API…",
+    aiuto: "La prova parte quando ci sono login e password.",
+  },
+  CLOUDFLARE_DNS_API_TOKEN: { dove: "https://dash.cloudflare.com/profile/api-tokens", segnaposto: "token…" },
+};
+
+/** Buffer di `security -i` (4096 byte per comando) meno il comando attorno al valore. */
+export const MAX_VALORE_SEGRETO = 4000;
+
+/** Controllo puro del valore prima di `security` (esportato per il banco): null se salvabile, altrimenti il motivo. */
+export function motivoValoreNonSalvabile(value: string): string | null {
+  const escaped = value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  if (escaped.length > MAX_VALORE_SEGRETO) {
+    return `valore troppo lungo per il portachiavi (${escaped.length} caratteri, massimo ${MAX_VALORE_SEGRETO})`;
+  }
+  if (!/^[\x21-\x7E]{8,}$/.test(value)) return "key non valida: attesi ≥8 caratteri stampabili senza spazi";
+  return null;
+}
 
 function keychainRead(name: KeyName): string | null {
   const r = spawnSync(SECURITY, ["find-generic-password", "-s", SERVICE, "-a", name, "-w"], {
@@ -49,7 +129,8 @@ function keychainRead(name: KeyName): string | null {
 
 /** Salva/aggiorna la key nel Keychain. Il valore passa SOLO su stdin. */
 export function setSecret(name: KeyName, value: string): void {
-  if (!/^[\x21-\x7E]{8,}$/.test(value)) throw new Error("key non valida: attesi ≥8 caratteri stampabili senza spazi");
+  const motivo = motivoValoreNonSalvabile(value);
+  if (motivo) throw new Error(motivo);
   const escaped = value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
   const r = spawnSync(SECURITY, ["-i"], {
     input: `add-generic-password -U -s ${SERVICE} -a ${name} -w "${escaped}"\n`,

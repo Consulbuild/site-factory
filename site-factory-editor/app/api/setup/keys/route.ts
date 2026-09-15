@@ -1,21 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
-import { KNOWN_KEYS, KEY_LABELS, type KeyName, getSecret, hasSecret, secretHint, setSecret } from "@/lib/secrets";
+import {
+  CHIAVI_TRAFFICO,
+  KEY_GROUPS,
+  KEY_INFO,
+  KNOWN_KEYS,
+  KEY_LABELS,
+  type ChiaveTraffico,
+  type KeyName,
+  getSecret,
+  hasSecret,
+  secretHint,
+  setSecret,
+} from "@/lib/secrets";
 import { umamiLogin, n8nPing, registraCliente } from "@/lib/integrazioni";
 import { stripePing } from "@/lib/stripe";
 import { gatusPing } from "@/lib/gatus";
 
 export const dynamic = "force-dynamic";
 
-/** Stato delle key per la UI: MAI il valore, solo presenza + ultimi 4. */
+const isChiaveTraffico = (name: KeyName): name is ChiaveTraffico => (CHIAVI_TRAFFICO as readonly string[]).includes(name);
+
+/** Stato delle key per la UI, per gruppi: MAI il valore, solo presenza + ultimi 4. */
 export async function GET() {
-  return NextResponse.json(
-    KNOWN_KEYS.map((name) => ({
-      name,
-      label: KEY_LABELS[name],
-      configured: hasSecret(name),
-      hint: secretHint(name),
+  return NextResponse.json({
+    gruppi: KEY_GROUPS.map(({ id, titolo, frase, chiavi }) => ({
+      id,
+      titolo,
+      frase,
+      chiavi: chiavi.map((name) => ({
+        name,
+        label: KEY_LABELS[name],
+        configured: hasSecret(name),
+        hint: secretHint(name),
+        ...(isChiaveTraffico(name) ? KEY_INFO[name] : {}),
+      })),
     })),
-  );
+  });
 }
 
 /** Prova reale della key prima di salvarla. Ritorna null se ok, il motivo se no. */
