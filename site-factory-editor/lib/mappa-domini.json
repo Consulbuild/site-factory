@@ -1,5 +1,5 @@
 {
-  "versione": "2026-09-a",
+  "versione": "2026-09-b",
   "aggiornato": "2026-09-15",
   "portali": [
     { "dominio": "prontopro.it", "nome": "ProntoPro", "nota": "p4 §4.1: impresa edile Cologno Monzese, San Severo; imbianchino Vicenza" },
@@ -33,5 +33,18 @@
     { "dominio": "indeed.com", "nome": "Indeed", "nota": "lavoro (p4 §4.1: it.indeed.com su elettricista Bergamo)" },
     { "dominio": "subito.it", "nome": "Subito", "nota": "annunci" },
     { "dominio": "wikipedia.org", "nome": "Wikipedia", "nota": "enciclopedia" }
-  ]
+  ],
+  "nazionali": {
+    "fonte": "campione 2026-09-15 (384 pagine di Google, 10 province): fuori elenco in almeno 3 province",
+    "domini": [
+      "academy.dakota.eu", "alexprontointervento.it", "archisio.it", "arredamento.it", "artigian.casa", "blogbisacchi.it", "bottegadomus.it",
+      "ceramicstore.eu", "cercoproitalia.it", "coibentarecasa.it", "costo-ristrutturazione-casa.it", "dimensionebagno.it", "duco.it",
+      "ecoisolamentotermico.it", "ediliziacrobatica.com", "ediliziapoint.it", "edilportale.com", "fratellipellizzari.it", "homedeal.it",
+      "houzz.it", "idraulicoin.it", "idrauligo.it", "imbiancatura.com", "infissiepersiane.it", "infobuildenergia.it", "iperceramica.it",
+      "isolconfort.it", "it.jooble.org", "la-certificazione-energetica.net", "leroymerlin.it", "manticeramicitalia.it", "metrabuilding.com",
+      "perinotto.com", "pgcasa.it", "posainoperapavimentiroma.it", "preventivofacile.it", "pronto-intervento24.it", "reddit.com",
+      "ristrutturazioni.milano.it", "rivaingegnere.it", "sgombero.eu", "showroominfissi.com", "spazibelli.com", "sporext-group.com",
+      "stilloak.app", "studiomadera.it", "taskrabbit.it", "vanzinpavimenti.it", "vivienergia.it"
+    ]
+  }
 }

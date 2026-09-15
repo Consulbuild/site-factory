@@ -222,7 +222,7 @@ export function datiVista(dir: string, stato: StatoCliente): Omit<mq.IngressiVis
   if (!letti.ok) return { ...base, blocco, impronte, stimaUsd: null, comuniUsati: null };
   const { universo, comuni, contesto: c } = letti.ingressi;
   const lotti = mq.lottiVolumi(universo, comuni.sede ? { locationCode: 1, nome: comuni.sede.nome } : null).length;
-  return { ...base, blocco, impronte, stimaUsd: mq.stimaCostoUsd(lotti, mq.serpMassime(universo, c.macro_categorie.length)), comuniUsati: comuni.usati.length };
+  return { ...base, blocco, impronte, stimaUsd: mq.stimaCostoUsd(lotti, mq.serpMassime(universo, c.macro_categorie.length, comuni.raggioKm)), comuniUsati: comuni.usati.length };
 }
 
 /* ---------- scritture ---------- */
@@ -275,7 +275,7 @@ export async function* eseguiMappa(ing: IngressiMappa, client: ClientDfs, opz: {
     const lotti = mq.lottiVolumi(ing.universo, sedeGeo);
     if (lotti.length > mq.MAX_TASK_VOLUMI) throw new ErroreDfs("richiesta", `Troppi lotti di volumi (${lotti.length}, massimo ${mq.MAX_TASK_VOLUMI}): difetto dell'editor, vedi docs/DEBUG.md.`);
     const lottiDaPagare = lotti.filter((l) => !client.volumiInCache(l.keywords, l.locationCode)).length;
-    const stima = mq.stimaCostoUsd(lottiDaPagare, mq.serpMassime(ing.universo, ing.contesto.macro_categorie.length));
+    const stima = mq.stimaCostoUsd(lottiDaPagare, mq.serpMassime(ing.universo, ing.contesto.macro_categorie.length, ing.comuni.raggioKm));
     const saldo = lottiDaPagare > 0 ? await client.assicuraSaldo(stima) : null;
     yield {
       type: "text",
@@ -301,7 +301,7 @@ export async function* eseguiMappa(ing: IngressiMappa, client: ClientDfs, opz: {
 
     yield { type: "phase", label: FASI[3] };
     const escluse = new Set(ing.esclusioni.voci.map((v) => v.testo));
-    const candidati = mq.candidatiSerp(universo, escluse, ing.contesto.macro_categorie.map((m) => m.nome));
+    const candidati = mq.candidatiSerp(universo, escluse, ing.contesto.macro_categorie.map((m) => m.nome), ing.comuni.raggioKm);
     const coordinate = (r: mq.Riga) => mq.coordinateDi(ing.dati.comuni[r.comune!.istat]!.centro);
     const serpDaPagare = candidati.filter((r) => !client.serpInCache(r.testo, coordinate(r))).length;
     if (serpDaPagare > 0) await client.assicuraSaldo(mq.stimaCostoUsd(0, serpDaPagare));
@@ -357,6 +357,7 @@ export async function* eseguiMappa(ing: IngressiMappa, client: ClientDfs, opz: {
         sede: ing.comuni.sede?.istat ?? null,
         comuniArea: ing.comuni.comuniArea,
         comuniUsati: ing.comuni.usati.length,
+        raggioKm: ing.comuni.raggioKm,
         dominioCliente: ing.dominioCliente,
         registrate: client.registrate,
       },

@@ -16,7 +16,7 @@ import { difficolta, fraseDifficolta, fraseFeature, formatoIntero, spazioOrganic
 
 /* ---------- costanti (calibrazione: piano-T4.md § Calibrazione) ---------- */
 
-export const VERSIONE_REGOLE = "2026-09-b";
+export const VERSIONE_REGOLE = "2026-09-c";
 export const MAX_COMUNI = 40;
 export const MAX_KEYWORD_TASK = 1000;
 export const MAX_KEYWORD_CON_COMUNE = 5000;
@@ -174,6 +174,8 @@ export const MappaQuerySchema = z
       sede: Istat.nullable(),
       comuniArea: z.number().int().min(0),
       comuniUsati: z.number().int().min(0).max(MAX_COMUNI),
+      /** Raggio dalla sede dei target con comune (decisione T4 punto 11); null senza sede, assente nelle mappe prima della regola. */
+      raggioKm: z.number().int().positive().nullable().optional(),
       dominioCliente: z.string().nullable(),
       registrate: z.boolean(), // risposte di prova (SF_DATAFORSEO_REGISTRATE), mai dati veri
     }),
@@ -291,6 +293,7 @@ export const DominiSchema = z.strictObject({
   portali: z.array(VoceDominioSchema),
   directory: z.array(VoceDominioSchema),
   altro: z.array(VoceDominioSchema),
+  nazionali: z.strictObject({ fonte: z.string().min(1), domini: z.array(z.string().regex(/^[a-z0-9.-]+\.[a-z]{2,}$/)) }).optional(),
 });
 
 /* ---------- testo ---------- */
@@ -427,18 +430,31 @@ export interface ComuneUsato {
 }
 
 export type EsitoComuni =
-  | { ok: true; usati: ComuneUsato[]; comuniArea: number; tetto: number; sede: ComuneUsato | null; sedeNellArea: boolean; avvisi: string[] }
+  | {
+      ok: true;
+      usati: ComuneUsato[];
+      comuniArea: number;
+      tetto: number;
+      sede: ComuneUsato | null;
+      sedeNellArea: boolean;
+      /** Raggio dalla sede dei comuni vicini (misurati per primi, unici ammessi nei target con comune); null senza sede. */
+      raggioKm: number | null;
+      avvisi: string[];
+    }
   | { ok: false; motivo: string };
 
 const PRECISIONE = { comune: 0, dintorni: 1, provincia: 2, regione: 3, italia: 4 } as const;
 export const MOTIVO_SENZA_SEDE ="Zone senza sede: con «Tutta Italia» serve la sede per scegliere i comuni";
+/** Decisione T4 punto 11: una piccola impresa non si posiziona a 50-70 km e una pagina per un comune lontano è a rischio doorway. */
+export const RAGGIO_VICINI_KM = 25;
 export const tettoComuni = (nTeste: number): number => Math.max(1, Math.min(MAX_COMUNI, Math.floor(MAX_KEYWORD_CON_COMUNE / (2 * Math.max(1, nTeste)))));
 const peso = (c: { popolazione: number | null; km: number | null }) => (c.popolazione ?? 0) / (c.km === null ? 2 : 1 + c.km / 10);
 
 /**
  * I comuni delle ricerche: area servita (un comune raggiunto solo da «Tutta Italia» resta se è nella provincia della
- * sede), ordinata per popolazione / (1 + km/10), poi km, poi nome; tetto min(40, ⌊5.000 / (2 × teste)⌋) con la sede
- * sempre dentro se è nell'area. Mai un comune fuori dalle zone servite.
+ * sede). Con la sede: prima i comuni entro il raggio dei vicini (25 km, o il raggio più ampio di un «dintorni») per
+ * popolazione, poi i successivi per distanza; senza sede per popolazione / (1 + km/10). Pari merito: km, poi nome.
+ * Tetto min(40, ⌊5.000 / (2 × teste)⌋) con la sede sempre dentro se è nell'area. Mai un comune fuori dalle zone servite.
  */
 export function comuniUsati(zone: Pick<Zone, "etichette" | "sede">, comuni: ComuneServito[], nTeste: number, d: Dati): EsitoComuni {
   const aree = areeServite(zone);
@@ -447,6 +463,13 @@ export function comuniUsati(zone: Pick<Zone, "etichette" | "sede">, comuni: Comu
   const soloItalia = aree.length > 0 && aree.every((a) => a.tipo === "italia");
   if (soloItalia && !sedeRecord) return { ok: false, motivo: MOTIVO_SENZA_SEDE };
   const avvisi: string[] = [];
+  const raggioKm = sedeRecord ? Math.max(RAGGIO_VICINI_KM, ...aree.map((a) => (a.tipo === "dintorni" ? a.raggioKm : 0))) : null;
+  const vicino = (c: { km: number | null }) => raggioKm !== null && c.km !== null && c.km <= raggioKm;
+  const ordineComuni = (a: ComuneUsato, b: ComuneUsato): number => {
+    if (raggioKm === null) return peso(b) - peso(a);
+    if (vicino(a) !== vicino(b)) return vicino(a) ? -1 : 1;
+    return vicino(a) ? (b.popolazione ?? 0) - (a.popolazione ?? 0) : (a.km ?? Infinity) - (b.km ?? Infinity);
+  };
 
   const area = comuni
     .filter((c) => c.aree.some((i) => aree[i]!.tipo !== "italia") || (sedeRecord !== undefined && c.sigla === sedeRecord.sigla))
@@ -467,7 +490,7 @@ export function comuniUsati(zone: Pick<Zone, "etichette" | "sede">, comuni: Comu
         testo: nomeInQuery(r.nome, r.nomeAltraLingua),
       };
     })
-    .sort((a, b) => peso(b) - peso(a) || (a.km ?? Infinity) - (b.km ?? Infinity) || a.nome.localeCompare(b.nome, "it"));
+    .sort((a, b) => ordineComuni(a, b) || (a.km ?? Infinity) - (b.km ?? Infinity) || a.nome.localeCompare(b.nome, "it"));
   if (area.length === 0) return { ok: false, motivo: "Nessun comune nelle zone servite: controllale nel dettaglio Traffico" };
   if (aree.some((a) => a.tipo === "italia")) {
     avvisi.push(sedeRecord ? `Area «Tutta Italia»: ricerche locali nei comuni della provincia della sede (${sedeRecord.sigla})` : "Area «Tutta Italia» ignorata: la sede non è riconosciuta");
@@ -493,7 +516,7 @@ export function comuniUsati(zone: Pick<Zone, "etichette" | "sede">, comuni: Comu
   } else {
     avvisi.push("Sede non riconosciuta: le ricerche senza comune non si misurano");
   }
-  return { ok: true, usati, comuniArea: area.length, tetto, sede, sedeNellArea: !!sedeInArea, avvisi };
+  return { ok: true, usati, comuniArea: area.length, tetto, sede, sedeNellArea: !!sedeInArea, raggioKm, avvisi };
 }
 
 /** Impronta delle zone per la staleness: sede e comuni usati, in ordine (un comune oltre il tetto non la cambia). */
@@ -612,7 +635,17 @@ export function vicinanza(km: number | null): number {
 
 export function rilevanza(r: Pick<Riga, "testa" | "comune">): number {
   const base = r.testa.origine === "mestiere" ? 0.9 : r.testa.primaria ? 1 : 0.8;
-  return base * (r.testa.mestiereAltrui ? 0.5 : 1) * vicinanza(r.comune ? r.comune.km : null);
+  return base * vicinanza(r.comune ? r.comune.km : null);
+}
+
+/**
+ * Una ricerca può diventare target (decisione T4 punto 11): mai un mestiere altrui («elettricista …» per un'impresa
+ * edile cerca un elettricista), con comune solo entro il raggio dei vicini. Le altre si misurano ma non si puntano.
+ */
+export function puoEssereTarget(r: Pick<Riga, "testa" | "tipo" | "comune">, raggioKm: number | null | undefined): boolean {
+  if (r.testa.mestiereAltrui) return false;
+  if (r.tipo === "senza_comune" || raggioKm == null) return true;
+  return r.comune?.km != null && r.comune.km <= raggioKm;
 }
 
 const unDecimale = (n: number) => Math.round(n * 10 + Number.EPSILON * 10) / 10;
@@ -659,11 +692,11 @@ const ordineVolume = (a: Riga, b: Riga) => (b.volume.valore ?? -1) - (a.volume.v
 const ordinePopolazione = (a: Riga, b: Riga) => (b.comune?.popolazione ?? -1) - (a.comune?.popolazione ?? -1);
 const chiaveGruppo = (r: Riga) => `${r.testa.gruppo}|${r.tipo}|${r.comune?.istat ?? "-"}|${r.modificatore}`;
 
-/** Righe di cui leggere la pagina di Google: una per gruppo, le prime 60 per Spre più le 3 migliori di ogni macro, tetto 100. */
-export function candidatiSerp(universo: readonly Riga[], escluse: ReadonlySet<string>, macroOrdine: readonly string[]): Riga[] {
+/** Righe di cui leggere la pagina di Google: una per gruppo tra i possibili target, le prime 60 per Spre più le 3 migliori di ogni macro, tetto 100. */
+export function candidatiSerp(universo: readonly Riga[], escluse: ReadonlySet<string>, macroOrdine: readonly string[], raggioKm: number | null | undefined): Riga[] {
   const migliori = new Map<string, { r: Riga; s: number }>();
   for (const r of universo) {
-    if (!r.ammessa || r.volume.stato === "non_richiesto" || !r.comune || escluse.has(r.testo)) continue;
+    if (!r.ammessa || r.volume.stato === "non_richiesto" || !r.comune || escluse.has(r.testo) || !puoEssereTarget(r, raggioKm)) continue;
     const s = punteggioPre(r);
     const k = chiaveGruppo(r);
     const m = migliori.get(k);
@@ -713,8 +746,7 @@ export function paginaDi(r: Riga, sede: string | null, pagine: readonly Pagina[]
     const p = pagine.find((x) => x.tipo === "servizio" && x.etichetta === r.testa.macro);
     if (p) return { pagina: p, regola: inSede ? "A3" : "A4" };
   }
-  // Servizio in nessuna macro: in home con avviso, mai per un mestiere altrui.
-  if (r.testa.mestiereAltrui) return null;
+  // Servizio in nessuna macro: in home con avviso (un mestiere altrui non arriva qui: non è mai target).
   const home = trova("home");
   return home ? { pagina: home, regola: "A3-senza-macro" } : null;
 }
@@ -775,7 +807,6 @@ export function perche(r: Riga, p: { pagina: Pagina; regola: RegolaPagina }, cop
   if (r.difficolta) frasi.push(fraseDifficolta(r.difficolta));
   if (r.serp && !r.serp.vuota) frasi.push(fraseFeature(r.serp.feature));
   frasi.push(frasePagina(r, p), frasePunteggio(r));
-  if (r.testa.mestiereAltrui) frasi.push("Il lavoro nomina un mestiere diverso da quello del cliente: rilevanza dimezzata.");
   if (sottoSoglia) frasi.push(`Sotto la soglia di ${SOGLIA_PUNTEGGIO} punti: scelta per coprire un servizio o arrivare a ${MIN_TARGET} ricerche.`);
   if (copre.length) frasi.push(`Copre anche ${copre.map((t) => `«${t}»`).join(", ")}: stessa intenzione o quasi gli stessi risultati di Google.`);
   return frasi;
@@ -807,11 +838,11 @@ export interface EsitoSelezione {
 }
 
 /** Da universo misurato a target: idonee, doppioni d'intento, soglia, 3 per pagina, copertura delle macro, minimo 8. */
-export function seleziona(universo: readonly Riga[], escluse: ReadonlySet<string>, pagine: readonly Pagina[], sede: string | null, serpNonLette: number): EsitoSelezione {
+export function seleziona(universo: readonly Riga[], escluse: ReadonlySet<string>, pagine: readonly Pagina[], sede: string | null, serpNonLette: number, raggioKm: number | null | undefined): EsitoSelezione {
   const idonee: Candidata[] = [];
   let senzaPagina = 0;
   for (const r of [...universo].sort(ordineTarget)) {
-    if (!r.ammessa || escluse.has(r.testo) || !r.serp || !r.difficolta || r.difficolta.livello === "alta" || !r.punteggio) continue;
+    if (!r.ammessa || escluse.has(r.testo) || !r.serp || !r.difficolta || r.difficolta.livello === "alta" || !r.punteggio || !puoEssereTarget(r, raggioKm)) continue;
     const p = paginaDi(r, sede, pagine);
     if (!p) {
       senzaPagina += 1;
@@ -901,7 +932,7 @@ export type DatiMappa = Omit<MappaQuery, "versione" | "stato" | "motivi" | "targ
 
 /** Mappa completa e validata: la selezione è funzione di universo, esclusioni, pagine e sede (riselezione senza chiamate). */
 export function componiMappa(d: DatiMappa): MappaQuery {
-  const s = seleziona(d.universo, new Set(d.escluse), d.pagine, d.ingressi.sede, d.serpNonLette.length);
+  const s = seleziona(d.universo, new Set(d.escluse), d.pagine, d.ingressi.sede, d.serpNonLette.length, d.ingressi.raggioKm);
   return MappaQuerySchema.parse({ versione: 1, ...d, stato: s.stato, motivi: s.motivi, target: s.target } satisfies MappaQuery);
 }
 
@@ -915,8 +946,8 @@ export function riseleziona(m: MappaQuery, escluse: readonly string[], seleziona
 export const stimaCostoUsd = (lotti: number, serp: number): number => Math.round((lotti * PREZZO_VOLUMI_TASK_USD + serp * PREZZO_SERP_USD) * 100) / 100;
 
 /** Pagine di Google al massimo per un universo (prima dei volumi): gruppi misurabili, 60 + 3 per macro, tetto 100. */
-export function serpMassime(universo: readonly Riga[], nMacro: number): number {
-  const gruppi = new Set(universo.filter((r) => r.ammessa && r.comune).map(chiaveGruppo)).size;
+export function serpMassime(universo: readonly Riga[], nMacro: number, raggioKm: number | null): number {
+  const gruppi = new Set(universo.filter((r) => r.ammessa && r.comune && puoEssereTarget(r, raggioKm)).map(chiaveGruppo)).size;
   return Math.min(MAX_SERP, gruppi, SERP_CANDIDATE + 3 * nMacro);
 }
 
@@ -1124,7 +1155,7 @@ export function vistaMappa(i: IngressiVista): VistaMappa {
   // ricalcola. Contano solo quelle che il calcolo leggerebbe (candidate): le altre non cambierebbero nulla.
   const alCalcolo = new Set(m.escluseAlCalcolo ?? []);
   const macroOrdine = m.pagine.filter((p) => p.tipo === "servizio").map((p) => p.etichetta);
-  const riammesse = alCalcolo.size ? candidatiSerp(m.universo, new Set(m.escluse), macroOrdine).filter((r) => !r.serp && alCalcolo.has(r.testo)).length : 0;
+  const riammesse = alCalcolo.size ? candidatiSerp(m.universo, new Set(m.escluse), macroOrdine, m.ingressi.raggioKm).filter((r) => !r.serp && alCalcolo.has(r.testo)).length : 0;
   const cambiato = [
     ...(i.impronte ? cambiati(m, i.impronte) : []),
     ...(diverse ? [FILE_ESCLUSIONI] : []),

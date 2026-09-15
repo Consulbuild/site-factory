@@ -895,6 +895,45 @@ Tutto passa dalla cache (`~/.cache/site-factory/dataforseo/`): un passo rilancia
 
 Somma prevista 2,46 $ (campione 1,54 + mappa 0,66 + C4-C5 0,26), sotto il tetto di 3 $.
 
+### Calibrazione sui dati reali (15/09, decisione T4 punti 10-11, regole `2026-09-c`)
+
+- **C-a comuni vicini**: con la sede, i comuni misurati sono prima quelli entro `RAGGIO_VICINI_KM` = 25 km (o il raggio più ampio
+  di un «dintorni») per popolazione, poi i successivi per distanza; senza sede resta popolazione / (1 + km/10). Il raggio va nella
+  mappa (`ingressi.raggioKm`) e `puoEssereTarget` esclude dalle pagine di Google da leggere e dai target le ricerche con comune
+  oltre il raggio: si misurano, non si puntano. Banco 4 e 25.
+- **C-b mestiere altrui**: le teste di mestiere di un altro mestiere (`mestiere` nel lessico: elettricista, idraulico,
+  imbianchino, serramentista) restano nell'universo e si misurano, ma non sono mai candidate né target (tolti il dimezzamento
+  della rilevanza e la sua frase, ora irraggiungibili). Cavaliere (contesto reale = fixture, confrontati il 15/09): altrui
+  «elettricista», «idraulico», «imbianchino»; restano le 25 teste di servizio. Banco 24.
+- **C-c domini nazionali**: un dominio fuori elenco (né elenchi, né PA, né cliente) nei risultati di comuni di **almeno 3
+  province** del campione non è un'impresa locale: `portale` se la pagina nomina il luogo o è nel local pack (una pagina per
+  città), altrimenti `altro`; regola `nazionale:piu-province`. Elenco ricavato dal campione con `campione-serp.ts ricalcola`
+  (384 pagine dalla cache, 0 chiamate, 0 $), copiato in `lib/mappa-domini.json` (`nazionali`, 49 domini) con il dettaglio delle
+  province in `calibrazione-T4/nazionali-2026-09-15.json`. Banco 16 e 31.
+  - **Soglia**: su 775 domini fuori elenco, 668 in 1 provincia, 58 in 2, 49 in 3 o più. A 2 province metà dei casi sono imprese
+    vere di due province vicine (27 su 58: Milano e Monza, Vicenza e Treviso: rgmedilizia, supermario24, artedecori…); da 3 in su
+    quasi solo portali, reti di pagine per città, catene e guide (controllo sotto). Le 31 coppie di regioni diverse (idraulicisubito Pescara e Napoli, handoo, finstral…)
+    sono quasi tutte reti o portali: estensione possibile «2 province di regioni diverse», non applicata.
+  - **Controllo a mano dei 20 domini riclassificati più frequenti** (titoli e URL nel campione): 19 corretti — preventivofacile,
+    houzz, taskrabbit, cercoproitalia, pgcasa, archisio, edilportale, la-certificazione-energetica (portali); leroymerlin (catena);
+    costo-ristrutturazione-casa (guide); ristrutturazioni.milano.it, alexprontointervento, sporext-group, ecoisolamentotermico,
+    imbiancatura.com, pronto-intervento24, idraulicoin (reti di pagine per città); sgombero.eu, metrabuilding (elenchi). **1
+    sbagliato**: posainoperapavimentiroma.it, impresa romana che a Roma è locale (fuori elenco anche perinotto.com e
+    vanzinpavimenti.it di Treviso, 1 risultato ciascuno): l'elenco è unico per tutta Italia, e in una mappa della loro provincia
+    contano come portale (+1 solo nei primi 3) invece che come impresa ottimizzata (+1 ovunque).
+  - **Composizione prima → dopo** (`composizione-2026-09-15.json` → `composizione-2026-09-15-nazionali.json`; «prima» ricalcolata
+    identica a quella registrata):
+
+    | | imprese locali | portali + directory | altro | fuori elenco (ignoto) | difficoltà b/m/a |
+    |---|---|---|---|---|---|
+    | Totale | 43 % → 35 % | 44 % → 53 % | 13 % → 13 % | 46 % → 33 % | 80/107/197 → 82/114/188 |
+    | Comuni piccoli | 32 % → 26 % | 53 % → 59 % | 15 % | 35 % → 24 % | 67/58/3 → 72/53/3 |
+    | Comuni medi | 44 % → 35 % | 45 % → 54 % | 11 % | 45 % → 33 % | 13/35/80 → 10/46/72 |
+    | Città grandi | 54 % → 43 % | 34 % → 45 % | 12 % | 58 % → 42 % | 0/14/114 → 0/15/113 |
+
+    35 dei 49 domini erano imprese locali in almeno una pagina (preventivofacile 29 risultati, leroymerlin 24, houzz 18,
+    taskrabbit 18…). Le pagine «alta» passano da 197 a 188 (meno imprese «ottimizzate» contate in F2); soglie e punti invariati.
+
 ### Scostamenti dal testo del piano (motivati)
 
 - **Schema**: `comune` nullable solo per le ricerche senza comune quando la sede non è riconosciuta (§2.3 le vuole «non richiesto»,

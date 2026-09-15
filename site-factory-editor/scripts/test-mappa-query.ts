@@ -10,11 +10,11 @@ import os from "node:os";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import * as mq from "../lib/mappa-query.ts";
-import { difficolta, fraseFeature, livelloDaPunti, normalizzaDominio, riduciSerp, spazioOrganico, type Domini, type LuogoQuery, type SerpGrezza } from "../lib/serp-classifica.ts";
+import { SOGLIA_PROVINCE_NAZIONALE, difficolta, dominiNazionali, fraseFeature, livelloDaPunti, normalizzaDominio, riduciSerp, spazioOrganico, type Domini, type LuogoQuery, type SerpGrezza } from "../lib/serp-classifica.ts";
 import { ATTESE_MS, BASE_URL, ErroreDfs, creaClientDfs, corpoSerp, corpoVolumi, erroreDaCodice, fetchRegistrato, trovaLocalita, type Localita } from "../lib/dataforseo.ts";
 import { FASI, escludiRicerca, eseguiMappa, leggiContesto, leggiEsclusioni, leggiIngressi, leggiMappa, leggiRegole, riammettiRicerca } from "../lib/mappa-lavoro.ts";
 import { agenteDaFase, nomeStep, percorsoRun } from "../lib/agenti.ts";
-import { accordo, csvGiudizio, eseguiCampione, leggiCsv, matrice, selezionaGiudizio } from "./campione-serp.ts";
+import { accordo, csvGiudizio, eseguiCampione, leggiCsv, matrice, ricalcolaDallaCache, selezionaGiudizio } from "./campione-serp.ts";
 import {
   MOTIVO_DA_CONTROLLARE,
   MOTIVO_DA_IMPOSTARE,
@@ -120,7 +120,7 @@ function serpFinta(r: mq.Riga, tipo?: "alta" | "bassa"): SerpGrezza {
   return { checkUrl: `https://www.google.it/search?q=${encodeURIComponent(r.testo)}`, vuota: false, organici, localPack: h % 2 ? [{ dominio: "loc3.example", pagata: false }] : [], aiOverview: h % 5 === 0, annunci: h % 4, localServices: false };
 }
 function misuraSerp(u: mq.Riga[], escluse = new Set<string>(), finta: (r: mq.Riga) => SerpGrezza = (r) => serpFinta(r), ordina?: (s: SerpGrezza) => SerpGrezza): mq.Riga[] {
-  const candidati = new Set(mq.candidatiSerp(u, escluse, contesto.macro_categorie.map((m) => m.nome)).map((r) => r.testo));
+  const candidati = new Set(mq.candidatiSerp(u, escluse, contesto.macro_categorie.map((m) => m.nome), mq.RAGGIO_VICINI_KM).map((r) => r.testo));
   return u.map((r) => {
     if (!candidati.has(r.testo)) return r;
     const luogo = mq.luogoDi(r, d)!;
@@ -134,7 +134,7 @@ function mappaDi(u: mq.Riga[], com: Extract<mq.EsitoComuni, { ok: true }>, esclu
   return mq.componiMappa({
     generataAt: ADESSO,
     regole: { versione: mq.VERSIONE_REGOLE, lessicoSha: "c".repeat(64), dominiSha: "d".repeat(64) },
-    ingressi: { contestoSha: "e".repeat(64), zoneSha: mq.zoneSha(com.sede?.istat ?? null, com.usati), sede: com.sede?.istat ?? null, comuniArea: com.comuniArea, comuniUsati: com.usati.length, dominioCliente: "cliente-prova.it", registrate: false },
+    ingressi: { contestoSha: "e".repeat(64), zoneSha: mq.zoneSha(com.sede?.istat ?? null, com.usati), sede: com.sede?.istat ?? null, comuniArea: com.comuniArea, comuniUsati: com.usati.length, raggioKm: com.raggioKm, dominioCliente: "cliente-prova.it", registrate: false },
     costo: { usd: 0, chiamatePagate: 0, dallaCache: 0 },
     avvisi: com.avvisi,
     serviziSenzaQuery: [],
@@ -203,9 +203,31 @@ try {
   {
     const com = base.com as Extract<mq.EsitoComuni, { ok: true }>;
     const peso = (c: mq.ComuneUsato) => (c.popolazione ?? 0) / (c.km === null ? 2 : 1 + c.km / 10);
-    caso("4. ordine per popolazione / (1 + km/10)", com.usati.every((c, i) => i === 0 || peso(com.usati[i - 1]!) >= peso(c)));
-    caso("4. Milano primo, Agrate Brianza 40°, Carugate 31°", com.usati[0]!.nome === "Milano" && com.usati[39]!.nome === "Agrate Brianza" && com.usati[30]!.nome === "Carugate");
-    caso("4. avviso coi comuni oltre il tetto", com.avvisi.some((a) => a.startsWith("92 comuni dell'area non misurati (tetto 40): Meda, Arcore")), com.avvisi);
+    // C-a (decisione T4 punto 11): con la sede, prima i comuni entro 25 km per popolazione, poi i successivi per distanza.
+    caso("4. C-a con la sede: comuni entro 25 km per popolazione (Milano primo), raggio 25", com.raggioKm === 25 && com.usati[0]!.nome === "Milano" && com.usati.every((c, i) => c.km! <= 25 && (i === 0 || (com.usati[i - 1]!.popolazione ?? 0) >= (c.popolazione ?? 0))), com.usati.map((c) => [c.nome, c.km, c.popolazione]));
+    caso("4. avviso coi comuni oltre il tetto", com.avvisi.some((a) => a.startsWith("92 comuni dell'area non misurati (tetto 40):")), com.avvisi);
+    const zLomb = zoneDi(["Cologno Monzese e dintorni", "Lombardia"], COLOGNO);
+    const cLomb = mq.comuniUsati(zLomb, comuniServiti(zLomb, d), 32, d);
+    caso(
+      "4. C-a zona «Lombardia» con la sede: nessun capoluogo lontano (Bergamo, Brescia, Varese), tutti entro 25 km",
+      cLomb.ok && cLomb.comuniArea > 1000 && cLomb.usati.length === 40 && cLomb.usati.every((c) => c.km! <= 25) && !cLomb.usati.some((c) => ["Bergamo", "Brescia", "Varese"].includes(c.nome)),
+      cLomb.ok && [cLomb.comuniArea, cLomb.usati.map((c) => [c.nome, c.km])],
+    );
+    const zLodi = zoneDi(["Cologno Monzese (MI)", "Provincia di Lodi"], COLOGNO);
+    const cLodi = mq.comuniUsati(zLodi, comuniServiti(zLodi, d), 32, d);
+    const vicini = cLodi.ok ? cLodi.usati.filter((c) => c.km! <= 25) : [];
+    const lontani = cLodi.ok ? cLodi.usati.slice(vicini.length) : [];
+    caso(
+      "4. C-a meno di 40 entro 25 km → poi i successivi per distanza",
+      cLodi.ok && vicini.length > 0 && vicini.length < 40 && cLodi.usati.length === 40 && isDeepStrictEqual(cLodi.usati.slice(0, vicini.length), vicini) && lontani.every((c, i) => c.km! > 25 && (i === 0 || lontani[i - 1]!.km! <= c.km!)),
+      cLodi.ok && cLodi.usati.map((c) => [c.nome, c.km]),
+    );
+    const zLarga = { ...zCologno, etichette: zCologno.etichette.map((e) => ({ ...e, aree: e.aree.map((a) => (a.tipo === "dintorni" ? { ...a, raggioKm: 30 } : a)) })) } as typeof zCologno;
+    const cLarga = mq.comuniUsati(zLarga, comuniServiti(zLarga, d), 32, d);
+    caso("4. C-a «dintorni» di 30 km → raggio dei vicini 30", cLarga.ok && cLarga.raggioKm === 30, cLarga.ok && cLarga.raggioKm);
+    const zNoSede = zoneDi(["Monza e dintorni", "Provincia di Lodi"], null);
+    const cNoSede = mq.comuniUsati(zNoSede, comuniServiti(zNoSede, d), 32, d);
+    caso("4. C-a senza sede: come prima, per popolazione / (1 + km/10), nessun raggio", cNoSede.ok && cNoSede.raggioKm === null && cNoSede.usati.every((c, i) => i === 0 || peso(cNoSede.usati[i - 1]!) >= peso(c)));
     caso("4. tetto ⌊5.000 / (2 × teste)⌋", mq.tettoComuni(32) === 40 && mq.tettoComuni(100) === 25 && mq.tettoComuni(500) === 5);
     const zVimodrone = zoneDi(["Milano e dintorni"], { codice: "015242", nome: "Vimodrone", sigla: "MI" });
     const c5 = mq.comuniUsati(zVimodrone, comuniServiti(zVimodrone, d), 500, d);
@@ -549,6 +571,25 @@ try {
       isDeepStrictEqual(regole, ["cliente/cliente", "altro/elenco:altro:indeed.com", "portale/elenco:portali:prontopro.it", "directory/elenco:directory:paginegialle.it", "altro/pa", "altro/pa", "altro/pa", "impresa_locale/local-pack", "impresa_locale/ignoto+segnale-locale", "altro/ignoto"]),
       regole,
     );
+    const conNazionali: Domini = { ...domini, nazionali: { fonte: "prova", domini: ["rete.example", "guida.example"] } };
+    const naz = riduciSerp(g([["www.rete.example", "Imprese a Brugherio"], ["guida.example", "Quanto costa"], ["locale.example", "Bagni a Brugherio"]]), { domini: conNazionali, dominioCliente: null, luogo: brugherio });
+    caso(
+      "16. C-c dominio nazionale: con segnale locale portale, senza altro, mai impresa locale",
+      isDeepStrictEqual(naz.organici.map((o) => `${o.classe}/${o.regola}`), ["portale/nazionale:piu-province", "altro/nazionale:piu-province", "impresa_locale/ignoto+segnale-locale"]),
+      naz.organici.map((o) => `${o.classe}/${o.regola}`),
+    );
+    const pagina = (sigla: string, righe: [string, string][]) => ({ sigla, serp: { organici: righe.map(([dominio, regola], i) => ({ pos: i + 1, dominio, url: `https://${dominio}/`, titolo: "x", classe: "altro" as const, regola })) } });
+    const nazionali = dominiNazionali([
+      pagina("MI", [["tre.example", "ignoto"], ["due.example", "local-pack"], ["elenco.example", "elenco:portali:elenco.example"]]),
+      pagina("MB", [["tre.example", "ignoto+segnale-locale"], ["due.example", "ignoto"], ["elenco.example", "elenco:portali:elenco.example"]]),
+      pagina("MI", [["due.example", "ignoto"]]),
+      pagina("VI", [["tre.example", "nazionale:piu-province"], ["elenco.example", "elenco:portali:elenco.example"]]),
+    ]);
+    caso(
+      "16. C-c soglia 3 province distinte (stessa provincia contata una volta), mai i domini in elenco",
+      SOGLIA_PROVINCE_NAZIONALE === 3 && isDeepStrictEqual(nazionali, [{ dominio: "tre.example", province: ["MB", "MI", "VI"] }]),
+      nazionali,
+    );
     caso("16. «www.» tolto dal dominio", s.organici[0]!.dominio === "cliente-prova.it" && normalizzaDominio("WWW.Esempio.IT.") === "esempio.it");
     const url = riduciSerp(g([["edil.example", "Edil", "https://edil.example/ristrutturazioni-brugherio/"], ["sigla.example", "Impresa Rossi (MB)"]]), { domini, dominioCliente: null, luogo: brugherio });
     caso("16. segnale locale anche nell'URL o con la sigla tra parentesi", url.organici.every((o) => o.regola === "ignoto+segnale-locale"));
@@ -631,7 +672,7 @@ try {
     const W = variante("ristrutturazione appartamento prova", "appartamento", 90, ["a", "b", "c", "d", "e"]);
     const V = variante("rifacimento bagno prova", "bagno", 80, ["a", "b", "c", "d", "f"]);
     const V2 = variante("preventivo rifacimento bagno prova", "bagno", 70, ["a", "b", "g", "h", "i"]);
-    const sel = mq.seleziona([V2, V, W], new Set(), mappa.pagine, "015081", 0);
+    const sel = mq.seleziona([V2, V, W], new Set(), mappa.pagine, "015081", 0, mq.RAGGIO_VICINI_KM);
     caso(
       "21. variante coperta per risultati di Google: il fratello dello stesso gruppo e comune va alla stessa vincente",
       isDeepStrictEqual(sel.target.map((t) => t.testo), [W.testo]) && sel.target[0]!.perche.at(-1) === `Copre anche «${V.testo}», «${V2.testo}»: stessa intenzione o quasi gli stessi risultati di Google.`,
@@ -674,7 +715,42 @@ try {
     caso("24. A2 mestiere + Brugherio → zone", chiave("impresa edile brugherio") === "zone");
     caso("24. A3 servizio + sede → pagina servizio", chiave("ristrutturazione bagno cologno monzese") === "servizio:ristrutturazioni-e-manutenzioni");
     caso("24. A4 servizio + Brugherio → stessa pagina servizio", chiave("ristrutturazione bagno brugherio") === "servizio:ristrutturazioni-e-manutenzioni");
-    caso("24. mestiere altrui mai in home", chiave("idraulico cologno monzese") === "servizio:impianti-e-servizi-tecnici" && mq.paginaDi({ ...r("idraulico cologno monzese"), testa: { ...r("idraulico cologno monzese").testa, macro: null } }, "015081", pagine) === null);
+    caso("24. C-b mestiere altrui mai target, con o senza comune; le forme di servizio sì", !mq.puoEssereTarget(r("idraulico cologno monzese"), 25) && !mq.puoEssereTarget(r("elettricista vicino a me"), 25) && mq.puoEssereTarget(r("tinteggiatura pareti cologno monzese"), 25));
+  }
+  {
+    // C-b sulla selezione: il mestiere altrui si misura (volumi) ma non si legge la sua pagina di Google e non è mai scelto.
+    const altrui = misurato.filter((r) => r.testa.mestiereAltrui);
+    caso(
+      "24. C-b mestiere altrui (elettricista, idraulico, imbianchino) misurato, senza pagina di Google, mai tra i target",
+      isDeepStrictEqual([...new Set(altrui.map((r) => r.testa.testo))].sort(), ["elettricista", "idraulico", "imbianchino"]) &&
+        altrui.every((r) => r.ammessa && (r.volume.stato !== "non_richiesto") === (r.comune !== null) && r.serp === null) &&
+        !mappa.target.some((t) => misurato.find((r) => r.testo === t.testo)!.testa.mestiereAltrui),
+      altrui.filter((r) => r.serp).map((r) => r.testo),
+    );
+    // Contesto di Cavaliere (la fixture è identica a out/cavaliere-build-srls/contesto.json del 15/09): le teste di servizio restano.
+    const teste = mq.testeDelContesto(contesto, lessico).teste;
+    const diServizio = teste.filter((t) => t.origine === "servizio" && !t.mestiereAltrui).map((t) => t.testo);
+    caso(
+      "24. C-b Cavaliere: 25 teste di servizio restano target possibili, altrui solo le 3 teste di mestiere",
+      diServizio.length === 25 && ["ristrutturazione bagno", "demolizioni", "cappotto termico", "tinteggiatura pareti", "impermeabilizzazione balcone"].every((t) => diServizio.includes(t)) && teste.filter((t) => t.mestiereAltrui).length === 3,
+      [diServizio.length, diServizio],
+    );
+    const elettricista = mq.testeDelContesto({ settore_normalizzato: "Elettricista", servizi_atomizzati: [{ servizio: "Impianti elettrici civili" }], macro_categorie: [] }, lessico).teste;
+    caso("24. C-b per un elettricista «elettricista» è il suo mestiere, non altrui", elettricista.some((t) => t.testo === "elettricista" && !t.mestiereAltrui) && elettricista.every((t) => !t.mestiereAltrui));
+  }
+  {
+    // C-a sulla selezione: una ricerca con comune oltre il raggio non è scelta nemmeno col punteggio più alto.
+    const modello = misurato.find((r) => r.serp && r.punteggio && r.difficolta?.livello === "bassa" && r.testa.origine === "servizio" && r.tipo === "con_comune" && r.comune!.istat !== "015081")!;
+    const lontana: mq.Riga = { ...modello, testo: `${modello.testo} lontana`, comune: { ...modello.comune!, km: 26 }, punteggio: { ...modello.punteggio!, totale: 99 } };
+    const vicina: mq.Riga = { ...lontana, testo: `${modello.testo} vicina`, comune: { ...modello.comune!, km: 25 } };
+    const sel = mq.seleziona([lontana, vicina], new Set(), mappa.pagine, "015081", 0, 25);
+    const senzaRaggio = mq.seleziona([lontana], new Set(), mappa.pagine, "015081", 0, null);
+    caso(
+      "25. C-a target con comune solo entro il raggio (26 km no, 25 km sì; senza sede nessun limite)",
+      isDeepStrictEqual(sel.target.map((t) => t.testo), [vicina.testo]) && senzaRaggio.target.length === 1 && !mq.candidatiSerp([lontana], new Set(), [], 25).length,
+      sel.target.map((t) => t.testo),
+    );
+    caso("25. C-a nessun target della mappa oltre 25 km", mappa.ingressi.raggioKm === 25 && mappa.target.every((t) => (misurato.find((r) => r.testo === t.testo)!.comune?.km ?? 0) <= 25));
   }
   {
     const zPerm = { ...zCologno, etichette: [...zCologno.etichette].reverse() };
@@ -749,7 +825,7 @@ try {
     );
     const esclusaDopo = mq.riseleziona(mappa, [tEx], new Date(ora).toISOString());
     const vEx = vista({ lettura: { stato: "ok", mappa: esclusaDopo }, esclusioni: { versione: 1, voci: [{ testo: tEx, motivo: "prova", at: ADESSO }] } });
-    const promosse = mq.candidatiSerp(esclusaDopo.universo, new Set([tEx]), contesto.macro_categorie.map((m) => m.nome)).filter((r) => !r.serp).length;
+    const promosse = mq.candidatiSerp(esclusaDopo.universo, new Set([tEx]), contesto.macro_categorie.map((m) => m.nome), esclusaDopo.ingressi.raggioKm).filter((r) => !r.serp).length;
     caso("1. esclusione dopo il calcolo (il posto va a una ricerca mai letta) → nessun ricalcolo chiesto", promosse > 0 && vEx.stato === "pronta" && vEx.cambiati.length === 0, [promosse, vEx.stato, vEx.cambiati]);
   }
 
@@ -935,9 +1011,24 @@ try {
     caso("31. senza --conferma-spesa: solo la stima, nessuna chiamata né file", "eseguito" in stima && stima.eseguito === false && stima.stimaUsd === 1.54 && !fs.existsSync(path.join(tmp, "no")));
 
     const uscita = path.join(tmp, "campione");
-    const esito = await eseguiCampione({ d, domini, client: creaClientDfs({ trasporto: { fetch: async () => json({}), getSecret: () => null }, registrate: RISPOSTE, cacheDir: cacheDir() }), uscitaGrezzi: uscita, uscitaDocs: uscita, data: "2026-09-15", log: () => {} });
+    const cacheCampione = cacheDir();
+    const esito = await eseguiCampione({ d, domini, client: creaClientDfs({ trasporto: { fetch: async () => json({}), getSecret: () => null }, registrate: RISPOSTE, cacheDir: cacheCampione }), uscitaGrezzi: uscita, uscitaDocs: uscita, data: "2026-09-15", log: () => {} });
     const righe = "righe" in esito ? esito.righe : [];
     caso("31. esecuzione su risposte registrate: 384 righe classificate e composizione scritta", righe.length === 384 && righe.every((r) => r.serp && r.difficolta) && fs.existsSync(path.join(uscita, "composizione-2026-09-15.json")));
+
+    // C-c: ricalcolo dalla cache, gratis. Cache vuota → si ferma prima di ogni lettura; cache piena → prima e dopo, 0 chiamate.
+    let fetchVuota = 0;
+    const vuota = creaClientDfs({ trasporto: { fetch: async () => (fetchVuota++, json({})), getSecret: () => "x" }, registrate: null, costi: null, cacheDir: cacheDir() });
+    const eVuota = await lancia(() => ricalcolaDallaCache({ d, domini, client: vuota, data: "2026-09-15" }));
+    caso("31. C-c ricalcolo con una pagina non in cache → errore, nessuna chiamata", eVuota instanceof Error && eVuota.message.includes("non sono in cache") && fetchVuota === 0 && vuota.statistiche().chiamatePagate === 0, eVuota instanceof Error ? eVuota.message : eVuota);
+    let fetchPiena = 0;
+    const piena = creaClientDfs({ trasporto: { fetch: async () => (fetchPiena++, json({})), getSecret: () => null }, registrate: RISPOSTE, costi: null, cacheDir: cacheCampione });
+    const ric = await ricalcolaDallaCache({ d, domini, client: piena, data: "2026-09-15" });
+    caso(
+      "31. C-c ricalcolo dalla cache: 384 pagine due volte classificate, stessa «prima» del campione, 0 chiamate",
+      fetchPiena === 0 && piena.statistiche().dallaCache === 384 && piena.statistiche().chiamatePagate === 0 && ric.dopo.length === 384 && isDeepStrictEqual(ric.prima.map((r) => r.difficolta), righe.map((r) => r.difficolta)),
+      [fetchPiena, piena.statistiche()],
+    );
     const g1 = csvGiudizio(selezionaGiudizio(righe, 7));
     const g2 = csvGiudizio(selezionaGiudizio(righe, 7));
     const letto = leggiCsv(g1);

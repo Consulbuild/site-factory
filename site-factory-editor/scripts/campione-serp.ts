@@ -6,6 +6,7 @@
 //   node --experimental-strip-types scripts/campione-serp.ts esegui                        → solo la stima, nessuna chiamata
 //   node --experimental-strip-types scripts/campione-serp.ts esegui --registrate <dir>     → risposte registrate (banco, prove)
 //   node --experimental-strip-types scripts/campione-serp.ts esegui --conferma-spesa       → DataForSEO vero (≈ 1,54 $, ok di Mattia)
+//   node --experimental-strip-types scripts/campione-serp.ts ricalcola [--data 2026-09-15]              → dalla cache, gratis: domini nazionali e composizione prima/dopo
 //   node --experimental-strip-types scripts/campione-serp.ts giudizio <campione.ndjson> [--seme 20260915]
 //   node --experimental-strip-types scripts/campione-serp.ts accordo <giudizio.csv> [<campione.ndjson>]
 //
@@ -15,9 +16,10 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { caricaDati, type Dati } from "../lib/zone-servite.ts";
 import * as mq from "../lib/mappa-query.ts";
-import { difficolta, riduciSerp, type Domini, type Livello, type SerpRidotta } from "../lib/serp-classifica.ts";
+import { SOGLIA_PROVINCE_NAZIONALE, difficolta, dominiNazionali, riduciSerp, type Domini, type Livello, type SerpGrezza, type SerpRidotta } from "../lib/serp-classifica.ts";
 import { creaClientDfs, type ClientDfs } from "../lib/dataforseo.ts";
 import { leggiRegole } from "../lib/mappa-lavoro.ts";
 
@@ -89,6 +91,40 @@ export interface RigaCampione extends VoceCampione {
   difficolta: { livello: Livello; punti: number; fattori: mq.Fattore[] } | null;
 }
 
+/** Una pagina del campione classificata con le regole della mappa. */
+export function rigaCampione(v: VoceCampione, grezza: SerpGrezza, fonte: mq.Fonte, domini: Domini, d: Pick<Dati, "province">): RigaCampione {
+  const luogo = { nome: v.comune.nome, sigla: v.comune.sigla, provincia: d.province.get(v.comune.sigla)?.nome ?? null, popolazione: v.comune.popolazione };
+  const serp = riduciSerp(grezza, { domini, dominioCliente: null, luogo });
+  return { ...v, serp: { ...serp, fonte }, errore: null, difficolta: difficolta(serp, v.mestiere, luogo) };
+}
+
+/**
+ * Ricalcolo gratuito del campione dalla cache DataForSEO (decisione T4 punto 10, regola dei domini nazionali): nessuna
+ * chiamata, e se una pagina non è in cache si ferma prima di leggerne una. Classifica due volte: senza l'elenco dei
+ * nazionali (prima) e con quello ricavato dal campione stesso (dopo).
+ */
+export async function ricalcolaDallaCache(opz: { d: Dati; domini: Domini; client: ClientDfs; data: string }): Promise<{
+  prima: RigaCampione[];
+  dopo: RigaCampione[];
+  nazionali: ReturnType<typeof dominiNazionali>;
+  fonte: string;
+}> {
+  const voci = matrice(opz.d);
+  const mancanti = voci.filter((v) => !opz.client.serpInCache(v.query, v.coordinate));
+  if (mancanti.length) throw new Error(`${mancanti.length} pagine del campione non sono in cache (prima: «${mancanti[0]!.query}»): ricalcolo fermato, nessuna chiamata`);
+  const lette: { grezza: SerpGrezza; fonte: mq.Fonte }[] = [];
+  for (const v of voci) lette.push(await opz.client.serp(v.query, v.coordinate));
+  if (opz.client.statistiche().chiamatePagate > 0) throw new Error("chiamata pagata durante il ricalcolo dalla cache: difetto, fermarsi");
+  const classifica = (domini: Domini) => voci.map((v, i) => rigaCampione(v, lette[i]!.grezza, lette[i]!.fonte, domini, opz.d));
+  const { nazionali: _vecchi, ...senza } = opz.domini;
+  const prima = classifica(senza);
+  const nazionali = dominiNazionali(prima.map((r) => ({ sigla: r.comune.sigla, serp: r.serp })));
+  const province = new Set(voci.map((v) => v.comune.sigla)).size;
+  const fonte = `campione ${opz.data} (${voci.length} pagine di Google, ${province} province): fuori elenco in almeno ${SOGLIA_PROVINCE_NAZIONALE} province`;
+  const dopo = classifica({ ...senza, nazionali: { fonte, domini: nazionali.map((x) => x.dominio).sort() } });
+  return { prima, dopo, nazionali, fonte };
+}
+
 export const STIMA_CAMPIONE_USD = mq.stimaCostoUsd(0, 384);
 export const CACHE_CALIBRAZIONE = path.join(os.homedir(), ".cache", "site-factory", "calibrazione-T4");
 export const DOCS_CALIBRAZIONE = path.join(import.meta.dirname, "..", "..", "docs", "traffico", "calibrazione-T4");
@@ -117,11 +153,9 @@ export async function eseguiCampione(opz: {
   const operaio = async () => {
     for (let x = coda.shift(); x; x = coda.shift()) {
       const [v, i] = x;
-      const luogo = { nome: v.comune.nome, sigla: v.comune.sigla, provincia: opz.d.province.get(v.comune.sigla)?.nome ?? null, popolazione: v.comune.popolazione };
       try {
         const { grezza, fonte } = await client.serp(v.query, v.coordinate);
-        const serp = riduciSerp(grezza, { domini: opz.domini, dominioCliente: null, luogo });
-        righe[i] = { ...v, serp: { ...serp, fonte }, errore: null, difficolta: difficolta(serp, v.mestiere, luogo) };
+        righe[i] = rigaCampione(v, grezza, fonte, opz.domini, opz.d);
       } catch (e) {
         // Credenziali e credito fermano tutto: nessun senso continuare a chiedere.
         if (e && typeof e === "object" && "tipo" in e && (e.tipo === "auth" || e.tipo === "credito")) throw e;
@@ -383,6 +417,41 @@ async function main(argv: string[]): Promise<number> {
     if ("file" in esito) console.log(`\nScritti: ${esito.file.join(", ")} · costo ${client.statistiche().costoUsd.toFixed(3)} $ (${client.statistiche().chiamatePagate} chiamate pagate, ${client.statistiche().dallaCache} dalla cache)`);
     return 0;
   }
+  if (comando === "ricalcola") {
+    const data = opzione("--data") ?? "2026-09-15";
+    const regole = leggiRegole();
+    const client = creaClientDfs({ registrate: null, costi: null });
+    const r = await ricalcolaDallaCache({ d: caricaDati(), domini: regole.domini, client, data });
+    const prima = composizione(r.prima, data, false);
+    const dopo = composizione(r.dopo, data, false);
+    const registrata = path.join(DOCS_CALIBRAZIONE, `composizione-${data}.json`);
+    if (fs.existsSync(registrata)) {
+      const { regole: _r, ...vecchia } = JSON.parse(fs.readFileSync(registrata, "utf8")) as Composizione;
+      const { regole: _p, ...nuova } = prima;
+      console.log(`«Prima» uguale a ${path.basename(registrata)}: ${JSON.stringify(vecchia) === JSON.stringify(nuova) ? "sì" : "NO (elenchi o regole cambiati da allora)"}`);
+    }
+    console.log(`${tabella(prima)}\n\nDopo la regola dei domini nazionali (${r.fonte})\n${tabella(dopo)}`);
+    // Domini che erano imprese locali in almeno una pagina: la lista da controllare a mano.
+    const riclassificati = new Map<string, { n: number; titoli: string[] }>();
+    r.prima.forEach((p, i) => {
+      p.serp?.organici.forEach((o, j) => {
+        if (o.classe !== "impresa_locale" || r.dopo[i]!.serp!.organici[j]!.classe === "impresa_locale") return;
+        const x = riclassificati.get(o.dominio) ?? { n: 0, titoli: [] };
+        x.n += 1;
+        if (x.titoli.length < 2) x.titoli.push(`${p.comune.sigla}: ${o.titolo}`);
+        riclassificati.set(o.dominio, x);
+      });
+    });
+    const province = new Map(r.nazionali.map((x) => [x.dominio, x.province]));
+    console.log(`\n${r.nazionali.length} domini nazionali, ${riclassificati.size} erano imprese locali in almeno una pagina:`);
+    for (const [dom, x] of [...riclassificati].sort((a, b) => b[1].n - a[1].n)) console.log(`- ${dom} (${x.n} risultati; ${province.get(dom)!.join(", ")}) · ${x.titoli.join(" | ")}`);
+    fs.writeFileSync(path.join(DOCS_CALIBRAZIONE, `composizione-${data}-nazionali.json`), JSON.stringify(dopo, null, 2) + "\n");
+    fs.writeFileSync(path.join(DOCS_CALIBRAZIONE, `nazionali-${data}.json`), JSON.stringify({ fonte: r.fonte, domini: r.nazionali.map((x) => ({ dominio: x.dominio, province: x.province.join(" ") })) }, null, 2) + "\n");
+    const inVigore = [...(regole.domini.nazionali?.domini ?? [])].sort();
+    const ricavati = r.nazionali.map((x) => x.dominio).sort();
+    console.log(`\nlib/mappa-domini.json «nazionali» ${isDeepStrictEqual(inVigore, ricavati) ? "allineato al campione" : "NON allineato: copia i domini di nazionali-" + data + ".json"} · ${client.statistiche().dallaCache} pagine dalla cache, ${client.statistiche().chiamatePagate} chiamate pagate`);
+    return 0;
+  }
   if (comando === "giudizio") {
     const file = resto[0];
     if (!file) throw new Error("uso: giudizio <campione.ndjson> [--seme N]");
@@ -406,7 +475,7 @@ async function main(argv: string[]): Promise<number> {
     for (const x of a.disaccordi) console.log(`- ${x.query} (${x.id}): Mattia ${x.mattia}, software ${x.software} · ${x.fattori}`);
     return 0;
   }
-  console.error("comandi: esegui [--registrate <dir> [--uscita <dir>]] [--conferma-spesa] · giudizio <campione.ndjson> [--seme N] · accordo <giudizio.csv> [<campione.ndjson>]");
+  console.error("comandi: esegui [--registrate <dir> [--uscita <dir>]] [--conferma-spesa] · ricalcola [--data AAAA-MM-GG] · giudizio <campione.ndjson> [--seme N] · accordo <giudizio.csv> [<campione.ndjson>]");
   return 2;
 }
 

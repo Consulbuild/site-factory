@@ -19,6 +19,8 @@ export interface Domini {
   portali: VoceDominio[];
   directory: VoceDominio[];
   altro: VoceDominio[];
+  /** Domini fuori elenco presenti in più province del campione (dominiNazionali): mai imprese locali. */
+  nazionali?: { fonte: string; domini: string[] };
 }
 
 /** Risposta DataForSEO già letta da lib/dataforseo.ts: solo i campi usati, nessuna classificazione. */
@@ -115,7 +117,7 @@ function classe(
   dominio: string,
   titolo: string,
   url: string,
-  ctx: { domini: Domini; cliente: string | null; localPack: Set<string>; luogo: LuogoQuery },
+  ctx: { domini: Domini; cliente: string | null; localPack: Set<string>; luogo: LuogoQuery; nazionali: ReadonlySet<string> },
 ): { classe: Classe; regola: string } {
   if (ctx.cliente && suffisso(dominio, ctx.cliente)) return { classe: "cliente", regola: "cliente" };
   for (const [elenco, c] of [
@@ -127,21 +129,57 @@ function classe(
     if (voce) return { classe: c, regola: `elenco:${elenco}:${normalizzaDominio(voce.dominio)}` };
   }
   if (PA.some((re) => re.test(dominio))) return { classe: "altro", regola: "pa" };
-  if ([...ctx.localPack].some((d) => suffisso(dominio, d) || suffisso(d, dominio))) return { classe: "impresa_locale", regola: "local-pack" };
   let percorso = url;
   try {
     percorso = new URL(url).pathname;
   } catch {
     /* url già validato a monte: resta il testo intero */
   }
-  if (segnaleLocale(titolo, ctx.luogo) || segnaleLocale(percorso, ctx.luogo)) return { classe: "impresa_locale", regola: "ignoto+segnale-locale" };
+  const nelPack = [...ctx.localPack].some((d) => suffisso(dominio, d) || suffisso(d, dominio));
+  const segnale = segnaleLocale(titolo, ctx.luogo) || segnaleLocale(percorso, ctx.luogo);
+  // Presente in più province del campione: una pagina locale è quella di un portale (una pagina per città), le altre
+  // un sito generico; mai un'impresa locale.
+  if (ctx.nazionali.has(dominio)) return { classe: nelPack || segnale ? "portale" : "altro", regola: REGOLA_NAZIONALE };
+  if (nelPack) return { classe: "impresa_locale", regola: "local-pack" };
+  if (segnale) return { classe: "impresa_locale", regola: "ignoto+segnale-locale" };
   return { classe: "altro", regola: "ignoto" };
+}
+
+/* ---------- attori nazionali (decisione T4 punti 10-11) ---------- */
+
+export const REGOLA_NAZIONALE = "nazionale:piu-province";
+/** Tarata sul campione del 15/09 (piano-T4.md § Calibrazione): da 3 province in su nessuna impresa locale; a 2 (Milano e Monza, Vicenza e Treviso) molte. */
+export const SOGLIA_PROVINCE_NAZIONALE = 3;
+
+/**
+ * Domini fuori elenco (né elenchi, né PA, né cliente) che compaiono nei risultati organici di comuni di almeno
+ * SOGLIA_PROVINCE_NAZIONALE province: attori nazionali, non imprese locali. Conta anche quelli già marcati nazionali,
+ * così il ricalcolo con l'elenco in vigore dà lo stesso risultato.
+ */
+export function dominiNazionali(pagine: readonly { sigla: string; serp: Pick<Serp, "organici"> | null }[], soglia = SOGLIA_PROVINCE_NAZIONALE): { dominio: string; province: string[] }[] {
+  const per = new Map<string, Set<string>>();
+  for (const p of pagine) {
+    for (const o of p.serp?.organici ?? []) {
+      if (!/^(ignoto|local-pack|nazionale)/.test(o.regola)) continue;
+      per.set(o.dominio, (per.get(o.dominio) ?? new Set()).add(p.sigla));
+    }
+  }
+  return [...per]
+    .filter(([, province]) => province.size >= soglia)
+    .map(([dominio, province]) => ({ dominio, province: [...province].sort() }))
+    .sort((a, b) => b.province.length - a.province.length || a.dominio.localeCompare(b.dominio));
 }
 
 /** Da risposta letta a SERP ridotta e classificata: primi 10 organici, feature, domini del local pack. */
 export function riduciSerp(g: SerpGrezza, opz: { domini: Domini; dominioCliente: string | null; luogo: LuogoQuery }): SerpRidotta {
   const localPackDomini = [...new Set(g.localPack.filter((s) => !s.pagata && s.dominio).map((s) => normalizzaDominio(s.dominio!)))].sort().slice(0, 20);
-  const ctx = { domini: opz.domini, cliente: opz.dominioCliente ? normalizzaDominio(opz.dominioCliente) : null, localPack: new Set(localPackDomini), luogo: opz.luogo };
+  const ctx = {
+    domini: opz.domini,
+    cliente: opz.dominioCliente ? normalizzaDominio(opz.dominioCliente) : null,
+    localPack: new Set(localPackDomini),
+    luogo: opz.luogo,
+    nazionali: new Set((opz.domini.nazionali?.domini ?? []).map(normalizzaDominio)),
+  };
   const organici = [...g.organici]
     .sort((a, b) => a.rankAbsolute - b.rankAbsolute || a.url.localeCompare(b.url))
     .slice(0, 10)
