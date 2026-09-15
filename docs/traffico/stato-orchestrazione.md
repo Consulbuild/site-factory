@@ -38,7 +38,8 @@ Aggiornato: 2026-09-14 sera. Leggere insieme a `README.md` (§7 stato per piano)
 | T3 | chiuso e verificato dall'orchestratore (`f8d84e6`…`c2a28aa`; tsc, banco zone 110/0 in 16 s, stato 58/0). Costo: 48 agenti (30 scettici), 6,1 M token, 2 h → scettici ridotti (3 solo per gravità alta). Aperto: l'editor legge `site-intake/public/data/province.json` generato e fuori da git (su un checkout pulito errore leggibile «npm run comuni»); si deriva da `data-src/comuni.json` solo se serve un checkout pulito |
 | T4, T5a, T2a, T2b, G1 | piano scritto e decisioni registrate (con gli effetti di T3 punto 13), da sviluppare |
 | T6b | sospeso: nessuna fonte verificata del luogo dei lavori |
-| K1 | chiavi per gruppi in Impostazioni: piano pronto (`3282bae`, decisioni K1), **in sviluppo** |
+| K1 | chiuso e verificato dall'orchestratore (`7fc53e6`…`aa44ac7`; tsc, banco chiavi 121/0, 9 chiavi reali intatte, 6 campi nuovi pronti). Costo 24 agenti, 3,2 M token. Aperto per Mattia: dev server su tutte le interfacce (`next dev` senza `-H 127.0.0.1`), chip per `btnGhost` disabilitato |
+| T4, G1, T5a | riallineamento dei piani alle decisioni del 15/09 in corso (run `wf_df247099-600`), poi sviluppo di T4 |
 | T5b, T5c, T6b, T7a, T7b, T8, G2, G3 | da pianificare (fase 1) |
 | S0 | lavoro manuale di Mattia (README §8) |
 
