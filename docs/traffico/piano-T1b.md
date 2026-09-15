@@ -2,7 +2,8 @@
 
 Brief: `docs/traffico/brief-T1b.md`. Roadmap: `docs/traffico/README.md`. Stato: **fasi 2-5 chiuse il
 2026-09-15** (sviluppo, calibrazione con la decisione di Mattia T1b punto 8, test, revisione): commit `8bbfe85`,
-`86a5c6f`, `1974f91` + chiusura documenti; esiti in «Calibrazione» e «Verifica». Il testo dei §1-§11 è il piano
+`86a5c6f`, `1974f91`, chiusura `6c19c3f`, revisione `e40e87c` + collaudo finale; esiti in «Calibrazione» e «Verifica»
+(ultimo giro: «Collaudo finale dopo la revisione»). Il testo dei §1-§11 è il piano
 approvato: dove la decisione 8 lo cambia (qualità, regola dello zoom, logo PNG, hero, soglie) vale «Calibrazione».
 
 ## 1. Contesto
@@ -678,6 +679,45 @@ toccato per favicon e og:image (decisione 6) e per il precaricamento dei font (C
 due ricette provate prima, `328a769f57e4` e `564d4b92f27c`, cancellabili),
 schermate in `~/.cache/site-factory/revisione-T1b/`.
 
+### Collaudo finale dopo la revisione (15/09/2026, codice a `e40e87c`)
+
+I giri di revisione indipendente hanno corretto 5 problemi; il commit `e40e87c` porta hero SVG/GIF senza og:image
+invece di un TypeError, logo PDF con errore che dice cosa caricare, tabella del budget leggibile nel log della scheda
+Build, chiave della cache legata anche al sorgente dello script (nel banco un caso per ciascuno). Nessun difetto nuovo trovato in questo giro, nessun commit di codice. Script nello scratchpad
+(`t1b-dev/id/identita.sh`, `t1b-dev/fixture-collaudo.mjs`, `t1b-dev/collaudo/`); nessun file del repo modificato per i test.
+
+- **Suite** (esiti reali): `test-media.ts` **61/0**; renderer `npm run build` ok (18 pagine), `npm run check` 68 file
+  con il solo errore noto di `registry.ts`, validatore ok su golden e 3 clienti, `test:visual` **28/28** senza
+  aggiornare (`git status` delle baseline vuoto), `test:a11y` **14/14**, `gate:tokens` pulito, `gate:overflow` 7/7.
+  Editor: `npx tsc --noEmit` ok, `npm run build` ok, `test-fondamenta` 114/0, `test-traffico-stato` 58/0, `test-demo`
+  19/0, `test-stati` 30/0, `test-portafoglio` 43/0, `test-import-form` ok.
+- **§8.1 identità a servizio spento** (`BASE` `0e9c902` contro l'albero a `e40e87c`): golden + 3 clienti × env (a)(b)(c)
+  **12/12 senza errori**, 46 file ciascuna, CSS con le sole 2 dichiarazioni `picture`; il comparatore segnala le
+  differenze vere (env diverse a confronto).
+- **E2E dall'editor** sulla fixture `zz-test-t1b` ricreata da Cavaliere come in M0:
+  E1 spento → fasi di sempre, nessun `traffico/`, nessuna `v/`, 0 `<picture>`;
+  E2 attivo → fasi «pagine leggere» (21 voci codificate in 81 s con la ricetta nuova `1fe06e83cff2`, build 86 s) e
+  «budget pagine» con una riga per pagina (home 5.175 KB / 5.112 KB / 24 richieste, sottopagine 165-167 KB),
+  `lastmod` con l'hash `8c742c93…` di sempre, `steps.build.fondamenta` presente, ogni `<img>` con `width`/`height` e
+  quelle di `/media` con `srcset` (19 in home, 1 per sottopagina);
+  E3 seconda build 4 s, 21/21 dalla cache, `diff -r` vuoto;
+  E4 `card-2.jpg` ← byte di `card-3.jpg` → cambiano solo `card-2.jpg`, le sue varianti (sha8 nuovo) e `index.html`;
+  E5 soglie basse in uno script dello scratchpad → avviso con le 3 foto più pesanti; `budget-pagine.ts` sulla dist
+  spenta → exit 1, 3 righe su stderr («… e altri 42 errori tecnici»);
+  E6 sospeso → `diff -r` con E2 vuoto, `lastmod` invariato;
+  E7 `DELETE` col nome esatto → `{"ok":true}`, `out/` = i 3 clienti, `client.json` di Cavaliere `1c440378…` come a M0,
+  nulla in Cavaliere più recente del marcatore.
+- **Misura di riferimento** (`misura-lcp.mjs` di `stato-orchestrazione.md`, 390 px DPR 3, cache vuota, mediana di 3,
+  server locale che comprime il testo, Umami e n8n bloccati), fixture spenta → accesa: rete del Mac 3.442 → 2.282 KB;
+  mobile buona 20 Mbps load 1,1 → 0,8 s; mobile debole 5 Mbps load 3,7 → 2,6 s; profilo Google 1,6 Mbps load 11,2 →
+  7,8 s, 2.121 → 1.471 KB al load. Spento il LCP è la foto hero (1,1 / 3,7 / 11,2 s); acceso Chromium elegge il
+  paragrafo della hero (0,4-0,7 s) e la foto non compare tra i candidati (come S5): il `load` è il riferimento onesto
+  per l'arrivo della foto. Lighthouse non rilanciato: i byte serviti sono gli stessi della calibrazione (home 5.175 KB).
+- **File toccati** da `8bbfe85`…`e40e87c` (24 file): tutti nel §5/§6; `docs/traffico/stato-orchestrazione.md` e
+  `decisioni-piani.md` li hanno toccati i commit dell'orchestratore (`ef0f4c6`, `3ccbe19`, `f78e4ef`). Nessuna modifica
+  del piano non committata (in `git status` resta solo `factory/assignments.json`, di un'altra sessione).
+  `package-lock.json`: `sharp` dichiarato e i pacchetti `@img/*` non più marcati `dev`, nessun download.
+
 **Punti aperti**
 
 1. **Lighthouse mobile ≥ 90 non raggiunto** con la decisione 8 (home 75, LCP 9,75 s): la hero da mobile resta a 1920 px
@@ -691,3 +731,9 @@ schermate in `~/.cache/site-factory/revisione-T1b/`.
    tutti i siti servirebbe il precaricamento senza manifest (criterio di identità di T5a da rivedere).
 6. Safari/iOS non verificato in locale (solo Chromium): comportamento standard di `<picture>`/`srcset`, da guardare
    sull'iPhone di Mattia alla prima pubblicazione col servizio.
+7. Cache delle varianti mai potata: dopo la revisione ogni modifica di `media-varianti.ts` cambia la ricetta e la prima
+   build di ogni cliente col servizio ricodifica tutto (Cavaliere 51-81 s); oggi 114 MB in
+   `site-renderer/node_modules/.cache/media-varianti/`, di cui solo le 21 voci `1fe06e83cff2` in uso (le ricette
+   `c82d03650afa`, `328a769f57e4`, `564d4b92f27c` sono cancellabili a mano).
+8. `site-renderer/public/media/zz-test-t1b/` resta come copia dei media dell'ultima build (cartella ignorata da git,
+   la svuota la fase media della prossima build di qualunque cliente): comportamento di sempre di `lib/build.ts`.

@@ -156,6 +156,10 @@ prossime schede.
   identico (CSS + 2 regole `picture`). Banco `scripts/test-media.ts`. Nessun cliente ribuildato. Aperti: Lighthouse
   mobile 75 sulla home con la hero a 1920 px, varianti per tutti i siti o solo col servizio, `dist` ~4,8× su disco;
   schermate da rivedere in `~/.cache/site-factory/revisione-T1b/`.
+  Revisione `e40e87c` (hero SVG/GIF, logo PDF con errore leggibile, tabella del budget, chiave della cache legata
+  allo script) e collaudo finale del 15/09: suite verdi (banco 61/0), identità a servizio spento 12/12, E1-E7
+  dall'editor sulla fixture poi cancellata; `load` della home da profilo Google 11,2 → 7,8 s. Ogni modifica a
+  `media-varianti.ts` fa ricodificare tutte le foto alla prima build (cache da potare a mano, 114 MB).
 
 ## Clienti in `site-renderer/out/` (fuori git)
 
